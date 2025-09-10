@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx bmad-method install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
