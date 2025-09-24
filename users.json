@@ -1,0 +1,51 @@
+[
+  {
+    "id": "user_1757751909490",
+    "email": "test@gmail.com",
+    "username": "46547",
+    "name": "Test",
+    "phone": "1234567896",
+    "user_role": "Professional",
+    "professional_type": "CMA",
+    "membership_no": "356546546",
+    "registration_no": null,
+    "institute_name": null,
+    "password": "$2b$10$vGl0Lp5z.t7qWwJlivkHLeslNsC.tIIi7EDg/WZgvcU0FZrHnYXna",
+    "role": "user",
+    "is_verified": false,
+    "created_at": "2025-09-13T08:25:09.490Z"
+  },
+  {
+    "id": "user_1757753565004",
+    "email": "nikilarajan0616@gmail.com",
+    "username": "demo",
+    "name": "Test",
+    "phone": "9685745216",
+    "user_role": "Professional",
+    "professional_type": "CA",
+    "membership_no": "123456",
+    "registration_no": null,
+    "institute_name": null,
+    "password": "$2b$10$8v5JZMGCwC9dCDFZacN2b.AvRlOiBhXJrUXHI9kyc.LrgwNIEyWf.",
+    "role": "user",
+    "is_verified": false,
+    "created_at": "2025-09-13T08:52:45.004Z"
+  },
+  {
+    "id": "user_1758104878454",
+    "email": "john@gmail.com",
+    "username": "john",
+    "name": "John",
+    "phone": "6358475963",
+    "role": "professional",
+    "professional_type": "CA",
+    "membership_number": "102035",
+    "registration_number": null,
+    "institute_name": null,
+    "password_hash": "$2b$10$TcKq5Y1HHNayRv.j178hVeScKj0Pp4/n28id7frGFYvTtY7Kpz0R.",
+    "is_verified": false,
+    "is_active": true,
+    "created_at": "2025-09-17T10:27:58.454Z",
+    "updated_at": "2025-09-17T10:27:58.454Z"
+  }
+]
