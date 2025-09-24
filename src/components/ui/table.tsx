@@ -1,5 +1,8 @@
 import * as React from "react"
+<<<<<<< HEAD
 
+=======
+>>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
 import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<

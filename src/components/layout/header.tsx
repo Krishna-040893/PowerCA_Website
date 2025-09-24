@@ -92,7 +92,7 @@ export function Header() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    {(session.user?.email === "admin@powerca.in" || 
+                    {(session.user?.email === "admin@powerca.in" ||
                       session.user?.email === "contact@powerca.in" ||
                       session.user?.role === "admin") && (
                       <DropdownMenuItem asChild>
@@ -108,7 +108,7 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => signOut({ callbackUrl: '/' })}
                       className="text-red-600 cursor-pointer"
                     >

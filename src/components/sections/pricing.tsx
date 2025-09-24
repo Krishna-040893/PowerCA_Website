@@ -40,16 +40,27 @@ export function PricingSection() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
+<<<<<<< HEAD
+              <Card
+                className={`h-full relative ${
+                  plan.popular
+                    ? "border-blue-600 shadow-xl scale-105"
+=======
               <Card 
                 className={`h-full relative ${
                   plan.popular 
                     ? "border-primary-600 shadow-xl scale-105" 
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     : "border-gray-200"
                 }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+<<<<<<< HEAD
+                    <Badge className="bg-blue-600 text-white px-3 py-1">
+=======
                     <Badge className="bg-primary-600 text-white px-3 py-1">
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                       Most Popular
                     </Badge>
                   </div>
@@ -74,7 +85,11 @@ export function PricingSection() {
                   <ul className="space-y-3">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
+<<<<<<< HEAD
+                        <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+=======
                         <Check className="w-5 h-5 text-secondary-600 mr-3 flex-shrink-0 mt-0.5" />
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
@@ -85,9 +100,16 @@ export function PricingSection() {
                   <Button
                     className={`w-full group ${
                       plan.popular
+<<<<<<< HEAD
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-white hover:bg-gray-50 text-blue-600 border border-blue-600"
+                    }`}
+                    size="lg"
+=======
                         ? "bg-primary-600 hover:bg-primary-700 text-white"
                         : "bg-white hover:bg-gray-50 text-primary-600 border border-primary-600"
                     }`}
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     asChild
                   >
                     <Link href="/checkout">
@@ -113,6 +135,21 @@ export function PricingSection() {
           </p>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
             <div className="flex items-center">
+<<<<<<< HEAD
+              <Check className="w-4 h-4 text-green-600 mr-2" />
+              Free Onboarding
+            </div>
+            <div className="flex items-center">
+              <Check className="w-4 h-4 text-green-600 mr-2" />
+              24/7 Support
+            </div>
+            <div className="flex items-center">
+              <Check className="w-4 h-4 text-green-600 mr-2" />
+              Data Migration
+            </div>
+            <div className="flex items-center">
+              <Check className="w-4 h-4 text-green-600 mr-2" />
+=======
               <Check className="w-4 h-4 text-secondary-600 mr-2" />
               Free Onboarding
             </div>
@@ -126,6 +163,7 @@ export function PricingSection() {
             </div>
             <div className="flex items-center">
               <Check className="w-4 h-4 text-secondary-600 mr-2" />
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
               Regular Updates
             </div>
           </div>

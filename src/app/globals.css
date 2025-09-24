@@ -44,11 +44,40 @@
   }
   
   .bg-grid-pattern {
+<<<<<<< HEAD
+    background-image:
+=======
     background-image: 
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       linear-gradient(to right, rgb(59, 130, 246, 0.1) 2px, transparent 2px),
       linear-gradient(to bottom, rgb(59, 130, 246, 0.1) 2px, transparent 2px);
     background-size: 40px 40px;
   }
+<<<<<<< HEAD
+
+  /* Admin-specific styles */
+  .admin-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(16, 185, 129, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(16, 185, 129, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .admin-glass {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .admin-glow-emerald {
+    box-shadow:
+      0 0 20px rgba(16, 185, 129, 0.1),
+      0 0 40px rgba(16, 185, 129, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   
   .bg-dot-pattern {
     background-image: radial-gradient(circle, rgb(219, 234, 254) 1px, transparent 1px);

@@ -8,7 +8,14 @@ declare module 'next-auth' {
       email: string
       name: string
       firmName?: string
+<<<<<<< HEAD
+      role: 'admin' | 'subscriber' | 'affiliate' | 'Admin' | 'Affiliate'
+      userType?: string
+      isVerified?: boolean
+      needsAffiliateSetup?: boolean
+=======
       role: string
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     } & DefaultSession['user']
   }
 
@@ -17,7 +24,13 @@ declare module 'next-auth' {
     email: string
     name: string
     firmName?: string
+<<<<<<< HEAD
+    role: 'admin' | 'subscriber' | 'affiliate'
+    userType?: string
+    isVerified?: boolean
+=======
     role: string
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   }
 }
 
@@ -27,6 +40,12 @@ declare module 'next-auth/jwt' {
     email: string
     name: string
     firmName?: string
+<<<<<<< HEAD
+    role: 'admin' | 'subscriber' | 'affiliate'
+    userType?: string
+    isVerified?: boolean
+=======
     role: string
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   }
 }

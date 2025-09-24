@@ -3,9 +3,16 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Calendar from "react-calendar"
+<<<<<<< HEAD
+import { format, addDays, isSunday, isAfter, isBefore, startOfDay, isToday, parseISO, isSameDay } from "date-fns"
+import { useForm } from "react-hook-form"
+import { Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSquare, CheckCircle, X, Home, ArrowLeft, AlertCircle } from "lucide-react"
+import Link from "next/link"
+=======
 import { format, addDays, isSunday, isAfter, isBefore, startOfDay } from "date-fns"
 import { useForm } from "react-hook-form"
 import { Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSquare, CheckCircle, X } from "lucide-react"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 import 'react-calendar/dist/Calendar.css'
 
 type ValuePiece = Date | null
@@ -19,9 +26,30 @@ interface BookingFormData {
   message?: string
 }
 
+<<<<<<< HEAD
+interface TimeSlot {
+  time: string
+  displayTime: string
+  startHour: number
+}
+
+const timeSlots: TimeSlot[] = [
+  { time: "10:00 AM - 11:00 AM", displayTime: "10:00 AM - 11:00 AM", startHour: 10 },
+  { time: "11:00 AM - 12:00 PM", displayTime: "11:00 AM - 12:00 PM", startHour: 11 },
+  { time: "02:00 PM - 03:00 PM", displayTime: "2:00 PM - 3:00 PM", startHour: 14 },
+  { time: "03:00 PM - 04:00 PM", displayTime: "3:00 PM - 4:00 PM", startHour: 15 },
+  { time: "04:00 PM - 05:00 PM", displayTime: "4:00 PM - 5:00 PM", startHour: 16 }
+=======
 const timeSlots = [
+<<<<<<< HEAD
   "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM", "02:00 PM - 03:00 PM", 
   "03:00 PM - 04:00 PM", "04:00 PM - 05:00 PM"
+=======
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+>>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
 ]
 
 export function DemoBooking() {
@@ -32,6 +60,10 @@ export function DemoBooking() {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [step, setStep] = useState(1)
   const [mounted, setMounted] = useState(false)
+<<<<<<< HEAD
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<BookingFormData>()
 
@@ -40,9 +72,39 @@ export function DemoBooking() {
     setMounted(true)
   }, [])
 
+<<<<<<< HEAD
+  // Filter available time slots based on selected date and current time
+  useEffect(() => {
+    if (selectedDate && selectedDate instanceof Date) {
+      const now = new Date()
+      const currentHour = now.getHours()
+      const currentMinutes = now.getMinutes()
+      
+      let filteredSlots = [...timeSlots]
+      
+      // If selected date is today, filter out past time slots
+      if (isToday(selectedDate)) {
+        filteredSlots = timeSlots.filter(slot => {
+          // Only filter out slots that have already started
+          // If current time is 10:30, still show 11:00 slot
+          // If current time is 11:00 or later, hide 11:00 slot
+          if (currentHour < slot.startHour) {
+            return true // Future slot, always show
+          } else if (currentHour === slot.startHour) {
+            // If we're in the same hour, only show if we haven't passed the start time
+            return currentMinutes === 0 // Only hide if it's exactly the hour or past
+          } else {
+            return false // Past slot, hide
+          }
+        })
+      }
+      
+      setAvailableSlots(filteredSlots)
+=======
   // Fetch booked slots when date changes
   useEffect(() => {
     if (selectedDate && selectedDate instanceof Date) {
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       fetchBookedSlots(selectedDate)
     }
   }, [selectedDate])
@@ -128,7 +190,11 @@ export function DemoBooking() {
   }
 
   return (
+<<<<<<< HEAD
+    <div className="relative min-h-screen py-12">
+=======
     <div className="relative min-h-screen py-20">
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       {/* Background Pattern */}
       <div className="fixed inset-0 pointer-events-none">
         <div 
@@ -144,6 +210,20 @@ export function DemoBooking() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<<<<<<< HEAD
+        {/* Back to Home Button */}
+        <div className="mb-6">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -261,7 +341,58 @@ export function DemoBooking() {
                       Select Time
                     </h2>
                     {selectedDate ? (
+<<<<<<< HEAD
                       <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
+=======
+<<<<<<< HEAD
+                      availableSlots.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
+                          {availableSlots.map((slot) => {
+                            const isBooked = bookedSlots.includes(slot.time)
+                            return (
+                              <motion.button
+                                key={slot.time}
+                                whileHover={{ scale: isBooked ? 1 : 1.05 }}
+                                whileTap={{ scale: isBooked ? 1 : 0.95 }}
+                                onClick={() => !isBooked && setSelectedTime(slot.time)}
+                                disabled={isBooked}
+                                className={`
+                                  px-4 py-3 rounded-lg font-medium transition-all text-sm
+                                  ${isBooked 
+                                    ? 'bg-red-50 text-red-400 cursor-not-allowed line-through border border-red-200'
+                                    : selectedTime === slot.time
+                                      ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white shadow-lg'
+                                      : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                  }
+                                `}
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  <Clock className="w-4 h-4" />
+                                  {slot.displayTime}
+                                </div>
+                                {isBooked && (
+                                  <span className="block text-xs mt-1">Already Booked</span>
+                                )}
+                              </motion.button>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-64 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <div className="text-center">
+                            <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                            <p className="text-gray-700 font-medium">No available time slots for this date</p>
+                            <p className="text-gray-500 text-sm mt-2">
+                              {isToday(selectedDate as Date) 
+                                ? "All slots for today have passed. Please select another date."
+                                : "Please select another date."}
+                            </p>
+                          </div>
+                        </div>
+                      )
+=======
+                      <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-2">
+>>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
                         {timeSlots.map((time) => {
                           const isBooked = bookedSlots.includes(time)
                           return (
@@ -286,6 +417,7 @@ export function DemoBooking() {
                           )
                         })}
                       </div>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     ) : (
                       <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
                         <p className="text-gray-500">Please select a date first</p>
