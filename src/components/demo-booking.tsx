@@ -3,10 +3,16 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Calendar from "react-calendar"
+<<<<<<< HEAD
 import { format, addDays, isSunday, isAfter, isBefore, startOfDay, isToday, parseISO, isSameDay } from "date-fns"
 import { useForm } from "react-hook-form"
 import { Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSquare, CheckCircle, X, Home, ArrowLeft, AlertCircle } from "lucide-react"
 import Link from "next/link"
+=======
+import { format, addDays, isSunday, isAfter, isBefore, startOfDay } from "date-fns"
+import { useForm } from "react-hook-form"
+import { Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSquare, CheckCircle, X } from "lucide-react"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 import 'react-calendar/dist/Calendar.css'
 
 type ValuePiece = Date | null
@@ -20,6 +26,7 @@ interface BookingFormData {
   message?: string
 }
 
+<<<<<<< HEAD
 interface TimeSlot {
   time: string
   displayTime: string
@@ -32,6 +39,12 @@ const timeSlots: TimeSlot[] = [
   { time: "02:00 PM - 03:00 PM", displayTime: "2:00 PM - 3:00 PM", startHour: 14 },
   { time: "03:00 PM - 04:00 PM", displayTime: "3:00 PM - 4:00 PM", startHour: 15 },
   { time: "04:00 PM - 05:00 PM", displayTime: "4:00 PM - 5:00 PM", startHour: 16 }
+=======
+const timeSlots = [
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 ]
 
 export function DemoBooking() {
@@ -42,7 +55,10 @@ export function DemoBooking() {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [step, setStep] = useState(1)
   const [mounted, setMounted] = useState(false)
+<<<<<<< HEAD
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<BookingFormData>()
 
@@ -51,6 +67,7 @@ export function DemoBooking() {
     setMounted(true)
   }, [])
 
+<<<<<<< HEAD
   // Filter available time slots based on selected date and current time
   useEffect(() => {
     if (selectedDate && selectedDate instanceof Date) {
@@ -78,6 +95,11 @@ export function DemoBooking() {
       }
       
       setAvailableSlots(filteredSlots)
+=======
+  // Fetch booked slots when date changes
+  useEffect(() => {
+    if (selectedDate && selectedDate instanceof Date) {
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       fetchBookedSlots(selectedDate)
     }
   }, [selectedDate])
@@ -163,7 +185,11 @@ export function DemoBooking() {
   }
 
   return (
+<<<<<<< HEAD
     <div className="relative min-h-screen py-12">
+=======
+    <div className="relative min-h-screen py-20">
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       {/* Background Pattern */}
       <div className="fixed inset-0 pointer-events-none">
         <div 
@@ -179,6 +205,7 @@ export function DemoBooking() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<<<<<<< HEAD
         {/* Back to Home Button */}
         <div className="mb-6">
           <Link 
@@ -190,6 +217,8 @@ export function DemoBooking() {
           </Link>
         </div>
 
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -310,6 +339,7 @@ export function DemoBooking() {
                       Select Time
                     </h2>
                     {selectedDate ? (
+<<<<<<< HEAD
                       availableSlots.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
                           {availableSlots.map((slot) => {
@@ -355,6 +385,33 @@ export function DemoBooking() {
                           </div>
                         </div>
                       )
+=======
+                      <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-2">
+                        {timeSlots.map((time) => {
+                          const isBooked = bookedSlots.includes(time)
+                          return (
+                            <motion.button
+                              key={time}
+                              whileHover={{ scale: isBooked ? 1 : 1.05 }}
+                              whileTap={{ scale: isBooked ? 1 : 0.95 }}
+                              onClick={() => !isBooked && setSelectedTime(time)}
+                              disabled={isBooked}
+                              className={`
+                                px-4 py-3 rounded-lg font-medium transition-all
+                                ${isBooked 
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                                  : selectedTime === time
+                                    ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white shadow-lg'
+                                    : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                                }
+                              `}
+                            >
+                              {time}
+                            </motion.button>
+                          )
+                        })}
+                      </div>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     ) : (
                       <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
                         <p className="text-gray-500">Please select a date first</p>

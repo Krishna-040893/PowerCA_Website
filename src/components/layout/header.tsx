@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button"
 import { navigationConfig } from "@/config/navigation"
 import { Menu, X, User, LogOut } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
+<<<<<<< HEAD
 import { useUser } from "@/context/user-context"
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,10 +25,13 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
+<<<<<<< HEAD
   const { user: localUser, logout: localLogout } = useUser()
 
   // Use session if available, otherwise use localStorage user
   const currentUser = session?.user || localUser
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,19 +89,36 @@ export function Header() {
           <div className="hidden lg:flex items-center space-x-4">
             {status === "loading" ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+<<<<<<< HEAD
             ) : currentUser ? (
               <>
+=======
+            ) : session ? (
+              <>
+                <Button 
+                  size="sm"
+                  className="bg-primary-600 hover:bg-primary-700 text-white"
+                  asChild
+                >
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                       <User className="w-4 h-4" />
+<<<<<<< HEAD
                       <span>{currentUser.username || currentUser.name || currentUser.email}</span>
+=======
+                      <span>{session.user?.name || session.user?.email}</span>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
+<<<<<<< HEAD
                       <Link
                         href={
                           currentUser.role === 'admin' ? '/admin' :
@@ -104,10 +127,14 @@ export function Header() {
                         }
                         className="flex items-center cursor-pointer"
                       >
+=======
+                      <Link href="/dashboard" className="flex items-center cursor-pointer">
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                         <User className="mr-2 h-4 w-4" />
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
+<<<<<<< HEAD
                     {(currentUser.role === 'affiliate' || currentUser.role === 'Affiliate' || currentUser.is_affiliate) && (
                       <>
                         <DropdownMenuItem asChild>
@@ -145,6 +172,16 @@ export function Header() {
                           localLogout()
                         }
                       }}
+=======
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center cursor-pointer">
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => signOut({ callbackUrl: '/' })}
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                       className="text-red-600 cursor-pointer"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -163,7 +200,11 @@ export function Header() {
                   className="bg-primary-600 hover:bg-primary-700 text-white animate-pulse-glow"
                   asChild
                 >
+<<<<<<< HEAD
                   <Link href="/book-demo">Book Demo</Link>
+=======
+                  <Link href="/demo">Book Demo</Link>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                 </Button>
               </>
             )}
@@ -204,6 +245,7 @@ export function Header() {
               <div className="pt-4 space-y-2 border-t border-gray-100">
                 {status === "loading" ? (
                   <div className="w-full h-10 bg-gray-200 animate-pulse rounded" />
+<<<<<<< HEAD
                 ) : currentUser ? (
                   <>
                     <div className="px-4 py-2 text-sm text-gray-600">
@@ -222,6 +264,20 @@ export function Header() {
                           localLogout()
                         }
                       }}
+=======
+                ) : session ? (
+                  <>
+                    <div className="px-4 py-2 text-sm text-gray-600">
+                      Signed in as {session.user?.name || session.user?.email}
+                    </div>
+                    <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
+                      <Link href="/dashboard">Dashboard</Link>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-red-600" 
+                      onClick={() => signOut({ callbackUrl: '/' })}
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     >
                       Sign Out
                     </Button>
@@ -232,7 +288,11 @@ export function Header() {
                       <Link href="/auth/login">Sign In</Link>
                     </Button>
                     <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
+<<<<<<< HEAD
                       <Link href="/book-demo">Book Demo</Link>
+=======
+                      <Link href="/demo">Book Demo</Link>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                     </Button>
                   </>
                 )}

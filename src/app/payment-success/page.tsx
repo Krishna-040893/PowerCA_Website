@@ -1,15 +1,24 @@
 'use client'
 
+<<<<<<< HEAD
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, ArrowRight, Download, Mail, AlertCircle } from 'lucide-react'
+=======
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { CheckCircle, ArrowRight, Download, Mail } from 'lucide-react'
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
 
 export default function PaymentSuccessPage() {
   const router = useRouter()
+<<<<<<< HEAD
   const searchParams = useSearchParams()
   const [isTestMode, setIsTestMode] = useState(false)
 
@@ -20,17 +29,26 @@ export default function PaymentSuccessPage() {
       setIsTestMode(true)
     }
 
+=======
+
+  useEffect(() => {
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     // Trigger confetti animation
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     })
+<<<<<<< HEAD
   }, [searchParams])
+=======
+  }, [])
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-2xl">
+<<<<<<< HEAD
         {/* Test Mode Banner */}
         {isTestMode && (
           <div className="mb-6 bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 flex items-center gap-3">
@@ -44,6 +62,8 @@ export default function PaymentSuccessPage() {
           </div>
         )}
 
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
         <Card className="shadow-xl border-green-200">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4">
@@ -67,7 +87,11 @@ export default function PaymentSuccessPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount Paid:</span>
+<<<<<<< HEAD
                   <span className="font-medium">{isTestMode ? '₹1 (Test)' : '₹50,000'}</span>
+=======
+                  <span className="font-medium">₹22,000</span>
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">First Year:</span>

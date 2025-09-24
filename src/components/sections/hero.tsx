@@ -151,6 +151,7 @@ export function HeroSection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Button
                   size="lg"
+<<<<<<< HEAD
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
                   asChild
                 >
@@ -162,6 +163,9 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
+=======
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                   asChild
                 >
                   <Link href="/book-demo">
@@ -172,7 +176,11 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="outline"
+<<<<<<< HEAD
                   className="px-8 py-6 text-lg group border-2 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-700 transition-all"
+=======
+                  className="px-8 py-6 text-lg group border-2 hover:border-primary-400 hover:bg-primary-50/50 hover:text-primary-700 transition-all"
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
                   asChild
                 >
                   <Link href="/docs/PowercaPromoters.pdf" download>

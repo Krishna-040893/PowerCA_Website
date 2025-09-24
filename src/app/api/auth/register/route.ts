@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+<<<<<<< HEAD
 export async function GET(request: NextRequest) {
   try {
     // Check if Supabase is configured
@@ -104,12 +105,22 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name || !email || !username || !password || !phone || !role) {
+=======
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { name, email, password, phone, firmName, membershipNumber } = body
+
+    // Validate required fields
+    if (!name || !email || !password || !phone) {
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
+<<<<<<< HEAD
     // Validate role-specific fields
     if (role === 'Professional' && (!professionalType || !membershipNo)) {
       return NextResponse.json(
@@ -125,6 +136,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
@@ -142,6 +155,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+<<<<<<< HEAD
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -297,6 +311,120 @@ export async function POST(request: NextRequest) {
         details: 'Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY to your .env.local file'
       },
       { status: 503 }
+=======
+    // Hash password first
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
+      console.log('Supabase not configured, using demo mode')
+      
+      // Demo mode - just return success
+      const demoUser = {
+        id: `user_${Date.now()}`,
+        email,
+        name,
+        firm_name: firmName || null,
+        membership_number: membershipNumber || null,
+        role: 'user',
+        is_verified: false
+      }
+
+      return NextResponse.json(
+        { 
+          success: true,
+          message: 'Registration successful (demo mode)',
+          user: {
+            id: demoUser.id,
+            email: demoUser.email,
+            name: demoUser.name
+          }
+        },
+        { status: 201 }
+      )
+    }
+
+    // Try to use Supabase
+    let newUser
+    try {
+      const supabase = createAdminClient()
+
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single()
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 400 }
+        )
+      }
+
+      // Create user
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          name,
+          email,
+          password: hashedPassword,
+          phone,
+          firm_name: firmName || null,
+          membership_number: membershipNumber || null,
+          role: 'user',
+          is_verified: false
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        // Fall back to demo mode
+        newUser = {
+          id: `user_${Date.now()}`,
+          email,
+          name,
+          firm_name: firmName || null,
+          membership_number: membershipNumber || null,
+          role: 'user',
+          is_verified: false
+        }
+        console.log('Using demo mode due to Supabase error')
+      } else {
+        newUser = data
+      }
+    } catch (fetchError) {
+      console.error('Network error connecting to Supabase:', fetchError)
+      // Fall back to demo mode
+      newUser = {
+        id: `user_${Date.now()}`,
+        email,
+        name,
+        firm_name: firmName || null,
+        membership_number: membershipNumber || null,
+        role: 'user',
+        is_verified: false
+      }
+      console.log('Using demo mode due to network error')
+    }
+
+    // Send welcome email (optional - implement if needed)
+    // await sendWelcomeEmail(email, name)
+
+    return NextResponse.json(
+      { 
+        success: true,
+        message: 'Registration successful',
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name
+        }
+      },
+      { status: 201 }
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     )
   } catch (error) {
     console.error('Registration error:', error)

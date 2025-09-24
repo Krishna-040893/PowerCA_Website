@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
+<<<<<<< HEAD
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+=======
+const resend = new Resend(process.env.RESEND_API_KEY)
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 
 export async function POST(request: NextRequest) {
   try {

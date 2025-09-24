@@ -34,8 +34,12 @@ export const featuresConfig = {
   pricingPlans: [
     {
       name: "PowerCA Implementation",
+<<<<<<< HEAD
       price: "₹1", // Changed to ₹1 for testing
       originalPrice: "₹22,000",
+=======
+      price: "₹22,000",
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       period: "one-time",
       description: "Complete setup and first year free",
       features: [
@@ -49,8 +53,11 @@ export const featuresConfig = {
         "Regular updates & maintenance",
       ],
       popular: true,
+<<<<<<< HEAD
       productId: "powerca_implementation",
       amount: 100, // Amount in paise (₹1 = 100 paise) for Razorpay
+=======
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     },
   ],
 }

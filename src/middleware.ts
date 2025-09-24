@@ -2,6 +2,7 @@ import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
 export default withAuth(
+<<<<<<< HEAD
   async function middleware(req) {
     const token = req.nextauth.token
     const pathname = req.nextUrl.pathname
@@ -33,6 +34,10 @@ export default withAuth(
       }
     }
 
+=======
+  function middleware(req) {
+    // Custom logic can be added here if needed
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     return NextResponse.next()
   },
   {
@@ -46,11 +51,18 @@ export default withAuth(
   }
 )
 
+<<<<<<< HEAD
 // Protect these routes (removed /admin/:path* to allow direct access)
 export const config = {
   matcher: [
     '/dashboard/:path*',
     '/affiliate/:path*',
+=======
+// Protect these routes
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     '/api/protected/:path*',
     '/clients/:path*',
     '/documents/:path*',

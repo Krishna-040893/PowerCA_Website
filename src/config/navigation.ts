@@ -12,10 +12,17 @@ export const navigationConfig = {
       title: "Pricing",
       href: "/pricing",
     },
+<<<<<<< HEAD
     // {
     //   title: "Book Demo",
     //   href: "/book-demo",
     // },
+=======
+    {
+      title: "Book Demo",
+      href: "/book-demo",
+    },
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     {
       title: "About",
       href: "/about",
@@ -35,7 +42,11 @@ export const navigationConfig = {
       items: [
         { title: "Features", href: "/features" },
         { title: "Pricing", href: "/pricing" },
+<<<<<<< HEAD
         // { title: "Book Demo", href: "/book-demo" },
+=======
+        { title: "Book Demo", href: "/book-demo" },
+>>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       ],
     },
     {
