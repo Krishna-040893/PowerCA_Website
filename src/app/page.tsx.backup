@@ -1,0 +1,493 @@
+import Image from "next/image"
+import { ClientLogos } from "@/components/client-logos"
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative py-[100px] flex items-center justify-center overflow-hidden bg-white">
+        {/* Container with padding for the background image */}
+        <div className="absolute inset-0 px-12">
+          <div
+            className="w-full h-full rounded-2xl"
+            style={{
+              backgroundImage: 'url(/images/hero-bg.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            {/* Optional overlay for better text readability */}
+            <div className="absolute inset-0 bg-white/10 rounded-2xl"></div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <div className="mb-8">
+              <span className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Practice Management Solution for Professionals
+              </span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-8">
+              Practice Management Solution for
+              <br />
+              <span className="text-blue-600">Chartered Accountants</span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-4xl mx-auto">
+              Power CA is a robust administrative tool designed to take control and bring efficiency to your practice.
+              Empower your practice by seamlessly managing your tasks, billing, documentation and other functions.
+              We cordially welcome you to explore further.
+            </p>
+
+            {/* Value Proposition */}
+            <div className="mb-12">
+              <div className="flex items-center justify-center text-gray-500 text-sm md:text-base">
+                <div className="flex items-center">
+                  <div className="w-8 h-px bg-gray-300 mr-3"></div>
+                  <span className="whitespace-nowrap">Save 10+ hours weekly</span>
+                  <span className="mx-3 text-gray-400">•</span>
+                  <span className="whitespace-nowrap">Ensure 100% compliance</span>
+                  <span className="mx-3 text-gray-400">•</span>
+                  <span className="whitespace-nowrap">Grow effortlessly</span>
+                  <div className="w-8 h-px bg-gray-300 ml-3"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a
+                href="/book-demo"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
+              >
+                <span>Book Your Demo</span>
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+              <a
+                href="/promoter-perspective"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
+              >
+                Promoter's Perspective
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Client Logos Section */}
+      <ClientLogos />
+
+
+      {/* Streamline Your Practice - Text Only Section */}
+      <section className="px-12 relative overflow-hidden">
+        <div className="relative rounded-2xl overflow-hidden" style={{
+          backgroundImage: 'url(/images/streamline-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          <div className="absolute inset-0 bg-white/10"></div>
+          <div className="container mx-auto px-6 lg:px-8 py-20 relative z-10">
+          <div className="grid lg:grid-cols-4 gap-12 items-start">
+            {/* Left Content - Title */}
+            <div className="lg:col-span-1">
+              <h2 className="font-bold leading-tight font-inter" style={{ fontSize: '48px', width: '458px', color: '#001525' }}>
+                Streamline your practice
+              </h2>
+            </div>
+
+            {/* Center Content - Description */}
+            <div className="lg:col-span-2 lg:ml-30">
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Power CA helps you organize and streamline your office functional areas like task management, client management, staff management, billing
+                and manage all information related to your practice in an accessible in-house application.
+              </p>
+            </div>
+
+            {/* Right Content - Button */}
+            <div className="lg:col-span-1 flex justify-start lg:justify-end">
+              <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                Register Now
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Modules Workflow Image */}
+          <div className="mt-16 flex justify-center">
+            <div className="relative max-w-4xl w-full">
+              <Image
+                src="/images/power-ca-modules-workflow.png"
+                alt="Power CA Modules Workflow"
+                width={1200}
+                height={800}
+                className="w-full h-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-5 gap-12 items-start mb-16">
+            {/* Left Content - Title */}
+            <div className="lg:col-span-2">
+              <h2 className="text-4xl md:text-5xl font-bold font-inter leading-tight" style={{ color: '#001525' }}>
+                Important Power CA
+                <br />
+                Modules
+              </h2>
+            </div>
+
+            {/* Center Content - Description */}
+            <div className="lg:col-span-2 flex items-center">
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Discover the full potential of Power CA through its modules, designed to
+                streamline operations, increase productivity, and empower your practice.
+              </p>
+            </div>
+
+            {/* Right Content - Button */}
+            <div className="lg:col-span-1 flex items-center justify-start lg:justify-end">
+              <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                All Modules
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Job Card Management - Featured Card */}
+            <div className="group p-8 rounded-2xl text-white hover:bg-blue-700 transition-all duration-300 transform hover:scale-105" style={{ backgroundColor: '#155dfc' }}>
+              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/job-card-icon.svg"
+                  alt="Job Card Management"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter text-white">Job Card Management</h3>
+              <p className="text-blue-100">Comprehensive job management with intuitive dashboard, advanced search, and seamless edit functions for efficient workflow control.</p>
+            </div>
+
+            {/* Costing Module */}
+            <div className="group p-8 rounded-2xl border-2 hover:shadow-xl transition-all duration-300" style={{ borderColor: '#B6C9F3' }}>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/costing-module-icon.svg"
+                  alt="Costing Module"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Costing Module</h3>
+              <p className="text-gray-600">Track project costs and analyze profitability with detailed analytics.</p>
+            </div>
+
+            {/* CRM Module */}
+            <div className="group p-8 rounded-2xl border-2 hover:shadow-xl transition-all duration-300" style={{ borderColor: '#B6C9F3' }}>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/crm-module-icon.svg"
+                  alt="CRM Module"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>CRM Module</h3>
+              <p className="text-gray-600">Build stronger client relationships with integrated CRM featuring lead tracking and engagement analytics.</p>
+            </div>
+
+            {/* Clients Module */}
+            <div className="group p-8 rounded-2xl border-2 hover:shadow-xl transition-all duration-300" style={{ borderColor: '#B6C9F3' }}>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/clients-module-icon.svg"
+                  alt="Clients Module"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Clients Module</h3>
+              <p className="text-gray-600">Centralized client management with detailed profiles, documents, and communication history.</p>
+            </div>
+
+            {/* Financial Statements */}
+            <div className="group p-8 rounded-2xl border-2 hover:shadow-xl transition-all duration-300" style={{ borderColor: '#B6C9F3' }}>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/financial-statements-icon.svg"
+                  alt="Financial Statements"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Financial Statements</h3>
+              <p className="text-gray-600">Generate accurate financial statements, balance sheets, and P&L reports with real-time data.</p>
+            </div>
+
+            {/* Billing Module */}
+            <div className="group p-8 rounded-2xl border-2 hover:shadow-xl transition-all duration-300" style={{ borderColor: '#B6C9F3' }}>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image
+                  src="/images/billing-module-icon.svg"
+                  alt="Billing Module"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Billing Module</h3>
+              <p className="text-gray-600">Streamline invoicing with automated billing, payment tracking, and GST compliance.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Start Using Power CA Today Section */}
+      <section className="py-20 px-12 relative overflow-hidden">
+        <div className="relative rounded-2xl overflow-hidden py-20" style={{
+          backgroundImage: 'url(/images/start-using-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          <div className="absolute inset-0 bg-white/10"></div>
+          <div className="container mx-auto px-6 lg:px-8 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-16 items-start">
+              {/* Left Content */}
+              <div>
+                <div className="grid lg:grid-cols-4 gap-8 items-center mb-12">
+                  <div className="lg:col-span-3">
+                    <h2 className="font-bold font-inter" style={{ color: '#001525', fontSize: '48px' }}>
+                      Start using Power CA today!
+                    </h2>
+                  </div>
+                  <div className="lg:col-span-1 flex justify-start lg:justify-end">
+                    <button className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-full hover:opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg" style={{ backgroundColor: '#155dfc' }}>
+                      Pricing Plan
+                      <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5 Step Content */}
+                <div>
+                {/* Step 1 */}
+                <div className="grid grid-cols-12 gap-4 items-start pb-3">
+                  <div className="col-span-1">
+                    <Image
+                      src="/images/step-1-icon.png"
+                      alt="Step 1"
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <h3 className="text-lg font-bold font-inter" style={{ color: '#001525' }}>
+                      Schedule a<br/><span className="text-blue-600">Demo</span>
+                    </h3>
+                  </div>
+                  <div className="col-span-8">
+                    <p className="text-gray-600 leading-relaxed">
+                      Book a demo to test out the application for yourself.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dashed Line */}
+                <div className="my-3" style={{
+                  borderTop: '2px dashed #B6C9F3',
+                  borderImage: 'repeating-linear-gradient(to right, #B6C9F3 0, #B6C9F3 8px, transparent 8px, transparent 16px) 1'
+                }}></div>
+
+                {/* Step 2 */}
+                <div className="grid grid-cols-12 gap-4 items-start py-3">
+                  <div className="col-span-1">
+                    <Image
+                      src="/images/step-2-icon.png"
+                      alt="Step 2"
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <h3 className="text-lg font-bold font-inter" style={{ color: '#001525' }}>
+                      Purchase A <span className="text-blue-600">Plan</span>
+                    </h3>
+                  </div>
+                  <div className="col-span-8">
+                    <p className="text-gray-600 leading-relaxed">
+                      Check out our Pricing Page through the button on the right and purchase the application based on your users.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dashed Line */}
+                <div className="my-3" style={{
+                  borderTop: '2px dashed #B6C9F3',
+                  borderImage: 'repeating-linear-gradient(to right, #B6C9F3 0, #B6C9F3 8px, transparent 8px, transparent 16px) 1'
+                }}></div>
+
+                {/* Step 3 */}
+                <div className="grid grid-cols-12 gap-4 items-start py-3">
+                  <div className="col-span-1">
+                    <Image
+                      src="/images/step-3-icon.png"
+                      alt="Step 3"
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <h3 className="text-lg font-bold font-inter" style={{ color: '#001525' }}>
+                      Install Power CA and<br/><span className="text-blue-600">Activate Your License</span>
+                    </h3>
+                  </div>
+                  <div className="col-span-8">
+                    <p className="text-gray-600 leading-relaxed">
+                      Our Support team will get in touch with you to help you install and activate your license once the payment is complete.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dashed Line */}
+                <div className="my-3" style={{
+                  borderTop: '2px dashed #B6C9F3',
+                  borderImage: 'repeating-linear-gradient(to right, #B6C9F3 0, #B6C9F3 8px, transparent 8px, transparent 16px) 1'
+                }}></div>
+
+                {/* Step 4 */}
+                <div className="grid grid-cols-12 gap-4 items-start py-3">
+                  <div className="col-span-1">
+                    <Image
+                      src="/images/step-4-icon.png"
+                      alt="Step 4"
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <h3 className="text-lg font-bold font-inter" style={{ color: '#001525' }}>
+                      Import Your<br/><span className="text-blue-600">Data</span>
+                    </h3>
+                  </div>
+                  <div className="col-span-8">
+                    <p className="text-gray-600 leading-relaxed">
+                      Using our default data import functionality, import all your tasks, billing, employees and client data.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dashed Line */}
+                <div className="my-3" style={{
+                  borderTop: '2px dashed #B6C9F3',
+                  borderImage: 'repeating-linear-gradient(to right, #B6C9F3 0, #B6C9F3 8px, transparent 8px, transparent 16px) 1'
+                }}></div>
+
+                {/* Step 5 */}
+                <div className="grid grid-cols-12 gap-4 items-start pt-3">
+                  <div className="col-span-1">
+                    <Image
+                      src="/images/step-5-icon.png"
+                      alt="Step 5"
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <h3 className="text-lg font-bold font-inter" style={{ color: '#001525' }}>
+                      Support and<br/><span className="text-blue-600">Training</span>
+                    </h3>
+                  </div>
+                  <div className="col-span-8">
+                    <p className="text-gray-600 leading-relaxed">
+                      Our Support team will help you set up the application and provide necessary training for your staff.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Content - Image */}
+              <div className="flex justify-center lg:justify-start">
+                <Image
+                  src="/images/start-using-image.jpg"
+                  alt="Start using Power CA today"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto max-w-lg rounded-2xl shadow-lg"
+                  style={{ borderRadius: '16px' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto text-center text-white">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight font-inter" style={{ color: '#001525' }}>
+              Ready to transform your
+              <span className="block">CA practice today?</span>
+            </h2>
+            <p className="text-xl mb-10 opacity-90">
+              Join thousands of CAs who have streamlined their operations and grown their revenue with PowerCA.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/book-demo"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg"
+              >
+                <span>Start Free Trial</span>
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-200"
+              >
+                Contact Sales
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

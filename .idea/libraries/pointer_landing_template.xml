@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="pointer-landing-template">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/docs/pointer-landing-template.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

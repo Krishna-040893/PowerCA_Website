@@ -1,11 +1,15 @@
+import { SessionProvider } from "@/components/providers/session-provider"
+import { Toaster } from "@/components/ui/sonner"
+
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
+    <SessionProvider>
       {children}
-    </div>
+      <Toaster />
+    </SessionProvider>
   )
 }

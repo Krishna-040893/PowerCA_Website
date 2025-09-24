@@ -8,9 +8,9 @@ export async function POST(request: NextRequest) {
     const { name, email, password, phone, firmName, membershipNumber } = body
 
     // Validate required fields
-    if (!name || !email || !password || !phone) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Name, email, and password are required' },
         { status: 400 }
       )
     }
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate password strength
-    if (password.length < 8) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       )
     }

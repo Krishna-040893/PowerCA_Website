@@ -18,38 +18,26 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   return (
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100"
-          : "bg-transparent"
-      }`}
+      className="fixed w-full z-40 bg-white"
+      style={{ top: 'var(--banner-height, 48px)' }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-12">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
               src="/images/powerca-logo-horizontal.png"
               alt="PowerCA"
-              width={180}
-              height={52}
+              width={200}
+              height={60}
               className="h-12 w-auto"
               priority
             />
@@ -66,7 +54,7 @@ export function Header() {
               >
                 <Link
                   href={item.href}
-                  className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-[15px]"
                 >
                   {item.title}
                 </Link>
@@ -80,9 +68,10 @@ export function Header() {
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : session ? (
               <>
-                <Button 
+                <Button
                   size="sm"
-                  className="bg-primary-600 hover:bg-primary-700 text-white"
+                  className="text-white rounded-full hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#155dfc' }}
                   asChild
                 >
                   <Link href="/dashboard">Dashboard</Link>
@@ -103,6 +92,16 @@ export function Header() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
+                    {(session.user?.email === "admin@powerca.in" || 
+                      session.user?.email === "contact@powerca.in" ||
+                      session.user?.role === "admin") && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/settings" className="flex items-center cursor-pointer">
                         Settings
@@ -121,12 +120,13 @@ export function Header() {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/auth/login">Sign In</Link>
+                <Button variant="ghost" size="sm" asChild className="text-gray-600 hover:text-gray-800 font-medium">
+                  <Link href="/login">Sign In</Link>
                 </Button>
-                <Button 
+                <Button
                   size="sm"
-                  className="bg-primary-600 hover:bg-primary-700 text-white animate-pulse-glow"
+                  className="text-white rounded-full hover:opacity-90 transition-opacity px-6 py-4 font-medium"
+                  style={{ backgroundColor: '#155dfc' }}
                   asChild
                 >
                   <Link href="/demo">Book Demo</Link>
@@ -175,12 +175,12 @@ export function Header() {
                     <div className="px-4 py-2 text-sm text-gray-600">
                       Signed in as {session.user?.name || session.user?.email}
                     </div>
-                    <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
+                    <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity" style={{ backgroundColor: '#155dfc' }} asChild>
                       <Link href="/dashboard">Dashboard</Link>
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full text-red-600" 
+                    <Button
+                      variant="outline"
+                      className="w-full text-red-600 rounded-full"
                       onClick={() => signOut({ callbackUrl: '/' })}
                     >
                       Sign Out
@@ -188,10 +188,10 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link href="/auth/login">Sign In</Link>
+                    <Button variant="outline" className="w-full rounded-full" asChild>
+                      <Link href="/login">Sign In</Link>
                     </Button>
-                    <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
+                    <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity px-[1.25rem] py-4" style={{ backgroundColor: '#155dfc' }} asChild>
                       <Link href="/demo">Book Demo</Link>
                     </Button>
                   </>

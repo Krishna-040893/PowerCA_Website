@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx shadcn@latest add:*)",
-      "Bash(npx bmad-method install:*)"
+      "Bash(npx bmad-method install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

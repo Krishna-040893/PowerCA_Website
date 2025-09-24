@@ -219,7 +219,7 @@ export default function PricingPage() {
                     className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg"
                     asChild
                   >
-                    <Link href="/demo">
+                    <Link href="/checkout">
                       Book Now
                     </Link>
                   </Button>

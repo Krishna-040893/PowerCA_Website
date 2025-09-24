@@ -5,21 +5,18 @@ export const navigationConfig = {
       href: "/",
     },
     {
-      title: "Features",
-      href: "/features",
+      title: "About",
+      href: "/about",
+    },
+    {
+      title: "Modules",
+      href: "/modules",
     },
     {
       title: "Pricing",
       href: "/pricing",
     },
-    {
-      title: "Book Demo",
-      href: "/book-demo",
-    },
-    {
-      title: "About",
-      href: "/about",
-    },
+    
     {
       title: "Blog",
       href: "/blog",
@@ -33,7 +30,7 @@ export const navigationConfig = {
     {
       title: "Product",
       items: [
-        { title: "Features", href: "/features" },
+        { title: "Modules", href: "/modules" },
         { title: "Pricing", href: "/pricing" },
         { title: "Book Demo", href: "/book-demo" },
       ],
