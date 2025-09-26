@@ -12,7 +12,7 @@ interface PaymentConfirmationEmailProps {
 
 export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
   name,
-  email,
+  email: _email,
   amount,
   orderId,
   paymentId,

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {getServerSession  } from 'next-auth/next'
+import {authOptions  } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,8 +26,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (affiliateError || !affiliateProfile) {
-      console.error('Affiliate not found:', affiliateCode)
-      // Don't fail - just log and continue
+      // Don't fail - just continue
       return NextResponse.json({
         success: true,
         message: 'Payment processed (no valid affiliate code)',
@@ -36,14 +35,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get count of existing referrals (no limit enforced)
-    const { data: existingReferrals, error: refCheckError } = await supabase
+    const { data: existingReferrals, error: _refCheckError } = await supabase
       .from('affiliate_referrals')
       .select('id')
       .eq('affiliate_profile_id', affiliateProfile.id)
       .eq('status', 'converted')
 
-    const referralCount = existingReferrals?.length || 0
-    console.log(`📊 Affiliate has ${referralCount} existing referrals`)
+    const _referralCount = existingReferrals?.length || 0
 
     // Get customer details from session or payment
     const customerEmail = session?.user?.email || 'customer@example.com'
@@ -63,13 +61,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (referralError) {
-      console.error('Error creating referral:', referralError)
-      // Don't fail the payment - just log the error
+      // Don't fail the payment - just continue
     }
 
     // Skip total_referrals update as the column doesn't exist in database
     // We track count by counting rows in affiliate_referrals table instead
-    console.log(`📊 Referral tracked. Total referrals can be counted from affiliate_referrals table`)
 
     // Store payment-referral mapping for admin tracking (without commission)
     const { error: paymentTrackingError } = await supabase
@@ -86,8 +82,7 @@ export async function POST(request: NextRequest) {
       })
 
     if (paymentTrackingError) {
-      // Table might not exist yet, we'll create it
-      console.log('Payment referral tracking table may not exist:', paymentTrackingError)
+      // Table might not exist yet
     }
 
     return NextResponse.json({
@@ -100,8 +95,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-  } catch (error) {
-    console.error('Error tracking referral:', error)
+  } catch {
     // Don't fail the payment due to referral tracking errors
     return NextResponse.json({
       success: true,

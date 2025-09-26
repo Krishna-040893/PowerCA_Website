@@ -1,20 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
-<<<<<<< HEAD
+import {NextRequest, NextResponse  } from 'next/server'
 import crypto from 'crypto'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { Resend } from 'resend'
-import { generateInvoiceNumber, calculateGST, generateInvoicePDF } from '@/lib/invoice-generator'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {Resend  } from 'resend'
+import {generateInvoiceNumber, calculateGST, generateInvoicePDF  } from '@/lib/invoice-generator'
+import {logger  } from '@/lib/logger'
+import {createErrorResponse, ErrorType, handleConfigurationError, isServiceConfigured  } from '@/lib/error-handler'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+const resendApiKey = process.env.RESEND_API_KEY
+const resend = resendApiKey ? new Resend(resendApiKey) : null
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
     const body = await req.json()
-    console.log('💳 Payment verification request received:', {
-      orderId: body.orderId,
-      paymentId: body.paymentId,
-      affiliateCode: body.affiliateCode,
-      isTestPayment: body.isTestPayment,
+
+    // Use secure logger instead of console.log
+    logger.info('Payment verification request received', {
+      orderId: body.orderId || body.razorpay_order_id,
+      hasAffiliateCode: !!body.affiliateCode,
       hasCustomerDetails: !!body.customerDetails
     })
 
@@ -25,122 +30,108 @@ export async function POST(req: NextRequest) {
       customerDetails,
       productDetails,
       isTestPayment,
-      affiliateCode  // Add this to destructuring
+      affiliateCode,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
     } = body
 
-    // Skip signature verification for test payments
-    if (!isTestPayment) {
+    // Normalize the payment data for compatibility
+    const normalizedOrderId = orderId || razorpay_order_id
+    const normalizedPaymentId = paymentId || razorpay_payment_id
+    const normalizedSignature = signature || razorpay_signature
+
+    // SECURITY: Only allow test payments in development environment
+    const isTestMode = process.env.NODE_ENV === 'development' && isTestPayment === true
+
+    if (isTestMode) {
+      logger.debug('Test mode payment verification - development environment only')
+    }
+
+    // Always verify signature in production, only skip in dev for test payments
+    if (!isTestMode) {
       // Verify payment signature for real payments
+      if (!isServiceConfigured('RAZORPAY_KEY_SECRET')) {
+        return handleConfigurationError('Payment gateway')
+      }
+
+      const keySecret = process.env.RAZORPAY_KEY_SECRET
+      if (!keySecret) {
+        throw new Error('Razorpay key secret not configured')
+      }
       const generatedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-        .update(`${orderId}|${paymentId}`)
+        .createHmac('sha256', keySecret)
+        .update(`${normalizedOrderId}|${normalizedPaymentId}`)
         .digest('hex')
 
-      if (generatedSignature !== signature) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid payment signature' },
-          { status: 400 }
+      if (generatedSignature !== normalizedSignature) {
+        logger.security('Invalid payment signature attempted', {
+          orderId: normalizedOrderId,
+          paymentId: normalizedPaymentId,
+          userEmail: customerDetails?.email
+        })
+        return createErrorResponse(
+          ErrorType.PAYMENT,
+          'Invalid payment signature'
         )
       }
-    } else {
-      console.log('🧪 TEST MODE: Skipping signature verification')
     }
 
     const supabase = createAdminClient()
 
-    // Save payment to database (only include fields that exist in the table)
-    const { data: payment, error: paymentError } = await supabase
-      .from('payments')
-      .insert({
-        order_id: orderId,
-        payment_id: paymentId,
-        signature: signature,
-        amount: productDetails?.amount || 1, // Amount in rupees
-        currency: 'INR',
-        status: 'success',
-        plan: productDetails?.name || 'PowerCA Implementation',
-        email: customerDetails?.email,
-        phone: customerDetails?.phone,
-        name: customerDetails?.name,
-        company: customerDetails?.company,
-        gst_number: customerDetails?.gst,
-        address: customerDetails?.address
-        // Removed city, state, pincode as these columns don't exist
-=======
-import { verifyPaymentSignature, RazorpayPaymentData } from '@/lib/razorpay'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
-import { sendEmail } from '@/lib/send-emails'
-import { PaymentConfirmationEmail, PaymentConfirmationEmailText } from '@/lib/email-templates/payment-confirmation'
-import { createInvoiceData, generateInvoiceHTML } from '@/lib/invoice-generator'
-
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    const body = await req.json() as RazorpayPaymentData
-    const supabase = createClient()
-
-    // Verify the payment signature
-    const isValid = verifyPaymentSignature(body)
-
-    if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid payment signature' },
-        { status: 400 }
-      )
-    }
-
-    // Get additional user data from the original order creation
-    const userData = await req.headers.get('x-user-data')
+    // Get additional user data from headers or session
+    const userData = req.headers.get('x-user-data')
     const userInfo = userData ? JSON.parse(userData) : {}
 
-    // Save payment to Supabase
+    // Prepare payment data
+    const paymentAmount = productDetails?.amount || 22000 // Amount in rupees
+    const customerEmail = customerDetails?.email || session?.user?.email || userInfo.email || 'guest@powerca.in'
+    const customerName = customerDetails?.name || session?.user?.name || userInfo.name || 'Customer'
+
+    // Save payment to database
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
         user_id: session?.user?.id || null,
-        order_id: body.razorpay_order_id,
-        payment_id: body.razorpay_payment_id,
-        signature: body.razorpay_signature,
-        amount: 22000,
+        order_id: normalizedOrderId,
+        payment_id: normalizedPaymentId,
+        signature: normalizedSignature,
+        amount: paymentAmount,
         currency: 'INR',
         status: 'success',
-        plan: 'PowerCA Implementation',
-        email: session?.user?.email || userInfo.email || 'guest@powerca.in',
-        phone: userInfo.phone,
-        name: session?.user?.name || userInfo.name,
-        company: userInfo.company,
-        gst_number: userInfo.gstNumber,
-        address: userInfo.address,
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+        plan: productDetails?.name || 'PowerCA Implementation',
+        email: customerEmail,
+        phone: customerDetails?.phone || userInfo.phone,
+        name: customerName,
+        company: customerDetails?.company || userInfo.company,
+        gst_number: customerDetails?.gst || userInfo.gstNumber,
+        address: customerDetails?.address || userInfo.address
       })
       .select()
       .single()
 
     if (paymentError) {
-      console.error('Failed to save payment:', paymentError)
-<<<<<<< HEAD
-      // Continue even if DB save fails
+      logger.error('Failed to save payment', paymentError)
+      // Continue even if DB save fails - we can retry via webhook
     }
 
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
-    const subtotal = productDetails?.amount || 1
+    const subtotal = paymentAmount
     const gst = calculateGST(subtotal, false)
     const grandTotal = subtotal + gst.totalTax
 
     const invoiceData = {
       invoiceNumber,
       invoiceDate: new Date(),
-      customerName: customerDetails?.name || 'Customer',
-      customerEmail: customerDetails?.email,
-      customerPhone: customerDetails?.phone,
-      customerCompany: customerDetails?.company,
-      customerAddress: customerDetails?.address,
-      customerGSTN: customerDetails?.gst,
-      orderId,
-      paymentId,
+      customerName: customerName,
+      customerEmail: customerEmail,
+      customerPhone: customerDetails?.phone || userInfo.phone,
+      customerCompany: customerDetails?.company || userInfo.company,
+      customerAddress: customerDetails?.address || userInfo.address,
+      customerGSTN: customerDetails?.gst || userInfo.gstNumber,
+      orderId: normalizedOrderId,
+      paymentId: normalizedPaymentId,
       paymentDate: new Date(),
       items: [{
         description: productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE',
@@ -155,7 +146,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate PDF invoice
-    const invoicePDF = await generateInvoicePDF(invoiceData)
+    let invoicePDF = null
+    try {
+      invoicePDF = await generateInvoicePDF(invoiceData)
+    } catch (pdfError) {
+      logger.error('Failed to generate PDF invoice', pdfError)
+      // Continue without PDF if generation fails
+    }
 
     // Save invoice to database
     if (payment) {
@@ -171,91 +168,36 @@ export async function POST(req: NextRequest) {
         })
 
       if (invoiceError) {
-        console.error('Failed to create invoice record:', invoiceError)
+        logger.error('Failed to create invoice record', invoiceError)
       }
     }
 
-    // Send confirmation email with PDF invoice
-    if (customerDetails?.email) {
+    // Send confirmation email
+    if (customerEmail) {
       try {
+        if (!resend) {
+          console.warn('Resend not configured, skipping confirmation email')
+          return
+        }
         await resend.emails.send({
           from: 'PowerCA <contact@powerca.in>',
-          to: customerDetails.email,
+          to: customerEmail,
           subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Invoice ${invoiceNumber}`,
           html: `
             <!DOCTYPE html>
             <html>
             <head>
               <style>
-                body {
-                  font-family: 'Segoe UI', Arial, sans-serif;
-                  color: #2c3e50;
-                  margin: 0;
-                  padding: 0;
-                  background: #f8f9fa;
-                }
-                .container {
-                  max-width: 600px;
-                  margin: 20px auto;
-                  background: white;
-                  border-radius: 12px;
-                  overflow: hidden;
-                  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-                }
-                .header {
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  color: white;
-                  padding: 30px 25px;
-                  text-align: center;
-                }
-                .header h2 {
-                  margin: 0;
-                  font-size: 24px;
-                  font-weight: 600;
-                }
-                .content {
-                  padding: 30px 25px;
-                  line-height: 1.6;
-                }
-                .payment-details {
-                  background: #f8f9ff;
-                  padding: 20px;
-                  border-radius: 8px;
-                  border-left: 4px solid #667eea;
-                  margin: 20px 0;
-                }
-                .payment-details h3 {
-                  color: #667eea;
-                  margin-top: 0;
-                  font-size: 16px;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                }
-                .detail-row {
-                  display: flex;
-                  justify-content: space-between;
-                  padding: 8px 0;
-                  border-bottom: 1px solid #ecf0f1;
-                }
-                .detail-row:last-child {
-                  border-bottom: none;
-                  font-weight: bold;
-                  color: #667eea;
-                }
-                .footer {
-                  background: #f8f9ff;
-                  padding: 20px 25px;
-                  text-align: center;
-                  font-size: 14px;
-                  color: #7f8c8d;
-                }
-                .support-info {
-                  background: #e8f4fd;
-                  padding: 15px;
-                  border-radius: 8px;
-                  margin: 20px 0;
-                  text-align: center;
-                }
+                body { font-family: 'Segoe UI', Arial, sans-serif; color: #2c3e50; margin: 0; padding: 0; background: #f8f9fa; }
+                .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 25px; text-align: center; }
+                .header h2 { margin: 0; font-size: 24px; font-weight: 600; }
+                .content { padding: 30px 25px; line-height: 1.6; }
+                .payment-details { background: #f8f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0; }
+                .payment-details h3 { color: #667eea; margin-top: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+                .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1; }
+                .detail-row:last-child { border-bottom: none; font-weight: bold; color: #667eea; }
+                .footer { background: #f8f9ff; padding: 20px 25px; text-align: center; font-size: 14px; color: #7f8c8d; }
               </style>
             </head>
             <body>
@@ -271,8 +213,7 @@ export async function POST(req: NextRequest) {
                   <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for choosing PowerCA</p>
                 </div>
                 <div class="content">
-                  <p>Dear <strong>${customerDetails.name}</strong>,</p>
-
+                  <p>Dear <strong>${customerName}</strong>,</p>
                   <p>🎊 Congratulations! Your payment has been successfully processed and your PowerCA implementation is confirmed.</p>
 
                   <div class="payment-details">
@@ -283,11 +224,11 @@ export async function POST(req: NextRequest) {
                     </div>
                     <div class="detail-row">
                       <span>🔗 Order ID</span>
-                      <span>${orderId}</span>
+                      <span>${normalizedOrderId}</span>
                     </div>
                     <div class="detail-row">
                       <span>💰 Payment ID</span>
-                      <span>${paymentId}</span>
+                      <span>${normalizedPaymentId}</span>
                     </div>
                     <div class="detail-row">
                       <span>📅 Date</span>
@@ -309,16 +250,8 @@ export async function POST(req: NextRequest) {
                     </ul>
                   </div>
 
-                  <div class="support-info">
-                    <p><strong>📞 Need Help?</strong><br>
-                    Contact our support team at <strong>support@powerca.in</strong><br>
-                    or call us at <strong>+91 98765 43210</strong></p>
-                  </div>
-
                   <p>📎 Your detailed invoice is attached as a PDF for your records.</p>
-
-                  <p style="margin-top: 30px;">Best Regards,<br>
-                  <strong>The PowerCA Team</strong> 🚀</p>
+                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong> 🚀</p>
                 </div>
                 <div class="footer">
                   <p>© 2024 PowerCA - Complete CA Practice Management Solution<br>
@@ -328,83 +261,22 @@ export async function POST(req: NextRequest) {
             </body>
             </html>
           `,
-          attachments: [{
+          attachments: invoicePDF ? [{
             filename: `PowerCA-Invoice-${invoiceNumber}.pdf`,
             content: invoicePDF,
-=======
-      // Don't fail the payment verification if DB save fails
-      // We can retry via webhook
-    }
-
-    // Generate invoice
-    const invoiceData = createInvoiceData({
-      ...payment,
-      paymentId: body.razorpay_payment_id,
-      orderId: body.razorpay_order_id,
-    })
-    
-    const invoiceHTML = generateInvoiceHTML(invoiceData)
-    
-    // Save invoice to database
-    if (payment) {
-      const { data: invoice, error: invoiceError } = await supabase
-        .from('invoices')
-        .insert({
-          invoice_number: invoiceData.invoiceNumber,
-          payment_id: payment.id,
-          amount: invoiceData.subtotal,
-          gst: invoiceData.totalTax,
-          total: invoiceData.grandTotal,
-          status: 'paid',
-        })
-        .select()
-        .single()
-
-      if (invoiceError) {
-        console.error('Failed to create invoice:', invoiceError)
-      }
-
-      // Send confirmation email with invoice
-      try {
-        await sendEmail({
-          to: payment.email,
-          subject: `Payment Confirmation - Invoice ${invoiceData.invoiceNumber}`,
-          html: PaymentConfirmationEmail({
-            name: payment.name || 'Customer',
-            email: payment.email,
-            amount: 22000,
-            orderId: body.razorpay_order_id,
-            paymentId: body.razorpay_payment_id,
-            invoiceNumber: invoiceData.invoiceNumber,
-            company: payment.company,
-          }),
-          text: PaymentConfirmationEmailText({
-            name: payment.name || 'Customer',
-            email: payment.email,
-            amount: 22000,
-            orderId: body.razorpay_order_id,
-            paymentId: body.razorpay_payment_id,
-            invoiceNumber: invoiceData.invoiceNumber,
-            company: payment.company,
-          }),
-          attachments: [{
-            filename: `Invoice-${invoiceData.invoiceNumber}.html`,
-            content: invoiceHTML,
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-          }],
+          }] : [],
         })
       } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError)
+        logger.error('Failed to send confirmation email', emailError)
         // Don't fail the payment if email fails
       }
     }
 
-<<<<<<< HEAD
     // Track affiliate referral if affiliate code is present
-    console.log('🔍 Checking for affiliate code:', affiliateCode)
+    logger.debug('Checking for affiliate code', { affiliateCode })
     if (affiliateCode) {
       try {
-        console.log('🔗 Processing affiliate referral for code:', affiliateCode)
+        logger.info('Processing affiliate referral', { affiliateCode })
 
         // Find affiliate profile by referral code
         const { data: affiliateProfile, error: profileError } = await supabase
@@ -413,29 +285,16 @@ export async function POST(req: NextRequest) {
           .eq('referral_code', affiliateCode)
           .single()
 
-        console.log('📊 Affiliate profile found:', {
+        logger.info('Affiliate profile lookup result', {
           found: !!affiliateProfile,
           profileId: affiliateProfile?.id,
           affiliateId: affiliateProfile?.affiliate_id,
           referralCode: affiliateProfile?.referral_code,
-          currentReferrals: affiliateProfile?.total_referrals,
           error: profileError?.message
         })
 
         if (affiliateProfile && !profileError) {
-          // First check if there's an existing pending referral for this referral code
-          let referralRecord;
-          let referralUpdated = false;
-          let referralError = null;
-
-          // Try to find existing referral by affiliate profile and referral code
-          console.log('🔍 Looking for pending referral with:', {
-            affiliate_profile_id: affiliateProfile.id,
-            affiliate_id: affiliateProfile.affiliate_id,
-            referral_code: affiliateCode,
-            status: 'pending'
-          })
-
+          // Try to find existing pending referral
           const { data: existingReferral, error: findError } = await supabase
             .from('affiliate_referrals')
             .select('*')
@@ -447,51 +306,35 @@ export async function POST(req: NextRequest) {
 
           if (existingReferral && !findError) {
             // Update existing referral to converted
-            console.log('📝 Found existing referral, updating to converted:', existingReferral.id)
+            logger.info('Found existing referral, updating to converted', { referralId: existingReferral.id })
 
             const { data: updatedReferral, error: updateRefError } = await supabase
               .from('affiliate_referrals')
               .update({
                 status: 'converted',
                 converted_at: new Date().toISOString(),
-                referred_email: customerDetails?.email || existingReferral.referred_email,
-                referred_name: customerDetails?.name || existingReferral.referred_name
+                referred_email: customerEmail,
+                referred_name: customerName
               })
               .eq('id', existingReferral.id)
               .select()
               .single()
 
             if (updateRefError) {
-              console.error('❌ Failed to update referral status:', {
-                error: updateRefError.message,
-                details: updateRefError.details
-              })
+              logger.error('Failed to update referral status', updateRefError)
             } else {
-              console.log('✅ Referral status updated to converted:', {
-                id: updatedReferral.id,
-                status: updatedReferral.status
-              })
-              referralRecord = updatedReferral
-              referralUpdated = true
+              logger.info('Referral status updated to converted', { referralId: updatedReferral.id })
             }
           } else {
-            // No existing referral found, create a new one as converted
-            console.log('📝 No pending referral found for this referral code:', {
-              searched_for: {
-                affiliate_profile_id: affiliateProfile.id,
-                referral_code: affiliateCode,
-                status: 'pending'
-              },
-              error: findError?.message || 'Not found'
-            })
-            console.log('Creating new referral record as converted')
+            // Create new referral record as converted
+            logger.info('Creating new referral record as converted')
 
             const referralData = {
               affiliate_profile_id: affiliateProfile.id,
               affiliate_id: affiliateProfile.affiliate_id,
-              referral_code: affiliateCode, // Use the actual referral code from URL
-              referred_email: customerDetails?.email,
-              referred_name: customerDetails?.name,
+              referral_code: affiliateCode,
+              referred_email: customerEmail,
+              referred_name: customerName,
               status: 'converted',
               converted_at: new Date().toISOString()
             }
@@ -503,45 +346,24 @@ export async function POST(req: NextRequest) {
               .single()
 
             if (createRefError) {
-              console.error('❌ Failed to create referral record:', {
-                error: createRefError.message,
-                details: createRefError.details,
-                hint: createRefError.hint
-              })
-              referralError = createRefError
+              logger.error('Failed to create referral record', createRefError)
             } else {
-              console.log('✅ New referral record created as converted:', {
-                id: newReferral.id,
-                affiliateProfileId: newReferral.affiliate_profile_id,
-                referredEmail: newReferral.referred_email
-              })
-              referralRecord = newReferral
+              logger.info('New referral record created as converted', { referralId: newReferral.id })
             }
           }
 
-          // Skip total_referrals update as the column doesn't exist
-          // We can track referral count by counting rows in affiliate_referrals table
-          console.log('📈 Referral tracking completed:', {
-            profileId: affiliateProfile.id,
-            wasUpdate: referralUpdated,
-            referralCode: affiliateCode
-          })
-
-          const updateError = null; // Set to null for logging compatibility
-          const newReferralCount = 0; // Placeholder for logging
-
-          // Also track in payment_referrals table for payment tracking
+          // Track payment referral for commission calculation
           const paymentReferralData = {
-            payment_id: paymentId,
+            payment_id: normalizedPaymentId,
             affiliate_profile_id: affiliateProfile.id,
-            customer_email: customerDetails?.email,
-            customer_name: customerDetails?.name,
-            plan_id: body.planId || 'early-bird',
-            payment_amount: productDetails?.amount || 1,
-            commission_amount: 0 // No commission for now
+            customer_email: customerEmail,
+            customer_name: customerName,
+            plan_id: body.planId || 'powerca-implementation',
+            payment_amount: paymentAmount,
+            commission_amount: 0 // Set commission rules as needed
           }
 
-          console.log('💳 Creating payment referral record:', paymentReferralData)
+          logger.info('Creating payment referral record', { paymentId: normalizedPaymentId, affiliateId: affiliateProfile.id })
 
           const { data: payRefData, error: payRefError } = await supabase
             .from('payment_referrals')
@@ -550,75 +372,55 @@ export async function POST(req: NextRequest) {
             .single()
 
           if (payRefError) {
-            console.error('❌ Failed to create payment referral record:', {
-              error: payRefError.message,
-              details: payRefError.details
-            })
+            logger.error('Failed to create payment referral record', payRefError)
           } else {
-            console.log('✅ Payment referral record created:', payRefData?.id)
+            logger.info('Payment referral record created', { recordId: payRefData?.id })
           }
 
-          // Log summary of referral tracking
-          console.log('📊 REFERRAL TRACKING SUMMARY:', {
+          logger.info('Referral tracking summary', {
             affiliateId: affiliateProfile.affiliate_id,
             referralCode: affiliateCode,
-            customerEmail: customerDetails?.email,
-            referralRecorded: !referralError,
-            countUpdated: !updateError,
-            paymentTracked: !payRefError,
-            totalReferralsNow: newReferralCount
+            referralTracked: true,
+            paymentTracked: !payRefError
           })
         } else {
-          console.error('❌ Affiliate profile not found for referral code:', affiliateCode)
+          logger.warn('Affiliate profile not found', { referralCode: affiliateCode })
         }
       } catch (affError) {
-        console.error('❌ Error processing affiliate referral:', affError)
+        logger.error('Error processing affiliate referral', affError)
         // Don't fail the payment if affiliate tracking fails
       }
     } else {
-      console.log('ℹ️ No affiliate code provided - regular payment without referral')
+      logger.debug('No affiliate code provided - regular payment without referral')
     }
 
     // Update order status
-    await supabase
-      .from('payment_orders')
-      .update({ status: 'paid' })
-      .eq('order_id', orderId)
+    try {
+      await supabase
+        .from('payment_orders')
+        .update({ status: 'paid' })
+        .eq('order_id', normalizedOrderId)
+    } catch (orderUpdateError) {
+      logger.error('Failed to update order status', orderUpdateError)
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Payment verified successfully',
-      orderId,
-      invoiceId: invoiceNumber,
-      amount: grandTotal,
-    })
-
-  } catch (error: any) {
-    console.error('Error verifying payment:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to verify payment',
-        message: error.message
-      },
-=======
-    return NextResponse.json({
-      success: true,
-      message: 'Payment verified and saved successfully',
       data: {
-        paymentId: body.razorpay_payment_id,
-        orderId: body.razorpay_order_id,
-        invoiceNumber: invoiceData?.invoiceNumber,
-        amount: 22000,
+        paymentId: normalizedPaymentId,
+        orderId: normalizedOrderId,
+        invoiceNumber: invoiceNumber,
+        amount: grandTotal,
         currency: 'INR',
       },
     })
+
   } catch (error) {
-    console.error('Error verifying payment:', error)
-    return NextResponse.json(
-      { error: 'Failed to verify payment' },
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.PAYMENT,
+      error as Error,
+      { logError: true }
     )
   }
 }

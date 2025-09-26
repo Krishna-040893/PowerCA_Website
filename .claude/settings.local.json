@@ -4,7 +4,11 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(npx bmad-method install:*)",
       "Bash(npm run dev:*)",
-      "Bash(npm run typecheck:*)"
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

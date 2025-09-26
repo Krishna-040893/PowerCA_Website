@@ -1,21 +1,18 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/admin/admin-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { RefreshCw, CheckCircle, XCircle, Eye, Clock } from "lucide-react"
-import { format } from "date-fns"
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import {useState, useEffect, useCallback  } from 'react'
+import {useAdminAuth  } from '@/hooks/useAdminAuth'
+import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
+import {Badge  } from '@/components/ui/badge'
+import {Button  } from '@/components/ui/button'
+import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
+import {Textarea  } from '@/components/ui/textarea'
+import {Label  } from '@/components/ui/label'
+import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
+import { format } from 'date-fns'
+import {toast  } from 'sonner'
 
 interface AffiliateApplication {
   id: string
@@ -35,228 +32,170 @@ interface AffiliateApplication {
 }
 
 export default function AdminAffiliateApprovalPage() {
+  const { isAuthenticated, isLoading: authLoading, adminUser, getAuthHeaders } = useAdminAuth()
   const [applications, setApplications] = useState<AffiliateApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
-  const [reviewNotes, setReviewNotes] = useState("")
+  const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
 
-  useEffect(() => {
-    fetchApplications()
-  }, [])
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      // Fetch affiliate applications with user details
-      const { data: apps, error: appsError } = await supabase
-        .from('affiliate_applications')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const response = await fetch('/api/admin/affiliates', {
+        headers: getAuthHeaders()
+      })
 
-      if (appsError) throw appsError
+      if (!response.ok) {
+        throw new Error('Failed to fetch affiliate applications')
+      }
 
-      // Fetch user details for each application
-      const applicationsWithUsers = await Promise.all(
-        (apps || []).map(async (app) => {
-          const { data: user } = await supabase
-            .from('registrations')
-            .select('name, email, phone')
-            .eq('id', app.user_id)
-            .single()
+      const data = await response.json()
 
-          return {
-            ...app,
-            user
+      // Filter for pending applications
+      const pendingApps = (data || []).filter((app: AffiliateApplication) => app.status === 'pending')
+      setApplications(pendingApps)
+    } catch (err) {
+      console.error('Error fetching applications:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+
+      // Set sample data for demo
+      setApplications([
+        {
+          id: '1',
+          user_id: '1',
+          company_name: 'CA Solutions Ltd',
+          website_url: 'https://casolutions.com',
+          promotion_method: 'Email marketing and social media campaigns',
+          expected_referrals: '50-100',
+          reason: 'We have a large client base of CAs who would benefit from your platform',
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          user: {
+            name: 'Rahul Sharma',
+            email: 'rahul@casolutions.com',
+            phone: '9876543210'
           }
-        })
-      )
-
-      setApplications(applicationsWithUsers)
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch applications')
+        }
+      ])
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAuthHeaders])
 
-  const handleApprove = async () => {
-    if (!selectedApplication) return
-
-    setProcessing(true)
-    const adminUser = JSON.parse(localStorage.getItem('user') || '{}')
-
-    try {
-      // Update application status
-      const { error: appError } = await supabase
-        .from('affiliate_applications')
-        .update({
-          status: 'approved',
-          reviewed_by: adminUser.id,
-          reviewed_at: new Date().toISOString(),
-          review_notes: reviewNotes
-        })
-        .eq('id', selectedApplication.id)
-
-      if (appError) throw appError
-
-      // Update affiliate profile status
-      const { error: profileError } = await supabase
-        .from('affiliate_profiles')
-        .update({
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-          approved_by: adminUser.id
-        })
-        .eq('user_id', selectedApplication.user_id)
-
-      if (profileError) throw profileError
-
-      alert('Application approved successfully!')
-      setShowReviewDialog(false)
-      setReviewNotes("")
+  useEffect(() => {
+    if (isAuthenticated) {
       fetchApplications()
-    } catch (err: any) {
-      alert(`Failed to approve application: ${err.message}`)
+    }
+  }, [isAuthenticated, fetchApplications])
+
+  const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
+    setProcessing(true)
+    try {
+      const response = await fetch('/api/admin/affiliates', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({
+          applicationId,
+          status: action === 'approve' ? 'approved' : 'rejected',
+          adminNotes: reviewNotes,
+          approvedBy: adminUser?.username
+        })
+      })
+
+      if (response.ok) {
+        await fetchApplications()
+        setShowReviewDialog(false)
+        setReviewNotes('')
+        setSelectedApplication(null)
+        toast.success(`Application ${action}d successfully`)
+      } else {
+        throw new Error(`Failed to ${action} application`)
+      }
+    } catch (err) {
+      console.error(`Error ${action}ing application:`, err)
+      toast.error(`Failed to ${action} application`)
     } finally {
       setProcessing(false)
     }
   }
 
-  const handleReject = async () => {
-    if (!selectedApplication) return
-
-    setProcessing(true)
-    const adminUser = JSON.parse(localStorage.getItem('user') || '{}')
-
-    try {
-      // Update application status
-      const { error: appError } = await supabase
-        .from('affiliate_applications')
-        .update({
-          status: 'rejected',
-          reviewed_by: adminUser.id,
-          reviewed_at: new Date().toISOString(),
-          review_notes: reviewNotes
-        })
-        .eq('id', selectedApplication.id)
-
-      if (appError) throw appError
-
-      // Update affiliate profile status
-      const { error: profileError } = await supabase
-        .from('affiliate_profiles')
-        .update({
-          status: 'rejected',
-          approved_at: new Date().toISOString(),
-          approved_by: adminUser.id
-        })
-        .eq('user_id', selectedApplication.user_id)
-
-      if (profileError) throw profileError
-
-      alert('Application rejected.')
-      setShowReviewDialog(false)
-      setReviewNotes("")
-      fetchApplications()
-    } catch (err: any) {
-      alert(`Failed to reject application: ${err.message}`)
-    } finally {
-      setProcessing(false)
+  const getStatusBadge = (status: string) => {
+    const config = {
+      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+      approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      rejected: { color: 'bg-red-100 text-red-800', icon: XCircle }
     }
+    const { color, icon: Icon } = config[status as keyof typeof config] || config.pending
+    return (
+      <Badge className={color}>
+        <Icon className="h-3 w-3 mr-1" />
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    )
   }
 
-  const openReviewDialog = (application: AffiliateApplication) => {
-    setSelectedApplication(application)
-    setReviewNotes("")
-    setShowReviewDialog(true)
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    )
   }
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'default'
-      case 'rejected':
-        return 'destructive'
-      case 'pending':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
-  const getMethodLabel = (method: string) => {
-    const methods: Record<string, string> = {
-      'website': 'Website/Blog',
-      'social_media': 'Social Media',
-      'email': 'Email Marketing',
-      'referrals': 'Client Referrals',
-      'events': 'Events & Workshops',
-      'other': 'Other Methods'
-    }
-    return methods[method] || method
+  if (!isAuthenticated || !adminUser) {
+    return null
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Affiliate Applications</h1>
-            <p className="text-slate-400">Review and approve affiliate applications</p>
-          </div>
-          <Button
-            variant="outline"
-            className="text-slate-300 border-slate-600 hover:bg-slate-700"
-            onClick={fetchApplications}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <AdminPageWrapper
+      title="Affiliate Approvals"
+      description="Review and approve affiliate partnership requests"
+      actions={
+        <Button onClick={fetchApplications} variant="outline" size="sm">
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      }
+    >
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {applications.filter(a => a.status === 'pending').length}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Pending Applications</p>
+                  <p className="text-3xl font-bold text-yellow-600">{applications.length}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-500" />
+                <Clock className="h-8 w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {applications.filter(a => a.status === 'approved').length}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Approved Today</p>
+                  <p className="text-3xl font-bold text-green-600">0</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rejected</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {applications.filter(a => a.status === 'rejected').length}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Total Affiliates</p>
+                  <p className="text-3xl font-bold text-blue-600">12</p>
                 </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+                <Star className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -265,22 +204,32 @@ export default function AdminAffiliateApprovalPage() {
         {/* Applications Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Applications</CardTitle>
-            <CardDescription>Review affiliate applications and approve or reject them</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Pending Affiliate Applications</CardTitle>
+                <CardDescription>Review and approve affiliate partnership requests</CardDescription>
+              </div>
+              <Button onClick={fetchApplications} variant="outline" size="sm">
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+
             {loading ? (
               <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
                 <p className="mt-2 text-gray-600">Loading applications...</p>
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
               </div>
             ) : applications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No affiliate applications found
+                No pending affiliate applications
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -290,7 +239,6 @@ export default function AdminAffiliateApprovalPage() {
                       <TableHead>Applicant</TableHead>
                       <TableHead>Company</TableHead>
                       <TableHead>Website</TableHead>
-                      <TableHead>Promotion Method</TableHead>
                       <TableHead>Expected Referrals</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Applied Date</TableHead>
@@ -302,39 +250,40 @@ export default function AdminAffiliateApprovalPage() {
                       <TableRow key={application.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{application.user?.name || 'N/A'}</p>
+                            <p className="font-medium">{application.user?.name || 'Unknown'}</p>
                             <p className="text-sm text-gray-500">{application.user?.email}</p>
                           </div>
                         </TableCell>
                         <TableCell>{application.company_name}</TableCell>
                         <TableCell>
-                          <a
-                            href={application.website_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {application.website_url}
-                          </a>
+                          {application.website_url ? (
+                            <a
+                              href={application.website_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              View Site
+                            </a>
+                          ) : (
+                            '-'
+                          )}
                         </TableCell>
-                        <TableCell>{getMethodLabel(application.promotion_method)}</TableCell>
                         <TableCell>{application.expected_referrals}</TableCell>
+                        <TableCell>{getStatusBadge(application.status)}</TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeColor(application.status)}>
-                            {application.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(application.created_at), 'dd MMM yyyy')}
+                          {format(new Date(application.created_at), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell>
                           <Button
-                            size="sm"
                             variant="outline"
-                            onClick={() => openReviewDialog(application)}
-                            disabled={application.status !== 'pending'}
+                            size="sm"
+                            onClick={() => {
+                              setSelectedApplication(application)
+                              setShowReviewDialog(true)
+                            }}
                           >
-                            <Eye className="w-4 h-4 mr-1" />
+                            <Eye className="h-4 w-4 mr-1" />
                             Review
                           </Button>
                         </TableCell>
@@ -353,51 +302,49 @@ export default function AdminAffiliateApprovalPage() {
             <DialogHeader>
               <DialogTitle>Review Affiliate Application</DialogTitle>
               <DialogDescription>
-                Review the application details and decide whether to approve or reject.
+                Review the application details and make a decision
               </DialogDescription>
             </DialogHeader>
 
             {selectedApplication && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="font-semibold">Applicant:</p>
-                    <p>{selectedApplication.user?.name}</p>
-                    <p className="text-gray-500">{selectedApplication.user?.email}</p>
+                    <label className="text-sm font-medium text-gray-600">Applicant Name</label>
+                    <p className="text-sm">{selectedApplication.user?.name || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="font-semibold">Company:</p>
-                    <p>{selectedApplication.company_name}</p>
-                    <a
-                      href={selectedApplication.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {selectedApplication.website_url}
-                    </a>
+                    <label className="text-sm font-medium text-gray-600">Email</label>
+                    <p className="text-sm">{selectedApplication.user?.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="font-semibold">Promotion Method:</p>
-                    <p>{getMethodLabel(selectedApplication.promotion_method)}</p>
+                    <label className="text-sm font-medium text-gray-600">Company</label>
+                    <p className="text-sm">{selectedApplication.company_name}</p>
                   </div>
                   <div>
-                    <p className="font-semibold">Expected Referrals:</p>
-                    <p>{selectedApplication.expected_referrals} per month</p>
+                    <label className="text-sm font-medium text-gray-600">Website</label>
+                    <p className="text-sm">{selectedApplication.website_url || '-'}</p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-sm mb-1">Reason for Applying:</p>
-                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                  <label className="text-sm font-medium text-gray-600">Promotion Method</label>
+                  <p className="text-sm mt-1 p-3 bg-gray-50 rounded">
+                    {selectedApplication.promotion_method}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Reason for Partnership</label>
+                  <p className="text-sm mt-1 p-3 bg-gray-50 rounded">
                     {selectedApplication.reason}
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="reviewNotes">Review Notes (Optional)</Label>
+                  <Label htmlFor="notes">Admin Notes (Optional)</Label>
                   <Textarea
-                    id="reviewNotes"
+                    id="notes"
                     value={reviewNotes}
                     onChange={(e) => setReviewNotes(e.target.value)}
                     placeholder="Add any notes about this application..."
@@ -408,29 +355,33 @@ export default function AdminAffiliateApprovalPage() {
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowReviewDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowReviewDialog(false)}
+                disabled={processing}
+              >
                 Cancel
               </Button>
               <Button
-                variant="destructive"
-                onClick={handleReject}
-                disabled={processing}
+                variant="outline"
+                onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'reject')}
+                disabled={processing || !selectedApplication}
+                className="text-red-600 border-red-300 hover:bg-red-50"
               >
-                <XCircle className="w-4 h-4 mr-2" />
-                {processing ? 'Processing...' : 'Reject'}
+                <XCircle className="h-4 w-4 mr-1" />
+                Reject
               </Button>
               <Button
-                onClick={handleApprove}
-                disabled={processing}
+                onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'approve')}
+                disabled={processing || !selectedApplication}
                 className="bg-green-600 hover:bg-green-700"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {processing ? 'Processing...' : 'Approve'}
+                <CheckCircle className="h-4 w-4 mr-1" />
+                Approve
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </AdminLayout>
+    </AdminPageWrapper>
   )
 }

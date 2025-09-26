@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { useEffect, useRef, useState } from "react"
-import { motion, useInView } from "framer-motion"
+import {useEffect, useRef, useState  } from 'react'
+import {useInView  } from 'framer-motion'
 
 interface AnimatedCounterProps {
   from?: number
@@ -12,13 +12,13 @@ interface AnimatedCounterProps {
   className?: string
 }
 
-export function AnimatedCounter({ 
-  from = 0, 
-  to, 
+export function AnimatedCounter({
+  from = 0,
+  to,
   duration = 2,
-  suffix = "",
-  prefix = "",
-  className = "" 
+  suffix = '',
+  prefix = '',
+  className = ''
 }: AnimatedCounterProps) {
   const [count, setCount] = useState(from)
   const ref = useRef(null)
@@ -32,7 +32,7 @@ export function AnimatedCounter({
 
     const timer = setInterval(() => {
       current += increment
-      
+
       if ((increment > 0 && current >= to) || (increment < 0 && current <= to)) {
         setCount(to)
         clearInterval(timer)

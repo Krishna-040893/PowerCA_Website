@@ -1,18 +1,20 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Star, DollarSign, Users, TrendingUp } from "lucide-react"
+import {useState, useEffect  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Textarea  } from '@/components/ui/textarea'
+import {Star, DollarSign, Users, TrendingUp } from 'lucide-react'
+import {User  } from '@/types/common'
+import {toast  } from 'sonner'
 
 export default function AffiliateApplicationPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     accountEmail: '',
@@ -56,7 +58,7 @@ export default function AffiliateApplicationPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: user.id,
+          userId: user?.id,
           ...formData
         }),
       })
@@ -64,14 +66,14 @@ export default function AffiliateApplicationPage() {
       const result = await response.json()
 
       if (response.ok) {
-        alert('Affiliate application submitted successfully! We will review your application and get back to you soon.')
+        toast.success('Affiliate application submitted successfully! We will review your application and get back to you soon.')
         router.push('/')
       } else {
-        alert(result.error || 'Failed to submit application')
+        toast.error(result.error || 'Failed to submit application')
       }
     } catch (error) {
       console.error('Error submitting application:', error)
-      alert('Failed to submit application')
+      toast.error('Failed to submit application')
     } finally {
       setLoading(false)
     }

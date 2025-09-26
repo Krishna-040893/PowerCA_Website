@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { referred_email, referred_name, referral_source = 'manual' } = body
+    const { referred_email, referred_name, referral_source: _referral_source = 'manual' } = body
 
     if (!referred_email) {
       return NextResponse.json(

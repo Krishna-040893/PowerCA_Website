@@ -1,36 +1,11 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  Bell,
-  Search,
-  Shield,
-  BarChart3,
-  FileText,
-  Mail,
-  UserCheck,
-  Star,
-  Command,
-  Activity,
-  TrendingUp,
-  Eye,
-  Globe,
-  Lock,
-  Zap,
-  Crown,
-  MonitorSpeaker
-} from "lucide-react"
+import {useState, useEffect  } from 'react'
+import {useRouter, usePathname  } from 'next/navigation'
+import {useSession, signOut  } from 'next-auth/react'
+import type { AdminUser } from '@/types/admin'
+import Link from 'next/link'
+import { LogOut, Menu, X, ChevronDown, Bell, Search, Shield, LayoutDashboard, Calendar, FileText, Users, UserCheck, Star, BarChart3, Mail, Settings } from 'lucide-react'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -41,17 +16,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [adminUser, setAdminUser] = useState<any>(null)
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null)
 
   const { data: session, status } = useSession()
 
   useEffect(() => {
-    if (status === "loading") return
+    if (status === 'loading') return
 
     if (!session?.user || session.user.role !== 'admin') {
-      router.push("/admin/login")
+      router.push('/admin/login')
     } else {
-      setAdminUser(session.user)
+      setAdminUser(session.user as unknown as AdminUser)
     }
   }, [session, status, router])
 
@@ -61,58 +36,58 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     {
-      name: "Dashboard",
-      href: "/admin/dashboard",
+      name: 'Dashboard',
+      href: '/admin/dashboard',
       icon: LayoutDashboard,
-      active: pathname === "/admin/dashboard"
+      active: pathname === '/admin/dashboard'
     },
     {
-      name: "Manage Bookings",
-      href: "/admin/bookings",
+      name: 'Manage Bookings',
+      href: '/admin/bookings',
       icon: Calendar,
-      active: pathname === "/admin/bookings"
+      active: pathname === '/admin/bookings'
     },
     {
-      name: "Registrations",
-      href: "/admin/registrations",
+      name: 'Registrations',
+      href: '/admin/registrations',
       icon: FileText,
-      active: pathname === "/admin/registrations"
+      active: pathname === '/admin/registrations'
     },
     {
-      name: "Customers",
-      href: "/admin/customers",
+      name: 'Customers',
+      href: '/admin/customers',
       icon: Users,
-      active: pathname === "/admin/customers"
+      active: pathname === '/admin/customers'
     },
     {
-      name: "User Management",
-      href: "/admin/users",
+      name: 'User Management',
+      href: '/admin/users',
       icon: UserCheck,
-      active: pathname === "/admin/users"
+      active: pathname === '/admin/users'
     },
     {
-      name: "Affiliates",
-      href: "/admin/affiliates",
+      name: 'Affiliates',
+      href: '/admin/affiliates',
       icon: Star,
-      active: pathname === "/admin/affiliates"
+      active: pathname === '/admin/affiliates'
     },
     {
-      name: "Reports",
-      href: "/admin/reports",
+      name: 'Reports',
+      href: '/admin/reports',
       icon: BarChart3,
-      active: pathname === "/admin/reports"
+      active: pathname === '/admin/reports'
     },
     {
-      name: "Messages",
-      href: "/admin/messages",
+      name: 'Messages',
+      href: '/admin/messages',
       icon: Mail,
-      active: pathname === "/admin/messages"
+      active: pathname === '/admin/messages'
     },
     {
-      name: "Settings",
-      href: "/admin/settings",
+      name: 'Settings',
+      href: '/admin/settings',
       icon: Settings,
-      active: pathname === "/admin/settings"
+      active: pathname === '/admin/settings'
     }
   ]
 
@@ -183,7 +158,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              
+
               {/* Search Bar */}
               <div className="hidden md:block">
                 <div className="relative">

@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Clock, Users, Sparkles, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Badge  } from '@/components/ui/badge'
+import { ArrowRight, Clock, Users, Sparkles, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+import {useState, useEffect  } from 'react'
 
 export function EnhancedCTASection() {
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 59, seconds: 59 })
@@ -41,7 +41,7 @@ export function EnhancedCTASection() {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
           className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"
         />
@@ -53,7 +53,7 @@ export function EnhancedCTASection() {
           transition={{
             duration: 10,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
             delay: 1,
           }}
           className="absolute bottom-0 left-0 w-96 h-96 bg-secondary-400/20 rounded-full blur-3xl"

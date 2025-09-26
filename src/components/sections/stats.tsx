@@ -1,39 +1,39 @@
-"use client"
+'use client'
 
-import { useRef } from "react"
-import { motion, useInView } from "framer-motion"
-import { AnimatedCounter } from "@/components/animations/animated-counter"
+import {useRef  } from 'react'
+import {motion, useInView  } from 'framer-motion'
+import {AnimatedCounter  } from '@/components/animations/animated-counter'
 
 const stats = [
   {
     value: 15000,
-    suffix: "+",
-    label: "Active Users",
-    description: "CA professionals trust PowerCA daily"
+    suffix: '+',
+    label: 'Active Users',
+    description: 'CA professionals trust PowerCA daily'
   },
   {
     value: 500,
-    suffix: "+",
-    label: "CA Firms",
-    description: "Growing practices with PowerCA"
+    suffix: '+',
+    label: 'CA Firms',
+    description: 'Growing practices with PowerCA'
   },
   {
     value: 99.9,
-    suffix: "%",
-    label: "Uptime",
-    description: "Reliable service you can count on"
+    suffix: '%',
+    label: 'Uptime',
+    description: 'Reliable service you can count on'
   },
   {
     value: 10,
-    suffix: "+",
-    label: "Hours Saved Weekly",
-    description: "Average time saved per firm"
+    suffix: '+',
+    label: 'Hours Saved Weekly',
+    description: 'Average time saved per firm'
   }
 ]
 
 export function StatsSection() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
     <section className="py-20 bg-white">

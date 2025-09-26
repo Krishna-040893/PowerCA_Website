@@ -1,12 +1,10 @@
 import * as React from 'react'
-import {
-  Html,
+import {Html,
   Head,
   Body,
   Container,
   Section,
-  Text,
-  Link,
+  Text, Link,
   Button,
   Img,
   Preview,
@@ -14,7 +12,7 @@ import {
   Font,
   Row,
   Column,
-} from '@react-email/components'
+ } from '@react-email/components'
 
 interface WelcomeEmailProps {
   name: string
@@ -23,7 +21,7 @@ interface WelcomeEmailProps {
 
 export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   name,
-  email,
+  email: _email,
 }) => {
   const preview = `Welcome to PowerCA, ${name}! Let's get started.`
 
@@ -32,7 +30,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
       <Head>
         <Font
           fontFamily="Geist"
-          fallbackFontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          fallbackFontFamily="sans-serif"
           webFont={{
             url: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
             format: 'woff2',

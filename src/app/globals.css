@@ -2,34 +2,62 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Glassmorphism effects */
+/* Glassmorphism effects with fallbacks */
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* Fallback for browsers without backdrop-filter support */
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  
+
+  @supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+  }
+
   .glass-light {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Fallback */
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
-  
+
+  @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+    .glass-light {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+
   .glass-dark {
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Fallback */
+    background: rgba(0, 0, 0, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
+  @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+
   .glass-primary {
-    background: linear-gradient(135deg, rgba(29, 145, 235, 0.1) 0%, rgba(27, 175, 105, 0.1) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Fallback */
+    background: linear-gradient(135deg, rgba(29, 145, 235, 0.9) 0%, rgba(27, 175, 105, 0.9) 100%);
     border: 1px solid rgba(29, 145, 235, 0.2);
+  }
+
+  @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+    .glass-primary {
+      background: linear-gradient(135deg, rgba(29, 145, 235, 0.1) 0%, rgba(27, 175, 105, 0.1) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
   }
   
   .bg-radial-gradient {
@@ -44,16 +72,11 @@
   }
   
   .bg-grid-pattern {
-<<<<<<< HEAD
     background-image:
-=======
-    background-image: 
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
       linear-gradient(to right, rgb(59, 130, 246, 0.1) 2px, transparent 2px),
       linear-gradient(to bottom, rgb(59, 130, 246, 0.1) 2px, transparent 2px);
     background-size: 40px 40px;
   }
-<<<<<<< HEAD
 
   /* Admin-specific styles */
   .admin-grid-pattern {
@@ -64,10 +87,17 @@
   }
 
   .admin-glass {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    /* Fallback */
+    background: rgba(30, 41, 59, 0.95);
     border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+    .admin-glass {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
   }
 
   .admin-glow-emerald {
@@ -76,12 +106,111 @@
       0 0 40px rgba(16, 185, 129, 0.05),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
-=======
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
   
   .bg-dot-pattern {
     background-image: radial-gradient(circle, rgb(219, 234, 254) 1px, transparent 1px);
     background-size: 20px 20px;
+  }
+
+  /* Mobile-safe viewport height */
+  .h-screen-safe {
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+
+  /* Safe area padding for notched devices */
+  .safe-padding {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-padding-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-padding-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* iOS-specific fixes */
+  .is-ios input,
+  .is-ios textarea,
+  .is-ios select {
+    font-size: 16px !important; /* Prevent zoom on focus */
+    -webkit-appearance: none;
+  }
+
+  /* Smooth scroll for browsers that support it */
+  @supports (scroll-behavior: smooth) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Reduced motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Low-end device optimizations */
+  .low-end-device * {
+    animation: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+
+  .low-end-device .glass,
+  .low-end-device .glass-light,
+  .low-end-device .glass-dark,
+  .low-end-device .admin-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    button,
+    a,
+    input,
+    textarea,
+    select {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+  }
+
+  /* Firefox-specific fixes */
+  @-moz-document url-prefix() {
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+  }
+
+  /* Safari-specific fixes */
+  .is-safari .scrollable {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Edge-specific fixes */
+  @supports (-ms-ime-align: auto) {
+    .edge-fix {
+      /* Edge-specific styles if needed */
+    }
   }
 }
 

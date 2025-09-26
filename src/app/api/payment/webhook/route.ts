@@ -1,15 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse  } from 'next/server'
 import crypto from 'crypto'
-import { createClient } from '@/lib/supabase/server'
-import { sendEmail } from '@/lib/send-emails'
-import { PaymentConfirmationEmail, PaymentConfirmationEmailText } from '@/lib/email-templates/payment-confirmation'
-import { createInvoiceData, generateInvoiceHTML } from '@/lib/invoice-generator'
+import {createClient  } from '@/lib/supabase/server'
+import {sendEmail  } from '@/lib/send-emails'
+import {createInvoiceData, generateInvoiceHTML  } from '@/lib/invoice-generator'
+import {SupabaseClient  } from '@supabase/supabase-js'
+
+interface RazorpayPayment {
+  order_id: string
+  id: string
+  amount: number
+  email?: string
+  contact?: string
+  notes?: Record<string, unknown>
+}
+
+interface RazorpayOrder {
+  id: string
+  amount: number
+  currency: string
+  status: string
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
     const signature = req.headers.get('x-razorpay-signature')
-    
+
     if (!signature || !process.env.RAZORPAY_WEBHOOK_SECRET) {
       return NextResponse.json(
         { error: 'Invalid webhook configuration' },
@@ -31,29 +47,28 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(body)
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Handle different webhook events
     switch (event.event) {
       case 'payment.captured':
         await handlePaymentCaptured(event.payload.payment.entity, supabase)
         break
-        
+
       case 'payment.failed':
         await handlePaymentFailed(event.payload.payment.entity, supabase)
         break
-        
+
       case 'order.paid':
         await handleOrderPaid(event.payload.order.entity, supabase)
         break
-        
+
       default:
-        console.log(`Unhandled webhook event: ${event.event}`)
+        // Unhandled webhook event
     }
 
     return NextResponse.json({ status: 'ok' })
-  } catch (error) {
-    console.error('Webhook error:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -61,9 +76,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handlePaymentCaptured(payment: any, supabase: any) {
-  const { order_id, id: payment_id, amount, email, contact, notes } = payment
-  
+async function handlePaymentCaptured(payment: RazorpayPayment, supabase: SupabaseClient) {
+  const { order_id, id: payment_id, amount: _amount, email: _email, contact: _contact, notes: _notes } = payment
+
   // Update payment record in database
   const { data: paymentRecord, error: updateError } = await supabase
     .from('payments')
@@ -87,11 +102,11 @@ async function handlePaymentCaptured(payment: any, supabase: any) {
     paymentId: payment_id,
     orderId: order_id,
   })
-  
+
   const invoiceHTML = generateInvoiceHTML(invoiceData)
-  
+
   // Save invoice to database
-  const { data: invoice, error: invoiceError } = await supabase
+  const { data: _invoice, error: invoiceError } = await supabase
     .from('invoices')
     .insert({
       invoice_number: invoiceData.invoiceNumber,
@@ -113,24 +128,20 @@ async function handlePaymentCaptured(payment: any, supabase: any) {
     await sendEmail({
       to: paymentRecord.email,
       subject: `Payment Confirmation - Invoice ${invoiceData.invoiceNumber}`,
-      html: PaymentConfirmationEmail({
-        name: paymentRecord.name || 'Customer',
-        email: paymentRecord.email,
-        amount: 22000,
-        orderId: order_id,
-        paymentId: payment_id,
-        invoiceNumber: invoiceData.invoiceNumber,
-        company: paymentRecord.company,
-      }),
-      text: PaymentConfirmationEmailText({
-        name: paymentRecord.name || 'Customer',
-        email: paymentRecord.email,
-        amount: 22000,
-        orderId: order_id,
-        paymentId: payment_id,
-        invoiceNumber: invoiceData.invoiceNumber,
-        company: paymentRecord.company,
-      }),
+      html: `
+        <h2>Payment Confirmation</h2>
+        <p>Dear ${paymentRecord.name || 'Customer'},</p>
+        <p>Thank you for your payment. Your transaction has been completed successfully.</p>
+        <p><strong>Payment Details:</strong></p>
+        <ul>
+          <li>Order ID: ${order_id}</li>
+          <li>Payment ID: ${payment_id}</li>
+          <li>Invoice Number: ${invoiceData.invoiceNumber}</li>
+          <li>Amount: ₹22,000</li>
+        </ul>
+        <p>Your invoice is attached to this email.</p>
+        <p>Best regards,<br>PowerCA Team</p>
+      `,
       attachments: [{
         filename: `Invoice-${invoiceData.invoiceNumber}.html`,
         content: invoiceHTML,
@@ -141,9 +152,9 @@ async function handlePaymentCaptured(payment: any, supabase: any) {
   }
 }
 
-async function handlePaymentFailed(payment: any, supabase: any) {
+async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseClient) {
   const { order_id } = payment
-  
+
   // Update payment status to failed
   const { error } = await supabase
     .from('payments')
@@ -158,7 +169,6 @@ async function handlePaymentFailed(payment: any, supabase: any) {
   }
 }
 
-async function handleOrderPaid(order: any, supabase: any) {
+async function handleOrderPaid(_order: RazorpayOrder, _supabase: SupabaseClient) {
   // Order fully paid - can trigger additional actions if needed
-  console.log('Order paid:', order.id)
 }

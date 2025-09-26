@@ -1,13 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createClient  } from '@supabase/supabase-js'
+import {Resend  } from 'resend'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase environment variables')
+}
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  supabaseUrl,
+  supabaseServiceKey
 )
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+const resendApiKey = process.env.RESEND_API_KEY
+
+if (!resendApiKey) {
+  throw new Error('Missing Resend API key')
+}
+
+const resend = new Resend(resendApiKey)
 
 export async function POST(request: NextRequest) {
   try {

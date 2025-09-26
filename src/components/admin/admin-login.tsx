@@ -1,14 +1,14 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, Loader2 } from "lucide-react"
-import Link from "next/link"
+import {useState  } from 'react'
+import { signIn as _signIn } from 'next-auth/react'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Shield, Loader2  } from 'lucide-react'
+import Link from 'next/link'
 
 interface AdminLoginProps {
   onLogin: (success: boolean) => void
@@ -16,33 +16,33 @@ interface AdminLoginProps {
 
 export function AdminLogin({ onLogin }: AdminLoginProps) {
   const [credentials, setCredentials] = useState({
-    email: "",
-    password: ""
+    email: '',
+    password: ''
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
+    setError('')
 
     try {
-      const result = await signIn("credentials", {
+      const result = await _signIn('credentials', {
         email: credentials.email,
         password: credentials.password,
         redirect: false
       })
 
       if (result?.error) {
-        setError("Invalid credentials. Please try again.")
+        setError('Invalid credentials. Please try again.')
         onLogin(false)
       } else if (result?.ok) {
         // Check if user is admin (this will be handled by the parent component)
         onLogin(true)
       }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
+    } catch {
+      setError('An error occurred. Please try again.')
       onLogin(false)
     } finally {
       setIsLoading(false)
@@ -62,7 +62,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `
@@ -90,7 +90,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
               Enter your credentials to access the admin panel
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -101,7 +101,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                   id="email"
                   type="email"
                   value={credentials.email}
-                  onChange={handleInputChange("email")}
+                  onChange={handleInputChange('email')}
                   placeholder="admin@powerca.in"
                   required
                   className="h-12"
@@ -116,7 +116,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                   id="password"
                   type="password"
                   value={credentials.password}
-                  onChange={handleInputChange("password")}
+                  onChange={handleInputChange('password')}
                   placeholder="Enter your password"
                   required
                   className="h-12"
@@ -144,7 +144,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                     Signing In...
                   </>
                 ) : (
-                  "Sign In to Admin Panel"
+                  'Sign In to Admin Panel'
                 )}
               </Button>
             </form>
@@ -157,10 +157,10 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                   <p><strong>Password:</strong> admin123</p>
                 </div>
               </div>
-              
+
               <div className="mt-4 text-center">
-                <Link 
-                  href="/" 
+                <Link
+                  href="/"
                   className="text-sm text-primary-600 hover:text-primary-700 underline"
                 >
                   Back to Website

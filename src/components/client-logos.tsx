@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import Image from "next/image"
+import Image from 'next/image'
 
 export function ClientLogos() {
   const logos = [
-    { name: "TS Maniam & Associates", src: "/images/client-logos/ts-maniam.png", width: 280, height: 60 },
-    { name: "Karthikeyan & Jayaram", src: "/images/client-logos/karthikeyan-jayaram.png", width: 280, height: 60 },
-    { name: "GKM", src: "/images/client-logos/gkm.png", width: 120, height: 60 },
-    { name: "TN Ramadoss & Co", src: "/images/client-logos/tn-ramadoss.png", width: 200, height: 60 }
+    { name: 'TS Maniam & Associates', src: '/images/client-logos/ts-maniam.png', width: 280, height: 60 },
+    { name: 'Karthikeyan & Jayaram', src: '/images/client-logos/karthikeyan-jayaram.png', width: 280, height: 60 },
+    { name: 'GKM', src: '/images/client-logos/gkm.png', width: 120, height: 60 },
+    { name: 'TN Ramadoss & Co', src: '/images/client-logos/tn-ramadoss.png', width: 200, height: 60 }
   ]
 
   return (

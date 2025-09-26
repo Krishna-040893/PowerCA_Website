@@ -1,9 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { XCircle, RefreshCw, Phone, Mail, ArrowLeft } from 'lucide-react'
+import {useRouter  } from 'next/navigation'
+import {Button  } from '@/components/ui/button'
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { XCircle, RefreshCw, Phone, Mail, ArrowLeft  } from 'lucide-react'
 import Link from 'next/link'
 
 export default function PaymentFailedPage() {
@@ -100,22 +100,22 @@ export default function PaymentFailedPage() {
 
             <div className="bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> No amount has been deducted from your account. 
+                <strong>Note:</strong> No amount has been deducted from your account.
                 If you see any charge, it will be automatically refunded within 3-5 business days.
               </p>
             </div>
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-3">
-            <Button 
+            <Button
               className="w-full bg-primary-600 hover:bg-primary-700"
               onClick={() => router.push('/checkout')}
             >
               <RefreshCw className="mr-2 w-4 h-4" />
               Try Payment Again
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               asChild
             >

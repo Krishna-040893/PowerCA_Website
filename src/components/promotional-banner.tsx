@@ -1,21 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import {useState, useEffect  } from 'react'
 
 export default function PromotionalBanner() {
   const [isVisible, setIsVisible] = useState(true)
 
-  // Add/remove CSS custom property when banner visibility changes
+  // Add/remove CSS custom properties when banner visibility changes
   useEffect(() => {
     if (isVisible) {
       document.documentElement.style.setProperty('--banner-height', '48px')
+      document.documentElement.style.setProperty('--content-padding-top', '128px') // 48px banner + 80px header
     } else {
       document.documentElement.style.setProperty('--banner-height', '0px')
+      document.documentElement.style.setProperty('--content-padding-top', '80px') // Just header height
     }
 
     // Cleanup on unmount
     return () => {
       document.documentElement.style.removeProperty('--banner-height')
+      document.documentElement.style.removeProperty('--content-padding-top')
     }
   }, [isVisible])
 

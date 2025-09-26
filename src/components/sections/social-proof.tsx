@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import Image from "next/image"
+import {motion  } from 'framer-motion'
+import Image from 'next/image'
 
 const trustedCompanies = [
-  { name: "GKM", logo: "/images/clients/gkm-Logo-V2.png" },
-  { name: "Karthikeyan Jayaram", logo: "/images/clients/karthikeyan-Jayaram-01-01-1.png" },
-  { name: "TSMA", logo: "/images/clients/TSMA-Logo.png" },
-  { name: "Logo Black", logo: "/images/clients/logo-old Black.png" },
+  { name: 'GKM', logo: '/images/clients/gkm-Logo-V2.png' },
+  { name: 'Karthikeyan Jayaram', logo: '/images/clients/karthikeyan-Jayaram-01-01-1.png' },
+  { name: 'TSMA', logo: '/images/clients/TSMA-Logo.png' },
+  { name: 'Logo Black', logo: '/images/clients/logo-old Black.png' },
 ]
 
 export function SocialProof() {
@@ -19,7 +19,7 @@ export function SocialProof() {
             Trusted by Chartered Accountants
           </p>
         </div>
-        
+
         <div className="relative">
           {/* Logo Grid */}
           <div className="flex justify-center">

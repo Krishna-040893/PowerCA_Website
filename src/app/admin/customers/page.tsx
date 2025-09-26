@@ -1,23 +1,16 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/admin/admin-layout"
-import { format } from "date-fns"
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Building,
+import {useState, useEffect  } from 'react'
+import {AdminLayout  } from '@/components/admin/admin-layout'
+import { format } from 'date-fns'
+import {User, Mail, Phone,
   Calendar,
   Search,
-  Filter,
   Download,
-  Eye,
-  CheckCircle,
-  XCircle,
+  Eye, CheckCircle, XCircle,
   AlertCircle,
   Shield
-} from "lucide-react"
+ } from 'lucide-react'
 
 interface Customer {
   id: string
@@ -36,11 +29,27 @@ interface Customer {
   createdAt: string
 }
 
+interface RawRegistrationData {
+  id: string
+  name: string
+  email: string
+  username?: string
+  phone: string
+  role: string
+  professional_type?: string
+  membership_no?: string
+  registration_no?: string
+  institute_name?: string
+  firm_name?: string
+  is_verified?: boolean
+  created_at: string
+}
+
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -53,12 +62,12 @@ export default function AdminCustomersPage() {
       setLoading(true)
 
       // First try to fetch from registrations endpoint
-      let response = await fetch("/api/registrations")
+      let response = await fetch('/api/registrations')
       let data = await response.json()
 
       if (Array.isArray(data)) {
         // Map registration data to customer format
-        const mappedCustomers = data.map((reg: any) => ({
+        const mappedCustomers = data.map((reg: RawRegistrationData) => ({
           id: reg.id,
           name: reg.name,
           email: reg.email,
@@ -77,7 +86,7 @@ export default function AdminCustomersPage() {
         setCustomers(mappedCustomers)
       } else {
         // Fallback to auth/register endpoint
-        response = await fetch("/api/auth/register")
+        response = await fetch('/api/auth/register')
         data = await response.json()
 
         if (data.success && data.users) {
@@ -109,7 +118,7 @@ export default function AdminCustomersPage() {
         }
       }
     } catch (error) {
-      console.error("Error fetching customers:", error)
+      console.error('Error fetching customers:', error)
       // Use demo data on error
       setCustomers([
         {
@@ -129,39 +138,39 @@ export default function AdminCustomersPage() {
   }
 
   const exportToCSV = () => {
-    const headers = ["ID", "Name", "Email", "Phone", "Firm", "Role", "Verified", "Registered At"]
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Firm', 'Role', 'Verified', 'Registered At']
     const csvData = customers.map(customer => [
       customer.id,
       customer.name,
       customer.email,
       customer.phone,
-      customer.firmName || "",
+      customer.firmName || '',
       customer.role,
-      customer.isVerified ? "Yes" : "No",
+      customer.isVerified ? 'Yes' : 'No',
       customer.createdAt
     ])
 
     const csvContent = [
-      headers.join(","),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(","))
-    ].join("\n")
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: "text/csv" })
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
+    const link = document.createElement('a')
     link.href = url
-    link.download = `customers_${format(new Date(), "yyyy-MM-dd")}.csv`
+    link.download = `customers_${format(new Date(), 'yyyy-MM-dd')}.csv`
     link.click()
   }
 
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = 
+    const matchesSearch =
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm) ||
       (customer.firmName && customer.firmName.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesRole = roleFilter === "all" || customer.role === roleFilter
+
+    const matchesRole = roleFilter === 'all' || customer.role === roleFilter
 
     return matchesSearch && matchesRole
   })
@@ -200,7 +209,7 @@ export default function AdminCustomersPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
                 <select
                   value={roleFilter}
@@ -211,7 +220,7 @@ export default function AdminCustomersPage() {
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
-                
+
                 <button
                   onClick={exportToCSV}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
@@ -221,7 +230,7 @@ export default function AdminCustomersPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
               <span>Total: {customers.length} customers</span>
               <span>•</span>
@@ -332,7 +341,7 @@ export default function AdminCustomersPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Calendar className="w-4 h-4" />
-                          {format(new Date(customer.createdAt), "MMM dd, yyyy")}
+                          {format(new Date(customer.createdAt), 'MMM dd, yyyy')}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -379,7 +388,7 @@ export default function AdminCustomersPage() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -403,7 +412,7 @@ export default function AdminCustomersPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Username</label>
-                    <p className="mt-1 text-gray-900">{selectedCustomer.username || "Not provided"}</p>
+                    <p className="mt-1 text-gray-900">{selectedCustomer.username || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Email</label>
@@ -416,7 +425,7 @@ export default function AdminCustomersPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-500">User Type</label>
                     <p className="mt-1 text-gray-900">
-                      {selectedCustomer.userRole || "Not specified"}
+                      {selectedCustomer.userRole || 'Not specified'}
                       {selectedCustomer.userRole === 'Professional' && selectedCustomer.professionalType && (
                         <span className="ml-2 text-gray-600">({selectedCustomer.professionalType})</span>
                       )}

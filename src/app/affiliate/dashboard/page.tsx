@@ -1,50 +1,44 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  Users,
-  DollarSign,
-  TrendingUp,
-  Link,
-  Copy,
-  CheckCircle,
-  XCircle,
-  Clock,
-  ArrowRight,
+import {useEffect, useState, useCallback  } from 'react'
+import {useSession  } from 'next-auth/react'
+import {useRouter  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Badge  } from '@/components/ui/badge'
+import {AffiliateReferral  } from '@/types/common'
+import { Users, DollarSign, TrendingUp,
+  Copy, CheckCircle, Clock,
   Building2
-} from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+ } from 'lucide-react'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
 
 export default function AffiliateDashboard() {
   const router = useRouter()
   const { data: session, status } = useSession()
-  const [affiliateData, setAffiliateData] = useState<any>(null)
+  const [affiliateData, setAffiliateData] = useState<{
+    code?: string;
+    status?: string;
+    commissionRate?: number;
+    totalEarned?: number;
+    referrals?: AffiliateReferral[];
+    affiliateDetails?: {
+      referral_code?: string;
+      total_referrals?: number;
+      successful_referrals?: number;
+      pending_referrals?: number;
+      total_commission?: number;
+      pending_commission?: number;
+      paid_commission?: number;
+      firm_name?: string;
+      commission_rate?: number;
+    };
+    affiliateId?: string;
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    if (status === 'loading') return
-
-    if (!session) {
-      router.push('/auth/login')
-      return
-    }
-
-    // Check if user is an affiliate
-    if (session.user.role !== 'Affiliate' && session.user.role !== 'affiliate') {
-      router.push('/dashboard')
-      return
-    }
-
-    fetchAffiliateData()
-  }, [session, status, router])
-
-  const fetchAffiliateData = async () => {
+  const fetchAffiliateData = useCallback(async () => {
     try {
       // Use the user-info API to get complete affiliate data
       const response = await fetch('/api/affiliate/user-info')
@@ -73,24 +67,49 @@ export default function AffiliateDashboard() {
       if (referralsResponse.ok) {
         const referralsData = await referralsResponse.json()
         if (referralsData.success) {
-          setAffiliateData(prev => ({
+          setAffiliateData((prev) => ({
             ...prev,
             referrals: referralsData.referrals || []
           }))
         }
       }
-    } catch (error) {
-      console.error('Error fetching affiliate data:', error)
+    } catch {
+      // Error logging removed
     } finally {
       setLoading(false)
     }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const copyReferralLink = () => {
+  useEffect(() => {
+    if (status === 'loading') return
+
+    if (!session) {
+      router.push('/auth/login')
+      return
+    }
+
+    // Check if user is an affiliate
+    if (session.user.role !== 'Affiliate' && session.user.role !== 'affiliate') {
+      router.push('/dashboard')
+      return
+    }
+
+    fetchAffiliateData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status, fetchAffiliateData])
+
+  const copyReferralLink = async () => {
     const referralLink = `https://powerca.in?ref=${affiliateData?.affiliateDetails?.referral_code || affiliateData?.affiliateId}`
-    navigator.clipboard.writeText(referralLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const { copyToClipboard } = await import('@/lib/browser-compat')
+    const success = await copyToClipboard(referralLink)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } else {
+      // Show fallback message if copy failed
+      alert('Please manually copy the link: ' + referralLink)
+    }
   }
 
   if (loading) {

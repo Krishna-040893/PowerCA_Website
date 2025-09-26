@@ -1,25 +1,24 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, GraduationCap, Building2, Shield } from "lucide-react"
+import {useState  } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Checkbox  } from '@/components/ui/checkbox'
+import {useRouter  } from 'next/navigation'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, GraduationCap, Building2, Shield  } from 'lucide-react'
 
 export default function StudentRegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    mobile: "",
-    email: "",
-    instituteName: "",
-    registrationNo: "",
-    password: ""
+    name: '',
+    mobile: '',
+    email: '',
+    instituteName: '',
+    registrationNo: '',
+    password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
@@ -36,11 +35,12 @@ export default function StudentRegisterPage() {
 
     try {
       // Add registration logic here
-      console.log("Student registration data:", formData)
       // After successful registration, redirect to login
-      router.push("/login")
-    } catch (error) {
-      console.error("Registration error:", error)
+      router.push('/login')
+    } catch {
+      // Handle registration error
+      setIsLoading(false)
+      return
     } finally {
       setIsLoading(false)
     }
@@ -146,7 +146,7 @@ export default function StudentRegisterPage() {
                       id="name"
                       type="text"
                       value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="Enter Your Name"
                       className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -165,7 +165,7 @@ export default function StudentRegisterPage() {
                       id="mobile"
                       type="tel"
                       value={formData.mobile}
-                      onChange={(e) => handleInputChange("mobile", e.target.value)}
+                      onChange={(e) => handleInputChange('mobile', e.target.value)}
                       placeholder="Enter Your Mobile number"
                       className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -184,7 +184,7 @@ export default function StudentRegisterPage() {
                       id="instituteName"
                       type="text"
                       value={formData.instituteName}
-                      onChange={(e) => handleInputChange("instituteName", e.target.value)}
+                      onChange={(e) => handleInputChange('instituteName', e.target.value)}
                       placeholder="Institute Name"
                       className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -206,7 +206,7 @@ export default function StudentRegisterPage() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="Enter Your Email"
                       className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -225,7 +225,7 @@ export default function StudentRegisterPage() {
                       id="registrationNo"
                       type="text"
                       value={formData.registrationNo}
-                      onChange={(e) => handleInputChange("registrationNo", e.target.value)}
+                      onChange={(e) => handleInputChange('registrationNo', e.target.value)}
                       placeholder="Number"
                       className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                     />
@@ -241,9 +241,9 @@ export default function StudentRegisterPage() {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       value={formData.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
                       placeholder="Enter Your Password"
                       className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -273,11 +273,11 @@ export default function StudentRegisterPage() {
                 className="mt-1"
               />
               <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                By creating an Account Means you agree to the{" "}
+                By creating an Account Means you agree to the{' '}
                 <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
                   Terms and Conditions
                 </Link>
-                , and our{" "}
+                , and our{' '}
                 <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
                   Privacy Policy
                 </Link>
@@ -295,14 +295,14 @@ export default function StudentRegisterPage() {
                   maxWidth: '100%'
                 }}
               >
-                {isLoading ? "Creating Account..." : "Sign Up"}
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
               </Button>
             </div>
 
             {/* Sign In Link */}
             <div className="text-center pt-4">
               <p className="text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link
                   href="/login"
                   className="text-blue-600 hover:text-blue-800 font-medium underline"

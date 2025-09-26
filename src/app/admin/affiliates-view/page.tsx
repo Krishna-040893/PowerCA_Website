@@ -1,18 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import {
-  Users,
+import {useSession  } from 'next-auth/react'
+import {useRouter  } from 'next/navigation'
+import { Users,
   Eye,
   ChevronDown,
   ChevronUp,
   Search,
-  Download,
-  UserCheck,
-  Mail
-} from 'lucide-react'
+  Download, UserCheck, Mail } from 'lucide-react'
 
 interface AffiliateData {
   id: string

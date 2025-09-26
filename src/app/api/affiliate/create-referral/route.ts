@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth/next'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 // Generate a unique referral code
 function generateReferralCode() {
@@ -16,22 +16,16 @@ function generateReferralCode() {
 // POST - Create new referral profile (allows multiple)
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/affiliate/create-referral - Starting')
-
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
-      console.log('No session found')
       return NextResponse.json(
         { error: 'Unauthorized - Please login' },
         { status: 401 }
       )
     }
 
-    console.log('Session user:', session.user.id, session.user.email)
-
     const body = await request.json()
-    console.log('Request body:', body)
 
     const supabase = createAdminClient()
 
@@ -43,7 +37,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userError || !userData) {
-      console.error('User not found in database')
       return NextResponse.json(
         { error: 'User not found in database' },
         { status: 404 }
@@ -52,14 +45,11 @@ export async function POST(request: NextRequest) {
 
     // Check role case-insensitively
     if (userData.role?.toLowerCase() !== 'affiliate') {
-      console.error('User is not an affiliate:', userData.role)
       return NextResponse.json(
         { error: `User is not an affiliate. Current role: ${userData.role}` },
         { status: 403 }
       )
     }
-
-    console.log('User verified as affiliate with ID:', userData.affiliate_id)
 
     // First get the affiliate profile to check for existing referrals
     const { data: affiliateProfile } = await supabase
@@ -87,7 +77,6 @@ export async function POST(request: NextRequest) {
       const { data: existingReferrals, error: referralCheckError } = await duplicateQuery.limit(1).single()
 
       if (existingReferrals && !referralCheckError) {
-        console.log('Duplicate referral found:', existingReferrals)
         return NextResponse.json(
           { error: 'Referral user is already exist. This customer has already been referred by you and is pending.' },
           { status: 400 }
@@ -96,13 +85,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if a profile already exists for this user
-    const { data: existingProfile, error: checkError } = await supabase
+    const { data: existingProfile } = await supabase
       .from('affiliate_profiles')
       .select('*')
       .eq('user_id', userData.id)
       .single()
 
-    console.log('Existing profile check:', { existingProfile, checkError })
 
     // Generate unique referral code
     let referralCode = generateReferralCode()
@@ -132,12 +120,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let profileData;
-    let operationError;
+    let profileData
+    let operationError
 
     if (existingProfile) {
       // Update existing profile with new referral code
-      console.log('Updating existing profile with new referral code')
 
       const updateData = {
         affiliate_id: userData.affiliate_id || body.affiliateId,
@@ -161,8 +148,6 @@ export async function POST(request: NextRequest) {
 
       profileData = updatedProfile
       operationError = updateError
-
-      console.log('Update result:', { updatedProfile, updateError })
     } else {
       // Create new affiliate profile/referral
       const insertData = {
@@ -179,7 +164,7 @@ export async function POST(request: NextRequest) {
         status: 'active'
       }
 
-      console.log('Creating new referral profile:', insertData)
+      // Create new referral profile
 
       const { data: newProfile, error: createError } = await supabase
         .from('affiliate_profiles')
@@ -189,12 +174,9 @@ export async function POST(request: NextRequest) {
 
       profileData = newProfile
       operationError = createError
-
-      console.log('Insert result:', { newProfile, createError })
     }
 
     if (operationError) {
-      console.error('Error processing referral profile:', operationError)
       return NextResponse.json(
         { error: `Failed to process referral profile: ${operationError.message || 'Unknown error'}` },
         { status: 500 }
@@ -217,8 +199,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (referralError) {
-      console.log('Note: Could not create referral record:', referralError.message)
-      // Don't fail the operation, just log it
+      // Don't fail the operation, just continue
     }
 
     return NextResponse.json({
@@ -235,8 +216,7 @@ export async function POST(request: NextRequest) {
       referralRecord: referralData || null
     })
 
-  } catch (error) {
-    console.error('Error in POST /api/affiliate/create-referral:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

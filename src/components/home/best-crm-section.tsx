@@ -1,16 +1,15 @@
-"use client"
+'use client'
 
-import { CheckCircle } from "lucide-react"
-import Image from "next/image"
+import { CheckCircle } from 'lucide-react'
 
 export function BestCRMSection() {
   const features = [
-    "Automated compliance tracking",
-    "Real-time financial reporting",
-    "Secure document management",
-    "Client portal access",
-    "Multi-user collaboration",
-    "Mobile app support"
+    'Automated compliance tracking',
+    'Real-time financial reporting',
+    'Secure document management',
+    'Client portal access',
+    'Multi-user collaboration',
+    'Mobile app support'
   ]
 
   return (

@@ -1,14 +1,20 @@
-"use client"
+'use client'
 
-import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import {useState  } from 'react'
+import {createClient  } from '@supabase/supabase-js'
+import type { Registration } from '@/types/admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Supabase configuration is missing')
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function TestRegistrationsPage() {
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<{ success: boolean; error?: string; data?: Registration[]; count?: number; supabaseUrl?: string; hasAnon?: boolean } | null>(null)
   const [loading, setLoading] = useState(false)
 
   const testConnection = async () => {
@@ -23,16 +29,16 @@ export default function TestRegistrationsPage() {
       setResult({
         success: !error,
         error: error?.message,
-        data: data,
+        data: data || undefined,
         count: data?.length || 0,
         supabaseUrl,
         hasAnon: !!supabaseAnonKey
       })
-    } catch (err: any) {
+    } catch (err) {
       setResult({
         success: false,
-        error: err.message,
-        data: null,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        data: undefined,
         count: 0
       })
     } finally {

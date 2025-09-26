@@ -1,15 +1,17 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/admin/admin-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { RefreshCw, Star, CheckCircle, XCircle, Clock, Eye } from "lucide-react"
-import { format } from "date-fns"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {useState, useEffect, useCallback  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {useAdminAuth  } from '@/hooks/useAdminAuth'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
+import {Badge  } from '@/components/ui/badge'
+import {Button  } from '@/components/ui/button'
+import {Textarea  } from '@/components/ui/textarea'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, ArrowLeft, LogOut  } from 'lucide-react'
+import { format } from 'date-fns'
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
+import {toast  } from 'sonner'
 
 interface AffiliateApplication {
   id: string
@@ -55,22 +57,29 @@ interface ReferralData {
   converted_at?: string
 }
 
+
 export default function AdminAffiliatesPage() {
-  const [activeTab, setActiveTab] = useState<'applications' | 'profiles'>('profiles')
+  const router = useRouter()
+  const { isAuthenticated, isLoading: isAuthLoading, adminUser, getAuthHeaders } = useAdminAuth()
+  const [_activeTab, _setActiveTab] = useState<'applications' | 'profiles'>('profiles')
   const [applications, setApplications] = useState<AffiliateApplication[]>([])
-  const [affiliateProfiles, setAffiliateProfiles] = useState<AffiliateProfile[]>([])
-  const [expandedProfile, setExpandedProfile] = useState<string | null>(null)
+  const [_affiliateProfiles, _setAffiliateProfiles] = useState<AffiliateProfile[]>([])
+  const [_expandedProfile, _setExpandedProfile] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
   const [adminNotes, setAdminNotes] = useState('')
 
-  const fetchApplications = async () => {
+  // Fetch data when authenticated
+
+  const fetchApplications = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/admin/affiliates')
+      const response = await fetch('/api/admin/affiliates', {
+        headers: getAuthHeaders()
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch affiliate applications')
       }
@@ -82,11 +91,13 @@ export default function AdminAffiliatesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAuthHeaders])
 
   useEffect(() => {
-    fetchApplications()
-  }, [])
+    if (isAuthenticated) {
+      fetchApplications()
+    }
+  }, [isAuthenticated, fetchApplications])
 
   const handleApplicationAction = async (applicationId: string, status: 'approved' | 'rejected') => {
     setProcessingId(applicationId)
@@ -95,12 +106,13 @@ export default function AdminAffiliatesPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           applicationId,
           status,
           adminNotes,
-          approvedBy: 'Admin' // You can get this from current admin user
+          approvedBy: adminUser?.username || 'Admin'
         }),
       })
 
@@ -115,13 +127,13 @@ export default function AdminAffiliatesPage() {
         ))
         setSelectedApp(null)
         setAdminNotes('')
-        alert(`Application ${status} successfully!`)
+        toast.success(`Application ${status} successfully!`)
       } else {
-        alert(result.error || `Failed to ${status} application`)
+        toast.error(result.error || `Failed to ${status} application`)
       }
     } catch (err) {
       console.error(`Error ${status} application:`, err)
-      alert(`Failed to ${status} application`)
+      toast.error(`Failed to ${status} application`)
     } finally {
       setProcessingId(null)
     }
@@ -153,6 +165,12 @@ export default function AdminAffiliatesPage() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
+    router.push('/admin-login')
+  }
+
   const stats = {
     total: applications.length,
     pending: applications.filter(app => app.status === 'pending').length,
@@ -160,9 +178,52 @@ export default function AdminAffiliatesPage() {
     rejected: applications.filter(app => app.status === 'rejected').length
   }
 
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !adminUser) {
+    return null
+  }
+
   return (
-    <AdminLayout>
-      <div className="p-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Admin Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/admin')}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Dashboard</span>
+              </Button>
+              <div className="border-l pl-4">
+                <h1 className="text-2xl font-bold text-gray-900">Affiliate Management</h1>
+                <p className="text-sm text-gray-600">Welcome back, {adminUser.username}</p>
+              </div>
+            </div>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">Affiliate Management</h1>
@@ -411,6 +472,6 @@ export default function AdminAffiliatesPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   )
 }

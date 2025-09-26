@@ -1,5 +1,5 @@
-import { Metadata } from "next"
-import BlogPageClient from "./blog-client"
+import {Metadata  } from 'next'
+import BlogPageClient from './blog-client'
 
 export const metadata: Metadata = {
   title: 'Blog - PowerCA',

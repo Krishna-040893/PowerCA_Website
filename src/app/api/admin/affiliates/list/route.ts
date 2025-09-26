@@ -1,8 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {createErrorResponse, ErrorType, handleDatabaseError  } from '@/lib/error-handler'
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminAuth(request)
+    if (!auth.authorized) {
+      return auth.error || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const supabase = createAdminClient()
 
     // Get all users with Affiliate role from registrations
@@ -13,12 +20,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (usersError) {
-      console.error('Error fetching affiliate users:', usersError)
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to fetch affiliate users',
-        details: usersError.message
-      }, { status: 500 })
+      return handleDatabaseError(usersError)
     }
 
     if (!affiliateUsers || affiliateUsers.length === 0) {
@@ -81,10 +83,9 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error fetching affiliates:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch affiliates', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error
     )
   }
 }

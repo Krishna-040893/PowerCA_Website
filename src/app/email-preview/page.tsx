@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { ContactFormEmail } from '@/emails/contact-form-email'
-import { WelcomeEmail } from '@/emails/welcome-email'
-import { EmailTemplate } from '@/emails/email-template'
+import {useState  } from 'react'
+import {ContactFormEmail  } from '@/emails/contact-form-email'
+import {WelcomeEmail  } from '@/emails/welcome-email'
+import {EmailTemplate  } from '@/emails/email-template'
 
 export default function EmailPreviewPage() {
   const [selectedTemplate, setSelectedTemplate] = useState('contact')
@@ -46,7 +46,7 @@ export default function EmailPreviewPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Email Template Preview</h1>
-        
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Template

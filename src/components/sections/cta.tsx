@@ -1,14 +1,14 @@
-"use client"
+'use client'
 
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ArrowRight, CheckCircle } from "lucide-react"
+import {motion, useInView  } from 'framer-motion'
+import {useRef  } from 'react'
+import {Button  } from '@/components/ui/button'
+import Link from 'next/link'
+import { ArrowRight, CheckCircle } from 'lucide-react'
 
 export function CTASection() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
     <section ref={ref} className="py-20 bg-gradient-to-br from-primary-600 to-primary-700 relative overflow-hidden">
@@ -30,7 +30,7 @@ export function CTASection() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Practice?
           </h2>
-          
+
           {/* Subheading */}
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
             Join 500+ CA firms who have already revolutionized their practice management with PowerCA.

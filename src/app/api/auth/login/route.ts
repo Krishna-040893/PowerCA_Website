@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse  } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {logger  } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Login error:', error)
+    logger.error('Login error', error)
     return NextResponse.json(
       { error: 'Failed to login' },
       { status: 500 }

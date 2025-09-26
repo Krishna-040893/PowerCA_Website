@@ -1,37 +1,62 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import {
-  Users,
-  CheckCircle,
-  Clock,
+import { useState, useEffect, useCallback } from 'react'
+import {useRouter  } from 'next/navigation'
+import {useSession  } from 'next-auth/react'
+import {Card,
+  CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {AffiliateReferral, AffiliateApplication  } from '@/types/common'
+import { Users, CheckCircle, Clock,
   AlertCircle,
   Copy,
-  ExternalLink,
-  TrendingUp,
+  ExternalLink, TrendingUp,
   User,
-  Calendar,
-  Mail
-} from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+  Calendar, Mail } from 'lucide-react'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
 
 export default function AffiliateReferralDashboard() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [loading, setLoading] = useState(true)
-  const [referralData, setReferralData] = useState<any>(null)
-  const [affiliateProfile, setAffiliateProfile] = useState<any>(null)
+  const [referralData, setReferralData] = useState<{
+    referrals?: AffiliateReferral[];
+    totalCommission?: number;
+    pendingCommission?: number;
+    canRefer?: boolean;
+    hasReferred?: boolean;
+    referralCount?: number;
+    referredDetails?: {
+      referred_name?: string;
+      referred_email?: string;
+      converted_at?: string;
+      created_at?: string;
+      payment?: {
+        payment_id?: string;
+        payment_amount?: number;
+      };
+    };
+  } | null>(null)
+  const [affiliateProfile, setAffiliateProfile] = useState<AffiliateApplication | null>(null)
   const [copied, setCopied] = useState(false)
+
+  const fetchReferralData = useCallback(async () => {
+    try {
+      setLoading(true)
+
+      // Fetch referral status
+      const response = await fetch('/api/affiliate/referral-status')
+      if (response.ok) {
+        const data = await response.json()
+        setReferralData(data)
+        setAffiliateProfile(data.affiliateProfile)
+      }
+    } catch {
+      // Error logging removed
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (status === 'loading') return
@@ -47,31 +72,20 @@ export default function AffiliateReferralDashboard() {
     }
 
     fetchReferralData()
-  }, [session, status, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status, fetchReferralData])
 
-  const fetchReferralData = async () => {
-    try {
-      setLoading(true)
-
-      // Fetch referral status
-      const response = await fetch('/api/affiliate/referral-status')
-      if (response.ok) {
-        const data = await response.json()
-        setReferralData(data)
-        setAffiliateProfile(data.affiliateProfile)
-      }
-    } catch (error) {
-      console.error('Error fetching referral data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const copyReferralLink = () => {
+  const copyReferralLink = async () => {
     const referralLink = `${window.location.origin}/pricing?ref=${affiliateProfile?.referral_code}`
-    navigator.clipboard.writeText(referralLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const { copyToClipboard } = await import('@/lib/browser-compat')
+    const success = await copyToClipboard(referralLink)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } else {
+      // Show fallback message if copy failed
+      alert('Please manually copy the link: ' + referralLink)
+    }
   }
 
   if (loading) {
@@ -82,7 +96,7 @@ export default function AffiliateReferralDashboard() {
     )
   }
 
-  const canRefer = referralData?.canRefer
+  const _canRefer = referralData?.canRefer
   const hasReferred = referralData?.hasReferred
   const referralLink = affiliateProfile?.referral_code
     ? `${window.location.origin}/pricing?ref=${affiliateProfile.referral_code}`
@@ -186,7 +200,7 @@ export default function AffiliateReferralDashboard() {
                   )}
                 </Button>
                 <Button
-                  onClick={() => window.open(referralLink, '_blank')}
+                  onClick={() => referralLink && window.open(referralLink, '_blank')}
                   variant="outline"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
@@ -249,7 +263,8 @@ export default function AffiliateReferralDashboard() {
                     <span className="text-sm font-medium">
                       {new Date(
                         referralData.referredDetails.converted_at ||
-                        referralData.referredDetails.created_at
+                        referralData.referredDetails.created_at ||
+                        new Date()
                       ).toLocaleDateString()}
                     </span>
                   </div>

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 // GET affiliate profile
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // TODO: Get user ID from session
     const userId = 'current-user-id' // This should come from session

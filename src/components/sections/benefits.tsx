@@ -1,57 +1,57 @@
-"use client"
+'use client'
 
-import { Card } from "@/components/ui/card"
-import { TrendingUp, Clock, Shield, Users, BarChart3, Zap, Award, HeadphonesIcon } from "lucide-react"
+import { TrendingUp, Clock, Shield, Users, BarChart3, Zap, Award, HeadphonesIcon } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 
 export function BenefitsSection() {
   const benefits = [
     {
       icon: TrendingUp,
-      title: "Increase Productivity",
-      description: "Automate repetitive tasks and focus on high-value client work",
-      metric: "40% time saved"
+      title: 'Increase Productivity',
+      description: 'Automate repetitive tasks and focus on high-value client work',
+      metric: '40% time saved'
     },
     {
       icon: Clock,
-      title: "Save Time",
-      description: "Streamline workflows and reduce manual data entry",
-      metric: "5+ hours/week"
+      title: 'Save Time',
+      description: 'Streamline workflows and reduce manual data entry',
+      metric: '5+ hours/week'
     },
     {
       icon: Shield,
-      title: "Enhanced Security",
-      description: "Bank-level encryption and secure data storage",
-      metric: "256-bit SSL"
+      title: 'Enhanced Security',
+      description: 'Bank-level encryption and secure data storage',
+      metric: '256-bit SSL'
     },
     {
       icon: Users,
-      title: "Better Client Service",
-      description: "Provide real-time updates and self-service portals",
-      metric: "95% satisfaction"
+      title: 'Better Client Service',
+      description: 'Provide real-time updates and self-service portals',
+      metric: '95% satisfaction'
     },
     {
       icon: BarChart3,
-      title: "Data-Driven Insights",
-      description: "Make informed decisions with comprehensive analytics",
-      metric: "Real-time reports"
+      title: 'Data-Driven Insights',
+      description: 'Make informed decisions with comprehensive analytics',
+      metric: 'Real-time reports'
     },
     {
       icon: Zap,
-      title: "Faster Processing",
-      description: "Quick filing and instant document generation",
-      metric: "10x faster"
+      title: 'Faster Processing',
+      description: 'Quick filing and instant document generation',
+      metric: '10x faster'
     },
     {
       icon: Award,
-      title: "Compliance Ready",
-      description: "Stay updated with latest tax laws and regulations",
-      metric: "100% compliant"
+      title: 'Compliance Ready',
+      description: 'Stay updated with latest tax laws and regulations',
+      metric: '100% compliant'
     },
     {
       icon: HeadphonesIcon,
-      title: "24/7 Support",
-      description: "Expert help whenever you need it",
-      metric: "< 2hr response"
+      title: '24/7 Support',
+      description: 'Expert help whenever you need it',
+      metric: '< 2hr response'
     }
   ]
 

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     try {
       passwordMatch = await bcrypt.compare(password, user.password)
     } catch (err) {
-      passwordError = err.message
+      passwordError = err instanceof Error ? err.message : 'Password check failed'
     }
 
     return NextResponse.json({

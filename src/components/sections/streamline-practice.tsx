@@ -1,39 +1,39 @@
-"use client"
+'use client'
 
-import { Card } from "@/components/ui/card"
-import { FileText, Users, BarChart3, Calendar, Shield, Zap } from "lucide-react"
+import {Card  } from '@/components/ui/card'
+import { FileText, Users, BarChart3, Calendar, Shield, Zap } from 'lucide-react'
 
 export function StreamlineSection() {
   const features = [
     {
       icon: FileText,
-      title: "Document Management",
-      description: "Organize and access all client documents in one secure location"
+      title: 'Document Management',
+      description: 'Organize and access all client documents in one secure location'
     },
     {
       icon: Users,
-      title: "Client Portal",
-      description: "Give clients secure access to their documents and reports"
+      title: 'Client Portal',
+      description: 'Give clients secure access to their documents and reports'
     },
     {
       icon: BarChart3,
-      title: "Financial Reports",
-      description: "Generate comprehensive financial reports with just a few clicks"
+      title: 'Financial Reports',
+      description: 'Generate comprehensive financial reports with just a few clicks'
     },
     {
       icon: Calendar,
-      title: "Compliance Calendar",
-      description: "Never miss a deadline with automated compliance reminders"
+      title: 'Compliance Calendar',
+      description: 'Never miss a deadline with automated compliance reminders'
     },
     {
       icon: Shield,
-      title: "Data Security",
-      description: "Bank-level encryption to keep your client data safe"
+      title: 'Data Security',
+      description: 'Bank-level encryption to keep your client data safe'
     },
     {
       icon: Zap,
-      title: "Automation",
-      description: "Automate repetitive tasks and focus on what matters"
+      title: 'Automation',
+      description: 'Automate repetitive tasks and focus on what matters'
     }
   ]
 

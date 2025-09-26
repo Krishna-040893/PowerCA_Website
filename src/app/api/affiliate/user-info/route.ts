@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get affiliate profile if exists
-    const { data: affiliateProfile, error: profileError } = await supabase
+    const { data: affiliateProfile, error: _profileError } = await supabase
       .from('affiliate_profiles')
       .select('*')
       .eq('user_id', session.user.id)

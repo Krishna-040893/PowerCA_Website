@@ -1,38 +1,38 @@
-"use client"
+'use client'
 
-import { FileText, Users, Calculator, BarChart3, Clock, Shield } from "lucide-react"
+import { FileText, Users, Calculator, BarChart3, Clock, Shield } from 'lucide-react'
 
 export function StreamlinePractice() {
   const features = [
     {
       icon: FileText,
-      title: "Document Management",
-      description: "Centralized document storage"
+      title: 'Document Management',
+      description: 'Centralized document storage'
     },
     {
       icon: Users,
-      title: "Client Portal",
-      description: "Secure client collaboration"
+      title: 'Client Portal',
+      description: 'Secure client collaboration'
     },
     {
       icon: Calculator,
-      title: "Tax Calculations",
-      description: "Automated tax computations"
+      title: 'Tax Calculations',
+      description: 'Automated tax computations'
     },
     {
       icon: BarChart3,
-      title: "Analytics Dashboard",
-      description: "Real-time business insights"
+      title: 'Analytics Dashboard',
+      description: 'Real-time business insights'
     },
     {
       icon: Clock,
-      title: "Time Tracking",
-      description: "Billable hours management"
+      title: 'Time Tracking',
+      description: 'Billable hours management'
     },
     {
       icon: Shield,
-      title: "Data Security",
-      description: "256-bit encryption"
+      title: 'Data Security',
+      description: '256-bit encryption'
     }
   ]
 

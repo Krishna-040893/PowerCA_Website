@@ -1,16 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse  } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured, handleValidationError  } from '@/lib/error-handler'
+import {validatePassword  } from '@/lib/password-validator'
+import {sanitizeInput, sanitizeEmail, sanitizePhone  } from '@/lib/sanitizer'
+import {logger  } from '@/lib/logger'
+import {syncMiddleware  } from '@/middleware/hubspot-sync'
 
-<<<<<<< HEAD
-export async function GET(request: NextRequest) {
+interface FileUserData {
+  id: string
+  name: string
+  email: string
+  username?: string
+  phone: string
+  user_role?: string
+  userRole?: string
+  role?: string
+  professional_type?: string
+  professionalType?: string
+  membership_no?: string
+  membershipNo?: string
+  membership_number?: string
+  registration_no?: string
+  registrationNo?: string
+  registration_number?: string
+  institute_name?: string
+  instituteName?: string
+  firm_name?: string
+  isVerified?: boolean
+  is_verified?: boolean
+  createdAt?: string
+  created_at?: string
+}
+
+export async function GET(_request: NextRequest) {
   try {
     // Check if Supabase is configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const isSupabaseConfigured = supabaseUrl &&
-      supabaseUrl !== 'your-supabase-project-url' &&
-      supabaseUrl !== 'https://your-project.supabase.co' &&
-      supabaseUrl.startsWith('http')
+    const isSupabaseConfigured = isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY') &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('your-project')
 
     if (isSupabaseConfigured) {
       try {
@@ -44,16 +71,16 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        console.error('Supabase fetch error:', error)
+        logger.error('Supabase fetch error', error)
       } catch (error) {
-        console.error('Supabase connection error:', error)
+        logger.error('Supabase connection error', error)
       }
     }
 
     // Try to read from file as fallback
     if (typeof window === 'undefined') {
-      const fs = require('fs').promises
-      const path = require('path')
+      const { promises: fs } = await import('fs')
+      const path = await import('path')
       const usersFilePath = path.join(process.cwd(), 'users.json')
 
       try {
@@ -62,7 +89,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          users: fileUsers.map((user: any) => ({
+          users: fileUsers.map((user: FileUserData) => ({
             id: user.id,
             name: user.name,
             email: user.email,
@@ -78,8 +105,8 @@ export async function GET(request: NextRequest) {
             createdAt: user.createdAt || user.created_at
           }))
         })
-      } catch (error) {
-        console.log('No users.json file found')
+      } catch {
+        logger.debug('No users.json file found')
       }
     }
 
@@ -90,10 +117,9 @@ export async function GET(request: NextRequest) {
       message: 'No registration data available. Please configure Supabase to store registrations.'
     })
   } catch (error) {
-    console.error('Error fetching users:', error)
-    return NextResponse.json(
-      { success: false, message: 'Failed to fetch users' },
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error
     )
   }
 }
@@ -101,90 +127,67 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, username, password, phone, role, professionalType, membershipNo, registrationNo, instituteName, firmName } = body
+    const { name, email, username, password, phone, role, professionalType, membershipNo, registrationNo, instituteName, firmName, membershipNumber } = body
 
     // Validate required fields
-    if (!name || !email || !username || !password || !phone || !role) {
-=======
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { name, email, password, phone, firmName, membershipNumber } = body
+    const validationErrors: string[] = []
+    if (!name) validationErrors.push('Name is required')
+    if (!email) validationErrors.push('Email is required')
+    if (!password) validationErrors.push('Password is required')
+    if (!phone) validationErrors.push('Phone is required')
 
-    // Validate required fields
-<<<<<<< HEAD
-    if (!name || !email || !password) {
-=======
-    if (!name || !email || !password || !phone) {
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
->>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
-      return NextResponse.json(
-        { error: 'Name, email, and password are required' },
-        { status: 400 }
-      )
+    if (validationErrors.length > 0) {
+      return handleValidationError(validationErrors)
     }
 
-<<<<<<< HEAD
     // Validate role-specific fields
     if (role === 'Professional' && (!professionalType || !membershipNo)) {
-      return NextResponse.json(
-        { error: 'Professional type and membership number are required for professionals' },
-        { status: 400 }
-      )
+      return handleValidationError(['Professional type and membership number are required for professionals'])
     }
 
     if (role === 'Student' && (!registrationNo || !instituteName)) {
-      return NextResponse.json(
-        { error: 'Registration number and institute name are required for students' },
-        { status: 400 }
-      )
+      return handleValidationError(['Registration number and institute name are required for students'])
     }
 
-=======
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      )
+    // Sanitize and validate email
+    const sanitizedEmail = sanitizeEmail(email)
+    if (!sanitizedEmail) {
+      return handleValidationError(['Invalid email format'])
     }
 
-    // Validate password strength
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
-        { status: 400 }
-      )
+    // Validate password strength using our secure password validator
+    const passwordValidation = validatePassword(password, { email: sanitizedEmail, name, username })
+    if (!passwordValidation.isValid) {
+      return handleValidationError(passwordValidation.errors)
     }
 
-<<<<<<< HEAD
+    // Sanitize inputs
+    const sanitizedName = sanitizeInput(name, { maxLength: 255 })
+    const sanitizedPhone = sanitizePhone(phone)
+    const sanitizedUsername = username ? sanitizeInput(username, { maxLength: 50 }) : null
+
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 12) // Use 12 rounds for better security
 
     // Check if Supabase is configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const isSupabaseConfigured = supabaseUrl &&
-      supabaseUrl !== 'your-supabase-project-url' &&
-      supabaseUrl !== 'https://your-project.supabase.co' &&
-      supabaseUrl.startsWith('http')
+    const isSupabaseConfigured = isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY') &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('your-project')
 
     if (isSupabaseConfigured) {
       try {
         const supabase = createAdminClient()
 
         // Check if user already exists in registrations table
-        const { data: existingUser, error: checkError } = await supabase
+        const { data: existingUser, error: _checkError } = await supabase
           .from('registrations')
           .select('id')
-          .or(`email.eq.${email},username.eq.${username}`)
+          .or(`email.eq.${sanitizedEmail}${sanitizedUsername ? `,username.eq.${sanitizedUsername}` : ''}`)
           .maybeSingle()
 
         if (existingUser) {
-          return NextResponse.json(
-            { error: 'User with this email or username already exists' },
-            { status: 400 }
+          return createErrorResponse(
+            ErrorType.VALIDATION,
+            'User with this email or username already exists'
           )
         }
 
@@ -192,36 +195,48 @@ export async function POST(request: NextRequest) {
         const { data: newUser, error: insertError } = await supabase
           .from('registrations')
           .insert({
-            name,
-            email,
-            username,
-            password: hashedPassword, // Column is 'password' not 'password_hash'
-            phone,
-            role: role || 'Student',
-            professional_type: role === 'Professional' ? professionalType : null,
-            membership_no: role === 'Professional' ? membershipNo : null, // Column is membership_no
-            registration_no: role === 'Student' ? registrationNo : null, // Column is registration_no
-            institute_name: role === 'Student' ? instituteName : null
+            name: sanitizedName,
+            email: sanitizedEmail,
+            username: sanitizedUsername,
+            password: hashedPassword,
+            phone: sanitizedPhone,
+            role: role || 'user',
+            professional_type: role === 'Professional' ? sanitizeInput(professionalType, { maxLength: 50 }) : null,
+            membership_no: role === 'Professional' ? sanitizeInput(membershipNo || membershipNumber, { maxLength: 50 }) : null,
+            registration_no: role === 'Student' ? sanitizeInput(registrationNo, { maxLength: 50 }) : null,
+            institute_name: role === 'Student' ? sanitizeInput(instituteName, { maxLength: 255 }) : null,
+            firm_name: firmName ? sanitizeInput(firmName, { maxLength: 255 }) : null
           })
           .select()
           .single()
 
         if (insertError) {
-          console.error('Supabase insert error:', insertError)
-
           // Check if it's a unique constraint violation
           if (insertError.message?.includes('duplicate') || insertError.code === '23505') {
-            return NextResponse.json(
-              { error: 'User with this email or username already exists' },
-              { status: 400 }
+            return createErrorResponse(
+              ErrorType.VALIDATION,
+              'User with this email or username already exists'
             )
           }
 
-          return NextResponse.json(
-            { error: 'Failed to create registration. Please try again.' },
-            { status: 500 }
-          )
+          return handleDatabaseError(insertError)
         }
+
+        logger.info('User registration successful', { userId: newUser.id })
+
+        // Sync to HubSpot (non-blocking)
+        syncMiddleware.afterUserCreate({
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.name?.split(' ')[0],
+          lastName: newUser.name?.split(' ').slice(1).join(' '),
+          phone: newUser.phone,
+          firmName: newUser.firm_name,
+          caNumber: newUser.membership_no,
+          status: 'lead'
+        }).catch(error => {
+          logger.error('Failed to sync to HubSpot', error)
+        })
 
         return NextResponse.json(
           {
@@ -237,28 +252,29 @@ export async function POST(request: NextRequest) {
           { status: 201 }
         )
       } catch (error) {
-        console.error('Supabase connection error:', error)
+        logger.error('Supabase connection error', error)
         // Fall through to file storage
       }
     }
 
-    // Fallback to file storage if Supabase is not configured
-    console.log('Supabase not configured, using file storage as fallback')
+    // Fallback to file storage or demo mode if Supabase is not configured
+    logger.debug('Supabase not configured, using file storage as fallback')
 
     const newUser = {
       id: `user_${Date.now()}`,
-      email,
-      username,
-      name,
-      phone,
-      user_role: role,  // Keep original case
+      email: sanitizedEmail,
+      username: sanitizedUsername,
+      name: sanitizedName,
+      phone: sanitizedPhone,
+      user_role: role || 'user',
       professional_type: role === 'Professional' ? professionalType : null,
-      membership_no: role === 'Professional' ? membershipNo : null,
-      membership_number: role === 'Professional' ? membershipNo : null,
+      membership_no: role === 'Professional' ? (membershipNo || membershipNumber) : null,
+      membership_number: role === 'Professional' ? (membershipNo || membershipNumber) : null,
       registration_no: role === 'Student' ? registrationNo : null,
       institute_name: role === 'Student' ? instituteName : null,
-      password: hashedPassword,  // Match the users table column name
-      role: 'user',  // Default role for authentication
+      firm_name: firmName || null,
+      password: hashedPassword,
+      role: 'user',
       is_verified: false,
       is_active: true,
       created_at: new Date().toISOString(),
@@ -267,8 +283,8 @@ export async function POST(request: NextRequest) {
 
     // Save to file
     if (typeof window === 'undefined') {
-      const fs = require('fs').promises
-      const path = require('path')
+      const { promises: fs } = await import('fs')
+      const path = await import('path')
       const usersFilePath = path.join(process.cwd(), 'users.json')
 
       try {
@@ -278,18 +294,32 @@ export async function POST(request: NextRequest) {
           existingUsers = JSON.parse(fileContent)
 
           // Check if user already exists
-          if (existingUsers.find((u: any) => u.email === email || u.username === username)) {
-            return NextResponse.json(
-              { error: 'User with this email or username already exists' },
-              { status: 400 }
+          if (existingUsers.find((u: FileUserData) => u.email === sanitizedEmail || (sanitizedUsername && u.username === sanitizedUsername))) {
+            return createErrorResponse(
+              ErrorType.VALIDATION,
+              'User with this email or username already exists'
             )
           }
-        } catch (error) {
+        } catch {
           // File doesn't exist yet
         }
 
         existingUsers.push(newUser)
         await fs.writeFile(usersFilePath, JSON.stringify(existingUsers, null, 2))
+
+        // Sync to HubSpot (non-blocking)
+        syncMiddleware.afterUserCreate({
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.name?.split(' ')[0],
+          lastName: newUser.name?.split(' ').slice(1).join(' '),
+          phone: newUser.phone,
+          firmName: newUser.firm_name,
+          caNumber: newUser.membership_no || newUser.membership_number,
+          status: 'lead'
+        }).catch(error => {
+          logger.error('Failed to sync to HubSpot', error)
+        })
 
         return NextResponse.json(
           {
@@ -305,136 +335,15 @@ export async function POST(request: NextRequest) {
           { status: 201 }
         )
       } catch (error) {
-        console.error('Error saving user to file:', error)
+        logger.error('Error saving user to file', error)
       }
     }
 
-    return NextResponse.json(
-      {
-        error: 'Unable to save registration. Please configure Supabase in your environment variables.',
-        details: 'Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY to your .env.local file'
-      },
-      { status: 503 }
-=======
-    // Hash password first
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Check if Supabase is configured
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
-      console.log('Supabase not configured, using demo mode')
-      
-      // Demo mode - just return success
-      const demoUser = {
-        id: `user_${Date.now()}`,
-        email,
-        name,
-        firm_name: firmName || null,
-        membership_number: membershipNumber || null,
-        role: 'user',
-        is_verified: false
-      }
-
-      return NextResponse.json(
-        { 
-          success: true,
-          message: 'Registration successful (demo mode)',
-          user: {
-            id: demoUser.id,
-            email: demoUser.email,
-            name: demoUser.name
-          }
-        },
-        { status: 201 }
-      )
-    }
-
-    // Try to use Supabase
-    let newUser
-    try {
-      const supabase = createAdminClient()
-
-      // Check if user already exists
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .single()
-
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'User with this email already exists' },
-          { status: 400 }
-        )
-      }
-
-      // Create user
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          name,
-          email,
-          password: hashedPassword,
-          phone,
-          firm_name: firmName || null,
-          membership_number: membershipNumber || null,
-          role: 'user',
-          is_verified: false
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Supabase error:', error)
-        // Fall back to demo mode
-        newUser = {
-          id: `user_${Date.now()}`,
-          email,
-          name,
-          firm_name: firmName || null,
-          membership_number: membershipNumber || null,
-          role: 'user',
-          is_verified: false
-        }
-        console.log('Using demo mode due to Supabase error')
-      } else {
-        newUser = data
-      }
-    } catch (fetchError) {
-      console.error('Network error connecting to Supabase:', fetchError)
-      // Fall back to demo mode
-      newUser = {
-        id: `user_${Date.now()}`,
-        email,
-        name,
-        firm_name: firmName || null,
-        membership_number: membershipNumber || null,
-        role: 'user',
-        is_verified: false
-      }
-      console.log('Using demo mode due to network error')
-    }
-
-    // Send welcome email (optional - implement if needed)
-    // await sendWelcomeEmail(email, name)
-
-    return NextResponse.json(
-      { 
-        success: true,
-        message: 'Registration successful',
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name
-        }
-      },
-      { status: 201 }
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-    )
+    return handleConfigurationError('Database')
   } catch (error) {
-    console.error('Registration error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error
     )
   }
 }

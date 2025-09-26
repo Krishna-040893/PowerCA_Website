@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import {createClient  } from '@supabase/supabase-js'
 
 // Create a Supabase client with the service role key for admin operations
 export function createAdminClient() {

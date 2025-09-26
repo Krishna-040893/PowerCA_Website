@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 export async function GET(req: NextRequest) {
   try {
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error checking referral limit:', error)
     return NextResponse.json(
       {

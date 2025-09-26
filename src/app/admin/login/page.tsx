@@ -1,23 +1,23 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Lock, User, Eye, EyeOff, Shield, Key } from "lucide-react"
-import Link from "next/link"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import {useState  } from 'react'
+import { signIn } from 'next-auth/react'
+import {useRouter  } from 'next/navigation'
+import { Lock, User, Eye, EyeOff, Shield, Key  } from 'lucide-react'
+import Link from 'next/link'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
 
 export default function AdminLoginPage() {
   const router = useRouter()
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
+    setError('')
     setLoading(true)
 
     try {
@@ -29,15 +29,15 @@ export default function AdminLoginPage() {
       })
 
       if (result?.error) {
-        setError("Invalid username or password")
+        setError('Invalid username or password')
       } else if (result?.ok) {
         // Redirect to admin dashboard
-        router.push("/admin")
+        router.push('/admin')
         router.refresh()
       }
-    } catch (error) {
-      console.error("Login error:", error)
-      setError("An error occurred. Please try again.")
+    } catch {
+      console.error('Login error:', error)
+      setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -45,8 +45,8 @@ export default function AdminLoginPage() {
 
   // Quick fill default credentials
   const fillDefaultCredentials = () => {
-    setUsername("admin")
-    setPassword("admin123")
+    setUsername('admin')
+    setPassword('admin123')
   }
 
   return (
@@ -113,7 +113,7 @@ export default function AdminLoginPage() {
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -164,7 +164,7 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>

@@ -1,40 +1,40 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { ArrowRight, FileText, Calculator, BarChart3, Users, Shield, Clock } from "lucide-react"
-import Link from "next/link"
+import {Button  } from '@/components/ui/button'
+import { ArrowRight, FileText, Calculator, BarChart3, Users, Shield, Clock } from 'lucide-react'
+import Link from 'next/link'
 
 export function PowerCATools() {
   const tools = [
     {
       icon: FileText,
-      title: "ITR Filing",
-      description: "Automated income tax return filing"
+      title: 'ITR Filing',
+      description: 'Automated income tax return filing'
     },
     {
       icon: Calculator,
-      title: "GST Returns",
-      description: "Simplified GST compliance"
+      title: 'GST Returns',
+      description: 'Simplified GST compliance'
     },
     {
       icon: BarChart3,
-      title: "Financial Reports",
-      description: "Comprehensive reporting tools"
+      title: 'Financial Reports',
+      description: 'Comprehensive reporting tools'
     },
     {
       icon: Users,
-      title: "Client Portal",
-      description: "Secure client collaboration"
+      title: 'Client Portal',
+      description: 'Secure client collaboration'
     },
     {
       icon: Shield,
-      title: "Audit Tools",
-      description: "Streamlined audit procedures"
+      title: 'Audit Tools',
+      description: 'Streamlined audit procedures'
     },
     {
       icon: Clock,
-      title: "Task Manager",
-      description: "Efficient task tracking"
+      title: 'Task Manager',
+      description: 'Efficient task tracking'
     }
   ]
 

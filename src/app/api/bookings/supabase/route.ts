@@ -1,19 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { Resend } from 'resend'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {Resend  } from 'resend'
+import type { Booking } from '@/types/booking'
 
-<<<<<<< HEAD
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-=======
-const resend = new Resend(process.env.RESEND_API_KEY)
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { name, email, phone, firmName, date, time, message } = body
 
-    console.log('Supabase booking request:', { name, email, date, time })
 
     // Validate required fields
     if (!name || !email || !phone || !date || !time) {
@@ -28,28 +24,26 @@ export async function POST(request: NextRequest) {
 
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
-      console.log('Supabase not configured, using fallback storage')
-      
+
       // Fallback to simple storage if Supabase is not configured
       const booking = {
         id: `BK${Date.now()}`,
         name,
         email,
         phone,
-        firm_name: firmName || null,
+        firmName: firmName || null,
         date: new Date(date).toISOString(),
         time,
         message: message || null,
-        status: 'CONFIRMED',
-        type: 'demo',
+        status: 'confirmed',
         created_at: new Date().toISOString()
       }
 
       // Send email and return success
-      await sendConfirmationEmail({ ...booking, firm_name: firmName })
-      
-      return NextResponse.json({ 
-        success: true, 
+      await sendConfirmationEmail(booking as Booking)
+
+      return NextResponse.json({
+        success: true,
         message: 'Booking confirmed successfully (demo mode)',
         booking: {
           id: booking.id,
@@ -68,62 +62,54 @@ export async function POST(request: NextRequest) {
           name,
           email,
           phone,
-          firm_name: firmName || null,
+          firmName: firmName || null,
           date: new Date(date).toISOString().split('T')[0], // Format as YYYY-MM-DD
           time,
           message: message || null,
-          status: 'CONFIRMED',
-          type: 'demo'
+          status: 'confirmed'
         })
         .select()
         .single()
 
       if (error) {
-        console.error('Supabase error:', error)
         // Fall back to simple storage if Supabase fails
         booking = {
           id: `BK${Date.now()}`,
           name,
           email,
           phone,
-          firm_name: firmName || null,
+          firmName: firmName || null,
           date: new Date(date).toISOString(),
           time,
           message: message || null,
-          status: 'CONFIRMED',
-          type: 'demo',
+          status: 'confirmed',
           created_at: new Date().toISOString()
         }
-        console.log('Using fallback storage due to Supabase error')
       } else {
         booking = data
       }
-    } catch (fetchError) {
-      console.error('Network error connecting to Supabase:', fetchError)
+    } catch {
       // Fall back to simple storage if network fails
       booking = {
         id: `BK${Date.now()}`,
         name,
         email,
         phone,
-        firm_name: firmName || null,
+        firmName: firmName || null,
         date: new Date(date).toISOString(),
         time,
         message: message || null,
-        status: 'CONFIRMED',
-        type: 'demo',
+        status: 'confirmed',
         created_at: new Date().toISOString()
       }
-      console.log('Using fallback storage due to network error')
     }
 
-    console.log('Booking created successfully:', booking.id)
 
     // Send confirmation email
     await sendConfirmationEmail(booking)
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Booking confirmed successfully',
       booking: {
         id: booking.id,
@@ -132,7 +118,6 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Booking error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return NextResponse.json(
       { success: false, error: 'Failed to process booking', details: errorMessage },
@@ -145,7 +130,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
-    
+
     if (!date) {
       return NextResponse.json(
         { error: 'Date parameter is required' },
@@ -160,7 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createAdminClient()
-    
+
     try {
       // Get bookings for the specified date
       const { data: bookings, error } = await supabase
@@ -170,49 +155,42 @@ export async function GET(request: NextRequest) {
         .in('status', ['CONFIRMED', 'PENDING'])
 
       if (error) {
-        console.error('Error fetching bookings:', error)
         // Return empty array instead of error to allow booking to continue
         return NextResponse.json({ bookedSlots: [] })
       }
 
       const bookedSlots = bookings?.map(booking => booking.time) || []
-      
+
       return NextResponse.json({ bookedSlots })
-    } catch (fetchError) {
-      console.error('Network error fetching bookings:', fetchError)
+    } catch {
       // Return empty array when network fails
       return NextResponse.json({ bookedSlots: [] })
     }
-  } catch (error) {
-    console.error('Error in GET handler:', error)
+  } catch {
     // Return empty array instead of error
     return NextResponse.json({ bookedSlots: [] })
   }
 }
 
-async function sendConfirmationEmail(booking: any) {
+async function sendConfirmationEmail(booking: Booking) {
   try {
-    console.log('Starting email send process...')
-    
+
     if (!process.env.RESEND_API_KEY) {
-      console.log('RESEND_API_KEY not configured')
       return
     }
 
     if (!resend) {
-      console.log('Resend client not initialized')
       return
     }
 
-    console.log('Sending confirmation email to:', booking.email)
-    
-    const bookingDate = new Date(booking.date).toLocaleDateString('en-US', {
+
+    const bookingDate = new Date(booking.date || '').toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     })
-    
+
     // HTML email template for customer
     const customerEmailHtml = `
       <!DOCTYPE html>
@@ -241,7 +219,7 @@ async function sendConfirmationEmail(booking: any) {
                   <h3 style="color: #333; margin: 0 0 15px 0;">Booking Details:</h3>
                   <p style="margin: 8px 0; color: #666;"><strong>Date:</strong> ${bookingDate}</p>
                   <p style="margin: 8px 0; color: #666;"><strong>Time:</strong> ${booking.time}</p>
-                  ${booking.firm_name ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${booking.firm_name}</p>` : ''}
+                  ${booking.firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${booking.firmName}</p>` : ''}
                   ${booking.message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${booking.message}</p>` : ''}
                 </div>
                 
@@ -268,9 +246,9 @@ async function sendConfirmationEmail(booking: any) {
         </body>
       </html>
     `
-    
+
     // Send confirmation email to customer with CC to team
-    const customerEmailResult = await resend.emails.send({
+    const _customerEmailResult = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: booking.email,
       cc: 'contact@powerca.in', // CC to your team
@@ -278,7 +256,6 @@ async function sendConfirmationEmail(booking: any) {
       html: customerEmailHtml,
     })
 
-    console.log('Customer email result:', customerEmailResult)
 
     // Team notification email
     const teamEmailHtml = `
@@ -295,7 +272,7 @@ async function sendConfirmationEmail(booking: any) {
             <p><strong>Name:</strong> ${booking.name}</p>
             <p><strong>Email:</strong> ${booking.email}</p>
             <p><strong>Phone:</strong> ${booking.phone}</p>
-            <p><strong>Firm:</strong> ${booking.firm_name || 'Not provided'}</p>
+            <p><strong>Firm:</strong> ${booking.firmName || 'Not provided'}</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <h3 style="color: #333;">Booking Details:</h3>
             <p><strong>Date:</strong> ${bookingDate}</p>
@@ -306,18 +283,16 @@ async function sendConfirmationEmail(booking: any) {
         </body>
       </html>
     `
-    
+
     // Send separate notification to team
-    const teamEmailResult = await resend.emails.send({
+    const _teamEmailResult = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: 'contact@powerca.in',
-      subject: `[TEAM] New Demo Booking - ${booking.name} - ${booking.firm_name || 'Individual'}`,
+      subject: `[TEAM] New Demo Booking - ${booking.name} - ${booking.firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 
-    console.log('Team email result:', teamEmailResult)
-  } catch (error) {
-    console.error('Failed to send confirmation email:', error)
+  } catch {
     // Don't throw - email failure shouldn't fail the booking
   }
 }

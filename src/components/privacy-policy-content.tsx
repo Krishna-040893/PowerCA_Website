@@ -1,6 +1,4 @@
-"use client"
-
-import { motion } from "framer-motion"
+// Server Component - no 'use client' needed for static content
 
 export function PrivacyPolicyContent() {
   return (
@@ -8,7 +6,7 @@ export function PrivacyPolicyContent() {
       {/* Background Pattern */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
@@ -18,9 +16,9 @@ export function PrivacyPolicyContent() {
             backgroundSize: '40px 40px'
           }}
         />
-        
+
         {/* Dot pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
@@ -28,9 +26,9 @@ export function PrivacyPolicyContent() {
             backgroundPosition: '0 0, 15px 15px'
           }}
         />
-        
+
         {/* Diagonal lines */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `repeating-linear-gradient(
@@ -45,12 +43,7 @@ export function PrivacyPolicyContent() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
-        >
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -84,11 +77,11 @@ export function PrivacyPolicyContent() {
             {/* Section 2: Information We Collect */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Information We Collect</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">2.1 Information You Provide to Us</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-gray-700 mb-2">Account Information</h4>
@@ -129,7 +122,7 @@ export function PrivacyPolicyContent() {
 
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">2.2 Information Automatically Collected</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-gray-700 mb-2">Device and Technical Information</h4>
@@ -173,7 +166,7 @@ export function PrivacyPolicyContent() {
             {/* Section 3: How We Use Your Information */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">3. How We Use Your Information</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">3.1 Legal Basis for Processing (GDPR)</h3>
@@ -188,7 +181,7 @@ export function PrivacyPolicyContent() {
 
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">3.2 Purposes of Use</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-gray-700 mb-2">Service Delivery</h4>
@@ -242,7 +235,7 @@ export function PrivacyPolicyContent() {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Information Sharing and Disclosure</h2>
               <p className="text-gray-600 mb-4">We do not sell, rent, or trade your personal information. We share information only in these circumstances:</p>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">4.1 Service Providers</h3>
@@ -289,7 +282,7 @@ export function PrivacyPolicyContent() {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Data Security</h2>
               <p className="text-gray-600 mb-4">We implement industry-standard security measures:</p>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">5.1 Technical Safeguards</h3>
@@ -335,7 +328,7 @@ export function PrivacyPolicyContent() {
                 <li>Resolve disputes</li>
                 <li>Enforce agreements</li>
               </ul>
-              
+
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Specific Retention Periods:</h3>
                 <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
@@ -352,7 +345,7 @@ export function PrivacyPolicyContent() {
             {/* Section 7: Your Privacy Rights */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Your Privacy Rights</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">7.1 Rights Under GDPR (European Users)</h3>
@@ -392,11 +385,11 @@ export function PrivacyPolicyContent() {
             {/* Section 8: Cookie Policy */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Cookie Policy</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">8.1 Types of Cookies We Use</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-gray-700 mb-2">Essential Cookies</h4>
@@ -467,7 +460,7 @@ export function PrivacyPolicyContent() {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Children's Privacy</h2>
               <p className="text-gray-600">
-                Our services are not intended for children under 18. We do not knowingly collect information from minors. 
+                Our services are not intended for children under 18. We do not knowingly collect information from minors.
                 If you believe we have collected data from a child, contact us immediately at privacy@powerca.in.
               </p>
             </section>
@@ -476,7 +469,7 @@ export function PrivacyPolicyContent() {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Third-Party Links</h2>
               <p className="text-gray-600">
-                Our service may contain links to third-party websites. We are not responsible for their privacy practices. 
+                Our service may contain links to third-party websites. We are not responsible for their privacy practices.
                 Please review their privacy policies before providing information.
               </p>
             </section>
@@ -484,7 +477,7 @@ export function PrivacyPolicyContent() {
             {/* Section 12: Marketing Communications */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Marketing Communications</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">12.1 Opt-In/Opt-Out</h3>
@@ -599,7 +592,7 @@ export function PrivacyPolicyContent() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

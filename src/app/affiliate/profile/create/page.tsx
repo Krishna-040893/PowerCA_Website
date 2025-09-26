@@ -1,26 +1,33 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Building, Globe, FileText, TrendingUp, Send, AlertCircle } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
+import {useState, useEffect, useCallback  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Textarea  } from '@/components/ui/textarea'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
+import { Building, Globe, FileText, TrendingUp, Send, AlertCircle  } from 'lucide-react'
+import {createClient  } from '@supabase/supabase-js'
+import {toast  } from 'sonner'
+import type { AffiliateUser, AffiliateApplication } from '@/types/affiliate'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function AffiliateProfileCreatePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [existingApplication, setExistingApplication] = useState<any>(null)
+  const [user, setUser] = useState<AffiliateUser | null>(null)
+  const [existingApplication, setExistingApplication] = useState<AffiliateApplication | null>(null)
   const [formData, setFormData] = useState({
     companyName: '',
     websiteUrl: '',
@@ -29,11 +36,7 @@ export default function AffiliateProfileCreatePage() {
     reason: ''
   })
 
-  useEffect(() => {
-    checkUserAndApplication()
-  }, [])
-
-  const checkUserAndApplication = async () => {
+  const checkUserAndApplication = useCallback(async () => {
     const storedUser = localStorage.getItem('user')
     if (!storedUser) {
       router.push('/auth/login')
@@ -45,7 +48,7 @@ export default function AffiliateProfileCreatePage() {
 
     // Check if user is already an affiliate
     if (userData.role !== 'affiliate' && !userData.is_affiliate) {
-      alert('You need to be an affiliate to access this page')
+      toast.error('You need to be an affiliate to access this page')
       router.push('/dashboard')
       return
     }
@@ -74,7 +77,11 @@ export default function AffiliateProfileCreatePage() {
     if (profile) {
       router.push('/affiliate/dashboard')
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkUserAndApplication()
+  }, [checkUserAndApplication])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -93,6 +100,13 @@ export default function AffiliateProfileCreatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!user) {
+      toast.error('Please login to continue')
+      router.push('/login')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -151,11 +165,12 @@ export default function AffiliateProfileCreatePage() {
         if (profileError) throw profileError
       }
 
-      alert('Your affiliate application has been submitted successfully! We will review it and get back to you soon.')
+      toast.success('Your affiliate application has been submitted successfully! We will review it and get back to you soon.')
       router.push('/affiliate/dashboard')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting application:', error)
-      alert(error.message || 'Failed to submit application. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit application. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse  } from 'next/server'
 
 // In-memory storage (for demo purposes - in production, use a database)
 const bookings = new Map<string, Set<string>>()
@@ -6,7 +6,7 @@ const bookings = new Map<string, Set<string>>()
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, firmName, date, time, message } = body
+    const { date, time } = body
 
     // Store booking in memory
     const dateKey = new Date(date).toISOString().split('T')[0]
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     bookings.get(dateKey)?.add(time)
 
     // Format date for email
-    const formattedDate = new Date(date).toLocaleDateString('en-IN', {
+    const _formattedDate = new Date(date).toLocaleDateString('en-IN', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -34,23 +34,13 @@ export async function POST(request: NextRequest) {
     //   time,
     //   message
     // })
-    
-    console.log('Demo booking received:', {
-      name,
-      email,
-      phone,
-      firmName,
-      date: formattedDate,
-      time,
-      message
-    })
 
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       message: 'Booking confirmed successfully'
     })
-  } catch (error) {
-    console.error('Booking error:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to process booking' },
       { status: 500 }
@@ -62,7 +52,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
-    
+
     if (!date) {
       return NextResponse.json(
         { error: 'Date parameter is required' },
@@ -72,10 +62,9 @@ export async function GET(request: NextRequest) {
 
     const dateKey = new Date(date).toISOString().split('T')[0]
     const bookedSlots = Array.from(bookings.get(dateKey) || [])
-    
+
     return NextResponse.json({ bookedSlots })
-  } catch (error) {
-    console.error('Error fetching bookings:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch bookings' },
       { status: 500 }

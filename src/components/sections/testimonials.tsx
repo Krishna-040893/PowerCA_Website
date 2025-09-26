@@ -1,54 +1,54 @@
-"use client"
+'use client'
 
-import { motion, useInView } from "framer-motion"
-import { useRef, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star, ChevronLeft, ChevronRight, Server, Database, Shield, TrendingUp } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import {motion, useInView  } from 'framer-motion'
+import {useRef, useState  } from 'react'
+import {Card, CardContent  } from '@/components/ui/card'
+import {Avatar, AvatarFallback, AvatarImage  } from '@/components/ui/avatar'
+import {Star, ChevronLeft, ChevronRight, Server, Database, Shield, TrendingUp } from 'lucide-react'
+import {Button  } from '@/components/ui/button'
 
 const testimonials = [
   {
-    name: "CA Rajesh Kumar",
-    firm: "Kumar & Associates",
-    location: "Mumbai",
+    name: 'CA Rajesh Kumar',
+    firm: 'Kumar & Associates',
+    location: 'Mumbai',
     rating: 5,
-    content: "PowerCA has transformed how we manage our practice. The automation features alone save us 15+ hours every week. The compliance tracking is exceptional.",
-    avatar: "/avatars/avatar-1.jpg",
-    initials: "RK"
+    content: 'PowerCA has transformed how we manage our practice. The automation features alone save us 15+ hours every week. The compliance tracking is exceptional.',
+    avatar: '/avatars/avatar-1.jpg',
+    initials: 'RK'
   },
   {
-    name: "CA Priya Sharma",
-    firm: "Sharma Tax Consultants",
-    location: "Delhi",
+    name: 'CA Priya Sharma',
+    firm: 'Sharma Tax Consultants',
+    location: 'Delhi',
     rating: 5,
     content: "The best investment we've made for our firm. Client management is now effortless, and the document management system is incredibly secure and organized.",
-    avatar: "/avatars/avatar-2.jpg",
-    initials: "PS"
+    avatar: '/avatars/avatar-2.jpg',
+    initials: 'PS'
   },
   {
-    name: "CA Amit Patel",
-    firm: "Patel & Co.",
-    location: "Ahmedabad",
+    name: 'CA Amit Patel',
+    firm: 'Patel & Co.',
+    location: 'Ahmedabad',
     rating: 5,
-    content: "Outstanding software! The ROI calculator showed us potential savings, but the actual results exceeded our expectations. Highly recommend to all CA firms.",
-    avatar: "/avatars/avatar-3.jpg",
-    initials: "AP"
+    content: 'Outstanding software! The ROI calculator showed us potential savings, but the actual results exceeded our expectations. Highly recommend to all CA firms.',
+    avatar: '/avatars/avatar-3.jpg',
+    initials: 'AP'
   },
   {
-    name: "CA Sunita Reddy",
-    firm: "Reddy Financial Services",
-    location: "Bangalore",
+    name: 'CA Sunita Reddy',
+    firm: 'Reddy Financial Services',
+    location: 'Bangalore',
     rating: 5,
     content: "PowerCA's customer support is phenomenal. The onboarding was smooth, and the team helped us migrate all our data seamlessly. It's been a game-changer.",
-    avatar: "/avatars/avatar-4.jpg",
-    initials: "SR"
+    avatar: '/avatars/avatar-4.jpg',
+    initials: 'SR'
   }
 ]
 
 export function TestimonialsSection() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const nextTestimonial = () => {
@@ -145,9 +145,9 @@ export function TestimonialsSection() {
                 {/* Author */}
                 <div className="flex items-center">
                   <Avatar className="h-12 w-12 mr-4">
-                    <AvatarImage 
-                      src={testimonials[currentIndex].avatar} 
-                      alt={testimonials[currentIndex].name} 
+                    <AvatarImage
+                      src={testimonials[currentIndex].avatar}
+                      alt={testimonials[currentIndex].name}
                     />
                     <AvatarFallback className="bg-primary-100 text-primary-700">
                       {testimonials[currentIndex].initials}
@@ -181,7 +181,7 @@ export function TestimonialsSection() {
                     key={index}
                     onClick={() => setCurrentIndex(index)}
                     className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentIndex ? "bg-primary-600" : "bg-gray-300"
+                      index === currentIndex ? 'bg-primary-600' : 'bg-gray-300'
                     }`}
                   />
                 ))}

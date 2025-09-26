@@ -1,8 +1,9 @@
-"use client"
+'use client'
 
-import { Card } from "@/components/ui/card"
-import { Monitor, Server, Cloud, Shield, Zap, Users } from "lucide-react"
-import Link from "next/link"
+import {Card  } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Monitor, Server, Cloud, Shield, Zap, Users } from 'lucide-react'
+import Link from 'next/link'
 
 export function ClientServerModel() {
   return (
@@ -99,12 +100,22 @@ export function ClientServerModel() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-6">
             Not sure which model is right for you?
           </p>
-          <Link href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">
-            Talk to our experts →
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button
+              size="lg"
+              className="text-white rounded-full hover:opacity-90 transition-opacity px-8"
+              style={{ backgroundColor: '#155dfc' }}
+              asChild
+            >
+              <Link href="/checkout">Book Demo</Link>
+            </Button>
+            <Link href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">
+              Talk to our experts →
+            </Link>
+          </div>
         </div>
       </div>
     </section>

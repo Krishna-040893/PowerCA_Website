@@ -1,12 +1,12 @@
-import { HeroSection } from "@/components/sections/hero"
-import { DashboardPreview } from "@/components/sections/dashboard-preview"
-import { SocialProof } from "@/components/sections/social-proof"
-import { BentoFeaturesSection } from "@/components/sections/bento-features"
-import { PricingSection } from "@/components/sections/pricing"
-import { TestimonialsSection } from "@/components/sections/testimonials"
-import { FAQSection } from "@/components/sections/faq-section"
-import { EnhancedCTASection } from "@/components/sections/enhanced-cta"
-import { AnimatedSection } from "@/components/animations/animated-section"
+import {HeroSection  } from '@/components/sections/hero'
+import {DashboardPreview  } from '@/components/sections/dashboard-preview'
+import {SocialProof  } from '@/components/sections/social-proof'
+import {BentoFeaturesSection  } from '@/components/sections/bento-features'
+import {PricingSection  } from '@/components/sections/pricing'
+import {TestimonialsSection  } from '@/components/sections/testimonials'
+import {FAQSection  } from '@/components/sections/faq-section'
+import {EnhancedCTASection  } from '@/components/sections/enhanced-cta'
+import {AnimatedSection  } from '@/components/animations/animated-section'
 
 export default function Home() {
   return (
@@ -14,7 +14,7 @@ export default function Home() {
       {/* Global Background Pattern */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
@@ -25,7 +25,7 @@ export default function Home() {
           }}
         />
         {/* Dot pattern overlay */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
@@ -46,27 +46,27 @@ export default function Home() {
         <AnimatedSection>
           <SocialProof />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <DashboardPreview />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <BentoFeaturesSection />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <PricingSection />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <TestimonialsSection />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <FAQSection />
         </AnimatedSection>
-        
+
         <AnimatedSection>
           <EnhancedCTASection />
         </AnimatedSection>

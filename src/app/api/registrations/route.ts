@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {Resend  } from 'resend'
+import {createAdminClient  } from '@/lib/supabase/admin'
 import bcrypt from 'bcryptjs'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+const resendApiKey = process.env.RESEND_API_KEY
+const resend = resendApiKey ? new Resend(resendApiKey) : null
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
                     body.role === 'Student' ? 'Student' : 'Other'
 
     // Extract registration data for users table
-    const userData = {
+    const _userData = {
       name: body.name,
       email: body.email,
       username: body.username,
@@ -56,7 +57,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (supabaseError) {
-      console.error('Supabase error:', supabaseError)
 
       // Check for duplicate key errors
       if (supabaseError.code === '23505') {
@@ -158,29 +158,34 @@ export async function POST(request: NextRequest) {
 
     try {
       // Send confirmation email to the user only (no admin email)
-      const emailResult = await resend.emails.send({
+      if (!resend) {
+        console.warn('Resend not configured, skipping confirmation email')
+      } else {
+        const _emailResult = await resend.emails.send({
         from: 'PowerCA <contact@powerca.in>',
         to: body.email,
         subject: 'Welcome to PowerCA - Registration Successful',
         html: userEmailHtml,
       })
-      console.log('Email sent successfully to user:', body.email, emailResult)
+      }
+      // Email sent successfully
     } catch (emailError) {
-      console.error('Email sending error:', emailError)
       // If email fails due to test mode restrictions, try sending to verified address
-      if (emailError && emailError.statusCode === 403) {
+      const emailErrorStatus = emailError && typeof emailError === 'object' && 'statusCode' in emailError ? (emailError as { statusCode: number }).statusCode : null
+      if (emailErrorStatus === 403) {
         try {
-          console.log('Resend is in test mode. Attempting to send to verified address contact@powerca.in')
-          const testEmailResult = await resend.emails.send({
+          if (resend) {
+            const _testEmailResult = await resend.emails.send({
             from: 'PowerCA <contact@powerca.in>',
             to: 'contact@powerca.in',
             subject: `Welcome to PowerCA - Registration for ${body.email}`,
             html: userEmailHtml.replace('Dear ' + body.name, `Dear ${body.name} (Email intended for: ${body.email})`),
-            reply_to: body.email,
+            replyTo: body.email,
           })
-          console.log('Test mode: Email sent to contact@powerca.in instead of', body.email, testEmailResult)
-        } catch (testError) {
-          console.error('Test email also failed:', testError)
+          }
+          // Test mode: Email sent to contact@powerca.in instead
+        } catch {
+          // Test email also failed
         }
       }
     }
@@ -205,7 +210,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = createAdminClient()
 

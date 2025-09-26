@@ -1,28 +1,18 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { useSession, signOut } from "next-auth/react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Calendar, 
-  Users, 
-  Clock, 
-  CheckCircle, 
-  LogOut, 
-  Filter,
-  Search,
-  Eye,
-  UserCheck,
-  XCircle,
+import {useEffect, useState, useCallback  } from 'react'
+import {useSession, signOut  } from 'next-auth/react'
+import {motion  } from 'framer-motion'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Badge  } from '@/components/ui/badge'
+import {Calendar,
+  LogOut,
   BarChart3,
-  TrendingUp
-} from "lucide-react"
-import { BookingFilters } from "./booking-filters"
-import { BookingTable } from "./booking-table"
-import { AdminStats } from "./admin-stats"
+ } from 'lucide-react'
+import {BookingFilters  } from './booking-filters'
+import {BookingTable  } from './booking-table'
+import {AdminStats  } from './admin-stats'
 
 interface Booking {
   id: string
@@ -52,26 +42,24 @@ export function AdminDashboard() {
     thisMonth: 0
   })
 
-  // Fetch bookings on component mount
-  useEffect(() => {
-    fetchBookings()
-  }, [])
-
-  // Update stats when bookings change
-  useEffect(() => {
-    updateStats()
-  }, [bookings])
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/admin/bookings')
+
+      // Get admin token from localStorage
+      const token = localStorage.getItem('adminToken')
+
+      const response = await fetch('/api/admin/bookings', {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      })
+
       if (response.ok) {
         const data = await response.json()
         setBookings(data.bookings || [])
         setFilteredBookings(data.bookings || [])
       } else {
-        console.error('Failed to fetch bookings')
         // Use sample data for demo
         const sampleBookings = generateSampleBookings()
         setBookings(sampleBookings)
@@ -86,55 +74,55 @@ export function AdminDashboard() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const generateSampleBookings = (): Booking[] => {
     const today = new Date()
     const sampleBookings: Booking[] = [
       {
-        id: "1",
-        name: "Rajesh Kumar",
-        email: "rajesh.kumar@email.com",
-        phone: "9876543210",
-        firm_name: "Kumar & Associates",
+        id: '1',
+        name: 'Rajesh Kumar',
+        email: 'rajesh.kumar@email.com',
+        phone: '9876543210',
+        firm_name: 'Kumar & Associates',
         date: today.toISOString().split('T')[0],
-        time: "10:00 AM - 11:00 AM",
-        type: "demo",
-        status: "CONFIRMED",
-        message: "Interested in practice management features",
+        time: '10:00 AM - 11:00 AM',
+        type: 'demo',
+        status: 'CONFIRMED',
+        message: 'Interested in practice management features',
         created_at: new Date().toISOString()
       },
       {
-        id: "2", 
-        name: "Priya Sharma",
-        email: "priya.sharma@email.com",
-        phone: "9876543211",
-        firm_name: "Sharma CA Firm",
-        date: "2025-09-15",
-        time: "02:00 PM - 03:00 PM", 
-        type: "demo",
-        status: "PENDING",
-        message: "Need help with GST compliance",
+        id: '2',
+        name: 'Priya Sharma',
+        email: 'priya.sharma@email.com',
+        phone: '9876543211',
+        firm_name: 'Sharma CA Firm',
+        date: '2025-09-15',
+        time: '02:00 PM - 03:00 PM',
+        type: 'demo',
+        status: 'PENDING',
+        message: 'Need help with GST compliance',
         created_at: new Date().toISOString()
       },
       {
-        id: "3",
-        name: "Amit Patel",
-        email: "amit.patel@email.com", 
-        phone: "9876543212",
-        firm_name: "Patel & Co",
-        date: "2025-09-12",
-        time: "11:00 AM - 12:00 PM",
-        type: "demo", 
-        status: "COMPLETED",
-        message: "Looking for client management solutions",
+        id: '3',
+        name: 'Amit Patel',
+        email: 'amit.patel@email.com',
+        phone: '9876543212',
+        firm_name: 'Patel & Co',
+        date: '2025-09-12',
+        time: '11:00 AM - 12:00 PM',
+        type: 'demo',
+        status: 'COMPLETED',
+        message: 'Looking for client management solutions',
         created_at: new Date().toISOString()
       }
     ]
     return sampleBookings
   }
 
-  const updateStats = () => {
+  const updateStats = useCallback(() => {
     const today = new Date().toISOString().split('T')[0]
     const currentMonth = new Date().getMonth()
     const currentYear = new Date().getFullYear()
@@ -147,35 +135,48 @@ export function AdminDashboard() {
       today: bookings.filter(b => b.date === today).length,
       thisMonth: bookings.filter(b => {
         const bookingDate = new Date(b.date)
-        return bookingDate.getMonth() === currentMonth && 
+        return bookingDate.getMonth() === currentMonth &&
                bookingDate.getFullYear() === currentYear
       }).length
     })
-  }
+  }, [bookings])
 
-  const handleFilterChange = (filters: any) => {
+  // Fetch bookings on component mount
+  useEffect(() => {
+    fetchBookings()
+  }, [fetchBookings])
+
+  // Update stats when bookings change
+  useEffect(() => {
+    updateStats()
+  }, [updateStats])
+
+  const handleFilterChange = (filters: { status?: string; date?: string; dateFrom?: string; dateTo?: string; search?: string }) => {
     let filtered = [...bookings]
 
     if (filters.status) {
-      filtered = filtered.filter(booking => 
-        booking.status.toLowerCase() === filters.status.toLowerCase()
+      filtered = filtered.filter(booking =>
+        booking.status.toLowerCase() === filters.status?.toLowerCase()
       )
     }
 
     if (filters.dateFrom) {
-      filtered = filtered.filter(booking => booking.date >= filters.dateFrom)
+      const dateFrom = filters.dateFrom
+      filtered = filtered.filter(booking => booking.date >= dateFrom)
     }
 
     if (filters.dateTo) {
-      filtered = filtered.filter(booking => booking.date <= filters.dateTo)
+      const dateTo = filters.dateTo
+      filtered = filtered.filter(booking => booking.date <= dateTo)
     }
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
+      const searchTerm = filters.search
       filtered = filtered.filter(booking =>
         booking.name.toLowerCase().includes(searchLower) ||
         booking.email.toLowerCase().includes(searchLower) ||
-        booking.phone.includes(filters.search) ||
+        booking.phone.includes(searchTerm) ||
         (booking.firm_name && booking.firm_name.toLowerCase().includes(searchLower))
       )
     }
@@ -190,7 +191,7 @@ export function AdminDashboard() {
         booking.id === bookingId ? { ...booking, status: newStatus } : booking
       )
       setBookings(updatedBookings)
-      
+
       // Apply current filters to the updated bookings
       // This is a simplified version - you might want to re-apply the current filters
       setFilteredBookings(updatedBookings)
@@ -232,7 +233,7 @@ export function AdminDashboard() {
               <BarChart3 className="w-8 h-8 text-primary-600 mr-3" />
               <h1 className="text-2xl font-bold text-gray-900">PowerCA Admin</h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
                 Welcome, {session?.user?.name || session?.user?.email}
@@ -285,12 +286,12 @@ export function AdminDashboard() {
                 </Badge>
               </div>
             </CardHeader>
-            
+
             <CardContent>
               <div className="space-y-6">
                 {/* Filters */}
                 <BookingFilters onFilterChange={handleFilterChange} />
-                
+
                 {/* Bookings Table */}
                 <BookingTable
                   bookings={filteredBookings}

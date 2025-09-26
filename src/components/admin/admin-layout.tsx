@@ -1,44 +1,17 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  Bell,
-  Search,
-  Shield,
-  BarChart3,
-  FileText,
-  Mail,
-  UserCheck,
-  Star,
-  Command,
-  Activity,
-  TrendingUp,
-  Eye,
-  Globe,
-  Lock,
-  Zap,
-  Crown,
-  MonitorSpeaker,
-  ArrowRight,
-  Key
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Icons } from "@/components/icons"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import {useState, useEffect  } from 'react'
+import {useRouter, usePathname  } from 'next/navigation'
+import {useSession, signOut, signIn as _signIn } from 'next-auth/react'
+import Link from 'next/link'
+import type { AdminUser } from '@/types/admin'
+import { Users, LogOut, Menu, X, ChevronDown, Bell, Search, Shield, Command, Activity, Globe, Lock, Crown, MonitorSpeaker, ArrowRight, Key, LayoutDashboard, TrendingUp, Calendar, FileText, UserCheck, Star, BarChart3, Mail, Settings } from 'lucide-react'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Icons  } from '@/components/icons'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -59,7 +32,7 @@ function AdminLoginComponent() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
+      const result = await _signIn('credentials', {
         email: formData.username,
         password: formData.password,
         redirect: false
@@ -71,7 +44,7 @@ function AdminLoginComponent() {
         // Page will automatically re-render with authenticated state
         window.location.reload()
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -211,7 +184,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [adminUser, setAdminUser] = useState<any>(null)
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null)
   const [isClient, setIsClient] = useState(false)
 
   const { data: session, status } = useSession()
@@ -221,10 +194,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }, [])
 
   useEffect(() => {
-    if (!isClient || status === "loading") return
+    if (!isClient || status === 'loading') return
 
     if (session?.user && session.user.role === 'admin') {
-      setAdminUser(session.user)
+      setAdminUser(session.user as unknown as AdminUser)
     }
     // Removed redirect - we'll show login form inline instead
   }, [session, status, router, isClient])
@@ -235,105 +208,105 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuSections = [
     {
-      title: "Overview",
+      title: 'Overview',
       items: [
         {
-          name: "Dashboard",
-          href: "/admin",
+          name: 'Dashboard',
+          href: '/admin',
           icon: LayoutDashboard,
-          active: pathname === "/admin",
+          active: pathname === '/admin',
           badge: null
         },
         {
-          name: "Analytics",
-          href: "/admin/analytics",
+          name: 'Analytics',
+          href: '/admin/analytics',
           icon: TrendingUp,
-          active: pathname === "/admin/analytics",
-          badge: "Pro"
+          active: pathname === '/admin/analytics',
+          badge: 'Pro'
         }
       ]
     },
     {
-      title: "Management",
+      title: 'Management',
       items: [
         {
-          name: "Bookings",
-          href: "/admin/bookings",
+          name: 'Bookings',
+          href: '/admin/bookings',
           icon: Calendar,
-          active: pathname === "/admin/bookings",
+          active: pathname === '/admin/bookings',
           badge: null
         },
         {
-          name: "Registrations",
-          href: "/admin/registrations",
+          name: 'Registrations',
+          href: '/admin/registrations',
           icon: FileText,
-          active: pathname === "/admin/registrations",
+          active: pathname === '/admin/registrations',
           badge: null
         },
         {
-          name: "User Management",
-          href: "/admin/users/manage",
+          name: 'User Management',
+          href: '/admin/users/manage',
           icon: Users,
-          active: pathname === "/admin/users/manage",
+          active: pathname === '/admin/users/manage',
           badge: null
         },
         {
-          name: "Affiliate Approvals",
-          href: "/admin/affiliates/approve",
+          name: 'Affiliate Approvals',
+          href: '/admin/affiliates/approve',
           icon: UserCheck,
-          active: pathname === "/admin/affiliates/approve",
-          badge: "New"
+          active: pathname === '/admin/affiliates/approve',
+          badge: 'New'
         },
         {
-          name: "Affiliates",
-          href: "/admin/affiliates",
+          name: 'Affiliates',
+          href: '/admin/affiliates',
           icon: Star,
-          active: pathname === "/admin/affiliates",
+          active: pathname === '/admin/affiliates',
           badge: null
         }
       ]
     },
     {
-      title: "Communication",
+      title: 'Communication',
       items: [
         {
-          name: "Messages",
-          href: "/admin/messages",
+          name: 'Messages',
+          href: '/admin/messages',
           icon: Mail,
-          active: pathname === "/admin/messages",
-          badge: "3"
+          active: pathname === '/admin/messages',
+          badge: '3'
         },
         {
-          name: "Reports",
-          href: "/admin/reports",
+          name: 'Reports',
+          href: '/admin/reports',
           icon: BarChart3,
-          active: pathname === "/admin/reports",
+          active: pathname === '/admin/reports',
           badge: null
         }
       ]
     },
     {
-      title: "System",
+      title: 'System',
       items: [
         {
-          name: "Settings",
-          href: "/admin/settings",
+          name: 'Settings',
+          href: '/admin/settings',
           icon: Settings,
-          active: pathname === "/admin/settings",
+          active: pathname === '/admin/settings',
           badge: null
         },
         {
-          name: "Security",
-          href: "/admin/security",
+          name: 'Security',
+          href: '/admin/security',
           icon: Lock,
-          active: pathname === "/admin/security",
+          active: pathname === '/admin/security',
           badge: null
         }
       ]
     }
   ]
 
-  if (!isClient || status === "loading") {
+  if (!isClient || status === 'loading') {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -387,7 +360,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <Command className="w-6 h-6 text-slate-900 font-bold" />
             </div>
             <div>
-              <div className="text-white font-semibold">{adminUser?.name || 'Admin'}</div>
+              <div className="text-white font-semibold">{adminUser?.username || 'Admin'}</div>
               <div className="text-emerald-300 text-sm font-medium">System Administrator</div>
             </div>
           </div>
@@ -506,10 +479,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   className="flex items-center gap-3 p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center">
-                    <span className="text-slate-900 font-bold">{adminUser?.name?.[0] || 'A'}</span>
+                    <span className="text-slate-900 font-bold">{adminUser?.username?.[0] || 'A'}</span>
                   </div>
                   <div className="hidden md:block text-left">
-                    <div className="text-sm font-semibold text-white">{adminUser?.name || 'Admin'}</div>
+                    <div className="text-sm font-semibold text-white">{adminUser?.username || 'Admin'}</div>
                     <div className="text-xs text-emerald-400">Administrator</div>
                   </div>
                   <ChevronDown className="w-4 h-4" />
@@ -519,7 +492,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
                     <div className="px-4 py-3 border-b border-slate-700">
-                      <div className="text-white font-semibold">{adminUser?.name || 'Admin'}</div>
+                      <div className="text-white font-semibold">{adminUser?.username || 'Admin'}</div>
                       <div className="text-emerald-400 text-sm">{adminUser?.email || 'admin@powerca.in'}</div>
                     </div>
                     <Link

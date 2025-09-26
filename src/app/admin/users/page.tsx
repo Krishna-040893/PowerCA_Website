@@ -1,14 +1,15 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/admin/admin-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Users, UserCheck, Star, Crown } from "lucide-react"
-import { format } from "date-fns"
+import {useState, useEffect  } from 'react'
+import {AdminLayout  } from '@/components/admin/admin-layout'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
+import {Badge  } from '@/components/ui/badge'
+import {Button  } from '@/components/ui/button'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
+import {RefreshCw, Users, Star, Crown  } from 'lucide-react'
+import { format } from 'date-fns'
+import {toast  } from 'sonner'
 
 interface User {
   id: string
@@ -95,11 +96,11 @@ export default function AdminUsersPage() {
               }
             : user
         ))
-        alert('User role updated successfully!')
+        toast.success('User role updated successfully!')
       }
     } catch (err) {
       console.error('Error updating user role:', err)
-      alert('Failed to update user role')
+      toast.error('Failed to update user role')
     } finally {
       setUpdatingUsers(prev => {
         const next = new Set(prev)

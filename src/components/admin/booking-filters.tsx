@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { Search, Filter, X } from "lucide-react"
+import {useState  } from 'react'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
+import {Card, CardContent  } from '@/components/ui/card'
+import {Search, Filter, X } from 'lucide-react'
 
 interface BookingFiltersProps {
   onFilterChange: (filters: {
@@ -19,10 +19,10 @@ interface BookingFiltersProps {
 
 export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
   const [filters, setFilters] = useState({
-    status: "",
-    dateFrom: "",
-    dateTo: "", 
-    search: ""
+    status: '',
+    dateFrom: '',
+    dateTo: '',
+    search: ''
   })
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -35,16 +35,16 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
 
   const clearFilters = () => {
     const clearedFilters = {
-      status: "",
-      dateFrom: "",
-      dateTo: "",
-      search: ""
+      status: '',
+      dateFrom: '',
+      dateTo: '',
+      search: ''
     }
     setFilters(clearedFilters)
     onFilterChange(clearedFilters)
   }
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== "")
+  const hasActiveFilters = Object.values(filters).some(value => value !== '')
 
   return (
     <Card>
@@ -57,11 +57,11 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
               <Input
                 placeholder="Search bookings..."
                 value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
                 className="pl-10"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2">
               {hasActiveFilters && (
                 <Button
@@ -89,9 +89,9 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={filters.status} 
-                  onValueChange={(value) => handleFilterChange("status", value)}
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) => handleFilterChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Statuses" />
@@ -112,7 +112,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                   id="dateFrom"
                   type="date"
                   value={filters.dateFrom}
-                  onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
+                  onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
                 />
               </div>
 
@@ -122,7 +122,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                   id="dateTo"
                   type="date"
                   value={filters.dateTo}
-                  onChange={(e) => handleFilterChange("dateTo", e.target.value)}
+                  onChange={(e) => handleFilterChange('dateTo', e.target.value)}
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                 <div className="flex items-center space-x-1 bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-sm">
                   <span>Status: {filters.status}</span>
                   <button
-                    onClick={() => handleFilterChange("status", "")}
+                    onClick={() => handleFilterChange('status', '')}
                     className="ml-1 hover:bg-primary-200 rounded-full p-0.5"
                   >
                     <X className="w-3 h-3" />
@@ -146,7 +146,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                 <div className="flex items-center space-x-1 bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-sm">
                   <span>From: {filters.dateFrom}</span>
                   <button
-                    onClick={() => handleFilterChange("dateFrom", "")}
+                    onClick={() => handleFilterChange('dateFrom', '')}
                     className="ml-1 hover:bg-primary-200 rounded-full p-0.5"
                   >
                     <X className="w-3 h-3" />
@@ -157,7 +157,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                 <div className="flex items-center space-x-1 bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-sm">
                   <span>To: {filters.dateTo}</span>
                   <button
-                    onClick={() => handleFilterChange("dateTo", "")}
+                    onClick={() => handleFilterChange('dateTo', '')}
                     className="ml-1 hover:bg-primary-200 rounded-full p-0.5"
                   >
                     <X className="w-3 h-3" />

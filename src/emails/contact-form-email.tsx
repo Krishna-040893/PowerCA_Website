@@ -1,19 +1,17 @@
 import * as React from 'react'
-import {
-  Html,
+import {Html,
   Head,
   Body,
   Container,
   Section,
-  Text,
-  Link,
+  Text, Link,
   Img,
   Preview,
   Hr,
   Font,
   Row,
   Column,
-} from '@react-email/components'
+ } from '@react-email/components'
 
 interface ContactFormEmailProps {
   name: string
@@ -39,7 +37,7 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
       <Head>
         <Font
           fontFamily="Geist"
-          fallbackFontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          fallbackFontFamily="sans-serif"
           webFont={{
             url: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
             format: 'woff2',
@@ -72,11 +70,11 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
             {/* Main Content */}
             <Section style={content}>
               <Text style={headingStyle}>{subject}</Text>
-              
+
               {/* Contact Details Card */}
               <Section style={detailsCard}>
                 <Text style={sectionTitle}>Contact Information</Text>
-                
+
                 <Row style={detailRow}>
                   <Column style={labelColumn}>
                     <Text style={label}>Name:</Text>

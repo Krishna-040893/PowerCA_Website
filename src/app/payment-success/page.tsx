@@ -1,54 +1,56 @@
 'use client'
 
-<<<<<<< HEAD
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, ArrowRight, Download, Mail, AlertCircle } from 'lucide-react'
-=======
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, ArrowRight, Download, Mail } from 'lucide-react'
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+import {useEffect, useState, Suspense  } from 'react'
+import {useRouter, useSearchParams  } from 'next/navigation'
+import {Button  } from '@/components/ui/button'
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { CheckCircle, ArrowRight, Download, Mail, AlertCircle  } from 'lucide-react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
+import {trackPurchase  } from '@/components/google-analytics'
+import {trackGTMPurchase  } from '@/components/google-tag-manager'
 
-export default function PaymentSuccessPage() {
-  const router = useRouter()
-<<<<<<< HEAD
+function PaymentSuccessContent() {
+  const _router = useRouter()
   const searchParams = useSearchParams()
   const [isTestMode, setIsTestMode] = useState(false)
 
   useEffect(() => {
     // Check if it's a test payment
     const testParam = searchParams.get('test')
+    const planParam = searchParams.get('plan') || 'early-bird'
+
     if (testParam === 'true') {
       setIsTestMode(true)
+    } else {
+      // Track successful purchase in Google Analytics and GTM (only for real payments)
+      trackPurchase(19999, planParam)
+
+      // Track in Google Tag Manager for enhanced ecommerce
+      trackGTMPurchase({
+        transaction_id: `order_${Date.now()}`,
+        value: 19999,
+        currency: 'INR',
+        items: [{
+          item_id: planParam,
+          item_name: 'PowerCA Early Bird Offer',
+          price: 19999,
+          quantity: 1
+        }]
+      })
     }
 
-=======
-
-  useEffect(() => {
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     // Trigger confetti animation
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     })
-<<<<<<< HEAD
   }, [searchParams])
-=======
-  }, [])
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-2xl">
-<<<<<<< HEAD
         {/* Test Mode Banner */}
         {isTestMode && (
           <div className="mb-6 bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 flex items-center gap-3">
@@ -61,9 +63,6 @@ export default function PaymentSuccessPage() {
             </div>
           </div>
         )}
-
-=======
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
         <Card className="shadow-xl border-green-200">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4">
@@ -87,11 +86,7 @@ export default function PaymentSuccessPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount Paid:</span>
-<<<<<<< HEAD
-                  <span className="font-medium">{isTestMode ? '₹1 (Test)' : '₹50,000'}</span>
-=======
-                  <span className="font-medium">₹22,000</span>
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+                  <span className="font-medium">{isTestMode ? '₹1 (Test)' : '₹22,000'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">First Year:</span>
@@ -149,7 +144,7 @@ export default function PaymentSuccessPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-3">
-            <Button 
+            <Button
               className="w-full bg-primary-600 hover:bg-primary-700"
               asChild
             >
@@ -158,8 +153,8 @@ export default function PaymentSuccessPage() {
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => window.print()}
             >
@@ -170,5 +165,20 @@ export default function PaymentSuccessPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading payment status...</p>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

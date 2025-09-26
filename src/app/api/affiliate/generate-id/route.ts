@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth/next'
+import {authOptions  } from '@/lib/auth'
 
 // Generate unique affiliate ID
 function generateAffiliateId(): string {
@@ -12,7 +12,7 @@ function generateAffiliateId(): string {
   return result
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 

@@ -1,68 +1,108 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import {withAuth  } from 'next-auth/middleware'
+import {NextRequest, NextResponse  } from 'next/server'
 
-export default withAuth(
-<<<<<<< HEAD
-  async function middleware(req) {
-    const token = req.nextauth.token
-    const pathname = req.nextUrl.pathname
+// Custom middleware that handles both user and admin authentication
+export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname
 
-    // Check if user has a role in their token
-    if (token) {
-      const userRole = (token.role as string)?.toLowerCase()
-
-      // Redirect affiliates to their dashboard or profile creation
-      if (userRole === 'affiliate') {
-        if (pathname === '/dashboard') {
-          // Check if affiliate needs to complete setup
-          if (token.needsAffiliateSetup) {
-            return NextResponse.redirect(new URL('/affiliate/account', req.url))
-          }
-          // Redirect to affiliate dashboard
-          return NextResponse.redirect(new URL('/affiliate/dashboard', req.url))
-        }
-      }
-
-      // Prevent non-affiliates from accessing affiliate routes
-      if (userRole !== 'affiliate' && pathname.startsWith('/affiliate')) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
-      }
-
-      // Prevent non-admins from accessing admin routes
-      if (userRole !== 'admin' && pathname.startsWith('/admin')) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
-      }
+  // Handle admin routes with JWT authentication
+  if (pathname.startsWith('/admin')) {
+    // Allow access to admin login page
+    if (pathname === '/admin-login') {
+      return NextResponse.next()
     }
 
-=======
-  function middleware(req) {
-    // Custom logic can be added here if needed
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token
-    },
-    pages: {
-      signIn: '/auth/login',
-      error: '/auth/error'
+    // Check for admin token in cookies or headers
+    const adminToken = req.cookies.get('adminToken')?.value ||
+                      req.headers.get('authorization')?.replace('Bearer ', '')
+
+    if (!adminToken) {
+      // Redirect to admin login if no token
+      return NextResponse.redirect(new URL('/admin-login', req.url))
+    }
+
+    try {
+      // Simple JWT format validation (3 parts separated by dots)
+      // Let server-side API routes handle full verification
+      if (adminToken.split('.').length === 3) {
+        // Valid JWT format, allow access
+        return NextResponse.next()
+      } else {
+        // Invalid token format, redirect to login
+        const response = NextResponse.redirect(new URL('/admin-login', req.url))
+        response.cookies.delete('adminToken')
+        return response
+      }
+    } catch {
+      // Token validation failed
+      const response = NextResponse.redirect(new URL('/admin-login', req.url))
+      response.cookies.delete('adminToken')
+      return response
     }
   }
-)
 
-<<<<<<< HEAD
-// Protect these routes (removed /admin/:path* to allow direct access)
-export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/affiliate/:path*',
-=======
+  // Handle admin API routes
+  if (pathname.startsWith('/api/admin')) {
+    // Allow admin auth endpoints
+    if (pathname.startsWith('/api/admin/auth')) {
+      return NextResponse.next()
+    }
+
+    // All other admin API routes require authentication
+    const adminToken = req.cookies.get('adminToken')?.value ||
+                      req.headers.get('authorization')?.replace('Bearer ', '')
+
+    if (!adminToken) {
+      return NextResponse.json(
+        { error: 'Unauthorized - No admin token provided' },
+        { status: 401 }
+      )
+    }
+
+    try {
+      // Simple JWT format validation (3 parts separated by dots)
+      // Let API routes handle full server-side verification
+      if (adminToken.split('.').length === 3) {
+        // Valid JWT format, allow access - API routes will do full verification
+        return NextResponse.next()
+      } else {
+        return NextResponse.json(
+          { error: 'Unauthorized - Invalid admin token format' },
+          { status: 401 }
+        )
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Unauthorized - Token validation failed' },
+        { status: 401 }
+      )
+    }
+  }
+
+  // For non-admin routes, use the existing NextAuth logic
+  if (pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/affiliate') ||
+      pathname.startsWith('/api/protected') ||
+      pathname.startsWith('/clients') ||
+      pathname.startsWith('/documents') ||
+      pathname.startsWith('/reports') ||
+      pathname.startsWith('/settings')) {
+
+    // This will trigger NextAuth authentication
+    return withAuth(req as Parameters<typeof withAuth>[0])
+  }
+
+  // Allow all other routes
+  return NextResponse.next()
+}
+
 // Protect these routes
 export const config = {
   matcher: [
+    '/admin/:path*',
+    '/api/admin/:path*',
     '/dashboard/:path*',
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+    '/affiliate/:path*',
     '/api/protected/:path*',
     '/clients/:path*',
     '/documents/:path*',

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import {NextRequest, NextResponse  } from 'next/server'
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key-here-please-change-in-production'
@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key-here-please-c
 export async function GET(request: NextRequest) {
   try {
     // Get token from cookie or authorization header
-    const token = request.cookies.get('adminToken')?.value || 
+    const token = request.cookies.get('adminToken')?.value ||
                  request.headers.get('authorization')?.replace('Bearer ', '')
 
     if (!token) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
 
     return NextResponse.json({
       success: true,

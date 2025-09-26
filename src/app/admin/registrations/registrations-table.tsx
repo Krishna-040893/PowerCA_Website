@@ -1,12 +1,18 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import {useState, useEffect  } from 'react'
+import {createClient  } from '@supabase/supabase-js'
 import { format } from 'date-fns'
+import {toast  } from 'sonner'
 
 // Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Define the registration type
@@ -66,9 +72,10 @@ export default function RegistrationsTable() {
       }))
 
       setRegistrations(transformedData)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching registrations:', err)
-      setError(err.message || 'Failed to fetch registrations')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch registrations'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -283,7 +290,7 @@ export default function RegistrationsTable() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(registration.created_at!)}
+                      {registration.created_at ? formatDate(registration.created_at) : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {(registration.role === 'Student' || registration.role === 'Professional' || registration.role === 'subscriber') && (
@@ -304,14 +311,14 @@ export default function RegistrationsTable() {
                               const data = await response.json()
 
                               if (!response.ok) {
-                                alert(data.error || 'Error promoting user to affiliate')
+                                toast.error(data.error || 'Error promoting user to affiliate')
                                 return
                               }
 
-                              alert('User successfully promoted to affiliate!')
+                              toast.success('User successfully promoted to affiliate!')
                               fetchRegistrations() // Refresh data
-                            } catch (error) {
-                              alert('An error occurred while promoting the user')
+                            } catch {
+                              toast.error('An error occurred while promoting the user')
                             }
                           }}
                           className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs"

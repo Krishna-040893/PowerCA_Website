@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    console.log('Debug: Checking Supabase connection...')
 
     const supabase = createAdminClient()
 
@@ -13,7 +12,6 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .limit(5)
 
-    console.log('Supabase query result:', { data, error, count })
 
     if (error) {
       return NextResponse.json({
@@ -30,12 +28,13 @@ export async function GET(request: NextRequest) {
       message: 'Successfully connected to Supabase registrations table'
     })
 
-  } catch (error: any) {
-    console.error('Debug API error:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json({
       success: false,
-      error: error.message,
-      stack: error.stack
+      error: errorMessage,
+      stack: errorStack
     })
   }
 }

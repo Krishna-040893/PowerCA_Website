@@ -1,9 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { isTestMode } from '@/lib/payment-config'
+import {NextRequest, NextResponse  } from 'next/server'
+import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {isTestMode  } from '@/lib/payment-config'
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAdminAuth(req)
+    if (!auth.authorized) {
+      return auth.error
+    }
+
     // Only allow in test mode
     if (!isTestMode()) {
       return NextResponse.json(
@@ -55,7 +61,7 @@ export async function GET(req: NextRequest) {
       total: formattedReferrals.length
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching test referrals:', error)
     return NextResponse.json(
       {

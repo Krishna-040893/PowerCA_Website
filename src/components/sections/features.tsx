@@ -1,25 +1,12 @@
-"use client"
+'use client'
 
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
-import { 
-  Users, 
-  FileText, 
-  Folder, 
-  Receipt, 
-  CheckSquare, 
-  BarChart,
-  Shield,
-  Clock,
-  Globe,
-  Zap,
-  TrendingUp,
-  Award
-} from "lucide-react"
-import { featuresConfig } from "@/config/features"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {motion, useInView  } from 'framer-motion'
+import {useRef  } from 'react'
+import { Users, Shield, Clock, Globe, Zap, TrendingUp, Award, FileText, Folder, Receipt, CheckSquare, BarChart } from 'lucide-react'
+import {featuresConfig  } from '@/config/features'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-const iconMap: { [key: string]: any } = {
+const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Users,
   FileText,
   Folder,
@@ -30,7 +17,7 @@ const iconMap: { [key: string]: any } = {
 
 export function FeaturesSection() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -76,12 +63,12 @@ export function FeaturesSection() {
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          animate={isInView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {featuresConfig.mainFeatures.map((feature, index) => {
             const Icon = iconMap[feature.icon] || FileText
-            
+
             return (
               <motion.div key={index} variants={itemVariants}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-300 border-0 bg-white group">

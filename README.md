@@ -12,10 +12,19 @@ PowerCA is a comprehensive SaaS platform designed specifically for Chartered Acc
 - **Document Management** - Secure cloud storage with collaboration features
 - **Billing & Invoicing** - Automated payment processing with GST calculations
 - **Task Management** - Team collaboration and assignment tracking
-- **Reports & Analytics** - Performance metrics and productivity insights
+- **Affiliate System** - Complete referral tracking and commission management
+
+### Admin Portal Features
+- **Modern Admin Dashboard** - Comprehensive overview with real-time stats
+- **Sidebar Navigation** - Persistent navigation across all admin pages
+- **User Management** - Manage users, roles, and permissions
+- **Booking Management** - Track and manage demo bookings
+- **Affiliate Management** - Review and approve affiliate applications
+- **Registration Tracking** - Monitor user registrations and exports
+- **Dual Authentication** - Separate admin auth with JWT tokens
 
 ### Technical Features
-- **Authentication** - Secure login with NextAuth.js (Email/Password + Google OAuth)
+- **Authentication** - Dual auth system (Supabase for users, JWT for admin)
 - **Payment Integration** - Razorpay payment gateway with invoice generation
 - **Email Notifications** - Automated emails for bookings and payments
 - **Responsive Design** - Mobile-first approach with Tailwind CSS
@@ -75,7 +84,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Authentication
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret-key
+NEXTAUTH_SECRET=your-nextauth-secret-key  # Also used for admin JWT signing
 
 # Payment Gateway (Razorpay)
 RAZORPAY_KEY_ID=your-razorpay-key-id
@@ -121,19 +130,32 @@ PowerCA_Website/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── (auth)/            # Auth route group
 │   │   ├── (marketing)/       # Marketing pages
+│   │   ├── admin/             # Admin portal pages
+│   │   │   ├── affiliates/    # Affiliate management
+│   │   │   ├── bookings/      # Booking management
+│   │   │   ├── registrations/ # Registration tracking
+│   │   │   └── users/         # User management
+│   │   ├── admin-login/       # Admin authentication
 │   │   ├── api/               # API routes
-│   │   ├── auth/              # Authentication pages
+│   │   │   └── admin/         # Admin API endpoints
+│   │   ├── auth/              # User authentication
 │   │   ├── checkout/          # Payment checkout
 │   │   ├── dashboard/         # User dashboard
 │   │   └── payment-*/         # Payment status pages
 │   ├── components/            # React components
+│   │   ├── admin/            # Admin components
+│   │   │   ├── admin-sidebar-layout.tsx
+│   │   │   └── admin-page-wrapper.tsx
 │   │   ├── ui/               # UI components (shadcn)
 │   │   ├── sections/         # Page sections
 │   │   └── layout/           # Layout components
 │   ├── lib/                  # Utilities and services
 │   │   ├── supabase/         # Supabase client
+│   │   ├── admin-auth.ts     # Admin authentication
 │   │   ├── email-templates/  # Email templates
 │   │   └── invoice-generator.ts
+│   ├── hooks/                # Custom React hooks
+│   │   └── useAdminAuth.ts   # Admin auth hook
 │   └── config/               # Configuration files
 ├── prisma/                   # Database schema
 ├── supabase/                 # Supabase migrations
@@ -155,12 +177,22 @@ PowerCA uses Razorpay for payment processing:
 
 ## 🔐 Authentication
 
-The app supports multiple authentication methods:
+### User Authentication
+- **Powered by Supabase Auth**
 - Email/Password login
 - Google OAuth (optional)
-- Demo mode for development
+- Protected routes via middleware
 
-Protected routes are handled via middleware in `middleware.ts`.
+### Admin Authentication
+- **Separate JWT-based system**
+- Custom admin login at `/admin-login`
+- Secure token storage in localStorage
+- Session persistence with auto-logout
+- Default credentials (development):
+  - Username: `superadmin`
+  - Password: `Admin@123`
+
+⚠️ **Important**: Change admin credentials in production!
 
 ## 📧 Email Templates
 
@@ -199,24 +231,37 @@ npm run lint
 
 ## 📊 Database Schema
 
-Key models:
-- `User` - User accounts with firm details
-- `Payment` - Payment transactions
-- `Invoice` - Generated invoices
-- `Booking` - Demo bookings
+### Supabase Tables
+- `bookings` - Demo booking requests
+- `registrations` - User registrations
+- `affiliate_applications` - Affiliate partner requests
+- `admin_users` - Admin authentication
 
-See `prisma/schema.prisma` for complete schema.
+### Key Features
+- **Admin Users Table**: Separate admin authentication
+- **Affiliate System**: Complete referral tracking
+- **Booking Management**: Demo scheduling system
+- **User Roles**: Professional, Student, Admin, Affiliate
+
+See `supabase/migrations/` for database setup.
 
 ## 🎨 Customization
 
 ### Styling
 - Edit Tailwind config in `tailwind.config.ts`
-- Modify color scheme in `src/styles/globals.css`
+- Modify color scheme in `src/app/globals.css`
 - Component styles in respective component files
+- Admin theme in `src/components/admin/`
 
 ### Features
 - Add new features in `src/config/features.ts`
 - Modify pricing in `src/config/features.ts`
+- Admin navigation in `admin-sidebar-layout.tsx`
+
+### Admin Portal
+- Sidebar menu items in `admin-sidebar-layout.tsx`
+- Add new admin pages in `src/app/admin/`
+- Custom admin components in `src/components/admin/`
 
 ## 🤝 Contributing
 
@@ -242,12 +287,22 @@ For support, email contact@powerca.in or call +91 96295 14635
 - [shadcn/ui](https://ui.shadcn.com/) - Component library
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 
-## 📈 Roadmap
+## 📈 Recent Updates
 
-- [ ] Mobile app development for Power CA
+### ✅ Completed
+- [x] Admin portal with sidebar navigation
+- [x] Unified authentication across admin pages
+- [x] User management system
+- [x] Affiliate management and approvals
+- [x] Registration tracking with CSV export
+- [x] Responsive admin dashboard
+
+### 🚧 Roadmap
 - [ ] CRM Management
-
-
+- [ ] Automated affiliate commission tracking
+- [ ] Multi-tenant support
+- [ ] SEO Audit
+ 
 ---
 
 Built with ❤️ for Chartered Accountants in India

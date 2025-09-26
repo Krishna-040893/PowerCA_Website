@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { sendBookingConfirmationEmail } from '@/lib/resend'
+import {NextRequest, NextResponse  } from 'next/server'
+import {sendBookingConfirmationEmail  } from '@/lib/resend'
 
 // In-memory storage (for demo purposes - in production, use a database)
 const bookings = new Map<string, Set<string>>()
@@ -34,23 +34,13 @@ export async function POST(request: NextRequest) {
       time,
       message
     })
-    
-    console.log('Demo booking received:', {
-      name,
-      email,
-      phone,
-      firmName,
-      date: formattedDate,
-      time,
-      message
-    })
 
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       message: 'Booking confirmed successfully'
     })
-  } catch (error) {
-    console.error('Booking error:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to process booking' },
       { status: 500 }
@@ -62,7 +52,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
-    
+
     if (!date) {
       return NextResponse.json(
         { error: 'Date parameter is required' },
@@ -72,10 +62,9 @@ export async function GET(request: NextRequest) {
 
     const dateKey = new Date(date).toISOString().split('T')[0]
     const bookedSlots = Array.from(bookings.get(dateKey) || [])
-    
+
     return NextResponse.json({ bookedSlots })
-  } catch (error) {
-    console.error('Error fetching bookings:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch bookings' },
       { status: 500 }

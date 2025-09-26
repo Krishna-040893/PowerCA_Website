@@ -1,20 +1,20 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react"
+import {useState  } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Checkbox  } from '@/components/ui/checkbox'
+import { signIn } from 'next-auth/react'
+import {useRouter  } from 'next/navigation'
+import {Eye, EyeOff, Mail, Lock, ArrowLeft  } from 'lucide-react'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -25,17 +25,17 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       })
 
       if (result?.ok) {
-        router.push("/dashboard")
+        router.push('/dashboard')
       }
     } catch (error) {
-      console.error("Login error:", error)
+      console.error('Login error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter Your Password"
@@ -185,7 +185,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
 
             {/* Divider */}
@@ -200,7 +200,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => signIn("google")}
+                onClick={() => signIn('google')}
                 className="h-12 border-2 border-blue-200 hover:bg-blue-50 rounded-full font-medium"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -226,7 +226,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => signIn("facebook")}
+                onClick={() => signIn('facebook')}
                 className="h-12 border-2 border-blue-200 hover:bg-blue-50 rounded-full font-medium"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="#1877F2">
@@ -239,7 +239,7 @@ export default function LoginPage() {
             {/* Sign Up Link */}
             <div className="text-center pt-4">
               <p className="text-gray-600">
-                Don't have an Account?{" "}
+                Don't have an Account?{' '}
                 <Link
                   href="/register"
                   className="text-blue-600 hover:text-blue-800 font-medium underline"

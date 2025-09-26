@@ -18,7 +18,7 @@ export interface RazorpayOrderOptions {
   amount: number // Amount in paise (smallest currency unit)
   currency: string
   receipt: string
-  notes?: Record<string, any>
+  notes?: Record<string, string | number | boolean>
 }
 
 export interface RazorpayPaymentData {

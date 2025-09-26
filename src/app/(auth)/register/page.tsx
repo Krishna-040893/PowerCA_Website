@@ -1,31 +1,30 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield } from "lucide-react"
+import {useState  } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
+import {Checkbox  } from '@/components/ui/checkbox'
+import {useRouter  } from 'next/navigation'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield  } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    mobile: "",
-    email: "",
-    membershipNo: "",
-    password: "",
-    professional: "CA"
+    name: '',
+    mobile: '',
+    email: '',
+    membershipNo: '',
+    password: '',
+    professional: 'CA'
   })
   const [showPassword, setShowPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [userType, setUserType] = useState("professional")
+  const [userType, setUserType] = useState('professional')
   const router = useRouter()
 
   const handleInputChange = (field: string, value: string) => {
@@ -38,11 +37,12 @@ export default function RegisterPage() {
 
     try {
       // Add registration logic here
-      console.log("Registration data:", formData)
       // After successful registration, redirect to login
-      router.push("/login")
-    } catch (error) {
-      console.error("Registration error:", error)
+      router.push('/login')
+    } catch {
+      // Handle registration error
+      setIsLoading(false)
+      return
     } finally {
       setIsLoading(false)
     }
@@ -98,12 +98,12 @@ export default function RegisterPage() {
       </motion.div>
 
       {/* Register Form */}
-      <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-blue-100"
+          className="w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 border-2 border-blue-100"
         >
           {/* Header */}
           <div className="text-center mb-8">
@@ -119,11 +119,11 @@ export default function RegisterPage() {
           <div className="mb-8 flex justify-center">
             <div className="bg-blue-50 border border-blue-200 rounded-full p-2 inline-flex">
               <button
-                onClick={() => setUserType("professional")}
+                onClick={() => setUserType('professional')}
                 className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
-                  userType === "professional"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-blue-600 hover:bg-blue-100"
+                  userType === 'professional'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-blue-600 hover:bg-blue-100'
                 }`}
               >
                 <Shield className="w-4 h-4 inline mr-2" />
@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Name Field */}
@@ -154,9 +154,9 @@ export default function RegisterPage() {
                       id="name"
                       type="text"
                       value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="Enter Your Name"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className="pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
                     />
                   </div>
@@ -173,21 +173,21 @@ export default function RegisterPage() {
                       id="mobile"
                       type="tel"
                       value={formData.mobile}
-                      onChange={(e) => handleInputChange("mobile", e.target.value)}
+                      onChange={(e) => handleInputChange('mobile', e.target.value)}
                       placeholder="Enter Your Mobile number"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className="pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Professional Type */}
-                {userType === "professional" && (
+                {userType === 'professional' && (
                   <div className="space-y-3">
                     <Label className="text-gray-900 font-medium">Professional</Label>
                     <RadioGroup
                       value={formData.professional}
-                      onValueChange={(value) => handleInputChange("professional", value)}
+                      onValueChange={(value) => handleInputChange('professional', value)}
                       className="flex flex-wrap gap-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -224,16 +224,16 @@ export default function RegisterPage() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="Enter Your Email"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className="pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Membership Number Field */}
-                {userType === "professional" && (
+                {userType === 'professional' && (
                   <div className="space-y-2">
                     <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
                       Membership No
@@ -244,9 +244,9 @@ export default function RegisterPage() {
                         id="membershipNo"
                         type="text"
                         value={formData.membershipNo}
-                        onChange={(e) => handleInputChange("membershipNo", e.target.value)}
+                        onChange={(e) => handleInputChange('membershipNo', e.target.value)}
                         placeholder="Number"
-                        className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                        className="pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       />
                     </div>
                   </div>
@@ -261,9 +261,9 @@ export default function RegisterPage() {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       value={formData.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
                       placeholder="Enter Your Password"
                       className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                       required
@@ -293,11 +293,11 @@ export default function RegisterPage() {
                 className="mt-1"
               />
               <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                By creating an Account Means you agree to the{" "}
+                By creating an Account Means you agree to the{' '}
                 <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
                   Terms and Conditions
                 </Link>
-                , and our{" "}
+                , and our{' '}
                 <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
                   Privacy Policy
                 </Link>
@@ -315,14 +315,14 @@ export default function RegisterPage() {
                   maxWidth: '100%'
                 }}
               >
-                {isLoading ? "Creating Account..." : "Sign Up"}
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
               </Button>
             </div>
 
             {/* Sign In Link */}
             <div className="text-center pt-4">
               <p className="text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link
                   href="/login"
                   className="text-blue-600 hover:text-blue-800 font-medium underline"

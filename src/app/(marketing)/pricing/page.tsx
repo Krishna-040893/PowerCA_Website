@@ -1,24 +1,25 @@
-"use client"
+'use client'
 
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Rocket, Monitor, Calendar, Check, FileText, AlertCircle, Smartphone, X } from "lucide-react"
-import Link from "next/link"
-import { loadScript } from '@/lib/utils'
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { PAYMENT_CONFIG, isTestMode } from '@/lib/payment-config'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
+import {useRouter  } from 'next/navigation'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {Badge  } from '@/components/ui/badge'
+import {Rocket, Monitor, Calendar, Check, FileText, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import {loadScript  } from '@/lib/utils'
+import {useState, useEffect  } from 'react'
+import {useSession  } from 'next-auth/react'
+import {PAYMENT_CONFIG, isTestMode  } from '@/lib/payment-config'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+ } from '@/components/ui/dialog'
+import {RazorpayPaymentResponse, CustomerDetails  } from '@/types/common'
+import {toast  } from 'sonner'
 
 export default function PricingPage() {
   const router = useRouter()
@@ -26,7 +27,8 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(false)
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
-  const [customerDetails, setCustomerDetails] = useState({
+  const [showTestConfirmDialog, setShowTestConfirmDialog] = useState(false)
+  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
     name: '',
     email: '',
     phone: '',
@@ -63,13 +65,13 @@ export default function PricingPage() {
       if (response.ok) {
         const data = await response.json()
         if (!data.canRefer) {
-          alert('This affiliate has already completed their one allowed referral. Please proceed without a referral code.')
+          toast.warning('This affiliate has already completed their one allowed referral. Please proceed without a referral code.')
           setAffiliateCode(null)
           sessionStorage.removeItem('affiliateCode')
         }
       }
-    } catch (error) {
-      console.error('Error checking affiliate referral status:', error)
+    } catch {
+      // Handle error silently, user can still proceed
     }
   }
 
@@ -86,10 +88,85 @@ export default function PricingPage() {
     }
   }
 
+  const handleTestConfirmation = async () => {
+    setShowTestConfirmDialog(false)
+    setLoading(true)
+
+    try {
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, PAYMENT_CONFIG.TEST_PAYMENT_DELAY))
+
+      // Create test order
+      const testOrderId = PAYMENT_CONFIG.generateTestOrderId()
+      const testPaymentId = PAYMENT_CONFIG.generateTestPaymentId()
+
+      // Call verify endpoint directly with test data
+      const verifyResponse = await fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orderId: testOrderId,
+          paymentId: testPaymentId,
+          signature: 'test_signature',
+          planId: 'early-bird',
+          affiliateCode: affiliateCode,
+          isTestPayment: true,
+          customerDetails: {
+            name: customerDetails.name,
+            email: customerDetails.email,
+            phone: customerDetails.phone,
+            company: customerDetails.company || 'N/A',
+            gst: customerDetails.gst,
+            address: customerDetails.address,
+            city: customerDetails.city,
+            state: customerDetails.state,
+            pincode: customerDetails.pincode
+          },
+          productDetails: {
+            name: 'PowerCA Early Bird Offer',
+            amount: 1
+          }
+        })
+      })
+
+      const verifyData = await verifyResponse.json()
+
+      if (verifyResponse.ok && verifyData.success) {
+        // Track affiliate referral if applicable
+        if (affiliateCode) {
+          await fetch('/api/affiliate/track-referral', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              affiliateCode: affiliateCode,
+              planId: 'early-bird',
+              amount: 1,
+              paymentId: testPaymentId
+            })
+          })
+        }
+
+        toast.success('✅ TEST PAYMENT SUCCESSFUL! Check your email for the invoice.')
+        router.push('/payment-success?plan=early-bird&test=true')
+      } else {
+        toast.error('Test payment verification failed. Please check the console.')
+      }
+    } catch (error) {
+      console.error('Error processing test payment:', error)
+      toast.error('Failed to process test payment. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleProceedPayment = async () => {
     // Validate required fields
     if (!customerDetails.name || !customerDetails.email || !customerDetails.phone) {
-      alert('Please fill in all required fields')
+      toast.error('Please fill in all required fields')
       return
     }
 
@@ -99,88 +176,8 @@ export default function PricingPage() {
     try {
       // Check if in test mode
       if (isTestMode()) {
-        console.log('🧪 TEST MODE: Simulating payment flow')
-
-        // Show test mode alert
-        const confirmTest = confirm(
-          '🧪 TEST MODE ACTIVE\n\n' +
-          'This will simulate a successful payment without charging any real money.\n\n' +
-          'The following will happen:\n' +
-          '• Order will be created\n' +
-          '• Payment will be marked as successful\n' +
-          '• Invoice email will be sent\n' +
-          '• Referral will be tracked (if applicable)\n\n' +
-          'Continue with test payment?'
-        )
-
-        if (!confirmTest) {
-          setLoading(false)
-          return
-        }
-
-        // Simulate payment processing delay
-        await new Promise(resolve => setTimeout(resolve, PAYMENT_CONFIG.TEST_PAYMENT_DELAY))
-
-        // Create test order
-        const testOrderId = PAYMENT_CONFIG.generateTestOrderId()
-        const testPaymentId = PAYMENT_CONFIG.generateTestPaymentId()
-
-        // Call verify endpoint directly with test data
-        const verifyResponse = await fetch('/api/payment/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            orderId: testOrderId,
-            paymentId: testPaymentId,
-            signature: 'test_signature',
-            planId: 'early-bird',
-            affiliateCode: affiliateCode,
-            isTestPayment: true,
-            customerDetails: {
-              name: customerDetails.name,
-              email: customerDetails.email,
-              phone: customerDetails.phone,
-              company: customerDetails.company || 'N/A',
-              gst: customerDetails.gst,
-              address: customerDetails.address,
-              city: customerDetails.city,
-              state: customerDetails.state,
-              pincode: customerDetails.pincode
-            },
-            productDetails: {
-              name: 'PowerCA Early Bird Offer',
-              amount: 1
-            }
-          })
-        })
-
-        const verifyData = await verifyResponse.json()
-
-        if (verifyResponse.ok && verifyData.success) {
-          // Track affiliate referral if applicable
-          if (affiliateCode) {
-            await fetch('/api/affiliate/track-referral', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                affiliateCode: affiliateCode,
-                planId: 'early-bird',
-                amount: 1,
-                paymentId: testPaymentId
-              })
-            })
-          }
-
-          alert('✅ TEST PAYMENT SUCCESSFUL!\n\nCheck your email for the invoice.')
-          router.push('/payment-success?plan=early-bird&test=true')
-        } else {
-          alert('Test payment verification failed. Please check the console.')
-        }
-
+        // Show test mode confirmation dialog
+        setShowTestConfirmDialog(true)
         setLoading(false)
         return
       }
@@ -189,7 +186,7 @@ export default function PricingPage() {
       const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
 
       if (!res) {
-        alert('Razorpay SDK failed to load. Please check your connection.')
+        toast.error('Razorpay SDK failed to load. Please check your connection.')
         setLoading(false)
         return
       }
@@ -216,13 +213,13 @@ export default function PricingPage() {
 
       // Configure Razorpay options
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'PowerCA',
         description: 'Early Bird Offer - Special 50% Discount for CAs',
         order_id: orderData.id,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayPaymentResponse) {
           // Verify payment
           const verifyResponse = await fetch('/api/payment/verify', {
             method: 'POST',
@@ -265,7 +262,7 @@ export default function PricingPage() {
             // Redirect to success page
             router.push('/payment-success?plan=early-bird')
           } else {
-            alert('Payment verification failed. Please contact support.')
+            toast.error('Payment verification failed. Please contact support.')
             router.push('/payment-failed')
           }
         },
@@ -280,17 +277,17 @@ export default function PricingPage() {
       }
 
       // Open Razorpay checkout
-      const razorpay = new (window as any).Razorpay(options)
+      const razorpay = new window.Razorpay(options)
       razorpay.open()
 
-      razorpay.on('payment.failed', function (response: any) {
-        console.error('Payment failed:', response.error)
+      razorpay.on('payment.failed', function (response: unknown) {
+        console.error('Payment failed:', response)
         router.push('/payment-failed')
       })
 
     } catch (error) {
       console.error('Error processing payment:', error)
-      alert('Failed to process payment. Please try again.')
+      toast.error('Failed to process payment. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -364,7 +361,7 @@ export default function PricingPage() {
               Launch Offer
             </h1>
             <p className="text-2xl sm:text-3xl text-gray-600">
-              Get PowerCA at{" "}
+              Get PowerCA at{' '}
               <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
                 Zero Software Cost
               </span>
@@ -724,6 +721,61 @@ export default function PricingPage() {
               disabled={!customerDetails.name || !customerDetails.email || !customerDetails.phone}
             >
               Proceed to Payment
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Test Mode Confirmation Dialog */}
+      <Dialog open={showTestConfirmDialog} onOpenChange={setShowTestConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              🧪 TEST MODE ACTIVE
+            </DialogTitle>
+            <DialogDescription>
+              This will simulate a successful payment without charging any real money.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-sm text-gray-700 mb-4">The following will happen:</p>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">•</span>
+                Order will be created
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">•</span>
+                Payment will be marked as successful
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">•</span>
+                Invoice email will be sent
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">•</span>
+                Referral will be tracked (if applicable)
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowTestConfirmDialog(false)
+                setLoading(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleTestConfirmation}
+              className="bg-yellow-600 hover:bg-yellow-700"
+              disabled={loading}
+            >
+              {loading ? 'Processing...' : 'Continue Test Payment'}
             </Button>
           </div>
         </DialogContent>

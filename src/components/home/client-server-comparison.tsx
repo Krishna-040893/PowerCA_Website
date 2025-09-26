@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Monitor, Server, CheckCircle } from "lucide-react"
-import Link from "next/link"
+import {Card  } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Monitor, Server, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export function ClientServerComparison() {
   return (

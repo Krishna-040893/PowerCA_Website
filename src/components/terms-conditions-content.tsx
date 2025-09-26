@@ -1,6 +1,4 @@
-"use client"
-
-import { motion } from "framer-motion"
+// Server Component - no 'use client' needed for static content
 
 export function TermsConditionsContent() {
   return (
@@ -8,7 +6,7 @@ export function TermsConditionsContent() {
       {/* Background Pattern */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
@@ -18,9 +16,9 @@ export function TermsConditionsContent() {
             backgroundSize: '40px 40px'
           }}
         />
-        
+
         {/* Dot pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
@@ -28,9 +26,9 @@ export function TermsConditionsContent() {
             backgroundPosition: '0 0, 15px 15px'
           }}
         />
-        
+
         {/* Diagonal lines */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `repeating-linear-gradient(
@@ -45,11 +43,7 @@ export function TermsConditionsContent() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
+        <div className="max-w-4xl mx-auto"
         >
           {/* Header */}
           <div className="text-center mb-12">
@@ -91,7 +85,7 @@ export function TermsConditionsContent() {
             {/* Section 3: Account Registration */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Account Registration</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">3.1 Eligibility</h3>
@@ -131,7 +125,7 @@ export function TermsConditionsContent() {
             {/* Section 4: Subscription and Billing */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Subscription and Billing</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">4.1 Implementation and Subscription</h3>
@@ -190,7 +184,7 @@ export function TermsConditionsContent() {
             {/* Section 5: Service Usage */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Service Usage</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">5.1 Permitted Use</h3>
@@ -237,7 +231,7 @@ export function TermsConditionsContent() {
             {/* Section 6: Intellectual Property Rights */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Intellectual Property Rights</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">6.1 Our Property</h3>
@@ -276,7 +270,7 @@ export function TermsConditionsContent() {
             {/* Section 7: Data Protection and Privacy */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Data Protection and Privacy</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">7.1 Data Ownership</h3>
@@ -324,7 +318,7 @@ export function TermsConditionsContent() {
             {/* Section 8: Service Level Agreement (SLA) */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Service Level Agreement (SLA)</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">8.1 Uptime Commitment</h3>
@@ -360,7 +354,7 @@ export function TermsConditionsContent() {
             {/* Section 9: User Responsibilities */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">9. User Responsibilities</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">9.1 Professional Compliance</h3>
@@ -400,7 +394,7 @@ export function TermsConditionsContent() {
             {/* Section 10: Third-Party Services */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Third-Party Services</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">10.1 Integrations</h3>
@@ -427,7 +421,7 @@ export function TermsConditionsContent() {
             {/* Section 11: Modifications and Updates */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Modifications and Updates</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">11.1 Service Updates</h3>
@@ -455,7 +449,7 @@ export function TermsConditionsContent() {
             {/* Section 12: Termination */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Termination</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">12.1 By You</h3>
@@ -493,7 +487,7 @@ export function TermsConditionsContent() {
             {/* Section 13: Disclaimers */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">13. Disclaimers</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">13.1 Service Disclaimer</h3>
@@ -529,7 +523,7 @@ export function TermsConditionsContent() {
             {/* Section 14: Limitation of Liability */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">14. Limitation of Liability</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">14.1 Liability Cap</h3>
@@ -566,7 +560,7 @@ export function TermsConditionsContent() {
             {/* Section 15: Indemnification */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">15. Indemnification</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">15.1 By You</h3>
@@ -595,7 +589,7 @@ export function TermsConditionsContent() {
             {/* Section 16: Dispute Resolution */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">16. Dispute Resolution</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">16.1 Informal Resolution</h3>
@@ -643,7 +637,7 @@ export function TermsConditionsContent() {
             {/* Section 18: Miscellaneous */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">18. Miscellaneous</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">18.1 Entire Agreement</h3>
@@ -701,7 +695,7 @@ export function TermsConditionsContent() {
             {/* Section 19: Specific Terms for Indian Users */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">19. Specific Terms for Indian Users</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">19.1 GST Compliance</h3>
@@ -734,7 +728,7 @@ export function TermsConditionsContent() {
             {/* Section 20: Contact Information */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">20. Contact Information</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">For Support:</h3>
@@ -776,7 +770,7 @@ export function TermsConditionsContent() {
             {/* Section 22: Special Terms for Launch Offer */}
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">22. Special Terms for Launch Offer</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">22.1 Offer Validity</h3>
@@ -857,7 +851,7 @@ export function TermsConditionsContent() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

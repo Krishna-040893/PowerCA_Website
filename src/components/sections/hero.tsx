@@ -1,14 +1,28 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { SlideIn } from "@/components/animations/slide-in"
-import { FadeIn } from "@/components/animations/fade-in"
-import { ArrowRight, FileText, Shield, Users, TrendingUp } from "lucide-react"
-import { motion } from "framer-motion"
-import { RotatingText } from "@/components/ui/rotating-text"
+import {Button  } from '@/components/ui/button'
+import Link from 'next/link'
+import {SlideIn  } from '@/components/animations/slide-in'
+import {FadeIn  } from '@/components/animations/fade-in'
+import { ArrowRight, Shield, Users, TrendingUp, Download  } from 'lucide-react'
+import {motion  } from 'framer-motion'
+import {RotatingText  } from '@/components/ui/rotating-text'
+import {useState  } from 'react'
 
 export function HeroSection() {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  const handleDownload = () => {
+    // Create a temporary link element to force download
+    const link = document.createElement('a')
+    link.href = '/docs/PowercaPromoters.pdf'
+    link.download = 'PowercaPromoters.pdf'
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <section className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden">
       {/* Mesh gradient background */}
@@ -17,9 +31,9 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary-50/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-secondary-50/30 to-transparent" />
       </div>
-      
+
       {/* Grid pattern overlay - matching pricing page */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage: `
@@ -29,9 +43,9 @@ export function HeroSection() {
           backgroundSize: '40px 40px'
         }}
       />
-      
+
       {/* Dot pattern overlay - matching pricing page */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
@@ -39,9 +53,9 @@ export function HeroSection() {
           backgroundPosition: '0 0, 15px 15px'
         }}
       />
-      
+
       {/* Diagonal lines pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `repeating-linear-gradient(
@@ -53,7 +67,7 @@ export function HeroSection() {
           )`
         }}
       />
-      
+
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -64,7 +78,7 @@ export function HeroSection() {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
           className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary-200/50 rounded-full blur-3xl"
         />
@@ -76,7 +90,7 @@ export function HeroSection() {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
           className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-secondary-200/50 rounded-full blur-3xl"
         />
@@ -88,12 +102,12 @@ export function HeroSection() {
           transition={{
             duration: 15,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary-100/40 to-secondary-100/40 rounded-full blur-3xl"
         />
       </div>
-      
+
       {/* Radial gradient overlay for depth */}
       <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-white/40" />
 
@@ -103,23 +117,23 @@ export function HeroSection() {
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <SlideIn direction="down" delay={0}>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 className="inline-flex items-center px-4 py-2 rounded-full glass-primary border border-primary-200/50 text-primary-700 text-sm font-medium mb-6 shadow-lg"
               >
                 <Shield className="w-4 h-4 mr-2" />
-                Practice Management Solution for Professionals
+                Your Practice. Organized, Optimized, Empowered.
               </motion.div>
             </SlideIn>
 
             {/* Main Headline */}
             <SlideIn direction="up" delay={0.2}>
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                 Simplify Your Practice,
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600 block mt-2">
-                  Amplify Your{" "}
-                  <RotatingText 
-                    words={["Growth", "Potential", "Revenue"]}
+                  Amplify Your{' '}
+                  <RotatingText
+                    words={['Growth', 'Potential', 'Revenue']}
                     className="ml-2"
                   />
                 </span>
@@ -128,9 +142,9 @@ export function HeroSection() {
 
             {/* PowerCA Description */}
             <SlideIn direction="up" delay={0.3}>
-              <p className="text-lg sm:text-xl text-gray-700 mb-6 max-w-4xl mx-auto leading-relaxed">
-                Power CA is a robust administrative tool designed to take control and bring efficiency to your practice. 
-                Empower your practice by seamlessly managing your tasks, billing, documentation and other functions. 
+              <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-6 max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
+                Power CA is a robust administrative tool designed to take control and bring efficiency to your practice.
+                Empower your practice by seamlessly managing your tasks, billing, documentation and other functions.
                 We cordially welcome you to explore further.
               </p>
             </SlideIn>
@@ -151,21 +165,17 @@ export function HeroSection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Button
                   size="lg"
-<<<<<<< HEAD
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
                   asChild
                 >
                   <Link href="/checkout">
-                    Get Started Now - ₹1
+                    Get Started Now - ₹22,000
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
-=======
-                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 group"
                   asChild
                 >
                   <Link href="/book-demo">
@@ -173,28 +183,37 @@ export function HeroSection() {
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-<<<<<<< HEAD
-                  className="px-8 py-6 text-lg group border-2 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-700 transition-all"
-=======
-                  className="px-8 py-6 text-lg group border-2 hover:border-primary-400 hover:bg-primary-50/50 hover:text-primary-700 transition-all"
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-                  asChild
-                >
-                  <Link href="/docs/PowercaPromoters.pdf" download>
-                    <FileText className="mr-2 w-5 h-5" />
+                <div className="relative inline-block">
+                  <button
+                    onClick={handleDownload}
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    className="inline-flex items-center px-8 py-6 text-lg border-2 border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-700 transition-all group cursor-pointer"
+                  >
+                    <Download className="mr-2 w-5 h-5 group-hover:animate-bounce" />
                     Promoter's Perspective
-                  </Link>
-                </Button>
+                  </button>
+                  {showTooltip && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        <Download className="w-4 h-4" />
+                        Click to download PDF
+                      </div>
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </SlideIn>
 
             {/* Trust Indicators */}
             <FadeIn delay={0.8}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center justify-center space-x-2 glass-light rounded-lg px-4 py-3"
                 >
@@ -203,7 +222,7 @@ export function HeroSection() {
                     <strong className="text-gray-900">15,000+</strong> Active Users
                   </span>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center justify-center space-x-2 glass-light rounded-lg px-4 py-3"
                 >
@@ -212,7 +231,7 @@ export function HeroSection() {
                     <strong className="text-gray-900">100%</strong> Data Security
                   </span>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center justify-center space-x-2 glass-light rounded-lg px-4 py-3"
                 >
@@ -229,24 +248,24 @@ export function HeroSection() {
 
       {/* Bottom Wave Shape */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg 
-          viewBox="0 0 1440 120" 
-          fill="none" 
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-auto"
         >
-          <path 
-            d="M0 120L48 110C96 100 192 80 288 70C384 60 480 60 576 65C672 70 768 80 864 85C960 90 1056 90 1152 85C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z" 
+          <path
+            d="M0 120L48 110C96 100 192 80 288 70C384 60 480 60 576 65C672 70 768 80 864 85C960 90 1056 90 1152 85C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z"
             fill="white"
             fillOpacity="0.1"
           />
-          <path 
-            d="M0 120L48 115C96 110 192 100 288 95C384 90 480 90 576 92C672 94 768 98 864 100C960 102 1056 102 1152 100C1248 98 1344 94 1392 92L1440 90V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z" 
+          <path
+            d="M0 120L48 115C96 110 192 100 288 95C384 90 480 90 576 92C672 94 768 98 864 100C960 102 1056 102 1152 100C1248 98 1344 94 1392 92L1440 90V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z"
             fill="white"
             fillOpacity="0.5"
           />
-          <path 
-            d="M0 120L48 118C96 116 192 112 288 110C384 108 480 108 576 108C672 108 768 108 864 108C960 108 1056 108 1152 108C1248 108 1344 108 1392 108L1440 108V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z" 
+          <path
+            d="M0 120L48 118C96 116 192 112 288 110C384 108 480 108 576 108C672 108 768 108 864 108C960 108 1056 108 1152 108C1248 108 1344 108 1392 108L1440 108V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z"
             fill="white"
           />
         </svg>

@@ -1,20 +1,17 @@
 import * as React from 'react'
-import {
-  Html,
+import {Html,
   Head,
   Body,
   Container,
   Section,
-  Text,
-  Link,
+  Text, Link,
   Button,
   Img,
   Preview,
-  Hr,
   Font,
   Row,
   Column,
-} from '@react-email/components'
+ } from '@react-email/components'
 
 interface DemoBookingEmailProps {
   name: string
@@ -44,7 +41,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
     day: 'numeric',
   })
 
-  const preview = isTeamNotification 
+  const preview = isTeamNotification
     ? `New demo booking from ${name} - ${firmName || 'Individual'}`
     : `Your PowerCA demo is confirmed for ${formattedDate}`
 
@@ -53,7 +50,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
       <Head>
         <Font
           fontFamily="Geist"
-          fallbackFontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          fallbackFontFamily="sans-serif"
           webFont={{
             url: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
             format: 'woff2',
@@ -86,7 +83,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
                 {isTeamNotification ? 'New Demo Booking Alert' : 'Demo Booking Confirmed!'}
               </Text>
               <Text style={heroSubtitle}>
-                {isTeamNotification 
+                {isTeamNotification
                   ? `A new demo has been scheduled`
                   : `Your demo is scheduled for ${formattedDate} at ${time}`}
               </Text>
@@ -99,8 +96,8 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
               <>
                 <Text style={greeting}>Dear {name},</Text>
                 <Text style={paragraph}>
-                  Thank you for booking a demo with PowerCA! We're excited to show you how our 
-                  comprehensive practice management software can transform your CA practice and 
+                  Thank you for booking a demo with PowerCA! We're excited to show you how our
+                  comprehensive practice management software can transform your CA practice and
                   help you save 10+ hours weekly while ensuring 100% compliance.
                 </Text>
               </>
@@ -111,7 +108,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
               <Text style={cardTitle}>
                 {isTeamNotification ? '📋 Booking Information' : '📅 Your Demo Details'}
               </Text>
-              
+
               <table style={detailsTable}>
                 <tbody>
                   <tr>
@@ -228,16 +225,16 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
                 <Text style={teamActionTitle}>Quick Actions</Text>
                 <Row>
                   <Column align="center">
-                    <Button 
-                      href={`mailto:${email}?subject=PowerCA Demo Confirmation - ${formattedDate}`} 
+                    <Button
+                      href={`mailto:${email}?subject=PowerCA Demo Confirmation - ${formattedDate}`}
                       style={teamButton}
                     >
                       Contact Client
                     </Button>
                   </Column>
                   <Column align="center">
-                    <Button 
-                      href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=PowerCA Demo - ${name}&dates=${new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=Demo with ${name} from ${firmName || 'N/A'}`} 
+                    <Button
+                      href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=PowerCA Demo - ${name}&dates=${new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=Demo with ${name} from ${firmName || 'N/A'}`}
                       style={teamButton}
                     >
                       Add to Calendar
@@ -253,7 +250,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
                 {isTeamNotification ? 'Client Support' : 'Need to Reschedule?'}
               </Text>
               <Text style={contactText}>
-                {isTeamNotification 
+                {isTeamNotification
                   ? 'Ensure the client receives the meeting link on time'
                   : 'Contact us if you need to reschedule or have any questions'}
               </Text>

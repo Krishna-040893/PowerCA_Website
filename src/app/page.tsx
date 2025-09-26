@@ -1,182 +1,119 @@
-<<<<<<< HEAD
-"use client"
+import { Metadata } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
+import { ClientLogos } from '@/components/client-logos'
+import { ProfessionRotator } from '@/components/home/profession-rotator'
+import { BenefitsAccordion } from '@/components/home/benefits-accordion'
+import { TestimonialsCarousel } from '@/components/home/testimonials-carousel'
+import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
+import './testimonial-scroll.css'
 
-import Image from "next/image"
-import Link from "next/link"
-import { useState, useEffect } from "react"
-import { ClientLogos } from "@/components/client-logos"
-import "./testimonial-scroll.css"
-=======
-<<<<<<< HEAD
-"use client"
-
-import { HeroSection } from "@/components/home/hero-section"
-import { StreamlinePractice } from "@/components/home/streamline-practice"
-import { PowerCAToolsSection } from "@/components/home/powerca-tools-section"
-import { StartUsingCTA } from "@/components/home/start-using-cta"
-import { BestCRMSection } from "@/components/home/best-crm-section"
-import { ClientServerComparison } from "@/components/home/client-server-comparison"
-import { BenefitsOfPowerCA } from "@/components/home/benefits-powerca"
-import { Footer } from "@/components/layout/footer"
+export const metadata: Metadata = {
+  title: 'PowerCA - Best Practice Management Software for CAs in India | Save 10+ Hours Weekly',
+  description: 'Transform your CA practice with PowerCA. Complete practice management software for Chartered Accountants. Job card management, billing, compliance tracking. Free demo available.',
+  keywords: 'CA practice management software, chartered accountant software India, CA office automation, tax practice management, CA firm management system, PowerCA, practice management for CAs',
+  openGraph: {
+    title: 'PowerCA - Practice Management Software for Chartered Accountants',
+    description: 'Streamline your CA practice with PowerCA. Save 10+ hours weekly, ensure 100% compliance, and grow effortlessly.',
+    images: ['/og-image.jpg'],
+    url: 'https://powerca.in',
+    siteName: 'PowerCA',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PowerCA - Practice Management Software for CAs',
+    description: 'Complete practice management solution for Chartered Accountants in India.',
+    images: ['/og-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://powerca.in',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+}
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <HeroSection />
-
-      {/* Streamline your practice */}
-      <StreamlinePractice />
-
-      {/* PowerCA Tools CA */}
-      <PowerCAToolsSection />
-
-      {/* Start using PowerCA today */}
-      <StartUsingCTA />
-
-      {/* Best Advancing Chartered Accountant CRM */}
-      <BestCRMSection />
-
-      {/* Client - Server Model */}
-      <ClientServerComparison />
-
-      {/* Benefits of PowerCA */}
-      <BenefitsOfPowerCA />
-
-      {/* Footer */}
-      <Footer />
-=======
-import { HeroSection } from "@/components/sections/hero"
-import { DashboardPreview } from "@/components/sections/dashboard-preview"
-import { SocialProof } from "@/components/sections/social-proof"
-import { BentoFeaturesSection } from "@/components/sections/bento-features"
-import { PricingSection } from "@/components/sections/pricing"
-import { TestimonialsSection } from "@/components/sections/testimonials"
-import { FAQSection } from "@/components/sections/faq-section"
-import { EnhancedCTASection } from "@/components/sections/enhanced-cta"
-import { AnimatedSection } from "@/components/animations/animated-section"
->>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
-
-export default function Home() {
-  const [openBenefit, setOpenBenefit] = useState(0)
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
-  const [currentProfession, setCurrentProfession] = useState(0)
-
-  const professionalTitles = [
-    "Chartered Accountants",
-    "Company Secretaries",
-    "Cost Accountants",
-    "All Practice Professionals"
-  ]
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentProfession((prev) => (prev + 1) % professionalTitles.length)
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const benefits = [
-    {
-      number: "1.",
-      title: "Organized Digital Workflows",
-      description: "Replace manual registers with easily retrievable digital data. Job Masters, Job Cards, Checklists, and Job Plans bring discipline and efficiency to daily routines."
+  // LocalBusiness Schema for SEO
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    'name': 'PowerCA',
+    'applicationCategory': 'BusinessApplication',
+    'operatingSystem': 'Web',
+    'description': 'Complete practice management software for Chartered Accountants in India',
+    'url': 'https://powerca.in',
+    'offers': {
+      '@type': 'Offer',
+      'price': '22000',
+      'priceCurrency': 'INR',
+      'priceValidUntil': '2025-12-31',
+      'availability': 'https://schema.org/InStock',
+      'seller': {
+        '@type': 'Organization',
+        'name': 'PowerCA',
+        'url': 'https://powerca.in'
+      }
     },
-    {
-      number: "2.",
-      title: "Knowledge-Driven Templates",
-      description: "Convert auditor expertise into reusable, practice-oriented templates so every staff member works at peak efficiency."
+    'aggregateRating': {
+      '@type': 'AggregateRating',
+      'ratingValue': '4.8',
+      'reviewCount': '1500',
+      'bestRating': '5',
+      'worstRating': '1'
     },
-    {
-      number: "3.",
-      title: "Built-In Best Practices",
-      description: "Adopt proven methods from leading audit firms—targets, weekly reviews, wrap-up checklists, service requests, and detailed job notes—for quality service and proper documentation."
-    },
-    {
-      number: "4.",
-      title: "Higher Service Value",
-      description: "Present complete Job Reports to clients to improve billability and acceptance. Costing tools flag loss-making assignments and guide internal course correction."
-    },
-    {
-      number: "5.",
-      title: "Culture of Accountability",
-      description: "Work diaries, task and client notes, reminders, attendance logs, and approvals foster documentation discipline and a professional work culture."
+    'creator': {
+      '@type': 'Organization',
+      'name': 'PowerCA',
+      'url': 'https://powerca.in',
+      'address': {
+        '@type': 'PostalAddress',
+        'addressLocality': 'Mumbai',
+        'addressRegion': 'Maharashtra',
+        'addressCountry': 'IN'
+      },
+      'contactPoint': {
+        '@type': 'ContactPoint',
+        'telephone': '+91-1800-123-4567',
+        'contactType': 'customer support',
+        'availableLanguage': ['en', 'hi']
+      }
     }
-  ]
-
-  const toggleBenefit = (index: number) => {
-    setOpenBenefit(openBenefit === index ? -1 : index)
-  }
-
-  const testimonials = [
-    {
-      name: "Rajesh Sharma",
-      role: "CA & Managing Partner",
-      initial: "RS",
-      bgColor: "bg-blue-100",
-      textColor: "text-blue-600",
-      content: "PowerCA has transformed our practice management completely. The workflow automation and client management features have saved us hours of manual work every day."
-    },
-    {
-      name: "Priya Kapoor",
-      role: "Chartered Accountant",
-      initial: "PK",
-      bgColor: "bg-green-100",
-      textColor: "text-green-600",
-      content: "The billing module is fantastic! It handles all our GST requirements automatically and the client portal keeps everyone informed about project status."
-    },
-    {
-      name: "Amit Mehta",
-      role: "Senior Partner",
-      initial: "AM",
-      bgColor: "bg-purple-100",
-      textColor: "text-purple-600",
-      content: "PowerCA's reporting capabilities are impressive. We can generate comprehensive financial reports and track our practice performance in real-time."
-    },
-    {
-      name: "Suresh Kumar",
-      role: "Senior CA",
-      initial: "SK",
-      bgColor: "bg-orange-100",
-      textColor: "text-orange-600",
-      content: "The implementation was smooth and the support team was incredibly helpful throughout the transition. Our efficiency has improved by 40% since switching to PowerCA."
-    },
-    {
-      name: "Neha Khanna",
-      role: "Practice Manager",
-      initial: "NK",
-      bgColor: "bg-pink-100",
-      textColor: "text-pink-600",
-      content: "Client communication has never been easier. The portal keeps everyone updated and the automated notifications save us so much time on follow-ups."
-    }
-  ]
-
-  const nextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-  }
-
-  const prevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
+      <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative py-[100px] flex items-center justify-center overflow-hidden bg-white">
-        {/* Container with padding for the background image */}
+        {/* Optimized background image using next/image */}
         <div className="absolute inset-0 px-12">
-          <div
-            className="w-full h-full rounded-2xl"
-            style={{
-              backgroundImage: 'url(/images/hero-bg.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          >
+          <div className="relative w-full h-full rounded-2xl overflow-hidden">
+            <Image
+              src="/images/hero-bg.jpg"
+              alt="PowerCA Practice Management Software Dashboard for Chartered Accountants"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+              sizes="100vw"
+            />
             {/* Optional overlay for better text readability */}
-            <div className="absolute inset-0 bg-white/10 rounded-2xl"></div>
+            <div className="absolute inset-0 bg-white/10"></div>
           </div>
         </div>
 
@@ -188,26 +125,15 @@ export default function Home() {
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Practice Management Solution for Professionals
+                Your Practice. Organized, Optimized, Empowered.
               </span>
             </div>
 
-            {/* Main Heading */}
+            {/* Main Heading with SEO Keywords */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-8">
-              Practice Management Solution for
+              Best Practice Management Software for
               <br />
-              <div className="relative h-20 overflow-hidden">
-                <span
-                  key={currentProfession}
-                  className="absolute inset-0 text-blue-600 animate-slideDown"
-                  style={{
-                    animation: 'slideDown 0.6s ease-out forwards',
-                    animationDelay: '0s'
-                  }}
-                >
-                  {professionalTitles[currentProfession]}
-                </span>
-              </div>
+              <ProfessionRotator />
             </h1>
 
             {/* Description */}
@@ -244,29 +170,33 @@ export default function Home() {
                 </svg>
               </a>
               <a
-                href="/promoter-perspective"
+                href="/docs/PowercaPromoters.pdf"
+                download="PowercaPromoters.pdf"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
               >
-                Promoter's Perspective
+                📥 Promoter's Perspective
               </a>
             </div>
           </div>
         </div>
-<<<<<<< HEAD
       </section>
 
       {/* Client Logos Section */}
       <ClientLogos />
 
-      
+
       {/* Streamline Your Practice - Text Only Section */}
       <section className="px-12 relative overflow-hidden">
-        <div className="relative rounded-2xl overflow-hidden" style={{
-          backgroundImage: 'url(/images/streamline-bg.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}>
+        <div className="relative rounded-2xl overflow-hidden">
+          <Image
+            src="/images/streamline-bg.jpg"
+            alt="Streamline background"
+            fill
+            className="object-cover absolute inset-0"
+            loading="lazy"
+            quality={85}
+            sizes="100vw"
+          />
           <div className="absolute inset-0 bg-white/10"></div>
           <div className="container mx-auto px-6 lg:px-8 py-20 relative z-10">
           <div className="grid lg:grid-cols-4 gap-12 items-start">
@@ -304,7 +234,7 @@ export default function Home() {
             <div className="relative max-w-4xl w-full">
               <Image
                 src="/images/power-ca-modules-workflow.png"
-                alt="Power CA Modules Workflow"
+                alt="PowerCA Complete Module Workflow - Job Cards, Billing, Compliance Management for CA Firms"
                 width={1200}
                 height={800}
                 className="w-full h-auto object-contain"
@@ -339,12 +269,15 @@ export default function Home() {
 
             {/* Right Content - Button */}
             <div className="lg:col-span-1 flex items-center justify-start lg:justify-end">
-              <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+              <Link
+                href="/modules"
+                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
+              >
                 All Modules
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -354,10 +287,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/job-card-icon.svg"
-                  alt="Job Card Management"
+                  alt="Job Card Management Module Icon - Track and manage all client jobs with intuitive dashboard for CA practices"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter text-white">Job Card Management</h3>
@@ -369,10 +303,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/costing-module-icon.svg"
-                  alt="Costing Module"
+                  alt="Costing Module Icon - Track project costs and analyze profitability for CA practices"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Costing Module</h3>
@@ -384,10 +319,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/crm-module-icon.svg"
-                  alt="CRM Module"
+                  alt="CRM Module Icon - Client relationship management with lead tracking and engagement analytics"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>CRM Module</h3>
@@ -399,10 +335,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/clients-module-icon.svg"
-                  alt="Clients Module"
+                  alt="Clients Module Icon - Centralized client profiles with documents and communication history"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Clients Module</h3>
@@ -414,10 +351,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/financial-statements-icon.svg"
-                  alt="Financial Statements"
+                  alt="Financial Statements Module Icon - Generate balance sheets and P&L reports with real-time data"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Financial Statements</h3>
@@ -429,10 +367,11 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/billing-module-icon.svg"
-                  alt="Billing Module"
+                  alt="Billing Module Icon - Automated invoicing with GST compliance and payment tracking"
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain"
+                  loading="lazy"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3 font-inter" style={{ color: '#001525' }}>Billing Module</h3>
@@ -457,12 +396,16 @@ export default function Home() {
               <h2 className="font-semibold font-inter" style={{ color: '#001525', fontSize: '48px', lineHeight: '1.1' }}>
                 Start using Power CA today!
               </h2>
-              <button className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-full hover:opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg" style={{ backgroundColor: '#155dfc' }}>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-full hover:opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
+                style={{ backgroundColor: '#155dfc' }}
+              >
                 Pricing Plan
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </button>
+              </Link>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-16 items-start">
@@ -473,10 +416,11 @@ export default function Home() {
                   <div className="col-span-1">
                     <Image
                       src="/images/step-1-icon.png"
-                      alt="Step 1"
+                      alt="Step 1 Icon - Book your PowerCA demo for CA practice management software"
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="col-span-3">
@@ -502,10 +446,11 @@ export default function Home() {
                   <div className="col-span-1">
                     <Image
                       src="/images/step-2-icon.png"
-                      alt="Step 2"
+                      alt="Step 2 Icon - Select PowerCA package based on your CA firm size and users"
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="col-span-3">
@@ -531,10 +476,11 @@ export default function Home() {
                   <div className="col-span-1">
                     <Image
                       src="/images/step-3-icon.png"
-                      alt="Step 3"
+                      alt="Step 3 Icon - Install PowerCA and activate your license with support team assistance"
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="col-span-3">
@@ -560,10 +506,11 @@ export default function Home() {
                   <div className="col-span-1">
                     <Image
                       src="/images/step-4-icon.png"
-                      alt="Step 4"
+                      alt="Step 4 Icon - Import your existing CA firm data into PowerCA system"
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="col-span-3">
@@ -589,10 +536,11 @@ export default function Home() {
                   <div className="col-span-1">
                     <Image
                       src="/images/step-5-icon.png"
-                      alt="Step 5"
+                      alt="Step 5 Icon - Receive support and training for your CA firm staff"
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="col-span-3">
@@ -613,11 +561,13 @@ export default function Home() {
                 <div className="w-full max-w-lg">
                   <Image
                     src="/images/start-using-power-ca-today.jpg"
-                    alt="Professional using Power CA"
+                    alt="Professional Chartered Accountant using PowerCA practice management software on laptop"
                     width={500}
                     height={600}
                     className="w-full h-auto shadow-lg"
+                    loading="lazy"
                     style={{ borderRadius: '16px' }}
+                    quality={85}
                   />
                 </div>
               </div>
@@ -640,82 +590,15 @@ export default function Home() {
             </div>
 
             {/* Center Content - Description */}
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-6">
               <p className="text-lg text-gray-600 leading-relaxed">
                 Don't just take our word for it. Here's what our clients have to say about PowerCA.
               </p>
             </div>
-
-            {/* Right Content - Navigation Arrows */}
-            <div className="lg:col-span-2 flex justify-end space-x-4">
-              <button
-                onClick={prevTestimonial}
-                className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-[#144fed] hover:text-[#144fed] transition-colors duration-200"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={nextTestimonial}
-                className="w-12 h-12 rounded-full text-white flex items-center justify-center transition-colors duration-200"
-                style={{ backgroundColor: '#144fed' }}
-                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#0f3cc9'}
-                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#144fed'}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
 
-          {/* Testimonial Cards - Carousel */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.slice(currentTestimonial, currentTestimonial + 3).concat(
-              currentTestimonial + 3 > testimonials.length
-                ? testimonials.slice(0, (currentTestimonial + 3) - testimonials.length)
-                : []
-            ).map((testimonial, index) => (
-              <div key={`${currentTestimonial}-${index}`} className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                <div className="flex items-center mb-4">
-                  <div className="flex space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-6 leading-relaxed">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center">
-                  <div className={`w-12 h-12 ${testimonial.bgColor} rounded-full flex items-center justify-center mr-4`}>
-                    <span className={`${testimonial.textColor} font-semibold text-lg`}>{testimonial.initial}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-gray-600 text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Carousel Indicators */}
-          <div className="flex justify-center space-x-2 mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentTestimonial(index)}
-                className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                  index === currentTestimonial ? 'bg-[#144fed]' : 'bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-
+          {/* Testimonials Carousel Component */}
+          <TestimonialsCarousel />
         </div>
       </section>
 
@@ -781,10 +664,11 @@ export default function Home() {
                     <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                       <Image
                         src="/images/regulatory-compliance-icon.png"
-                        alt="Regulatory compliance"
+                        alt="Regulatory Compliance Icon - Ensure tax and GST compliance for CA practices in India"
                         width={40}
                         height={40}
                         className="w-10 h-10 object-contain"
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">Regulatory compliance</h3>
@@ -798,10 +682,11 @@ export default function Home() {
                     <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                       <Image
                         src="/images/real-time-analysis-icon.png"
-                        alt="Real Time Analysis"
+                        alt="Real-Time Analysis Icon - Live data analytics and reporting for CA firms"
                         width={40}
                         height={40}
                         className="w-10 h-10 object-contain"
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">Real Time Analysis</h3>
@@ -815,10 +700,11 @@ export default function Home() {
                     <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                       <Image
                         src="/images/data-security-icon.png"
-                        alt="Data Security"
+                        alt="Data Security Icon - Secure client data protection with encryption for CA practices"
                         width={40}
                         height={40}
                         className="w-10 h-10 object-contain"
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">Data Security</h3>
@@ -832,10 +718,11 @@ export default function Home() {
                     <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                       <Image
                         src="/images/247-dedicated-support-icon.png"
-                        alt="24/7 Dedicated Support"
+                        alt="24/7 Dedicated Support Icon - Round-the-clock technical support for PowerCA users"
                         width={40}
                         height={40}
                         className="w-10 h-10 object-contain"
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">24/7 Dedicated Support</h3>
@@ -848,10 +735,12 @@ export default function Home() {
                 <div className="max-w-lg">
                   <Image
                     src="/images/server-network-diagram.png"
-                    alt="Server Network Diagram"
+                    alt="PowerCA Client-Server Network Architecture Diagram - Secure cloud-based practice management system for CA firms"
                     width={600}
                     height={600}
                     className="w-full h-auto rounded-2xl"
+                    loading="lazy"
+                    quality={85}
                   />
                 </div>
               </div>
@@ -861,7 +750,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="grid lg:grid-cols-12 gap-8 items-center">
             {/* Left Content - Title */}
@@ -879,83 +768,21 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Benefits Accordion */}
-          <div className="mt-8 space-y-4">
-            {benefits.map((benefit, index) => {
-              const isOpen = openBenefit === index
-              return (
-                <div
-                  key={index}
-                  className={`rounded-2xl border-2 transition-all duration-500 overflow-hidden transform ${
-                    isOpen
-                      ? 'border-[#144fed] shadow-2xl scale-[1.02]'
-                      : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg hover:scale-[1.01]'
-                  }`}
-                  style={isOpen ? { background: '#144fed' } : {}}
-                >
-                  {/* Accordion Header */}
-                  <button
-                    onClick={() => toggleBenefit(index)}
-                    className="w-full px-8 py-6 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300"
-                  >
-                    {/* Left Content - Number and Title */}
-                    <div className="flex items-center space-x-6">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 border`}
-                      style={{
-                        backgroundColor: 'white',
-                        color: '#144fed',
-                        borderColor: '#144fed'
-                      }}>
-                        {benefit.number.replace('.', '')}
-                      </div>
-                      <h3 className={`text-xl font-bold text-left transition-all duration-300 ${isOpen ? 'text-white' : 'text-gray-900'}`}>
-                        {benefit.title}
-                      </h3>
-                    </div>
-
-                    {/* Right Content - Toggle Icon */}
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border"
-                      style={{
-                        backgroundColor: 'white',
-                        borderColor: '#144fed'
-                      }}>
-                        <svg
-                          className={`w-6 h-6 transition-transform duration-500 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
-                          fill="none"
-                          stroke="#144fed"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Accordion Content */}
-                  <div className={`transition-all duration-500 ease-in-out ${
-                    isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  } overflow-hidden`}>
-                    {isOpen && (
-                      <div className="px-8 pb-8 -mt-2">
-                        <div className="w-full">
-                          <p className="text-white leading-relaxed text-lg">
-                            {benefit.description}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+          {/* Benefits Accordion Component */}
+          <div className="mt-8">
+            <BenefitsAccordion />
           </div>
         </div>
       </section>
-=======
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
->>>>>>> cf3e0fc4b677538fbe555a702158b5c6d77d557f
+
+      {/* FAQ Section */}
+      <FAQWithSchema
+        title="Frequently Asked Questions About PowerCA"
+        description="Get answers to common questions about PowerCA practice management software"
+        faqs={powerCAFAQs}
+        className="bg-gray-50"
+      />
     </div>
+    </>
   )
 }

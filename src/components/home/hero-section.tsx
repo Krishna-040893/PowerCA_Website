@@ -1,21 +1,21 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import Link from 'next/link'
+import {Button  } from '@/components/ui/button'
+import { ArrowRight } from 'lucide-react'
 
 export function HeroSection() {
   return (
     <section className="relative bg-gradient-to-b from-blue-50 to-white py-20 px-6">
       <div className="container mx-auto max-w-7xl">
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 px-4 sm:px-0">
             Practice Management Solution for <br />
-            <span className="text-blue-600">Professionals</span>{" "}
+            <span className="text-blue-600">Professionals</span>{' '}
             <span className="text-gray-700">Chartered Accountants</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8 px-4 sm:px-0">
             Streamline your CA practice with our comprehensive software suite
           </p>
 
@@ -52,7 +52,7 @@ export function HeroSection() {
           {/* Dashboard Preview */}
           <div className="relative max-w-5xl mx-auto">
             <div className="bg-white rounded-lg shadow-2xl p-6 border">
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="text-3xl font-bold text-blue-600">245</div>
                   <div className="text-sm text-gray-600">Active Clients</div>

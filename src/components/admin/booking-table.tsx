@@ -1,35 +1,25 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table"
-import {
-  Dialog,
+import {useState  } from 'react'
+import {Badge  } from '@/components/ui/badge'
+import {Button  } from '@/components/ui/button'
+import {Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+ } from '@/components/ui/table'
+import {Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Phone, 
-  Mail, 
-  Building,
-  Calendar,
-  MessageSquare
-} from "lucide-react"
-import { format } from "date-fns"
+ } from '@/components/ui/dialog'
+import {Eye, CheckCircle, XCircle, Clock, Phone, Mail, Building,
+  Calendar
+ } from 'lucide-react'
+import { format as _format } from 'date-fns'
 
 interface Booking {
   id: string
@@ -56,10 +46,10 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      PENDING: { variant: "secondary" as const, className: "bg-yellow-100 text-yellow-800" },
-      CONFIRMED: { variant: "secondary" as const, className: "bg-blue-100 text-blue-800" },
-      COMPLETED: { variant: "secondary" as const, className: "bg-green-100 text-green-800" },
-      CANCELLED: { variant: "secondary" as const, className: "bg-red-100 text-red-800" }
+      PENDING: { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800' },
+      CONFIRMED: { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800' },
+      COMPLETED: { variant: 'secondary' as const, className: 'bg-green-100 text-green-800' },
+      CANCELLED: { variant: 'secondary' as const, className: 'bg-red-100 text-red-800' }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING
@@ -73,7 +63,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
 
   const formatDate = (dateStr: string) => {
     try {
-      return format(new Date(dateStr), 'MMM dd, yyyy')
+      return _format(new Date(dateStr), 'MMM dd, yyyy')
     } catch {
       return dateStr
     }
@@ -130,7 +120,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                     )}
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   <div className="space-y-1">
                     <div className="flex items-center text-sm text-gray-600">
@@ -143,7 +133,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                     </div>
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   <div>
                     <div className="font-medium text-gray-900">
@@ -152,11 +142,11 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                     <div className="text-sm text-gray-500">{booking.time}</div>
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   {getStatusBadge(booking.status)}
                 </TableCell>
-                
+
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -167,7 +157,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    
+
                     {booking.status === 'PENDING' && (
                       <>
                         <Button
@@ -188,7 +178,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                         </Button>
                       </>
                     )}
-                    
+
                     {booking.status === 'CONFIRMED' && (
                       <Button
                         variant="ghost"
@@ -216,7 +206,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
               Complete information for this booking request
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedBooking && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -231,24 +221,24 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Email</label>
                 <p className="text-sm text-gray-900">{selectedBooking.email}</p>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Phone</label>
                 <p className="text-sm text-gray-900">{selectedBooking.phone}</p>
               </div>
-              
+
               {selectedBooking.firm_name && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Firm Name</label>
                   <p className="text-sm text-gray-900">{selectedBooking.firm_name}</p>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Date</label>
@@ -259,7 +249,7 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                   <p className="text-sm text-gray-900">{selectedBooking.time}</p>
                 </div>
               </div>
-              
+
               {selectedBooking.message && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Message</label>
@@ -268,14 +258,14 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                   </p>
                 </div>
               )}
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Booking Created</label>
                 <p className="text-sm text-gray-900">
-                  {format(new Date(selectedBooking.created_at), 'PPP at p')}
+                  {_format(new Date(selectedBooking.created_at), 'PPP at p')}
                 </p>
               </div>
-              
+
               {/* Quick Actions */}
               {selectedBooking.status === 'PENDING' && (
                 <div className="flex space-x-2 pt-4 border-t">

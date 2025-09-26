@@ -1,5 +1,5 @@
-import { SessionProvider } from "@/components/providers/session-provider"
-import { Toaster } from "@/components/ui/sonner"
+import {SessionProvider  } from '@/components/providers/session-provider'
+import {Toaster  } from '@/components/ui/sonner'
 
 export default function AuthLayout({
   children,

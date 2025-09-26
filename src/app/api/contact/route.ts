@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
+import {NextRequest, NextResponse  } from 'next/server'
+import {sendContactFormEmail, sendWelcomeEmail  } from '@/lib/send-emails'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     const { name, email, phone, company, message } = body
 
     // Validate required fields

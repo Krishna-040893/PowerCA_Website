@@ -1,23 +1,30 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Building, MapPin, Phone, Mail, Globe, Save } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
+import {useState, useEffect, useCallback  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Textarea  } from '@/components/ui/textarea'
+import { Building, MapPin, Phone, Globe, Save  } from 'lucide-react'
+import {createClient  } from '@supabase/supabase-js'
+import {User  } from '@/types/common'
+import {toast  } from 'sonner'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function AccountSetupPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
     companyName: '',
     companyAddress: '',
@@ -31,11 +38,7 @@ export default function AccountSetupPage() {
     panNumber: ''
   })
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     // Get user from localStorage or session
     const storedUser = localStorage.getItem('user')
     if (!storedUser) {
@@ -57,7 +60,11 @@ export default function AccountSetupPage() {
       // Account already set up, redirect to dashboard
       router.push('/dashboard')
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -72,6 +79,13 @@ export default function AccountSetupPage() {
     setLoading(true)
 
     try {
+      // Check if user exists
+      if (!user) {
+        toast.error('User session not found. Please log in again.')
+        router.push('/auth/login')
+        return
+      }
+
       // Create user profile
       const { error: profileError } = await supabase
         .from('user_profiles')
@@ -101,11 +115,12 @@ export default function AccountSetupPage() {
 
       if (updateError) throw updateError
 
-      alert('Account setup completed successfully!')
+      toast.success('Account setup completed successfully!')
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error setting up account:', error)
-      alert(error.message || 'Failed to set up account. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to set up account. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

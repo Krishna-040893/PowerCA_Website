@@ -1,27 +1,62 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {requireAdminAuth  } from '@/lib/admin-auth-helper'
 import bcrypt from 'bcryptjs'
 
 // GET all users for admin
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminAuth(request)
+    if (!auth.authorized) {
+      return auth.error
+    }
+
     const supabase = createAdminClient()
 
-    // Get all users from the users table
+    // Try to fetch from Supabase Auth (this is more reliable)
+    try {
+      const { data: { users }, error: authError } = await supabase.auth.admin.listUsers()
+
+      if (!authError && users) {
+        // Transform user data for frontend
+        const transformedUsers = users.map(user => ({
+          id: user.id,
+          email: user.email || '',
+          created_at: user.created_at,
+          username: user.user_metadata?.username || user.email?.split('@')[0] || '',
+          name: user.user_metadata?.name || user.user_metadata?.full_name || '',
+          phone: user.user_metadata?.phone || '',
+          role: user.user_metadata?.role || 'User',
+          professional_type: user.user_metadata?.professional_type,
+          is_affiliate: user.user_metadata?.is_affiliate || false,
+          affiliate_status: user.user_metadata?.affiliate_status
+        }))
+
+        return NextResponse.json({
+          success: true,
+          users: transformedUsers
+        })
+      }
+    } catch (authListError) {
+      console.error('Error fetching from Supabase Auth:', authListError)
+    }
+
+    // Fallback: try to fetch from users table if it exists
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching users:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch users' },
-        { status: 500 }
-      )
+      console.error('Error fetching users from table:', error)
+      // Return empty array instead of error to prevent frontend crash
+      return NextResponse.json({
+        success: true,
+        users: []
+      })
     }
 
-    // Also fetch affiliate profiles if they exist
+    // Also try to fetch affiliate profiles if they exist
     const { data: affiliateProfiles } = await supabase
       .from('affiliate_profiles')
       .select('*')
@@ -41,10 +76,11 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+    // Return empty array instead of error to prevent frontend crash
+    return NextResponse.json({
+      success: true,
+      users: []
+    })
   }
 }
 

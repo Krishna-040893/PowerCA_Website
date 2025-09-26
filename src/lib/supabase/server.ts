@@ -1,28 +1,39 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import {createServerClient  } from '@supabase/ssr'
+import {cookies  } from 'next/headers'
 
 export async function createClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL environment variable. Please add it to your .env.local file.'
+    )
+  }
+
+  if (!supabaseAnonKey) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable. Please add it to your .env.local file.'
+    )
+  }
+
   const cookieStore = await cookies()
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // This will throw if called from a Server Component
-            // which is fine, we don't need to set cookies there
-          }
-        },
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll()
       },
-    }
-  )
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          )
+        } catch {
+          // This will throw if called from a Server Component
+          // which is fine, we don't need to set cookies there
+        }
+      },
+    },
+  })
 }

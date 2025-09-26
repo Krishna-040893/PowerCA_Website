@@ -1,20 +1,15 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  BarChart3, 
-  Users, 
-  FileText, 
-  Calendar,
-  TrendingUp,
-  Clock,
-  CheckCircle,
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {redirect  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {BarChart3, Users,
+  FileText,
+  Calendar, TrendingUp, Clock, CheckCircle,
   AlertCircle,
   Building2,
   LogOut
-} from 'lucide-react'
+ } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {

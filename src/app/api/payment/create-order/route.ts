@@ -1,90 +1,78 @@
-import { NextRequest, NextResponse } from 'next/server'
-<<<<<<< HEAD
-const Razorpay = require('razorpay')
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
+import {logger  } from '@/lib/logger'
+import {createErrorResponse, ErrorType, handleConfigurationError, isServiceConfigured  } from '@/lib/error-handler'
+import Razorpay from 'razorpay'
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('Creating payment order...')
-    console.log('Razorpay Key ID:', process.env.RAZORPAY_KEY_ID ? 'Present' : 'Missing')
-    console.log('Razorpay Key Secret:', process.env.RAZORPAY_KEY_SECRET ? 'Present' : 'Missing')
+    logger.info('Creating payment order')
 
-    // Initialize Razorpay with live credentials
+    // Check if Razorpay is configured
+    if (!isServiceConfigured('RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET')) {
+      return handleConfigurationError('Payment gateway')
+    }
+
+    // Initialize Razorpay
+    const keyId = process.env.RAZORPAY_KEY_ID
+    const keySecret = process.env.RAZORPAY_KEY_SECRET
+
+    if (!keyId || !keySecret) {
+      return handleConfigurationError('Razorpay credentials')
+    }
+
     const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+      key_id: keyId,
+      key_secret: keySecret,
     })
 
+    // Get user session (optional - can allow guest checkout)
+    const session = await getServerSession(authOptions)
+
     const body = await req.json()
-    console.log('Request body:', body)
+    // Don't log sensitive payment details
 
     const {
-      amount = 100, // Default ₹1 for testing (change to actual amount in production)
+      amount = 2200000, // Default ₹22,000 in paise
       productId = 'powerca_implementation',
+      planType = 'implementation',
       planId,
       affiliateCode,
       customerDetails
     } = body
 
-    console.log('Processing payment for:', { amount, productId: productId || planId, affiliateCode })
+    logger.info('Processing payment', {
+      amount: amount / 100, // Log in rupees, not paise
+      productId: productId || planId,
+      hasAffiliateCode: !!affiliateCode
+    })
 
     // Create Razorpay order
     const options = {
       amount: amount, // Amount in paise
       currency: 'INR',
-      receipt: `PCA_${Date.now()}`,
+      receipt: `powerca_${Date.now()}`,
       payment_capture: 1, // Auto capture payment
       notes: {
         productId,
-        customerName: customerDetails?.name || '',
-        customerEmail: customerDetails?.email || '',
-        customerPhone: customerDetails?.phone || '',
-        company: customerDetails?.company || '',
+        planType: planType || 'PowerCA Implementation',
+        description: 'One-time implementation fee with first year free',
+        customerName: customerDetails?.name || session?.user?.name || body.name || 'Guest User',
+        customerEmail: customerDetails?.email || session?.user?.email || body.email || 'guest',
+        customerPhone: customerDetails?.phone || body.phone || '',
+        company: customerDetails?.company || body.company || '',
         gst: customerDetails?.gst || '',
       }
-=======
-import { razorpay, RazorpayOrderOptions } from '@/lib/razorpay'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-
-export async function POST(req: NextRequest) {
-  try {
-    // Check if Razorpay is configured
-    if (!razorpay) {
-      return NextResponse.json(
-        { error: 'Payment gateway not configured' },
-        { status: 503 }
-      )
-    }
-
-    // Get user session (optional - can allow guest checkout)
-    const session = await getServerSession(authOptions)
-    
-    const body = await req.json()
-    const { planType = 'implementation' } = body
-
-    // PowerCA Implementation fee: ₹22,000
-    const amount = 2200000 // Amount in paise (₹22,000 = 2,200,000 paise)
-    
-    const options: RazorpayOrderOptions = {
-      amount,
-      currency: 'INR',
-      receipt: `powerca_${Date.now()}`,
-      notes: {
-        planType: 'PowerCA Implementation',
-        description: 'One-time implementation fee with first year free',
-        userEmail: session?.user?.email || body.email || 'guest',
-        userName: session?.user?.name || body.name || 'Guest User',
-      },
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
     }
 
     const order = await razorpay.orders.create(options)
 
-<<<<<<< HEAD
     // Store order details in database for tracking (optional)
     try {
-      if (customerDetails?.email) {
+      const customerEmail = customerDetails?.email || session?.user?.email || body.email
+      if (customerEmail) {
         const supabase = createAdminClient()
 
         // Store pending order
@@ -95,55 +83,42 @@ export async function POST(req: NextRequest) {
             amount: amount / 100, // Convert to rupees for storage
             currency: 'INR',
             status: 'created',
-            customer_email: customerDetails.email,
-            customer_name: customerDetails.name,
-            customer_phone: customerDetails.phone,
-            company: customerDetails.company,
-            gst_number: customerDetails.gst,
+            customer_email: customerEmail,
+            customer_name: customerDetails?.name || session?.user?.name || body.name,
+            customer_phone: customerDetails?.phone || body.phone,
+            company: customerDetails?.company || body.company,
+            gst_number: customerDetails?.gst,
             product_id: productId || planId,
           })
 
         if (error) {
-          console.error('Error storing order (non-critical):', error)
+          logger.error('Error storing order (non-critical)', error)
           // Continue even if DB save fails - this is not critical
         }
       }
     } catch (dbError) {
-      console.log('Database storage skipped:', dbError)
+      logger.debug('Database storage skipped', { error: dbError })
       // Continue without database storage
     }
 
-    console.log('Order created successfully:', order.id)
+    logger.info('Order created successfully', { orderId: order.id })
 
+    // Note: Razorpay Key ID is public and required by the frontend SDK
+    // This is not a security risk as it's meant to be public
     return NextResponse.json({
       success: true,
+      orderId: order.id, // Also provide orderId for compatibility
       id: order.id,  // Razorpay expects 'id' not 'orderId'
       amount: order.amount,
       currency: order.currency,
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      key: process.env.RAZORPAY_KEY_ID, // Public key, safe to expose
     })
 
-  } catch (error: any) {
-    console.error('Error creating Razorpay order:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create payment order',
-        message: error.message
-      },
-=======
-    return NextResponse.json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      key: process.env.RAZORPAY_KEY_ID,
-    })
   } catch (error) {
-    console.error('Error creating Razorpay order:', error)
-    return NextResponse.json(
-      { error: 'Failed to create payment order' },
->>>>>>> a0ca34adb227776b18a3475234c2ee4188ffbe00
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.PAYMENT,
+      error as Error,
+      { logError: true }
     )
   }
 }

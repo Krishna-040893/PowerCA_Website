@@ -1,81 +1,63 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import { 
-  FileText, 
-  Receipt, 
-  BarChart3,
-  Users,
-  Calculator,
-  UserCheck,
-  Search,
-  Edit,
-  DollarSign,
-  TrendingUp,
-  Building,
-  PieChart,
-  Clock,
-  Shield,
-  Zap,
-  Globe,
-  Award
-} from "lucide-react"
+import {motion  } from 'framer-motion'
+import { FileText, Receipt, BarChart3, Users, Calculator, UserCheck } from 'lucide-react'
 
 const features = [
   {
-    title: "Job Card Management",
-    description: "Comprehensive job management with intuitive dashboard, advanced search, and seamless edit functions for efficient workflow control.",
+    title: 'Job Card Management',
+    description: 'Comprehensive job management with intuitive dashboard, advanced search, and seamless edit functions for efficient workflow control.',
     icon: FileText,
-    className: "col-span-1 md:col-span-2 lg:col-span-2",
-    gradient: "from-blue-500/10 to-cyan-500/10",
+    className: 'col-span-1 md:col-span-2 lg:col-span-2',
+    gradient: 'from-blue-500/10 to-cyan-500/10',
   },
   {
-    title: "Billing Module", 
-    description: "Streamline invoicing with automated billing, payment tracking, and GST compliance.",
+    title: 'Billing Module',
+    description: 'Streamline invoicing with automated billing, payment tracking, and GST compliance.',
     icon: Receipt,
-    className: "col-span-1",
-    gradient: "from-green-500/10 to-emerald-500/10",
+    className: 'col-span-1',
+    gradient: 'from-green-500/10 to-emerald-500/10',
   },
   {
-    title: "Financial Statements",
-    description: "Generate accurate financial statements, balance sheets, and P&L reports with real-time data.",
+    title: 'Financial Statements',
+    description: 'Generate accurate financial statements, balance sheets, and P&L reports with real-time data.',
     icon: BarChart3,
-    className: "col-span-1",
-    gradient: "from-purple-500/10 to-pink-500/10",
+    className: 'col-span-1',
+    gradient: 'from-purple-500/10 to-pink-500/10',
   },
   {
-    title: "Clients Module",
-    description: "Centralized client management with detailed profiles, documents, and communication history.",
+    title: 'Clients Module',
+    description: 'Centralized client management with detailed profiles, documents, and communication history.',
     icon: Users,
-    className: "col-span-1 md:col-span-2",
-    gradient: "from-orange-500/10 to-red-500/10",
+    className: 'col-span-1 md:col-span-2',
+    gradient: 'from-orange-500/10 to-red-500/10',
   },
   {
-    title: "Costing Module",
-    description: "Track project costs and analyze profitability with detailed analytics.",
+    title: 'Costing Module',
+    description: 'Track project costs and analyze profitability with detailed analytics.',
     icon: Calculator,
-    className: "col-span-1",
-    gradient: "from-indigo-500/10 to-purple-500/10",
+    className: 'col-span-1',
+    gradient: 'from-indigo-500/10 to-purple-500/10',
   },
   {
-    title: "CRM Module",
-    description: "Build stronger client relationships with integrated CRM featuring lead tracking and engagement analytics.",
+    title: 'CRM Module',
+    description: 'Build stronger client relationships with integrated CRM featuring lead tracking and engagement analytics.',
     icon: UserCheck,
-    className: "col-span-1 md:col-span-2 lg:col-span-2",
-    gradient: "from-teal-500/10 to-blue-500/10",
+    className: 'col-span-1 md:col-span-2 lg:col-span-2',
+    gradient: 'from-teal-500/10 to-blue-500/10',
   }
 ]
 
 interface BentoCardProps {
   title: string
   description: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   className?: string
   gradient?: string
   delay?: number
 }
 
-const BentoCard = ({ title, description, icon: Icon, className = "", gradient = "", delay = 0 }: BentoCardProps) => {
+const BentoCard = ({ title, description, icon: Icon, className = '', gradient = '', delay = 0 }: BentoCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -84,14 +66,14 @@ const BentoCard = ({ title, description, icon: Icon, className = "", gradient = 
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.2 } }}
       className={`relative overflow-hidden rounded-2xl glass group cursor-pointer ${className}`}
-    >      
+    >
       {/* Gradient overlay for hover effect */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 group-hover:opacity-100 transition-all duration-500 rounded-2xl`} />
-      
+
       {/* Content */}
       <div className="relative p-6 md:p-8 h-full flex flex-col">
         {/* Icon with animation */}
-        <motion.div 
+        <motion.div
           className="mb-4"
           whileHover={{ rotate: 360 }}
           transition={{ duration: 0.5 }}
@@ -100,17 +82,17 @@ const BentoCard = ({ title, description, icon: Icon, className = "", gradient = 
             <Icon className="w-6 h-6 text-primary-600" />
           </div>
         </motion.div>
-        
+
         {/* Title */}
         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-700 transition-colors">
           {title}
         </h3>
-        
+
         {/* Description */}
         <p className="text-sm md:text-base text-gray-600 leading-relaxed flex-grow">
           {description}
         </p>
-        
+
         {/* Interactive element */}
         <div className="mt-4 pt-4 border-t border-gray-200/50">
           <div className="flex items-center text-sm text-primary-600 font-medium">
@@ -127,7 +109,7 @@ const BentoCard = ({ title, description, icon: Icon, className = "", gradient = 
             </motion.svg>
           </div>
         </div>
-        
+
         {/* Decorative corner accent */}
         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary-500/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
@@ -148,7 +130,7 @@ export function BentoFeaturesSection() {
             transition={{ duration: 0.6 }}
             className="text-3xl md:text-5xl font-bold text-gray-900 mb-6"
           >
-            Empower Your Practice with{" "}
+            Empower Your Practice with{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
               Power CA
             </span>

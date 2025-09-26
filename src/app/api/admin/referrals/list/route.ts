@@ -1,8 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminAuth(request)
+    if (!auth.authorized) {
+      return auth.error
+    }
+
     const supabase = createAdminClient()
 
     // Fetch all referrals with affiliate profile information
@@ -31,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user information for affiliates
-    let affiliateUsers = new Map()
+    const affiliateUsers = new Map()
     if (referrals && referrals.length > 0) {
       const userIds = [...new Set(referrals
         .map(r => r.affiliate_profiles?.user_id)
@@ -52,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get payment information for referrals
-    let paymentInfo = new Map()
+    const paymentInfo = new Map()
     if (referrals && referrals.length > 0) {
       const profileIds = [...new Set(referrals
         .map(r => r.affiliate_profile_id)

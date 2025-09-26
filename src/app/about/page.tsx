@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import Image from "next/image"
-import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import Image from 'next/image'
+import Link from 'next/link'
+import {useState, useEffect, useRef  } from 'react'
 
 export default function AboutPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -26,16 +26,16 @@ export default function AboutPage() {
 
   // Team members data - flat array of all members
   const allTeamMembers = [
-    { name: "Karthikeyan R", role: "Manager", category: "manager", image: "/images/karthikeyan-profile.png", initials: "KR" },
-    { name: "thirunavukkarasu M", role: "Manager", category: "manager", image: null, initials: "TM" },
-    { name: "Sangeetha P", role: "Developer", category: "developers", image: null, initials: "SP" },
-    { name: "Mansur Ali B", role: "Developer", category: "developers", image: null, initials: "MA" },
-    { name: "John Doe", role: "CEO", category: "ceo", image: null, initials: "JD" },
-    { name: "Jane Smith", role: "Partner", category: "partners", image: null, initials: "JS" },
-    { name: "Mike Wilson", role: "Admin", category: "admin", image: null, initials: "MW" },
-    { name: "Sarah Connor", role: "Tester", category: "testing", image: null, initials: "SC" },
-    { name: "Alex Johnson", role: "Designer", category: "designers", image: null, initials: "AJ" },
-    { name: "Lisa Brown", role: "Partner", category: "partners", image: null, initials: "LB" }
+    { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/karthikeyan-profile.png', initials: 'KR' },
+    { name: 'thirunavukkarasu M', role: 'Manager', category: 'manager', image: null, initials: 'TM' },
+    { name: 'Sangeetha P', role: 'Developer', category: 'developers', image: null, initials: 'SP' },
+    { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: null, initials: 'MA' },
+    { name: 'John Doe', role: 'CEO', category: 'ceo', image: null, initials: 'JD' },
+    { name: 'Jane Smith', role: 'Partner', category: 'partners', image: null, initials: 'JS' },
+    { name: 'Mike Wilson', role: 'Admin', category: 'admin', image: null, initials: 'MW' },
+    { name: 'Sarah Connor', role: 'Tester', category: 'testing', image: null, initials: 'SC' },
+    { name: 'Alex Johnson', role: 'Designer', category: 'designers', image: null, initials: 'AJ' },
+    { name: 'Lisa Brown', role: 'Partner', category: 'partners', image: null, initials: 'LB' }
   ]
 
   // Filter categories
@@ -173,7 +173,8 @@ export default function AboutPage() {
                 alt="PowerCA Team"
                 width={500}
                 height={300}
-                className="w-auto h-auto max-w-md rounded-lg shadow-lg"
+                className="w-full h-auto max-w-full sm:max-w-md rounded-lg shadow-lg"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px"
               />
             </div>
 
@@ -333,7 +334,7 @@ export default function AboutPage() {
                   'from-green-100 to-teal-100',
                   'from-blue-100 to-indigo-100',
                   'from-yellow-100 to-orange-100'
-                ];
+                ]
                 return (
                   <div
                     key={`${currentSlide}-${index}`}

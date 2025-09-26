@@ -1,8 +1,9 @@
-import { Metadata } from "next"
+import {Metadata  } from 'next'
+import { PageErrorBoundary } from '@/components/error-boundary'
 
 export const metadata: Metadata = {
-  title: "Admin Panel - PowerCA",
-  description: "PowerCA Admin Panel for managing bookings and users",
+  title: 'Admin Panel - PowerCA',
+  description: 'PowerCA Admin Panel for managing bookings and users',
 }
 
 export default function AdminLayout({
@@ -10,5 +11,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  return children
+  return (
+    <PageErrorBoundary>
+      {children}
+    </PageErrorBoundary>
+  )
 }

@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, User, Mail, Lock, CheckCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import {useState, useEffect, useCallback  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Input  } from '@/components/ui/input'
+import {Label  } from '@/components/ui/label'
+import {Button  } from '@/components/ui/button'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
+import {Shield, User, Mail, Lock, CheckCircle } from 'lucide-react'
+import {toast  } from 'sonner'
 
 export default function SetupPage() {
   const router = useRouter()
@@ -24,11 +24,7 @@ export default function SetupPage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    checkAdminExists()
-  }, [])
-
-  const checkAdminExists = async () => {
+  const checkAdminExists = useCallback(async () => {
     try {
       const response = await fetch('/api/setup/check')
       const data = await response.json()
@@ -45,7 +41,11 @@ export default function SetupPage() {
     } finally {
       setChecking(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkAdminExists()
+  }, [checkAdminExists])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}

@@ -1,17 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { AlertCircle, CheckCircle, Clock, Mail, Package, Users, RefreshCw, Trash2, Eye } from 'lucide-react'
-import { isTestMode } from '@/lib/payment-config'
-import {
-  Dialog,
+import {useEffect, useState  } from 'react'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Button  } from '@/components/ui/button'
+import {AlertCircle, Package, Users, RefreshCw, Trash2, Eye  } from 'lucide-react'
+import {isTestMode  } from '@/lib/payment-config'
+import {Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+  DialogFooter,
+ } from '@/components/ui/dialog'
+import {toast  } from 'sonner'
 
 interface TestTransaction {
   id: string
@@ -48,6 +49,7 @@ export default function TestDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [selectedTransaction, setSelectedTransaction] = useState<TestTransaction | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [showConfirmClear, setShowConfirmClear] = useState(false)
 
   useEffect(() => {
     if (!isTestMode()) {
@@ -67,8 +69,8 @@ export default function TestDashboardPage() {
         setTransactions(paymentData.payments || [])
 
         // Calculate stats
-        const successful = paymentData.payments?.filter((p: any) => p.status === 'success') || []
-        const totalRev = successful.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
+        const successful = paymentData.payments?.filter((p: Record<string, unknown>) => p.status === 'success') || []
+        const totalRev = successful.reduce((sum: number, p: Record<string, unknown>) => sum + (typeof p.amount === 'number' ? p.amount : 0), 0)
 
         setStats({
           totalTransactions: paymentData.payments?.length || 0,
@@ -94,22 +96,21 @@ export default function TestDashboardPage() {
   }
 
   const clearTestData = async () => {
-    if (confirm('Are you sure you want to clear all test data? This action cannot be undone.')) {
-      try {
-        const response = await fetch('/api/admin/clear-test-data', {
-          method: 'POST'
-        })
+    try {
+      const response = await fetch('/api/admin/clear-test-data', {
+        method: 'POST'
+      })
 
-        if (response.ok) {
-          alert('Test data cleared successfully')
-          fetchTestData()
-        } else {
-          alert('Failed to clear test data')
-        }
-      } catch (error) {
-        console.error('Error clearing test data:', error)
-        alert('Error clearing test data')
+      if (response.ok) {
+        toast.success('Test data cleared successfully')
+        fetchTestData()
+        setShowConfirmClear(false)
+      } else {
+        toast.error('Failed to clear test data')
       }
+    } catch (error) {
+      console.error('Error clearing test data:', error)
+      toast.error('Error clearing test data')
     }
   }
 
@@ -154,7 +155,7 @@ export default function TestDashboardPage() {
               Refresh
             </Button>
             <Button
-              onClick={clearTestData}
+              onClick={() => setShowConfirmClear(true)}
               variant="destructive"
               className="flex items-center gap-2"
             >
@@ -424,6 +425,39 @@ export default function TestDashboardPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Clear Confirmation Dialog */}
+      <Dialog open={showConfirmClear} onOpenChange={setShowConfirmClear}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear Test Data</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to clear all test data? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
+              <p className="text-sm text-yellow-800">
+                This will permanently delete all test transactions and referrals from the database.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmClear(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={clearTestData}
+            >
+              Clear All Test Data
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

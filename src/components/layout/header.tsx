@@ -1,35 +1,31 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { navigationConfig } from "@/config/navigation"
-import { Menu, X, User, LogOut } from "lucide-react"
-import { useSession, signOut } from "next-auth/react"
-import {
-  DropdownMenu,
+import {useState  } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import {motion  } from 'framer-motion'
+import {Button  } from '@/components/ui/button'
+import {navigationConfig  } from '@/config/navigation'
+import {Menu, X, User, LogOut  } from 'lucide-react'
+import {useSession, signOut  } from 'next-auth/react'
+import {DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+ } from '@/components/ui/dropdown-menu'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
+    <header
       className="fixed w-full z-40 bg-white"
       style={{ top: 'var(--banner-height, 48px)' }}
     >
-      <div className="w-full px-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -38,7 +34,8 @@ export function Header() {
               alt="PowerCA"
               width={200}
               height={60}
-              className="h-12 w-auto"
+              className="h-10 sm:h-12 w-auto"
+              sizes="(max-width: 640px) 150px, 200px"
               priority
             />
           </Link>
@@ -64,7 +61,7 @@ export function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            {status === "loading" ? (
+            {status === 'loading' ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : session ? (
               <>
@@ -92,9 +89,7 @@ export function Header() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    {(session.user?.email === "admin@powerca.in" ||
-                      session.user?.email === "contact@powerca.in" ||
-                      session.user?.role === "admin") && (
+                    {session.user?.role === 'admin' && (
                       <DropdownMenuItem asChild>
                         <Link href="/admin" className="flex items-center cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
@@ -129,7 +124,7 @@ export function Header() {
                   style={{ backgroundColor: '#155dfc' }}
                   asChild
                 >
-                  <Link href="/demo">Book Demo</Link>
+                  <Link href="/book-demo">Book Demo</Link>
                 </Button>
               </>
             )}
@@ -137,7 +132,9 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden"
+            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -152,7 +149,7 @@ export function Header() {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden py-4 border-t border-gray-100"
           >
@@ -168,7 +165,7 @@ export function Header() {
                 </Link>
               ))}
               <div className="pt-4 space-y-2 border-t border-gray-100">
-                {status === "loading" ? (
+                {status === 'loading' ? (
                   <div className="w-full h-10 bg-gray-200 animate-pulse rounded" />
                 ) : session ? (
                   <>
@@ -192,7 +189,7 @@ export function Header() {
                       <Link href="/login">Sign In</Link>
                     </Button>
                     <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity px-[1.25rem] py-4" style={{ backgroundColor: '#155dfc' }} asChild>
-                      <Link href="/demo">Book Demo</Link>
+                      <Link href="/book-demo">Book Demo</Link>
                     </Button>
                   </>
                 )}
@@ -201,6 +198,6 @@ export function Header() {
           </motion.div>
         )}
       </div>
-    </motion.header>
+    </header>
   )
 }

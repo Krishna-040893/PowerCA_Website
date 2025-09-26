@@ -1,25 +1,16 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { format } from "date-fns"
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Mail, 
-  Phone, 
-  Building,
-  MessageSquare,
-  CheckCircle,
-  XCircle,
+import {useState, useEffect  } from 'react'
+import { format as _format } from 'date-fns'
+import {Calendar, Clock,
+  User, Mail, Phone, Building, CheckCircle, XCircle,
   AlertCircle,
   Search,
-  Filter,
   Download,
   Eye,
-  Trash2,
-  Edit
-} from "lucide-react"
+  Trash2
+ } from 'lucide-react'
+import {toast  } from 'sonner'
 
 interface Booking {
   id: string
@@ -37,10 +28,12 @@ interface Booking {
 export function BookingsTable() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     fetchBookings()
@@ -49,17 +42,17 @@ export function BookingsTable() {
   const fetchBookings = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/admin/bookings")
+      const response = await fetch('/api/admin/bookings')
       const data = await response.json()
-      
+
       if (data.success) {
         setBookings(data.bookings || [])
       } else {
-        console.error("Failed to fetch bookings:", data.error)
+        console.error('Failed to fetch bookings:', data.error)
         setBookings([])
       }
     } catch (error) {
-      console.error("Error fetching bookings:", error)
+      console.error('Error fetching bookings:', error)
       setBookings([])
     } finally {
       setLoading(false)
@@ -69,85 +62,86 @@ export function BookingsTable() {
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
-        setBookings(prev => prev.map(booking => 
-          booking.id === bookingId 
+        setBookings(prev => prev.map(booking =>
+          booking.id === bookingId
             ? { ...booking, status: newStatus as Booking['status'] }
             : booking
         ))
       } else {
-        alert("Failed to update booking status")
+        toast.error('Failed to update booking status')
       }
     } catch (error) {
-      console.error("Error updating booking:", error)
-      alert("Error updating booking status")
+      console.error('Error updating booking:', error)
+      toast.error('Error updating booking status')
     }
   }
 
   const deleteBooking = async (bookingId: string) => {
-    if (!confirm("Are you sure you want to delete this booking?")) return
-
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}`, {
-        method: "DELETE"
+        method: 'DELETE'
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         setBookings(prev => prev.filter(booking => booking.id !== bookingId))
+        toast.success('Booking deleted successfully')
+        setShowDeleteConfirm(false)
+        setBookingToDelete(null)
       } else {
-        alert("Failed to delete booking")
+        toast.error('Failed to delete booking')
       }
     } catch (error) {
-      console.error("Error deleting booking:", error)
-      alert("Error deleting booking")
+      console.error('Error deleting booking:', error)
+      toast.error('Error deleting booking')
     }
   }
 
   const exportToCSV = () => {
-    const headers = ["ID", "Name", "Email", "Phone", "Firm", "Date", "Time", "Status", "Message", "Created At"]
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Firm', 'Date', 'Time', 'Status', 'Message', 'Created At']
     const csvData = bookings.map(booking => [
       booking.id,
       booking.name,
       booking.email,
       booking.phone,
-      booking.firmName || "",
+      booking.firmName || '',
       booking.date,
       booking.time,
       booking.status,
-      booking.message || "",
+      booking.message || '',
       booking.createdAt
     ])
 
     const csvContent = [
-      headers.join(","),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(","))
-    ].join("\n")
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: "text/csv" })
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
+    const link = document.createElement('a')
     link.href = url
-    link.download = `bookings_${format(new Date(), "yyyy-MM-dd")}.csv`
+    link.download = `bookings_${_format(new Date(), 'yyyy-MM-dd')}.csv`
     link.click()
   }
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = 
+    const matchesSearch =
       booking.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.phone.includes(searchTerm) ||
       (booking.firmName && booking.firmName.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesStatus = statusFilter === "all" || booking.status === statusFilter
+
+    const matchesStatus = statusFilter === 'all' || booking.status === statusFilter
 
     return matchesSearch && matchesStatus
   })
@@ -203,7 +197,7 @@ export function BookingsTable() {
               />
             </div>
           </div>
-          
+
           <div className="flex gap-3">
             <select
               value={statusFilter}
@@ -216,7 +210,7 @@ export function BookingsTable() {
               <option value="COMPLETED">Completed</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
-            
+
             <button
               onClick={exportToCSV}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
@@ -226,7 +220,7 @@ export function BookingsTable() {
             </button>
           </div>
         </div>
-        
+
         <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
           <span>Total: {bookings.length} bookings</span>
           <span>•</span>
@@ -290,7 +284,7 @@ export function BookingsTable() {
                     <div className="text-sm">
                       <div className="flex items-center gap-2 text-gray-900">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        {format(new Date(booking.date), "MMM dd, yyyy")}
+                        {_format(new Date(booking.date), 'MMM dd, yyyy')}
                       </div>
                       <div className="flex items-center gap-2 text-gray-500 mt-1">
                         <Clock className="w-3 h-3" />
@@ -327,7 +321,10 @@ export function BookingsTable() {
                         <option value="CANCELLED">Cancelled</option>
                       </select>
                       <button
-                        onClick={() => deleteBooking(booking.id)}
+                        onClick={() => {
+                          setBookingToDelete(booking.id)
+                          setShowDeleteConfirm(true)
+                        }}
                         className="text-red-600 hover:text-red-700"
                         title="Delete"
                       >
@@ -366,7 +363,7 @@ export function BookingsTable() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -396,11 +393,11 @@ export function BookingsTable() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Firm</label>
-                  <p className="mt-1 text-gray-900">{selectedBooking.firmName || "Not provided"}</p>
+                  <p className="mt-1 text-gray-900">{selectedBooking.firmName || 'Not provided'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Date</label>
-                  <p className="mt-1 text-gray-900">{format(new Date(selectedBooking.date), "MMMM dd, yyyy")}</p>
+                  <p className="mt-1 text-gray-900">{_format(new Date(selectedBooking.date), 'MMMM dd, yyyy')}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Time</label>
@@ -408,15 +405,54 @@ export function BookingsTable() {
                 </div>
                 <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-500">Message</label>
-                  <p className="mt-1 text-gray-900">{selectedBooking.message || "No message provided"}</p>
+                  <p className="mt-1 text-gray-900">{selectedBooking.message || 'No message provided'}</p>
                 </div>
                 <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-500">Created At</label>
                   <p className="mt-1 text-gray-900">
-                    {format(new Date(selectedBooking.createdAt), "MMMM dd, yyyy 'at' hh:mm a")}
+                    {_format(new Date(selectedBooking.createdAt), "MMMM dd, yyyy 'at' hh:mm a")}
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-100 p-2 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Delete Booking</h2>
+                <p className="text-sm text-gray-600">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete this booking? All associated data will be permanently removed.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setBookingToDelete(null)
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => bookingToDelete && deleteBooking(bookingToDelete)}
+                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Delete Booking
+              </button>
             </div>
           </div>
         </div>

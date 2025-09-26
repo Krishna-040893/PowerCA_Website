@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth/next'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 // GET - Fetch affiliate details
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (detailsError && detailsError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-      console.error('Error fetching affiliate details:', detailsError)
       return NextResponse.json(
         { error: 'Failed to fetch affiliate details' },
         { status: 500 }
@@ -60,8 +59,7 @@ export async function GET(request: NextRequest) {
       affiliateId: userData.affiliate_id
     })
 
-  } catch (error) {
-    console.error('Error in GET /api/affiliate/details:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -72,8 +70,6 @@ export async function GET(request: NextRequest) {
 // POST - Create new affiliate details
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/affiliate/details - Starting')
-
     // Ensure we always return JSON
     const headers = {
       'Content-Type': 'application/json',
@@ -82,22 +78,17 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
-      console.log('No session found')
       return NextResponse.json(
         { error: 'Unauthorized - Please login' },
         { status: 401, headers }
       )
     }
 
-    console.log('Session user:', session.user.id, session.user.email)
-
     const body = await request.json()
-    console.log('Request body:', body)
 
     const supabase = createAdminClient()
 
     // Verify user is an affiliate
-    console.log('Checking user in registrations table for ID:', session.user.id)
 
     const { data: userData, error: userError } = await supabase
       .from('registrations')
@@ -105,14 +96,8 @@ export async function POST(request: NextRequest) {
       .eq('id', session.user.id)
       .single()
 
-    console.log('User data from DB:', userData)
-    console.log('User error:', userError)
 
     if (userError || !userData) {
-      console.error('User not found in database:', {
-        error: userError,
-        userData: userData
-      })
       return NextResponse.json(
         { error: 'User not found in database' },
         { status: 404 }
@@ -121,31 +106,23 @@ export async function POST(request: NextRequest) {
 
     // Check role case-insensitively
     if (userData.role?.toLowerCase() !== 'affiliate') {
-      console.error('User is not an affiliate:', {
-        role: userData.role,
-        expected: 'Affiliate'
-      })
       return NextResponse.json(
         { error: `User is not an affiliate. Current role: ${userData.role}` },
         { status: 403 }
       )
     }
 
-    console.log('User verified as affiliate with ID:', userData.affiliate_id)
 
     // Check if affiliate details already exist
-    console.log('Checking for existing profile for user:', userData.id)
 
-    const { data: existingDetails, error: checkError } = await supabase
+    const { data: existingDetails } = await supabase
       .from('affiliate_profiles')
       .select('id')
       .eq('user_id', userData.id)
       .single()
 
-    console.log('Existing details check:', { existingDetails, checkError })
 
     if (existingDetails) {
-      console.log('Profile already exists, should use PUT instead')
       return NextResponse.json(
         { error: 'Affiliate profile already exists. Please refresh the page.' },
         { status: 400 }
@@ -177,7 +154,6 @@ export async function POST(request: NextRequest) {
       status: 'active'
     }
 
-    console.log('Attempting to insert affiliate profile:', insertData)
 
     // Create affiliate details with minimal required fields
     const { data: newDetails, error: createError } = await supabase
@@ -186,16 +162,8 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
-    console.log('Insert result:', { newDetails, createError })
 
     if (createError) {
-      console.error('Error creating affiliate details:', {
-        error: createError,
-        message: createError.message,
-        details: createError.details,
-        hint: createError.hint,
-        code: createError.code
-      })
       return NextResponse.json(
         { error: `Failed to create affiliate details: ${createError.message || 'Unknown error'}` },
         { status: 500 }
@@ -217,8 +185,7 @@ export async function POST(request: NextRequest) {
       affiliateDetails: newDetails
     })
 
-  } catch (error) {
-    console.error('Error in POST /api/affiliate/details:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -242,7 +209,6 @@ export async function PUT(request: NextRequest) {
     const supabase = createAdminClient()
 
     // Verify user is an affiliate
-    console.log('Checking user in registrations table for ID:', session.user.id)
 
     const { data: userData, error: userError } = await supabase
       .from('registrations')
@@ -250,14 +216,8 @@ export async function PUT(request: NextRequest) {
       .eq('id', session.user.id)
       .single()
 
-    console.log('User data from DB:', userData)
-    console.log('User error:', userError)
 
     if (userError || !userData) {
-      console.error('User not found in database:', {
-        error: userError,
-        userData: userData
-      })
       return NextResponse.json(
         { error: 'User not found in database' },
         { status: 404 }
@@ -266,17 +226,12 @@ export async function PUT(request: NextRequest) {
 
     // Check role case-insensitively
     if (userData.role?.toLowerCase() !== 'affiliate') {
-      console.error('User is not an affiliate:', {
-        role: userData.role,
-        expected: 'Affiliate'
-      })
       return NextResponse.json(
         { error: `User is not an affiliate. Current role: ${userData.role}` },
         { status: 403 }
       )
     }
 
-    console.log('User verified as affiliate with ID:', userData.affiliate_id)
 
     // Update affiliate details
     const { data: updatedDetails, error: updateError } = await supabase
@@ -296,7 +251,6 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (updateError) {
-      console.error('Error updating affiliate details:', updateError)
       return NextResponse.json(
         { error: 'Failed to update affiliate details' },
         { status: 500 }
@@ -309,8 +263,7 @@ export async function PUT(request: NextRequest) {
       affiliateDetails: updatedDetails
     })
 
-  } catch (error) {
-    console.error('Error in PUT /api/affiliate/details:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

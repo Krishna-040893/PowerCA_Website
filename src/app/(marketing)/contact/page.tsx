@@ -1,21 +1,21 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MapPin, Mail, Phone, Linkedin, Twitter, Instagram, Youtube } from "lucide-react"
-import { motion } from "framer-motion"
-import { toast } from "sonner"
+import {useState  } from 'react'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
+import {Textarea  } from '@/components/ui/textarea'
+import {Card, CardContent  } from '@/components/ui/card'
+import {MapPin, Mail, Phone, Linkedin, Twitter, Instagram, Youtube  } from 'lucide-react'
+import {motion  } from 'framer-motion'
+import {toast  } from 'sonner'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "",
-    message: ""
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -27,14 +27,14 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     try {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 1000))
       toast.success("Message sent successfully! We'll get back to you within 24 hours.")
-      setFormData({ name: "", email: "", phone: "", subject: "", message: "" })
-    } catch (error) {
-      toast.error("Failed to send message. Please try again.")
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+    } catch {
+      toast.error('Failed to send message. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -45,7 +45,7 @@ export default function ContactPage() {
       {/* Global Background Pattern - exactly matching homepage */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
@@ -55,9 +55,9 @@ export default function ContactPage() {
             backgroundSize: '40px 40px'
           }}
         />
-        
+
         {/* Dot pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
@@ -65,9 +65,9 @@ export default function ContactPage() {
             backgroundPosition: '0 0, 15px 15px'
           }}
         />
-        
+
         {/* Diagonal lines */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `repeating-linear-gradient(
@@ -85,7 +85,7 @@ export default function ContactPage() {
       <section className="relative py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-foreground mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ export default function ContactPage() {
             >
               Get in Touch With Us Today
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-muted-foreground max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -131,7 +131,7 @@ export default function ContactPage() {
                         className="h-12"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Email Address <span className="text-red-500">*</span>
@@ -146,7 +146,7 @@ export default function ContactPage() {
                         className="h-12"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Phone Number <span className="text-red-500">*</span>
@@ -161,7 +161,7 @@ export default function ContactPage() {
                         className="h-12"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Subject
@@ -174,7 +174,7 @@ export default function ContactPage() {
                         className="h-12"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Message <span className="text-red-500">*</span>
@@ -188,14 +188,14 @@ export default function ContactPage() {
                         className="min-h-32 resize-none"
                       />
                     </div>
-                    
-                    <Button 
-                      type="submit" 
-                      size="lg" 
+
+                    <Button
+                      type="submit"
+                      size="lg"
                       className="w-full h-12 bg-primary hover:bg-primary/90 font-semibold"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Sending..." : "Send Message"}
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </form>
                 </CardContent>
@@ -261,26 +261,26 @@ export default function ContactPage() {
                   <div className="mt-8">
                     <h3 className="font-semibold text-lg mb-4">Follow our social media :</h3>
                     <div className="flex space-x-4">
-                      <a 
-                        href="#" 
+                      <a
+                        href="#"
                         className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                       >
                         <Linkedin className="w-5 h-5" />
                       </a>
-                      <a 
-                        href="#" 
+                      <a
+                        href="#"
                         className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                       >
                         <Twitter className="w-5 h-5" />
                       </a>
-                      <a 
-                        href="#" 
+                      <a
+                        href="#"
                         className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                       >
                         <Instagram className="w-5 h-5" />
                       </a>
-                      <a 
-                        href="#" 
+                      <a
+                        href="#"
                         className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                       >
                         <Youtube className="w-5 h-5" />
@@ -307,7 +307,7 @@ export default function ContactPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Find Us Here</h2>
               <p className="text-lg text-muted-foreground">Visit our offices in Udumalpet and Coimbatore</p>
             </div>
-            
+
             <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden">
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-2 gap-0">
@@ -336,7 +336,7 @@ export default function ContactPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Coimbatore Location */}
                   <div className="relative h-96 lg:h-[500px]">
                     <iframe

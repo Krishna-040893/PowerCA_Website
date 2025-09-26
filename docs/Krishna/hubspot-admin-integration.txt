@@ -1,0 +1,689 @@
+// ============================================
+// ARCHITECTURE OVERVIEW
+// ============================================
+/*
+Your Existing Dashboard + HubSpot CRM Integration Strategy:
+
+1. Keep your existing features (demo scheduler, payments, etc.)
+2. Sync data TO HubSpot for CRM/marketing purposes
+3. Pull HubSpot data INTO your dashboard for unified view
+4. Use HubSpot for email automation and lead scoring
+5. Maintain your database as source of truth
+
+Benefits:
+- No disruption to existing workflows
+- Leverage HubSpot's marketing automation
+- Unified dashboard view for your team
+- Better lead insights and analytics
+*/
+
+// ============================================
+// 1. HUBSPOT API SERVICE LAYER
+// ============================================
+
+// lib/hubspot-service.js
+import { Client } from '@hubspot/api-client'
+
+class HubSpotService {
+  constructor() {
+    this.client = new Client({ 
+      accessToken: process.env.HUBSPOT_PRIVATE_APP_TOKEN 
+    })
+  }
+
+  // Sync your existing user to HubSpot CRM
+  async syncUserToHubSpot(userData) {
+    try {
+      const contactProperties = {
+        email: userData.email,
+        firstname: userData.firstName,
+        lastname: userData.lastName,
+        phone: userData.phone,
+        company: userData.firmName,
+        
+        // Custom Properties for CA specific data
+        ca_membership_number: userData.caNumber,
+        firm_size: userData.firmSize,
+        plan_type: userData.planType,
+        trial_start_date: userData.trialStartDate,
+        demo_scheduled: userData.demoDate,
+        lifecycle_stage: userData.status, // lead, trial, customer
+        affiliate_source: userData.affiliateId,
+        total_revenue: userData.totalPaid,
+        last_login: userData.lastLogin,
+        features_used: userData.featuresUsed?.join(';'),
+      }
+
+      // Create or update contact
+      const response = await this.client.crm.contacts.basicApi.upsert(
+        { email: userData.email },
+        { properties: contactProperties }
+      )
+
+      return response
+    } catch (error) {
+      console.error('HubSpot sync error:', error)
+      // Don't break your app if HubSpot fails
+      return null
+    }
+  }
+
+  // Sync demo booking to HubSpot
+  async syncDemoToHubSpot(demoData) {
+    try {
+      // Create engagement (meeting) in HubSpot
+      const engagement = await this.client.crm.objects.meetings.basicApi.create({
+        properties: {
+          hs_meeting_title: `Power CA Demo - ${demoData.firmName}`,
+          hs_meeting_body: `Demo scheduled for ${demoData.firmName}\nContact: ${demoData.contactName}\nRequirements: ${demoData.requirements}`,
+          hs_meeting_start_time: new Date(demoData.scheduledTime).getTime(),
+          hs_meeting_end_time: new Date(demoData.scheduledTime).getTime() + 3600000, // 1 hour
+        }
+      })
+
+      // Associate with contact
+      if (demoData.contactId) {
+        await this.client.crm.objects.meetings.associationsApi.create(
+          engagement.id,
+          'contacts',
+          demoData.contactId,
+          'meeting_to_contact'
+        )
+      }
+
+      // Track custom event
+      await this.trackEvent('demo_scheduled', {
+        email: demoData.email,
+        demo_date: demoData.scheduledTime,
+        demo_type: demoData.demoType
+      })
+
+      return engagement
+    } catch (error) {
+      console.error('Demo sync error:', error)
+      return null
+    }
+  }
+
+  // Sync payment/subscription data
+  async syncPaymentToHubSpot(paymentData) {
+    try {
+      // Create deal in HubSpot
+      const deal = await this.client.crm.deals.basicApi.create({
+        properties: {
+          dealname: `Power CA - ${paymentData.planName}`,
+          amount: paymentData.amount,
+          pipeline: 'default',
+          dealstage: paymentData.status === 'completed' ? 'closedwon' : 'appointmentscheduled',
+          closedate: new Date(paymentData.date).getTime(),
+          plan_type: paymentData.planName,
+          billing_cycle: paymentData.billingCycle,
+          payment_method: paymentData.paymentMethod,
+        }
+      })
+
+      // Update contact's revenue properties
+      await this.client.crm.contacts.basicApi.update(paymentData.contactId, {
+        properties: {
+          total_revenue: paymentData.totalLifetimeValue,
+          current_mrr: paymentData.monthlyRevenue,
+          customer_since: paymentData.firstPurchaseDate,
+        }
+      })
+
+      return deal
+    } catch (error) {
+      console.error('Payment sync error:', error)
+      return null
+    }
+  }
+
+  // Get lead score and insights from HubSpot
+  async getLeadInsights(email) {
+    try {
+      const contact = await this.client.crm.contacts.searchApi.doSearch({
+        filterGroups: [{
+          filters: [{
+            propertyName: 'email',
+            operator: 'EQ',
+            value: email
+          }]
+        }],
+        properties: [
+          'hubspotscore', // Lead score
+          'hs_email_open_count',
+          'hs_email_click_count', 
+          'num_notes',
+          'num_contacted_notes',
+          'hs_analytics_num_page_views',
+          'hs_analytics_num_visits',
+          'hs_analytics_last_visit_timestamp'
+        ]
+      })
+
+      return contact.results[0] || null
+    } catch (error) {
+      console.error('Error fetching lead insights:', error)
+      return null
+    }
+  }
+
+  // Track custom events
+  async trackEvent(eventName, properties) {
+    try {
+      const response = await fetch(`https://track.hubspot.com/v1/event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
+          eventName,
+          properties,
+          timestamp: Date.now()
+        })
+      })
+      return response.json()
+    } catch (error) {
+      console.error('Event tracking error:', error)
+    }
+  }
+}
+
+export const hubspotService = new HubSpotService()
+
+// ============================================
+// 2. MIDDLEWARE FOR AUTOMATIC SYNCING
+// ============================================
+
+// middleware/hubspot-sync.js
+import { hubspotService } from '@/lib/hubspot-service'
+
+export const syncMiddleware = {
+  // Call after user registration
+  async afterUserCreate(user) {
+    await hubspotService.syncUserToHubSpot({
+      ...user,
+      lifecycle_stage: 'lead'
+    })
+  },
+
+  // Call after demo scheduling
+  async afterDemoScheduled(demoData) {
+    await hubspotService.syncDemoToHubSpot(demoData)
+    await hubspotService.trackEvent('demo_scheduled', {
+      email: demoData.email,
+      demo_date: demoData.scheduledTime
+    })
+  },
+
+  // Call after payment
+  async afterPaymentCompleted(payment) {
+    await hubspotService.syncPaymentToHubSpot(payment)
+    await hubspotService.trackEvent('payment_completed', {
+      email: payment.email,
+      amount: payment.amount,
+      plan: payment.planName
+    })
+  },
+
+  // Call on trial start
+  async afterTrialStarted(user) {
+    await hubspotService.syncUserToHubSpot({
+      ...user,
+      lifecycle_stage: 'opportunity',
+      trial_start_date: new Date().toISOString()
+    })
+  },
+
+  // Call on user activity
+  async trackUserActivity(activity) {
+    await hubspotService.trackEvent(activity.type, {
+      email: activity.userEmail,
+      ...activity.metadata
+    })
+  }
+}
+
+// ============================================
+// 3. ADMIN DASHBOARD COMPONENTS
+// ============================================
+
+// components/admin/LeadInsightsWidget.jsx
+import { useState, useEffect } from 'react'
+import { hubspotService } from '@/lib/hubspot-service'
+
+export default function LeadInsightsWidget({ userEmail }) {
+  const [insights, setInsights] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchInsights() {
+      const data = await hubspotService.getLeadInsights(userEmail)
+      setInsights(data?.properties)
+      setLoading(false)
+    }
+    fetchInsights()
+  }, [userEmail])
+
+  if (loading) return <div>Loading HubSpot data...</div>
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4">
+      <h3 className="font-semibold text-gray-900 mb-3">Lead Intelligence (HubSpot)</h3>
+      
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="bg-blue-50 rounded p-2">
+          <div className="text-gray-600">Lead Score</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {insights?.hubspotscore || 'N/A'}
+          </div>
+        </div>
+        
+        <div className="bg-green-50 rounded p-2">
+          <div className="text-gray-600">Engagement</div>
+          <div className="text-lg font-semibold text-green-600">
+            {insights?.hs_analytics_num_visits || 0} visits
+          </div>
+        </div>
+        
+        <div className="bg-purple-50 rounded p-2">
+          <div className="text-gray-600">Email Opens</div>
+          <div className="text-lg font-semibold text-purple-600">
+            {insights?.hs_email_open_count || 0}
+          </div>
+        </div>
+        
+        <div className="bg-orange-50 rounded p-2">
+          <div className="text-gray-600">Last Visit</div>
+          <div className="text-sm font-medium text-orange-600">
+            {insights?.hs_analytics_last_visit_timestamp 
+              ? new Date(insights.hs_analytics_last_visit_timestamp).toLocaleDateString()
+              : 'Never'}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 pt-3 border-t">
+        <a 
+          href={`https://app.hubspot.com/contacts/${process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID}/contact/${userEmail}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          View Full Profile in HubSpot →
+        </a>
+      </div>
+    </div>
+  )
+}
+
+// components/admin/UnifiedLeadTable.jsx
+import { useState, useEffect } from 'react'
+import LeadInsightsWidget from './LeadInsightsWidget'
+
+export default function UnifiedLeadTable() {
+  const [leads, setLeads] = useState([])
+  const [selectedLead, setSelectedLead] = useState(null)
+
+  useEffect(() => {
+    // Fetch from your database
+    fetchLeadsFromYourDB()
+  }, [])
+
+  async function fetchLeadsFromYourDB() {
+    const response = await fetch('/api/admin/leads')
+    const data = await response.json()
+    setLeads(data)
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-6">
+      {/* Your existing lead table */}
+      <div className="col-span-2">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Firm</th>
+              <th>Status</th>
+              <th>Demo Date</th>
+              <th>Plan</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leads.map(lead => (
+              <tr 
+                key={lead.id}
+                onClick={() => setSelectedLead(lead)}
+                className="hover:bg-gray-50 cursor-pointer"
+              >
+                <td>{lead.name}</td>
+                <td>{lead.firmName}</td>
+                <td>
+                  <span className={`badge ${getStatusColor(lead.status)}`}>
+                    {lead.status}
+                  </span>
+                </td>
+                <td>{lead.demoDate}</td>
+                <td>{lead.planType}</td>
+                <td>
+                  <button onClick={() => handleAction(lead)}>
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* HubSpot insights sidebar */}
+      <div className="col-span-1">
+        {selectedLead && (
+          <LeadInsightsWidget userEmail={selectedLead.email} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// 4. API ROUTES FOR SYNC OPERATIONS
+// ============================================
+
+// app/api/admin/sync-hubspot/route.js
+import { NextResponse } from 'next/server'
+import { hubspotService } from '@/lib/hubspot-service'
+import { syncMiddleware } from '@/middleware/hubspot-sync'
+
+// Bulk sync existing users to HubSpot
+export async function POST(request) {
+  try {
+    const { action, data } = await request.json()
+
+    switch (action) {
+      case 'sync-all-users':
+        // Get all users from your database
+        const users = await getUsersFromDB()
+        
+        // Sync in batches to avoid rate limits
+        const batchSize = 10
+        for (let i = 0; i < users.length; i += batchSize) {
+          const batch = users.slice(i, i + batchSize)
+          await Promise.all(
+            batch.map(user => hubspotService.syncUserToHubSpot(user))
+          )
+          // Wait 1 second between batches
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+        
+        return NextResponse.json({ 
+          success: true, 
+          synced: users.length 
+        })
+
+      case 'sync-single-user':
+        await syncMiddleware.afterUserCreate(data)
+        return NextResponse.json({ success: true })
+
+      case 'sync-demo':
+        await syncMiddleware.afterDemoScheduled(data)
+        return NextResponse.json({ success: true })
+
+      case 'sync-payment':
+        await syncMiddleware.afterPaymentCompleted(data)
+        return NextResponse.json({ success: true })
+
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+  } catch (error) {
+    console.error('Sync error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+// ============================================
+// 5. DASHBOARD ENHANCEMENT COMPONENTS
+// ============================================
+
+// components/admin/MarketingAutomationPanel.jsx
+export default function MarketingAutomationPanel() {
+  const [campaigns, setCampaigns] = useState([])
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Marketing Automation</h2>
+        <span className="text-sm text-gray-500">Powered by HubSpot</span>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        {/* Email Campaign Status */}
+        <div className="border rounded-lg p-4">
+          <h3 className="font-semibold mb-2">Active Campaigns</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Trial Nurture Series</span>
+              <span className="text-green-600">Active</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Demo Follow-up</span>
+              <span className="text-green-600">Active</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Feature Announcements</span>
+              <span className="text-yellow-600">Scheduled</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Lead Scoring Overview */}
+        <div className="border rounded-lg p-4">
+          <h3 className="font-semibold mb-2">Lead Quality</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Hot Leads (80+)</span>
+              <span className="font-bold">12</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Warm Leads (50-79)</span>
+              <span className="font-bold">34</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Cold Leads (&lt;50)</span>
+              <span className="font-bold">156</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Automation Triggers */}
+        <div className="border rounded-lg p-4">
+          <h3 className="font-semibold mb-2">Today's Triggers</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>5 Demo follow-ups sent</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+              <span>12 Trial reminders queued</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+              <span>3 Win-back emails scheduled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-3">
+        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Create Campaign
+        </button>
+        <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+          View in HubSpot
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// 6. ENHANCED DEMO SCHEDULER WITH HUBSPOT
+// ============================================
+
+// components/admin/EnhancedDemoScheduler.jsx
+import { syncMiddleware } from '@/middleware/hubspot-sync'
+
+export default function EnhancedDemoScheduler({ existingScheduler }) {
+  const handleDemoScheduled = async (demoData) => {
+    // Your existing demo scheduling logic
+    const result = await saveDemo(demoData)
+    
+    // Sync to HubSpot in background
+    syncMiddleware.afterDemoScheduled({
+      ...demoData,
+      contactId: result.userId,
+      scheduledTime: demoData.dateTime,
+      demoType: demoData.type,
+      requirements: demoData.notes
+    })
+
+    // Trigger HubSpot workflow
+    await fetch('/api/hubspot/trigger-workflow', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: demoData.email,
+        workflow: 'demo_scheduled_workflow'
+      })
+    })
+  }
+
+  return (
+    <div>
+      {/* Your existing demo scheduler UI */}
+      <YourExistingScheduler onSchedule={handleDemoScheduled} />
+      
+      {/* Add HubSpot-powered features */}
+      <div className="mt-4 p-4 bg-blue-50 rounded">
+        <p className="text-sm text-blue-800">
+          ✓ Automated reminder emails via HubSpot<br/>
+          ✓ Calendar invites sent automatically<br/>
+          ✓ Follow-up sequence activated
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// 7. AFFILIATE TRACKING WITH HUBSPOT
+// ============================================
+
+// components/admin/AffiliateHubSpotSync.jsx
+export default function AffiliateHubSpotSync({ affiliateData }) {
+  const syncAffiliateToHubSpot = async (affiliate) => {
+    // Create custom properties in HubSpot for affiliates
+    await hubspotService.syncUserToHubSpot({
+      email: affiliate.email,
+      firstname: affiliate.name,
+      affiliate_id: affiliate.id,
+      affiliate_tier: affiliate.tier,
+      referred_leads: affiliate.referredCount,
+      commission_earned: affiliate.totalCommission,
+      lifecycle_stage: 'partner'
+    })
+
+    // Track referral events
+    for (const referral of affiliate.referrals) {
+      await hubspotService.trackEvent('affiliate_referral', {
+        affiliate_email: affiliate.email,
+        referred_email: referral.email,
+        referral_date: referral.date,
+        commission_amount: referral.commission
+      })
+    }
+  }
+
+  return (
+    <button 
+      onClick={() => syncAffiliateToHubSpot(affiliateData)}
+      className="px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
+    >
+      Sync to HubSpot CRM
+    </button>
+  )
+}
+
+// ============================================
+// 8. IMPLEMENTATION CHECKLIST
+// ============================================
+
+/*
+SETUP STEPS:
+
+1. Create HubSpot Account:
+   - Sign up at hubspot.com (free)
+   - Get your Portal ID from Settings > Account > API
+   - Create Private App for API access
+
+2. Configure Custom Properties in HubSpot:
+   - Go to Settings > Properties > Contact Properties
+   - Add: ca_membership_number, firm_size, plan_type, trial_start_date
+   - Add: affiliate_source, total_revenue, features_used
+
+3. Set Up Workflows in HubSpot:
+   - Demo Scheduled → Send reminder 1 day before
+   - Trial Started → 7-day nurture sequence
+   - Payment Failed → Recovery email sequence
+   - Inactive User → Re-engagement campaign
+
+4. Install Dependencies:
+   npm install @hubspot/api-client
+
+5. Environment Variables:
+   - Add all keys to .env.local
+   - Add to Vercel/deployment environment
+
+6. Database Schema Updates:
+   - Add hubspot_contact_id to users table
+   - Add hubspot_deal_id to payments table
+   - Add sync_status field for tracking
+
+7. Implement Webhook Handlers:
+   - User registration → Sync to HubSpot
+   - Demo scheduled → Create meeting
+   - Payment received → Create/update deal
+   - Trial started → Update lifecycle stage
+
+8. Test Integration:
+   - Create test user
+   - Schedule demo
+   - Check HubSpot contact created
+   - Verify email workflows trigger
+
+9. Bulk Import Existing Data:
+   - Export current users as CSV
+   - Import to HubSpot via UI or API
+   - Map fields correctly
+
+10. Monitor & Optimize:
+    - Check HubSpot analytics weekly
+    - Adjust lead scoring rules
+    - Optimize email sequences based on opens/clicks
+    - Track conversion rates
+
+BENEFITS YOU'LL GET:
+
+1. Unified View: See all customer interactions in one place
+2. Automated Follow-ups: Never miss a demo or trial follow-up
+3. Lead Scoring: Prioritize hot leads automatically
+4. Email Marketing: Professional campaigns without extra tools
+5. Analytics: Understand your funnel better
+6. Affiliate Tracking: Monitor referral performance
+7. Revenue Attribution: Know which campaigns drive revenue
+
+*/

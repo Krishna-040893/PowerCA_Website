@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
 // Generate unique affiliate ID
 function generateAffiliateId(): string {
@@ -13,13 +14,15 @@ function generateAffiliateId(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { userId, userEmail } = body
+    const auth = await requireAdminAuth(request)
+    if (!auth.authorized) {
+      return auth.error
+    }
 
-    console.log('🚀 Promote affiliate request:', { userId, userEmail })
+    const body = await request.json()
+    const { userId } = body
 
     if (!userId) {
-      console.error('❌ No userId provided')
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
@@ -27,7 +30,6 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient()
-    console.log('✅ Supabase admin client created')
 
     // First, fetch the current user data to get all their information
     const { data: userData, error: fetchError } = await supabase
@@ -37,14 +39,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (fetchError) {
-      console.error('❌ Error fetching user data:', fetchError)
       return NextResponse.json(
         { error: 'Failed to fetch user data', details: fetchError.message },
         { status: 500 }
       )
     }
-
-    console.log('✅ User data fetched:', userData)
 
     // Generate unique affiliate ID
     const affiliateId = generateAffiliateId()
@@ -63,19 +62,16 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (registrationError) {
-      console.error('❌ Error updating registrations table:', registrationError)
       return NextResponse.json(
         { error: 'Failed to update user role', details: registrationError.message },
         { status: 500 }
       )
     }
 
-    console.log('✅ User role updated in registrations table:', registrationData)
-
     // Create affiliate profile in affiliate_profiles table
     try {
       // Check if profile already exists
-      const { data: existingProfile, error: checkError } = await supabase
+      const { data: existingProfile, error: _checkError } = await supabase
         .from('affiliate_profiles')
         .select('id')
         .eq('user_id', userId)
@@ -101,10 +97,8 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (profileError) {
-          console.error('❌ Error creating affiliate profile:', profileError)
-          console.error('Profile error details:', profileError.message, profileError.code)
+          // Profile creation failed, continue without it
         } else {
-          console.log('✅ Affiliate profile created:', affiliateProfile)
 
           // Update registrations table with the generated affiliate_id
           if (affiliateProfile?.affiliate_id) {
@@ -119,7 +113,7 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Update existing profile to active
-        const { data: updatedProfile, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('affiliate_profiles')
           .update({
             status: 'active',
@@ -130,17 +124,12 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (updateError) {
-          console.error('❌ Error updating affiliate profile:', updateError)
-        } else {
-          console.log('✅ Existing affiliate profile reactivated:', updatedProfile)
+          // Profile update failed, continue without it
         }
       }
-    } catch (profileError) {
-      console.error('❌ Affiliate profile operation failed:', profileError)
+    } catch {
       // Continue even if profile creation fails
     }
-
-    console.log('🎉 Successfully promoted user to affiliate')
     return NextResponse.json({
       success: true,
       message: 'User successfully promoted to affiliate',
@@ -148,7 +137,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('💥 Critical error promoting user to affiliate:', error)
     return NextResponse.json(
       { error: 'Failed to promote user to affiliate', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

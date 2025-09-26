@@ -1,4 +1,4 @@
-import { Resend } from 'resend'
+import {Resend  } from 'resend'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -14,7 +14,7 @@ export interface BookingEmailData {
 
 export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
   const { name, email, phone, firmName, date, time, message } = data
-  
+
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -112,15 +112,13 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
 
   // Send confirmation email to the user
   try {
-    const emailResult = await resend.emails.send({
+    const _emailResult = await resend.emails.send({
       from: 'PowerCA <onboarding@resend.dev>',
       to: email,
       subject: `Demo Booking Confirmed - ${date} at ${time}`,
       html: emailHtml,
     })
-    console.log('Email sent successfully:', emailResult)
   } catch (error) {
-    console.error('Error sending confirmation email:', error)
     throw error
   }
 
@@ -137,15 +135,14 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
   `
 
   try {
-    const teamEmailResult = await resend.emails.send({
+    const _teamEmailResult = await resend.emails.send({
       from: 'PowerCA Bookings <onboarding@resend.dev>',
       to: 'contact@powerca.in',
       subject: `New Demo Booking - ${name} - ${date} at ${time}`,
       html: teamNotificationHtml,
     })
-    console.log('Team notification sent successfully:', teamEmailResult)
   } catch (error) {
-    console.error('Error sending team notification:', error)
-    // Don't throw for team notification failure
+    // Don't throw for team notification failure - silently handle error
+    console.error('Failed to send team notification:', error)
   }
 }

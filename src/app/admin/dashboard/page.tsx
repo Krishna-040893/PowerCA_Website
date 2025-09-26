@@ -1,23 +1,24 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { 
-  BarChart3, 
-  Calendar, 
-  Users, 
-  TrendingUp, 
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  ArrowUp,
-  ArrowDown,
-  DollarSign,
-  Activity
-} from "lucide-react"
-import { AdminLayout } from "@/components/admin/admin-layout"
+import {useState, useEffect, useCallback  } from 'react'
+import {useRouter  } from 'next/navigation'
+import Link from 'next/link'
+import { BarChart3, Activity, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import {AdminLayout  } from '@/components/admin/admin-layout'
+
+interface Booking {
+  id: string
+  name: string
+  email: string
+  phone: string
+  firm_name?: string
+  date: string
+  time: string
+  type: string
+  status: string
+  message?: string
+  created_at: string
+}
 
 interface DashboardStats {
   totalBookings: number
@@ -42,52 +43,52 @@ export default function AdminDashboard() {
     weeklyGrowth: 0,
     monthlyRevenue: 0
   })
-  const [recentBookings, setRecentBookings] = useState([])
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      router.push('/admin/login')
+    }
+  }, [router])
 
   useEffect(() => {
     checkAuth()
     fetchDashboardData()
-  }, [])
-
-  const checkAuth = () => {
-    const token = localStorage.getItem("adminToken")
-    if (!token) {
-      router.push("/admin/login")
-    }
-  }
+  }, [checkAuth])
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      
+
       // Fetch bookings data
-      const response = await fetch("/api/admin/bookings")
+      const response = await fetch('/api/admin/bookings')
       const data = await response.json()
-      
+
       if (data.success) {
         const bookings = data.bookings || []
-        
+
         // Calculate statistics
         const today = new Date().toDateString()
-        const todayBookings = bookings.filter(b => new Date(b.date).toDateString() === today)
-        
+        const todayBookings = bookings.filter((b: Booking) => new Date(b.date).toDateString() === today)
+
         setStats({
           totalBookings: bookings.length,
-          pendingBookings: bookings.filter(b => b.status === 'PENDING').length,
-          confirmedBookings: bookings.filter(b => b.status === 'CONFIRMED').length,
-          completedBookings: bookings.filter(b => b.status === 'COMPLETED').length,
-          cancelledBookings: bookings.filter(b => b.status === 'CANCELLED').length,
+          pendingBookings: bookings.filter((b: Booking) => b.status === 'PENDING').length,
+          confirmedBookings: bookings.filter((b: Booking) => b.status === 'CONFIRMED').length,
+          completedBookings: bookings.filter((b: Booking) => b.status === 'COMPLETED').length,
+          cancelledBookings: bookings.filter((b: Booking) => b.status === 'CANCELLED').length,
           todayBookings: todayBookings.length,
           weeklyGrowth: 12.5, // Mock data
           monthlyRevenue: 45000 // Mock data
         })
-        
+
         // Get recent 5 bookings
         setRecentBookings(bookings.slice(0, 5))
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error)
+      console.error('Error fetching dashboard data:', error)
     } finally {
       setLoading(false)
     }
@@ -95,36 +96,36 @@ export default function AdminDashboard() {
 
   const statsCards = [
     {
-      title: "Total Bookings",
+      title: 'Total Bookings',
       value: stats.totalBookings,
       icon: Calendar,
-      bgColor: "bg-blue-500",
-      change: "+12%",
-      changeType: "increase"
+      bgColor: 'bg-blue-500',
+      change: '+12%',
+      changeType: 'increase'
     },
     {
-      title: "Pending",
+      title: 'Pending',
       value: stats.pendingBookings,
       icon: AlertCircle,
-      bgColor: "bg-yellow-500",
-      change: "3",
-      changeType: "neutral"
+      bgColor: 'bg-yellow-500',
+      change: '3',
+      changeType: 'neutral'
     },
     {
-      title: "Confirmed",
+      title: 'Confirmed',
       value: stats.confirmedBookings,
       icon: CheckCircle,
-      bgColor: "bg-green-500",
-      change: "+8%",
-      changeType: "increase"
+      bgColor: 'bg-green-500',
+      change: '+8%',
+      changeType: 'increase'
     },
     {
       title: "Today's Bookings",
       value: stats.todayBookings,
       icon: Clock,
-      bgColor: "bg-purple-500",
-      change: "New",
-      changeType: "neutral"
+      bgColor: 'bg-purple-500',
+      change: 'New',
+      changeType: 'neutral'
     }
   ]
 
@@ -156,7 +157,7 @@ export default function AdminDashboard() {
                   <stat.icon className="w-6 h-6" />
                 </div>
                 <span className={`text-sm font-medium ${
-                  stat.changeType === 'increase' ? 'text-green-600' : 
+                  stat.changeType === 'increase' ? 'text-green-600' :
                   stat.changeType === 'decrease' ? 'text-red-600' : 'text-gray-600'
                 }`}>
                   {stat.change}
@@ -244,7 +245,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {recentBookings.map((booking: any) => (
+                {recentBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>

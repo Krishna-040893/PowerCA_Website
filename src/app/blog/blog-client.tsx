@@ -1,79 +1,108 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Search, Calendar, User, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {useState  } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import {Search, Calendar, User, ArrowRight, AlertCircle } from 'lucide-react'
+import {Button  } from '@/components/ui/button'
+import {Input  } from '@/components/ui/input'
 
 const categories = [
   { id: 'all', name: 'All Categories', active: true },
-  { id: 'best-practices', name: 'Best Practices', active: false },
+  { id: 'breaking-news', name: 'Breaking News', active: false },
   { id: 'compliance', name: 'Compliance', active: false },
+  { id: 'tax-planning', name: 'Tax Planning', active: false },
   { id: 'technology', name: 'Technology', active: false },
-  { id: 'industry-news', name: 'Industry News', active: false },
+  { id: 'best-practices', name: 'Best Practices', active: false },
   { id: 'tips', name: 'Tips & Tricks', active: false },
 ]
 
 const blogPosts = [
   {
     id: 1,
-    title: "Essential Audit Practices for CA Firms in 2024",
-    excerpt: "Discover the latest audit methodologies and compliance requirements that every CA firm should implement to stay competitive.",
-    author: "Priya Sharma",
-    date: "March 15, 2024",
-    category: "best-practices",
-    readTime: "5 min read",
-    image: "/images/hero-background.png"
+    title: 'BREAKING: Tax Audit Report Due Date Extended to October 31, 2025',
+    excerpt: 'CBDT extends tax audit report filing deadline from September 30 to October 31, 2025 for AY 2025-26. Get complete details of the notification.',
+    author: 'PowerCA Team',
+    date: 'September 25, 2025',
+    category: 'breaking-news',
+    readTime: '5 min read',
+    image: '/images/hero-background.png',
+    isBreaking: true,
+    link: '/blog/tax-audit-deadline-extended-october-31-2025'
   },
   {
     id: 2,
-    title: "Digital Transformation in Accounting: A Complete Guide",
-    excerpt: "Learn how to modernize your accounting practice with digital tools and automated workflows for improved efficiency.",
-    author: "Rajesh Kumar",
-    date: "March 12, 2024",
-    category: "technology",
-    readTime: "8 min read",
-    image: "/images/hero-background.png"
+    title: 'TDS Compliance Checklist 2025-26: Complete Guide for CAs',
+    excerpt: 'Comprehensive TDS compliance checklist for FY 2025-26. Due dates, rates, forms, penalties, and best practices for error-free TDS compliance.',
+    author: 'PowerCA Team',
+    date: 'September 24, 2025',
+    category: 'compliance',
+    readTime: '15 min read',
+    image: '/images/hero-background.png',
+    link: '/blog/tds-compliance-checklist-complete-guide'
   },
   {
     id: 3,
-    title: "New GST Compliance Requirements: What CAs Need to Know",
-    excerpt: "Stay updated with the latest GST compliance changes and how they impact your clients' business operations.",
-    author: "Anita Patel",
-    date: "March 10, 2024",
-    category: "compliance",
-    readTime: "6 min read",
-    image: "/images/hero-background.png"
+    title: 'Why Every CA Firm Needs Practice Management Software in 2025',
+    excerpt: 'Discover how practice management software transforms CA firms. Increase efficiency by 40%, reduce errors, automate compliance, and scale your practice.',
+    author: 'PowerCA Team',
+    date: 'September 23, 2025',
+    category: 'technology',
+    readTime: '12 min read',
+    image: '/images/hero-background.png',
+    link: '/blog/why-cas-need-practice-management-software'
   },
   {
     id: 4,
-    title: "Time Management Strategies for Busy CA Practices",
-    excerpt: "Proven techniques to optimize your time, increase productivity, and maintain work-life balance in your CA practice.",
-    author: "Vikram Singh",
-    date: "March 8, 2024",
-    category: "tips",
-    readTime: "4 min read",
-    image: "/images/hero-background.png"
+    title: 'New vs Old Tax Regime: Which is Better for You in 2025-26?',
+    excerpt: 'Detailed comparison of New vs Old tax regime for FY 2025-26. Calculate which regime saves more tax based on your income and deductions.',
+    author: 'PowerCA Team',
+    date: 'September 22, 2025',
+    category: 'tax-planning',
+    readTime: '10 min read',
+    image: '/images/hero-background.png',
+    link: '/blog/new-vs-old-tax-regime-which-is-better'
   },
   {
     id: 5,
-    title: "Industry Trends: The Future of Chartered Accountancy",
-    excerpt: "Explore emerging trends in the CA profession and how to prepare your practice for future opportunities.",
-    author: "Meera Reddy",
-    date: "March 5, 2024",
-    category: "industry-news",
-    readTime: "7 min read",
-    image: "/images/hero-background.png"
+    title: 'How to File GST Returns in 2025: Complete Guide for CAs',
+    excerpt: 'Step-by-step guide on filing GST returns in 2025. Learn about GSTR-1, GSTR-3B, deadlines, late fees, and common mistakes to avoid.',
+    author: 'PowerCA Team',
+    date: 'September 20, 2025',
+    category: 'compliance',
+    readTime: '12 min read',
+    image: '/images/hero-background.png',
+    link: '/blog/how-to-file-gst-returns-2025'
   },
   {
     id: 6,
-    title: "Client Communication Best Practices for CAs",
-    excerpt: "Effective strategies to improve client relationships and communication throughout the audit process.",
-    author: "Amit Gupta",
-    date: "March 3, 2024",
-    category: "best-practices",
-    readTime: "5 min read",
-    image: "/images/hero-background.png"
+    title: 'Essential Audit Practices for CA Firms in 2025',
+    excerpt: 'Discover the latest audit methodologies and compliance requirements that every CA firm should implement to stay competitive.',
+    author: 'Priya Sharma',
+    date: 'September 15, 2025',
+    category: 'best-practices',
+    readTime: '5 min read',
+    image: '/images/hero-background.png'
+  },
+  {
+    id: 7,
+    title: 'Digital Transformation in Accounting: A Complete Guide',
+    excerpt: 'Learn how to modernize your accounting practice with digital tools and automated workflows for improved efficiency.',
+    author: 'Rajesh Kumar',
+    date: 'September 12, 2025',
+    category: 'technology',
+    readTime: '8 min read',
+    image: '/images/hero-background.png'
+  },
+  {
+    id: 8,
+    title: 'Time Management Strategies for Busy CA Practices',
+    excerpt: 'Proven techniques to optimize your time, increase productivity, and maintain work-life balance in your CA practice.',
+    author: 'Vikram Singh',
+    date: 'September 8, 2025',
+    category: 'tips',
+    readTime: '4 min read',
+    image: '/images/hero-background.png'
   }
 ]
 
@@ -95,18 +124,18 @@ const dateFilters = [
 ]
 
 export default function BlogPageClient() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [activeCategory, setActiveCategory] = useState("all")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeCategory, setActiveCategory] = useState('all')
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
-  const [selectedAuthor, setSelectedAuthor] = useState("all")
-  const [selectedDate, setSelectedDate] = useState("all")
+  const [selectedAuthor, setSelectedAuthor] = useState('all')
+  const [selectedDate, setSelectedDate] = useState('all')
 
   const filteredPosts = blogPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = activeCategory === "all" || post.category === activeCategory
-    const matchesAuthor = selectedAuthor === "all" || post.author.toLowerCase().replace(' ', '-') === selectedAuthor
-    const matchesDate = selectedDate === "all" || post.date.toLowerCase().includes(selectedDate.replace('-2024', '').replace('-', ' '))
+    const matchesCategory = activeCategory === 'all' || post.category === activeCategory
+    const matchesAuthor = selectedAuthor === 'all' || post.author.toLowerCase().replace(' ', '-') === selectedAuthor
+    const matchesDate = selectedDate === 'all' || post.date.toLowerCase().includes(selectedDate.replace('-2024', '').replace('-', ' '))
     return matchesSearch && matchesCategory && matchesAuthor && matchesDate
   })
 
@@ -159,9 +188,11 @@ export default function BlogPageClient() {
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-16 min-w-16"
               >
-                <img
+                <Image
                   src="/images/filter-icon.png"
                   alt="Filter"
+                  width={32}
+                  height={32}
                   className="w-8 h-8"
                 />
               </Button>
@@ -233,10 +264,10 @@ export default function BlogPageClient() {
                     {/* Clear Filters Button */}
                     <button
                       onClick={() => {
-                        setActiveCategory("all")
-                        setSelectedAuthor("all")
-                        setSelectedDate("all")
-                        setSearchTerm("")
+                        setActiveCategory('all')
+                        setSelectedAuthor('all')
+                        setSelectedDate('all')
+                        setSearchTerm('')
                         setShowFilterDropdown(false)
                       }}
                       className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
@@ -265,12 +296,12 @@ export default function BlogPageClient() {
               {categories.map((category) => (
                 <Button
                   key={category.id}
-                  variant={activeCategory === category.id ? "default" : "outline"}
+                  variant={activeCategory === category.id ? 'default' : 'outline'}
                   onClick={() => setActiveCategory(category.id)}
                   className={`rounded-full px-6 py-2 transition-all ${
                     activeCategory === category.id
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {category.name}
@@ -281,53 +312,85 @@ export default function BlogPageClient() {
 
           {/* Blog Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
-            {filteredPosts.map((post) => (
-              <article
-                key={post.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-blue-600 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="bg-blue-600/90 text-white text-xs font-medium px-3 py-1 rounded-full">
-                      {categories.find(cat => cat.id === post.category)?.name || 'General'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
-                    {post.excerpt}
-                  </p>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="font-medium">{post.author}</span>
+            {filteredPosts.map((post) => {
+              const postContent = (
+                <>
+                  <div className={`aspect-video relative overflow-hidden ${
+                    post.isBreaking
+                      ? 'bg-gradient-to-br from-red-500 to-orange-600'
+                      : 'bg-gradient-to-br from-blue-500 to-blue-600'
+                  }`}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    {post.isBreaking && (
+                      <div className="absolute top-4 right-4 bg-yellow-400 text-red-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
+                        <AlertCircle className="w-3 h-3" />
+                        BREAKING
                       </div>
+                    )}
+                    <div className="absolute bottom-4 left-4">
+                      <span className={`${
+                        post.isBreaking ? 'bg-red-600/90' : 'bg-blue-600/90'
+                      } text-white text-xs font-medium px-3 py-1 rounded-full`}>
+                        {categories.find(cat => cat.id === post.category)?.name || 'General'}
+                      </span>
                     </div>
-                    <span className="text-blue-600 font-medium">{post.readTime}</span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm">{post.date}</span>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+                      {post.excerpt}
+                    </p>
+
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            post.isBreaking
+                              ? 'bg-gradient-to-r from-red-400 to-orange-600'
+                              : 'bg-gradient-to-r from-blue-400 to-blue-600'
+                          }`}>
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="font-medium">{post.author}</span>
+                        </div>
+                      </div>
+                      <span className="text-blue-600 font-medium">{post.readTime}</span>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                      Read More
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm">{post.date}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
+                        Read More
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </>
+              )
+
+              return post.link ? (
+                <Link href={post.link} key={post.id}>
+                  <article className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer ${
+                    post.isBreaking ? 'border-red-200 ring-2 ring-red-100' : 'border-gray-100'
+                  }`}>
+                    {postContent}
+                  </article>
+                </Link>
+              ) : (
+                <article
+                  key={post.id}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                >
+                  {postContent}
+                </article>
+              )
+            })}
           </div>
 
           {filteredPosts.length === 0 && (

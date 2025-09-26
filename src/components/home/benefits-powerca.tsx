@@ -1,44 +1,44 @@
-"use client"
+'use client'
 
-import { TrendingUp, Clock, Shield, Users, Zap, Award } from "lucide-react"
+import { TrendingUp, Clock, Shield, Users, Zap, Award } from 'lucide-react'
 
 export function BenefitsOfPowerCA() {
   const benefits = [
     {
       icon: TrendingUp,
-      title: "Increase Productivity",
-      value: "40%",
-      description: "Average productivity increase"
+      title: 'Increase Productivity',
+      value: '40%',
+      description: 'Average productivity increase'
     },
     {
       icon: Clock,
-      title: "Save Time",
-      value: "5+ hrs",
-      description: "Saved per week"
+      title: 'Save Time',
+      value: '5+ hrs',
+      description: 'Saved per week'
     },
     {
       icon: Shield,
-      title: "Data Security",
-      value: "100%",
-      description: "Secure & encrypted"
+      title: 'Data Security',
+      value: '100%',
+      description: 'Secure & encrypted'
     },
     {
       icon: Users,
-      title: "Client Satisfaction",
-      value: "95%",
-      description: "Happy clients"
+      title: 'Client Satisfaction',
+      value: '95%',
+      description: 'Happy clients'
     },
     {
       icon: Zap,
-      title: "Faster Processing",
-      value: "10x",
-      description: "Faster than manual"
+      title: 'Faster Processing',
+      value: '10x',
+      description: 'Faster than manual'
     },
     {
       icon: Award,
-      title: "Compliance",
-      value: "100%",
-      description: "Always compliant"
+      title: 'Compliance',
+      value: '100%',
+      description: 'Always compliant'
     }
   ]
 

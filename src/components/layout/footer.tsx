@@ -1,6 +1,7 @@
-"use client"
+'use client'
 
-import Image from "next/image"
+import Image from 'next/image'
+import Link from 'next/link'
 
 export function Footer() {
   return (
@@ -81,12 +82,13 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
             <ul className="space-y-3 text-sm text-gray-300">
-              <li><a href="/" className="hover:text-blue-400 transition-colors">Home</a></li>
-              <li><a href="/about" className="hover:text-blue-400 transition-colors">About US</a></li>
-              <li><a href="/modules" className="hover:text-blue-400 transition-colors">Modules</a></li>
-              <li><a href="/pricing" className="hover:text-blue-400 transition-colors">Pricing</a></li>
-              <li><a href="/blog" className="hover:text-blue-400 transition-colors">Blog</a></li>
-              <li><a href="/contact" className="hover:text-blue-400 transition-colors">Contact us</a></li>
+              <li><Link href="/" className="hover:text-blue-400 transition-colors">Home</Link></li>
+              <li><Link href="/about" className="hover:text-blue-400 transition-colors">About US</Link></li>
+              <li><Link href="/modules" className="hover:text-blue-400 transition-colors">Modules</Link></li>
+              <li><Link href="/pricing" className="hover:text-blue-400 transition-colors">Pricing</Link></li>
+              <li><Link href="/affiliate-program" className="hover:text-blue-400 transition-colors">Affiliate Program</Link></li>
+              <li><Link href="/blog" className="hover:text-blue-400 transition-colors">Blog</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-400 transition-colors">Contact us</Link></li>
             </ul>
           </div>
 
@@ -94,10 +96,10 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-6">Your Account</h3>
             <ul className="space-y-3 text-sm text-gray-300">
-              <li><a href="/login" className="hover:text-blue-400 transition-colors">Login</a></li>
-              <li><a href="/register" className="hover:text-blue-400 transition-colors">Register</a></li>
-              <li><a href="/account" className="hover:text-blue-400 transition-colors">Account</a></li>
-              <li><a href="/software" className="hover:text-blue-400 transition-colors">Power CA Software</a></li>
+              <li><Link href="/login" className="hover:text-blue-400 transition-colors">Login</Link></li>
+              <li><Link href="/register" className="hover:text-blue-400 transition-colors">Register</Link></li>
+              <li><Link href="/account" className="hover:text-blue-400 transition-colors">Account</Link></li>
+              <li><Link href="/software" className="hover:text-blue-400 transition-colors">Power CA Software</Link></li>
             </ul>
           </div>
 
@@ -107,14 +109,14 @@ export function Footer() {
 
             {/* Newsletter Signup */}
             <div className="mb-8">
-              <div className="flex">
+              <div className="flex gap-2">
                 <input
                   type="email"
-                  placeholder="Subscribe Now"
-                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                 />
-                <button className="px-6 py-3 text-white rounded-r-lg transition-colors hover:opacity-90" style={{ backgroundColor: '#144fed' }}>
-                  SUBSCRIBE
+                <button className="px-6 py-3 text-white rounded-full transition-colors hover:opacity-90 font-medium" style={{ backgroundColor: '#144fed' }}>
+                  Subscribe
                 </button>
               </div>
             </div>
@@ -170,9 +172,11 @@ export function Footer() {
             </button>
 
             <div className="flex space-x-6 text-sm text-gray-400">
-              <a href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
+              <Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
               <span>•</span>
-              <a href="/terms" className="hover:text-blue-400 transition-colors">Terms and Conditions</a>
+              <Link href="/terms" className="hover:text-blue-400 transition-colors">Terms and Conditions</Link>
+              <span>•</span>
+              <Link href="/refund-policy" className="hover:text-blue-400 transition-colors">Refund Policy</Link>
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import Image from "next/image"
+import {motion  } from 'framer-motion'
 
 export function DashboardPreview() {
   return (
@@ -26,7 +25,7 @@ export function DashboardPreview() {
             </div>
           </div>
         </div>
-        
+
         {/* Dashboard Content */}
         <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6 md:p-8">
           {/* Header */}
@@ -41,7 +40,7 @@ export function DashboardPreview() {
               </div>
             </div>
           </div>
-          
+
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-xl p-4 border border-gray-100">
@@ -65,7 +64,7 @@ export function DashboardPreview() {
               <p className="text-xs text-green-600 mt-1">+18% growth</p>
             </div>
           </div>
-          
+
           {/* Chart Placeholder */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white rounded-xl p-4 border border-gray-100">
@@ -115,7 +114,7 @@ export function DashboardPreview() {
           </div>
         </div>
       </div>
-      
+
       {/* Glow effect */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary-400/20 via-secondary-400/20 to-accent-400/20 blur-3xl" />
     </motion.div>

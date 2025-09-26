@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {NextRequest, NextResponse  } from 'next/server'
+import {getServerSession  } from 'next-auth'
+import {authOptions  } from '@/lib/auth'
+import {createAdminClient  } from '@/lib/supabase/admin'
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Get the current session
     const session = await getServerSession(authOptions)
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
         : 'You can refer one person after completing your profile and payment'
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching referral status:', error)
     return NextResponse.json(
       {

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { Building2, Globe, Link, User, MapPin, Save, AlertCircle } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import {useState, useEffect  } from 'react'
+import {useRouter  } from 'next/navigation'
+import {useSession  } from 'next-auth/react'
+import {Building2, Globe, Link, User, MapPin, Save, AlertCircle  } from 'lucide-react'
+import {Alert, AlertDescription  } from '@/components/ui/alert'
+import {AffiliateApplication  } from '@/types/common'
+import {toast  } from 'sonner'
 
 export default function AffiliateAccountPage() {
   const router = useRouter()
@@ -13,12 +15,12 @@ export default function AffiliateAccountPage() {
   const [affiliateId, setAffiliateId] = useState('Loading...')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [existingDetails, setExistingDetails] = useState<any>(null)
+  const [existingDetails, setExistingDetails] = useState<AffiliateApplication | null>(null)
   const [latestReferralCode, setLatestReferralCode] = useState<string>('')
   const [referralStatus, setReferralStatus] = useState<{
     hasReferred: boolean
     referralCount: number
-    referredDetails: any
+    referredDetails: { name?: string; email?: string; phone?: string } | null
   }>({ hasReferred: false, referralCount: 0, referredDetails: null })
 
   const [formData, setFormData] = useState({
@@ -68,8 +70,8 @@ export default function AffiliateAccountPage() {
               referredDetails: refData.referredDetails || null
             })
           }
-        } catch (refError) {
-          console.log('Could not fetch referral status:', refError)
+        } catch {
+          // Could not fetch referral status, continue without it
         }
 
         if (data.success) {
@@ -77,7 +79,6 @@ export default function AffiliateAccountPage() {
           const adminAssignedId = data.affiliateId || data.user?.affiliate_id || data.profile?.affiliate_id
 
           if (adminAssignedId) {
-            console.log('Using admin-assigned affiliate ID:', adminAssignedId)
             setAffiliateId(adminAssignedId)
           } else {
             // If no ID exists, show error - admin must assign one
@@ -91,8 +92,6 @@ export default function AffiliateAccountPage() {
             // Save the latest referral code
             if (data.profile.referral_code) {
               setLatestReferralCode(data.profile.referral_code)
-              console.log('Affiliate referral code:', data.profile.referral_code)
-              console.log('Referral link:', `${window.location.origin}/pricing?ref=${data.profile.referral_code}`)
             }
             // Keep form empty for new referrals
             setFormData({
@@ -112,11 +111,9 @@ export default function AffiliateAccountPage() {
           }
         }
       } else {
-        console.error('Failed to fetch affiliate user info', response.status)
         setError('Failed to load affiliate information. Please try again.')
       }
-    } catch (error) {
-      console.error('Error fetching affiliate details:', error)
+    } catch {
       setError('Failed to load affiliate information. Please try again.')
     }
   }
@@ -142,13 +139,6 @@ export default function AffiliateAccountPage() {
     }
 
     try {
-      console.log('Submitting affiliate details:', {
-        ...formData,
-        affiliateId,
-        userId: session?.user?.id,
-        isUpdate: !!existingDetails
-      })
-
       // Use create-referral endpoint for multiple referral creation
       const endpoint = existingDetails
         ? '/api/affiliate/create-referral' // Create new referral even if one exists
@@ -166,31 +156,22 @@ export default function AffiliateAccountPage() {
         })
       })
 
-      let data;
-      const contentType = response.headers.get('content-type');
+      let data
+      const contentType = response.headers.get('content-type')
 
       if (contentType && contentType.includes('application/json')) {
         try {
           data = await response.json()
-        } catch (e) {
-          console.error('Failed to parse JSON response:', e)
+        } catch {
           data = { error: 'Invalid JSON response from server' }
         }
       } else {
         // If not JSON, it might be HTML (redirect or error page)
-        const text = await response.text()
-        console.error('Unexpected response type:', contentType, 'Response text preview:', text.substring(0, 200))
+        const _text = await response.text()
         data = { error: `Server returned ${contentType || 'unknown'} instead of JSON` }
       }
 
       if (!response.ok) {
-        console.error('API error:', {
-          status: response.status,
-          statusText: response.statusText,
-          data: data,
-          url: response.url,
-          contentType: contentType
-        })
         setError(data.error || `Failed to save affiliate details (${response.status})`)
       } else {
         // Extract the referral code from the response
@@ -201,13 +182,20 @@ export default function AffiliateAccountPage() {
           setLatestReferralCode(referralCode)
 
           // Generate the referral link
-          const referralLink = `${window.location.origin}/pricing?ref=${referralCode}`
+          const _referralLink = `${window.location.origin}/pricing?ref=${referralCode}`
 
           // Show success with referral link
           setSuccess(`✅ New referral created successfully!`)
 
-          // Show alert with referral details
-          alert(`🎉 New Referral Created!\n\nReferral Code: ${referralCode}\nReferral Link: ${referralLink}\n\nShare this link with your customer.`)
+          // Show toast with referral details
+          toast.success(
+            <div>
+              <p className="font-semibold">🎉 New Referral Created!</p>
+              <p className="text-sm mt-1">Referral Code: {referralCode}</p>
+              <p className="text-sm">Share the link with your customer</p>
+            </div>,
+            { duration: 5000 }
+          )
 
           // Refresh the page to clear all fields
           setTimeout(() => {
@@ -220,8 +208,7 @@ export default function AffiliateAccountPage() {
           }, 2000)
         }
       }
-    } catch (error) {
-      console.error('Submit error:', error)
+    } catch {
       setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -471,9 +458,15 @@ export default function AffiliateAccountPage() {
                       className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded bg-white"
                     />
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/pricing?ref=${latestReferralCode}`)
-                        alert('Referral link copied!')
+                      onClick={async () => {
+                        const { copyToClipboard } = await import('@/lib/browser-compat')
+                        const referralLink = `${window.location.origin}/pricing?ref=${latestReferralCode}`
+                        const success = await copyToClipboard(referralLink)
+                        if (success) {
+                          toast.success('Referral link copied to clipboard!')
+                        } else {
+                          toast.error('Failed to copy. Please manually copy the link.')
+                        }
                       }}
                       className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
