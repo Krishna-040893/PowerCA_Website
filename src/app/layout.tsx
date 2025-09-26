@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import {Geist, Geist_Mono, Inter  } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import {Toaster  } from '@/components/ui/sonner'
 import {SessionProvider  } from '@/components/providers/session-provider'
@@ -13,18 +13,7 @@ import { BrowserCheck } from '@/components/browser-check'
 // Force dynamic rendering for all pages due to session usage
 export const dynamic = 'force-dynamic'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
-
 const inter = Inter({
-  variable: '--font-inter',
   subsets: ['latin'],
 })
 
@@ -87,7 +76,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} font-sans antialiased`}
+        className={`${inter.className} antialiased`}
       >
         <GlobalErrorBoundary>
           <MonitoringProvider>

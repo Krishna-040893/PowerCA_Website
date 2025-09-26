@@ -19,7 +19,7 @@ describe('Contact API Route', () => {
     jest.clearAllMocks()
     const resendModule = await import('resend')
     const { Resend } = resendModule as { Resend: typeof import('resend').Resend }
-    mockResendSend = new Resend().emails.send
+    mockResendSend = new Resend().emails.send as jest.Mock
   })
 
   it('should successfully send contact form email', async () => {
