@@ -74,18 +74,18 @@ export default function RootLayout({
         className="font-sans antialiased"
       >
         <GlobalErrorBoundary>
-          <MonitoringProvider>
-            <BrowserCheck />
-            <GoogleTagManager />
-            <GoogleTagManagerNoscript />
-            <GoogleAnalytics />
-            <SessionProvider>
+          <BrowserCheck />
+          <GoogleTagManager />
+          <GoogleTagManagerNoscript />
+          <GoogleAnalytics />
+          <SessionProvider>
+            <MonitoringProvider>
               <ConditionalLayoutWrapper>
                 {children}
               </ConditionalLayoutWrapper>
               <Toaster />
-            </SessionProvider>
-          </MonitoringProvider>
+            </MonitoringProvider>
+          </SessionProvider>
         </GlobalErrorBoundary>
       </body>
     </html>
