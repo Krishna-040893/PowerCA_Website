@@ -130,7 +130,7 @@ export default function Home() {
             </div>
 
             {/* Main Heading with SEO Keywords */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 leading-tight mb-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-gray-900 leading-tight mb-8">
               Practice Management Software for
               <br />
               <ProfessionRotator />

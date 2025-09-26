@@ -21,7 +21,7 @@ export function ProfessionRotator() {
   }, [])
 
   return (
-    <span className="text-[#ee8529] block">
+    <span className="text-green-600 block">
       {professionalTitles[currentProfession]}
     </span>
   )

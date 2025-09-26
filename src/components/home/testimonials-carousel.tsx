@@ -14,7 +14,7 @@ const testimonials = [
   },
   {
     name: 'Chitra',
-    role: 'Admin, ISMA UDT',
+    role: 'Admin, TSMA',
     initial: 'C',
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-700',
@@ -22,7 +22,7 @@ const testimonials = [
   },
   {
     name: 'Gayathri',
-    role: 'Admin, TGMA CBE',
+    role: 'Admin, TSMA',
     initial: 'G',
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-700',

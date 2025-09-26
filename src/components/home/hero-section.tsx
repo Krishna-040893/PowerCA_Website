@@ -9,7 +9,7 @@ export function HeroSection() {
     <section className="relative bg-gradient-to-b from-blue-50 to-white py-20 px-6">
       <div className="container mx-auto max-w-7xl">
         <div className="text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-6 px-4 sm:px-0">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-gray-900 mb-6 px-4 sm:px-0">
             Practice Management Solution for <br />
             <span className="text-blue-600">Professionals</span>{' '}
             <span className="text-gray-700">Chartered Accountants</span>
