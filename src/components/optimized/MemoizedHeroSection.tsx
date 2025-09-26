@@ -3,7 +3,7 @@
 import React, { memo, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, TrendingUp, Users } from 'lucide-react'
+import { ArrowRight, CheckCircle, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -46,7 +46,7 @@ export const MemoizedHeroSection = memo<HeroSectionProps>(({
   ], [])
 
   // Memoize callbacks to prevent child re-renders
-  const handleCtaClick = useCallback((e: React.MouseEvent) => {
+  const handleCtaClick = useCallback(() => {
     // Track analytics event
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'cta_click', {

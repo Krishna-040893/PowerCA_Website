@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, adminApiClient, handleApiResponse } from '@/lib/api-client'
+import { api, handleApiResponse } from '@/lib/api-client'
 
 export const USERS_QUERY_KEY = ['users']
 export const USER_SESSION_KEY = ['user', 'session']

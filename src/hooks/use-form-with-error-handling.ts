@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
 
-interface FormFieldError {
+interface _FormFieldError {
   field: string
   message: string
 }
@@ -24,7 +24,7 @@ interface FormOptions<T> {
   resetOnSuccess?: boolean
 }
 
-export function useFormWithErrorHandling<T extends Record<string, any>>({
+export function useFormWithErrorHandling<T extends Record<string, unknown>>({
   initialData,
   validate,
   onSubmit,
@@ -82,7 +82,7 @@ export function useFormWithErrorHandling<T extends Record<string, any>>({
   }, [validate])
 
   // Update field value
-  const setFieldValue = useCallback(async (field: keyof T, value: any) => {
+  const setFieldValue = useCallback(async (field: keyof T, value: T[keyof T]) => {
     setFormState(prev => ({
       ...prev,
       data: { ...prev.data, [field]: value },
@@ -228,10 +228,11 @@ export function useFormWithErrorHandling<T extends Record<string, any>>({
         }
 
         // Handle server validation errors
-        if ((error as any).status === 400 && (error as any).data?.errors) {
-          const serverErrors = (error as any).data.errors
+        const apiError = error as { status?: number; data?: { errors?: Record<string, string> } }
+        if (apiError.status === 400 && apiError.data?.errors) {
+          const serverErrors = apiError.data.errors
           if (typeof serverErrors === 'object') {
-            setFieldErrors(serverErrors)
+            setFieldErrors(serverErrors as Partial<Record<keyof T, string>>)
             setFormState(prev => ({
               ...prev,
               isSubmitting: false,
@@ -250,7 +251,7 @@ export function useFormWithErrorHandling<T extends Record<string, any>>({
 
       toast.error(errorMessage)
     }
-  }, [formState.data, validateForm, onSubmit, resetOnSuccess, initialData, persistKey])
+  }, [formState.data, validateForm, onSubmit, resetOnSuccess, initialData, persistKey, setFieldErrors])
 
   // Reset form
   const reset = useCallback(() => {
@@ -271,9 +272,9 @@ export function useFormWithErrorHandling<T extends Record<string, any>>({
 
   // Get field props for easier integration
   const getFieldProps = useCallback((field: keyof T) => ({
-    value: formState.data[field] || '',
+    value: String(formState.data[field] || ''),
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      setFieldValue(field, e.target.value)
+      setFieldValue(field, e.target.value as T[keyof T])
     },
     onBlur: () => {
       setFormState(prev => ({

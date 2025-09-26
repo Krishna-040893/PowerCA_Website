@@ -79,15 +79,15 @@ export function useLoading(key?: string) {
 }
 
 // Hook for managing async operations with loading states
-export function useAsyncOperation<T = any>(
-  operation: (...args: any[]) => Promise<T>,
+export function useAsyncOperation<T = unknown, Args extends unknown[] = unknown[]>(
+  operation: (...args: Args) => Promise<T>,
   key: string = 'default'
 ) {
   const { startLoading, stopLoading, isLoading } = useLoading(key)
   const [error, setError] = useState<Error | null>(null)
   const [data, setData] = useState<T | null>(null)
 
-  const execute = useCallback(async (...args: any[]) => {
+  const execute = useCallback(async (...args: Args) => {
     startLoading()
     setError(null)
 

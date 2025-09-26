@@ -10,6 +10,9 @@ import { GlobalErrorBoundary } from '@/components/error-boundary'
 import { MonitoringProvider } from '@/components/monitoring-provider'
 import { BrowserCheck } from '@/components/browser-check'
 
+// Force dynamic rendering for all pages due to session usage
+export const dynamic = 'force-dynamic'
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],

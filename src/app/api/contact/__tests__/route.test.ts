@@ -15,9 +15,10 @@ jest.mock('resend', () => {
 describe('Contact API Route', () => {
   let mockResendSend: jest.Mock
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
-    const { Resend } = require('resend')
+    const resendModule = await import('resend')
+    const { Resend } = resendModule as { Resend: typeof import('resend').Resend }
     mockResendSend = new Resend().emails.send
   })
 

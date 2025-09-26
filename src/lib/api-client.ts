@@ -1,5 +1,7 @@
 import { logger } from './logger'
 import { trackError } from './monitoring'
+import type { JsonValue } from '@/types/api.types'
+import type { AuthResponse, SessionResponse, BookingData, UserUpdateData } from '@/types/models'
 
 interface ApiClientOptions extends RequestInit {
   timeout?: number
@@ -8,7 +10,7 @@ interface ApiClientOptions extends RequestInit {
   withAuth?: boolean
 }
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   data?: T
   error?: string
   status: number
@@ -25,7 +27,7 @@ class ApiClient {
     this.baseURL = baseURL
   }
 
-  private async executeRequest<T = any>(
+  private async executeRequest<T = unknown>(
     url: string,
     options: ApiClientOptions = {}
   ): Promise<ApiResponse<T>> {
@@ -67,7 +69,7 @@ class ApiClient {
         clearTimeout(timeoutId)
 
         // Parse response
-        let data: any = null
+        let data: T | string | undefined
         const contentType = response.headers.get('content-type')
 
         if (contentType?.includes('application/json')) {
@@ -83,14 +85,15 @@ class ApiClient {
         // Handle successful response
         if (response.ok) {
           return {
-            data,
+            data: data as T,
             status: response.status,
             ok: true,
           }
         }
 
         // Handle error response
-        const error = data?.error || data?.message || response.statusText
+        const errorData = data as { error?: string; message?: string }
+        const error = errorData?.error || errorData?.message || response.statusText
 
         // Don't retry client errors (4xx)
         if (response.status >= 400 && response.status < 500) {
@@ -98,7 +101,7 @@ class ApiClient {
             error,
             status: response.status,
             ok: false,
-            data,
+            data: data as T,
           }
         }
 
@@ -182,16 +185,16 @@ class ApiClient {
   }
 
   // HTTP Methods
-  async get<T = any>(url: string, options?: ApiClientOptions): Promise<ApiResponse<T>> {
+  async get<T = unknown>(url: string, options?: ApiClientOptions): Promise<ApiResponse<T>> {
     return this.executeRequest<T>(url, {
       ...options,
       method: 'GET',
     })
   }
 
-  async post<T = any>(
+  async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: JsonValue | FormData,
     options?: ApiClientOptions
   ): Promise<ApiResponse<T>> {
     return this.executeRequest<T>(url, {
@@ -201,9 +204,9 @@ class ApiClient {
     })
   }
 
-  async put<T = any>(
+  async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: JsonValue | FormData,
     options?: ApiClientOptions
   ): Promise<ApiResponse<T>> {
     return this.executeRequest<T>(url, {
@@ -213,9 +216,9 @@ class ApiClient {
     })
   }
 
-  async patch<T = any>(
+  async patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: JsonValue | FormData,
     options?: ApiClientOptions
   ): Promise<ApiResponse<T>> {
     return this.executeRequest<T>(url, {
@@ -225,7 +228,7 @@ class ApiClient {
     })
   }
 
-  async delete<T = any>(url: string, options?: ApiClientOptions): Promise<ApiResponse<T>> {
+  async delete<T = unknown>(url: string, options?: ApiClientOptions): Promise<ApiResponse<T>> {
     return this.executeRequest<T>(url, {
       ...options,
       method: 'DELETE',
@@ -233,7 +236,7 @@ class ApiClient {
   }
 
   // File upload
-  async upload<T = any>(
+  async upload<T = unknown>(
     url: string,
     formData: FormData,
     options?: ApiClientOptions
@@ -242,7 +245,7 @@ class ApiClient {
 
     // Don't set Content-Type for FormData (browser will set it with boundary)
     const cleanHeaders = { ...headers }
-    delete (cleanHeaders as any)['Content-Type']
+    delete (cleanHeaders as Record<string, unknown>)['Content-Type']
 
     return this.executeRequest<T>(url, {
       ...restOptions,
@@ -272,14 +275,14 @@ export const api = {
   // Auth endpoints
   auth: {
     login: (credentials: { email: string; password: string }) =>
-      apiClient.post<{ token: string; user: any }>('/auth/login', credentials),
+      apiClient.post<AuthResponse>('/auth/login', credentials),
 
     register: (data: { email: string; password: string; name: string }) =>
-      apiClient.post<{ token: string; user: any }>('/auth/register', data),
+      apiClient.post<AuthResponse>('/auth/register', data),
 
     logout: () => apiClient.post('/auth/logout'),
 
-    getSession: () => apiClient.get<{ user: any }>('/auth/session', { withAuth: true }),
+    getSession: () => apiClient.get<SessionResponse>('/auth/session', { withAuth: true }),
   },
 
   // Contact endpoints
@@ -290,10 +293,10 @@ export const api = {
 
   // Booking endpoints
   bookings: {
-    create: (data: any) => apiClient.post('/bookings', data),
+    create: (data: BookingData) => apiClient.post('/bookings', data as unknown as JsonValue),
     list: () => apiClient.get('/bookings', { withAuth: true }),
     get: (id: string) => apiClient.get(`/bookings/${id}`, { withAuth: true }),
-    update: (id: string, data: any) => apiClient.put(`/bookings/${id}`, data, { withAuth: true }),
+    update: (id: string, data: Partial<BookingData>) => apiClient.put(`/bookings/${id}`, data as unknown as JsonValue, { withAuth: true }),
     delete: (id: string) => apiClient.delete(`/bookings/${id}`, { withAuth: true }),
   },
 
@@ -302,7 +305,7 @@ export const api = {
     users: {
       list: () => adminApiClient.get('/users', { withAuth: true }),
       get: (id: string) => adminApiClient.get(`/users/${id}`, { withAuth: true }),
-      update: (id: string, data: any) => adminApiClient.put(`/users/${id}`, data, { withAuth: true }),
+      update: (id: string, data: UserUpdateData) => adminApiClient.put(`/users/${id}`, data as unknown as JsonValue, { withAuth: true }),
       delete: (id: string) => adminApiClient.delete(`/users/${id}`, { withAuth: true }),
     },
 

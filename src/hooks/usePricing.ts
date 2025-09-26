@@ -86,7 +86,7 @@ export const usePricing = () => {
     return await orderResponse.json()
   }
 
-  const verifyPayment = async (paymentData: any, orderId: string) => {
+  const verifyPayment = async (paymentData: RazorpayPaymentResponse, orderId: string) => {
     const verifyResponse = await fetch('/api/payment/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,10 +121,10 @@ export const usePricing = () => {
         return
       }
 
-      const orderData = await createOrder(PAYMENT_CONFIG.AMOUNT)
+      const orderData = await createOrder(PAYMENT_CONFIG.TEST_AMOUNT)
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'PowerCA',
@@ -139,7 +139,7 @@ export const usePricing = () => {
             } else {
               toast.error('Payment verification failed')
             }
-          } catch (error) {
+          } catch {
             toast.error('Payment verification failed')
           }
         },

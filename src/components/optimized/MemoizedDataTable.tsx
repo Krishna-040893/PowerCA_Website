@@ -31,15 +31,17 @@ interface DataTableProps<T> {
 }
 
 // Memoized table row component
+interface TableRowMemoProps {
+  item: Record<string, unknown>
+  columns: Column<Record<string, unknown>>[]
+  onRowClick?: (item: Record<string, unknown>) => void
+}
+
 const TableRowMemo = memo(({
   item,
   columns,
   onRowClick
-}: {
-  item: any
-  columns: Column<any>[]
-  onRowClick?: (item: any) => void
-}) => {
+}: TableRowMemoProps) => {
   const handleClick = useCallback(() => {
     if (onRowClick) {
       onRowClick(item)
@@ -55,7 +57,7 @@ const TableRowMemo = memo(({
         <TableCell key={column.key as string} className={column.className}>
           {column.render
             ? column.render(item)
-            : item[column.key as keyof typeof item]}
+            : String(item[column.key as keyof typeof item] || '')}
         </TableCell>
       ))}
     </TableRow>
@@ -186,9 +188,9 @@ export const MemoizedDataTable = memo(<T extends { id?: string | number }>({
             {paginatedData.map((item, index) => (
               <TableRowMemo
                 key={item.id || index}
-                item={item}
-                columns={columns}
-                onRowClick={onRowClick}
+                item={item as Record<string, unknown>}
+                columns={columns as Column<Record<string, unknown>>[]}
+                onRowClick={onRowClick as ((item: Record<string, unknown>) => void) | undefined}
               />
             ))}
           </TableBody>

@@ -101,7 +101,7 @@ class MonitoringService {
           }
         })
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
-      } catch (e) {
+      } catch {
         logger.debug('LCP observer not supported')
       }
 
@@ -117,7 +117,7 @@ class MonitoringService {
           }
         })
         fidObserver.observe({ entryTypes: ['first-input'] })
-      } catch (e) {
+      } catch {
         logger.debug('FID observer not supported')
       }
 
@@ -139,7 +139,7 @@ class MonitoringService {
           }
         })
         longTaskObserver.observe({ entryTypes: ['longtask'] })
-      } catch (e) {
+      } catch {
         logger.debug('Long task observer not supported')
       }
     }
@@ -266,7 +266,7 @@ function getMonitoring(): MonitoringService {
   if (typeof window !== 'undefined' && !monitoringInstance) {
     monitoringInstance = new MonitoringService()
   }
-  return monitoringInstance!
+  return monitoringInstance || new MonitoringService()
 }
 
 // Initialize monitoring in production

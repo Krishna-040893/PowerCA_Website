@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { events, metadata } = await request.json()
+    const { events } = await request.json()
 
     if (!Array.isArray(events)) {
       return NextResponse.json(

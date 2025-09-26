@@ -40,8 +40,9 @@ export class ErrorBoundary extends Component<Props, State> {
     // Send to external monitoring when available
     if (typeof window !== 'undefined') {
       // Google Analytics error tracking
-      if ((window as any).gtag) {
-        (window as any).gtag('event', 'exception', {
+      const windowWithGtag = window as { gtag?: (...args: unknown[]) => void }
+      if (windowWithGtag.gtag) {
+        windowWithGtag.gtag('event', 'exception', {
           description: error.message,
           fatal: level === 'global',
           error_id: this.state.errorId,
@@ -61,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (FallbackComponent) {
         return (
           <FallbackComponent
-            error={this.state.error!}
+            error={this.state.error || new Error('Unknown error')}
             reset={this.handleReset}
           />
         )
@@ -69,14 +70,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default fallbacks based on level
       if (level === 'global') {
-        return <GlobalErrorFallback error={this.state.error!} reset={this.handleReset} />
+        return <GlobalErrorFallback error={this.state.error || new Error('Unknown error')} reset={this.handleReset} />
       }
 
       if (level === 'page') {
-        return <PageErrorFallback error={this.state.error!} reset={this.handleReset} />
+        return <PageErrorFallback error={this.state.error || new Error('Unknown error')} reset={this.handleReset} />
       }
 
-      return <ComponentErrorFallback error={this.state.error!} reset={this.handleReset} />
+      return <ComponentErrorFallback error={this.state.error || new Error('Unknown error')} reset={this.handleReset} />
     }
 
     return this.props.children
@@ -138,7 +139,7 @@ function GlobalErrorFallback({ error, reset }: { error: Error; reset: () => void
   )
 }
 
-function PageErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+function PageErrorFallback({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="min-h-96 flex items-center justify-center">
       <div className="text-center">
@@ -155,7 +156,7 @@ function PageErrorFallback({ error, reset }: { error: Error; reset: () => void }
   )
 }
 
-function ComponentErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+function ComponentErrorFallback({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="border border-red-200 bg-red-50 rounded-md p-4">
       <div className="flex">

@@ -8,7 +8,7 @@ describe('Card Components', () => {
       const card = screen.getByTestId('card')
 
       expect(card).toBeInTheDocument()
-      expect(card).toHaveClass('rounded-lg', 'border', 'bg-card', 'text-card-foreground', 'shadow-sm')
+      expect(card).toHaveClass('rounded-lg border bg-card text-card-foreground shadow-sm')
     })
 
     it('should accept custom className', () => {
@@ -35,7 +35,7 @@ describe('Card Components', () => {
       )
 
       const header = screen.getByTestId('header')
-      expect(header).toHaveClass('flex', 'flex-col', 'space-y-1.5', 'p-6')
+      expect(header).toHaveClass('flex flex-col space-y-1.5 p-6')
     })
   })
 
@@ -51,7 +51,7 @@ describe('Card Components', () => {
 
       const title = screen.getByText('Test Title')
       expect(title).toBeInTheDocument()
-      expect(title).toHaveClass('text-2xl', 'font-semibold', 'leading-none', 'tracking-tight')
+      expect(title).toHaveClass('text-2xl font-semibold leading-none tracking-tight')
     })
   })
 
@@ -67,7 +67,7 @@ describe('Card Components', () => {
 
       const description = screen.getByText('Test Description')
       expect(description).toBeInTheDocument()
-      expect(description).toHaveClass('text-sm', 'text-muted-foreground')
+      expect(description).toHaveClass('text-sm text-muted-foreground')
     })
   })
 
@@ -80,7 +80,7 @@ describe('Card Components', () => {
       )
 
       const content = screen.getByTestId('content')
-      expect(content).toHaveClass('p-6', 'pt-0')
+      expect(content).toHaveClass('p-6 pt-0')
     })
   })
 
@@ -93,7 +93,7 @@ describe('Card Components', () => {
       )
 
       const footer = screen.getByTestId('footer')
-      expect(footer).toHaveClass('flex', 'items-center', 'p-6', 'pt-0')
+      expect(footer).toHaveClass('flex items-center p-6 pt-0')
     })
   })
 

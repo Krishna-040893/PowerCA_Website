@@ -7,7 +7,7 @@ interface UseApiCallOptions {
   retry?: number
   retryDelay?: number
   timeout?: number
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: unknown) => void
   onError?: (error: Error) => void
   showErrorToast?: boolean
 }
@@ -18,7 +18,7 @@ interface ApiCallState<T> {
   error: Error | null
 }
 
-export function useApiCall<T = any>() {
+export function useApiCall<T = unknown>() {
   const [state, setState] = useState<ApiCallState<T>>({
     data: null,
     loading: false,
@@ -169,7 +169,7 @@ class ApiError extends Error {
   constructor(
     message: string,
     public status: number = 0,
-    public data?: any
+    public data?: unknown
   ) {
     super(message)
     this.name = 'ApiError'
@@ -227,7 +227,7 @@ function displayErrorToast(error: Error) {
 }
 
 // Convenience hook for simple GET requests
-export function useApiGet<T = any>(url: string, options?: UseApiCallOptions) {
+export function useApiGet<T = unknown>(url: string, options?: UseApiCallOptions) {
   const { execute, ...rest } = useApiCall<T>()
 
   const get = useCallback(() => {
@@ -244,10 +244,10 @@ export function useApiGet<T = any>(url: string, options?: UseApiCallOptions) {
 }
 
 // Convenience hook for POST requests
-export function useApiPost<T = any>(url: string, options?: UseApiCallOptions) {
+export function useApiPost<T = unknown>(url: string, options?: UseApiCallOptions) {
   const { execute, ...rest } = useApiCall<T>()
 
-  const post = useCallback((data?: any) => {
+  const post = useCallback((data?: unknown) => {
     return execute(
       (signal) => fetch(url, {
         method: 'POST',

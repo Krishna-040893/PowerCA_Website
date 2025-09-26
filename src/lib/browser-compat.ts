@@ -327,7 +327,7 @@ export function requestIdleCallbackPolyfill(
   }
 
   // Fallback using setTimeout
-  return window.setTimeout(callback, options?.timeout || 1);
+  return (window as any).setTimeout(callback, options?.timeout || 1);
 }
 
 /**
@@ -337,6 +337,6 @@ export function cancelIdleCallbackPolyfill(id: number): void {
   if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
     (window as any).cancelIdleCallback(id);
   } else {
-    window.clearTimeout(id);
+    (window as any).clearTimeout(id);
   }
 }

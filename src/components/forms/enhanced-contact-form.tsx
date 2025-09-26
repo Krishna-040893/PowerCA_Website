@@ -16,6 +16,7 @@ interface ContactFormData {
   phone: string
   subject: string
   message: string
+  [key: string]: unknown // Add index signature for compatibility
 }
 
 export function EnhancedContactForm() {

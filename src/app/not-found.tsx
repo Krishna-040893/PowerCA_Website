@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Home, Search, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Home, MessageCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '404 - Page Not Found | PowerCA',

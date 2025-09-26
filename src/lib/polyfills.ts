@@ -206,7 +206,7 @@ export async function loadPolyfills() {
   // Wait for all polyfills to load
   if (polyfills.length > 0) {
     await Promise.all(polyfills);
-    console.log(`Loaded ${polyfills.length} dynamic polyfills`);
+    // Dynamic polyfills loaded successfully
   }
 }
 

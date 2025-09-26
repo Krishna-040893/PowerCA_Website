@@ -49,7 +49,7 @@ describe('Button Component', () => {
     expect(screen.getByRole('button')).toHaveClass('h-11')
 
     rerender(<Button size="icon">Icon</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-10', 'w-10')
+    expect(screen.getByRole('button')).toHaveClass('h-10 w-10')
   })
 
   it('should be disabled when disabled prop is true', () => {
@@ -57,7 +57,7 @@ describe('Button Component', () => {
     const button = screen.getByRole('button')
 
     expect(button).toBeDisabled()
-    expect(button).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50')
+    expect(button).toHaveClass('disabled:pointer-events-none disabled:opacity-50')
   })
 
   it('should render as child when asChild is true', () => {

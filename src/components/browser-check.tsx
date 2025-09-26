@@ -115,7 +115,7 @@ async function loadPolyfillsIfNeeded() {
 
   // Object.entries polyfill
   if (!Object.entries) {
-    Object.entries = function(obj: any) {
+    Object.entries = function(obj: Record<string, unknown>) {
       const ownProps = Object.keys(obj);
       let i = ownProps.length;
       const resArray = new Array(i);
@@ -129,6 +129,6 @@ async function loadPolyfillsIfNeeded() {
   // Wait for all polyfills to load
   if (polyfills.length > 0) {
     await Promise.all(polyfills);
-    console.log(`Loaded ${polyfills.length} polyfills for browser compatibility`);
+    // Polyfills loaded successfully
   }
 }

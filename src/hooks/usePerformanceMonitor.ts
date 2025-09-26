@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { logger } from '@/lib/logger'
 
 interface PerformanceMetrics {
@@ -46,8 +46,8 @@ export const usePerformanceMonitor = (
     const renderTime = renderEndTime - renderStartTime.current
     renderCount.current += 1
 
-    // Store metrics
-    const metrics: PerformanceMetrics = {
+    // Store metrics for debugging (if needed)
+    const _metrics: PerformanceMetrics = {
       renderTime,
       componentName,
       renderCount: renderCount.current
@@ -169,15 +169,20 @@ export const useMemoryLeakDetector = (componentName: string) => {
   }, [])
 
   useEffect(() => {
+    const timeouts = timeoutsRef.current
+    const intervals = intervalsRef.current
+
     return () => {
       mountedRef.current = false
       clearAllTimers()
 
       // Log if there were active timers on unmount
-      if (timeoutsRef.current.size > 0 || intervalsRef.current.size > 0) {
+      const activeTimeouts = timeouts.size
+      const activeIntervals = intervals.size
+      if (activeTimeouts > 0 || activeIntervals > 0) {
         logger.warn(`Memory leak detected in ${componentName}`, {
-          activeTimeouts: timeoutsRef.current.size,
-          activeIntervals: intervalsRef.current.size
+          activeTimeouts,
+          activeIntervals
         })
       }
     }
@@ -190,6 +195,3 @@ export const useMemoryLeakDetector = (componentName: string) => {
     clearAllTimers
   }
 }
-
-// Add missing import
-import { useState } from 'react'
