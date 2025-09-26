@@ -77,7 +77,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                       <User className="w-4 h-4" />
-                      <span>{session.user?.name || session.user?.email}</span>
+                      <span>{session?.user?.name || session?.user?.email || 'User'}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -89,7 +89,7 @@ export function Header() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    {session.user?.role === 'admin' && (
+                    {session?.user?.role === 'admin' && (
                       <DropdownMenuItem asChild>
                         <Link href="/admin" className="flex items-center cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
@@ -170,7 +170,7 @@ export function Header() {
                 ) : session ? (
                   <>
                     <div className="px-4 py-2 text-sm text-gray-600">
-                      Signed in as {session.user?.name || session.user?.email}
+                      Signed in as {session?.user?.name || session?.user?.email || 'User'}
                     </div>
                     <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity" style={{ backgroundColor: '#155dfc' }} asChild>
                       <Link href="/dashboard">Dashboard</Link>
