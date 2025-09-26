@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import {Toaster  } from '@/components/ui/sonner'
 import {SessionProvider  } from '@/components/providers/session-provider'
@@ -12,10 +11,6 @@ import { BrowserCheck } from '@/components/browser-check'
 
 // Force dynamic rendering for all pages due to session usage
 export const dynamic = 'force-dynamic'
-
-const inter = Inter({
-  subsets: ['latin'],
-})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -76,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} antialiased`}
+        className="font-sans antialiased"
       >
         <GlobalErrorBoundary>
           <MonitoringProvider>
