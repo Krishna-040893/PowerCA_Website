@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Best CA Software in Mumbai - PowerCA Practice Management for Chartered Accountants',
+  title: 'CA Software in Mumbai - PowerCA Practice Management for Chartered Accountants',
   description: 'PowerCA - Modern practice management software designed for Chartered Accountants in Mumbai. Complete solution with job cards, billing, and compliance tracking. Book your Mumbai demo today.',
   keywords: 'CA software Mumbai, chartered accountant software Mumbai, CA practice management Mumbai, tax software Mumbai, GST software Mumbai, accounting software Mumbai',
   openGraph: {

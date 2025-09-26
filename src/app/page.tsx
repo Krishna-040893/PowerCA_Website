@@ -9,7 +9,7 @@ import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schem
 import './testimonial-scroll.css'
 
 export const metadata: Metadata = {
-  title: 'PowerCA - Best Practice Management Software for CAs in India | Save 10+ Hours Weekly',
+  title: 'PowerCA - Practice Management Software for CAs in India | Save 10+ Hours Weekly',
   description: 'Transform your CA practice with PowerCA. Complete practice management software for Chartered Accountants. Job card management, billing, compliance tracking. Free demo available.',
   keywords: 'CA practice management software, chartered accountant software India, CA office automation, tax practice management, CA firm management system, PowerCA, practice management for CAs',
   openGraph: {
@@ -130,8 +130,8 @@ export default function Home() {
             </div>
 
             {/* Main Heading with SEO Keywords */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-8">
-              Best Practice Management Software for
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 leading-tight mb-8">
+              Practice Management Software for
               <br />
               <ProfessionRotator />
             </h1>
