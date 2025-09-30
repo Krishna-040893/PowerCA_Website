@@ -135,12 +135,12 @@ export default function AffiliateProgramPage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-8">
               PowerCA Affiliate Program
             </h1>
 
             {/* Description */}
-            <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-4xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 leading-normal mb-8 max-w-4xl mx-auto">
               Partner with India's leading CA practice management solution and earn
               <span className="text-blue-600 font-semibold"> 10% commission </span>
               on every successful referral
@@ -165,14 +165,14 @@ export default function AffiliateProgramPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
                 href="/affiliate-program/register"
-                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
               >
                 <span>Join as Affiliate</span>
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
               >
                 Learn More
               </Link>
@@ -186,7 +186,7 @@ export default function AffiliateProgramPage() {
         <div className="relative rounded-2xl overflow-hidden bg-gray-50 py-20">
           <div className="container mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 leading-normal">
                 Why Partner with PowerCA?
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -216,7 +216,7 @@ export default function AffiliateProgramPage() {
       <section id="how-it-works" className="py-20 bg-white">
         <div className="container mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 leading-normal">
               How It Works
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -248,7 +248,7 @@ export default function AffiliateProgramPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-6 leading-normal">
                 Everything You Need to Succeed
               </h2>
               <p className="text-lg text-gray-600 mb-8">
@@ -310,7 +310,7 @@ export default function AffiliateProgramPage() {
       <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 leading-normal">
               Success Stories
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -350,7 +350,7 @@ export default function AffiliateProgramPage() {
       <section className="py-20 px-6 bg-white">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 leading-normal">
               Earnings Calculator
             </h2>
             <p className="text-xl text-gray-600">
@@ -403,7 +403,7 @@ export default function AffiliateProgramPage() {
           <div className="absolute inset-0 bg-blue-600/90"></div>
           <div className="relative z-10 py-20">
             <div className="container mx-auto max-w-4xl text-center px-6 lg:px-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-6 leading-normal">
                 Ready to Start Earning?
               </h2>
               <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
@@ -414,14 +414,14 @@ export default function AffiliateProgramPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link
                   href="/affiliate-program/register"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-full hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-medium rounded-full hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
                 >
                   <span>Register as Affiliate</span>
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-blue-600 transition-all duration-200 min-w-[200px]"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white font-medium rounded-full hover:bg-white hover:text-blue-600 transition-all duration-200 min-w-[200px]"
                 >
                   Contact Us
                 </Link>

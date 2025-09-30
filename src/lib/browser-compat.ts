@@ -276,7 +276,7 @@ export function supportsCSSFeature(property: string, value: string): boolean {
  */
 export async function loadPolyfill(
   condition: boolean,
-  polyfillLoader: () => Promise<any>
+  polyfillLoader: () => Promise<unknown>
 ): Promise<void> {
   if (!condition) {
     await polyfillLoader();
@@ -309,7 +309,7 @@ export function isLowEndDevice(): boolean {
   const cores = navigator.hardwareConcurrency || 0;
 
   // Check device memory (if available)
-  const memory = (navigator as any).deviceMemory || 0;
+  const memory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 0;
 
   // Consider device low-end if it has 2 or fewer cores OR less than 4GB RAM
   return cores <= 2 || (memory > 0 && memory < 4);
@@ -323,7 +323,7 @@ export function requestIdleCallbackPolyfill(
   options?: { timeout?: number }
 ): number {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    return (window as any).requestIdleCallback(callback, options);
+    return (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout?: number }) => number }).requestIdleCallback(callback, options);
   }
 
   // Fallback using setTimeout
@@ -335,7 +335,7 @@ export function requestIdleCallbackPolyfill(
  */
 export function cancelIdleCallbackPolyfill(id: number): void {
   if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-    (window as any).cancelIdleCallback(id);
+    (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
   } else {
     (window as any).clearTimeout(id);
   }

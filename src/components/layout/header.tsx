@@ -6,12 +6,13 @@ import Image from 'next/image'
 import {motion  } from 'framer-motion'
 import {Button  } from '@/components/ui/button'
 import {navigationConfig  } from '@/config/navigation'
-import {Menu, X, User, LogOut  } from 'lucide-react'
+import {Menu, X, User, LogOut, ChevronDown  } from 'lucide-react'
 import {useSession, signOut  } from 'next-auth/react'
 import {DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu'
@@ -22,11 +23,11 @@ export function Header() {
 
   return (
     <header
-      className="fixed w-full z-40 bg-white"
+      className="fixed w-full z-[60] bg-white"
       style={{ top: 'var(--banner-height, 48px)' }}
     >
       <div className="w-full px-4 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
@@ -51,7 +52,7 @@ export function Header() {
               >
                 <Link
                   href={item.href}
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-[15px]"
+                  className="text-gray-600 hover:text-[#2563eb] font-medium transition-colors text-[15px]"
                 >
                   {item.title}
                 </Link>
@@ -59,7 +60,7 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Updated */}
           <div className="hidden lg:flex items-center space-x-4">
             {status === 'loading' ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
@@ -115,9 +116,41 @@ export function Header() {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild className="text-gray-600 hover:text-gray-800 font-medium">
-                  <Link href="/login">Sign In</Link>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-800 hover:text-blue-600 font-medium flex items-center space-x-1 border border-gray-200 hover:border-blue-300 rounded-full px-4 py-2 bg-white hover:bg-blue-50 transition-all duration-200"
+                    >
+                      <span>Sign In</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent
+                      align="center"
+                      side="bottom"
+                      sideOffset={8}
+                      className="w-48 !bg-blue-600 border border-blue-700 shadow-lg !z-[9999] text-white"
+                      style={{ zIndex: 9999, backgroundColor: '#2563eb' }}
+                      avoidCollisions={false}
+                    >
+                    <DropdownMenuItem asChild>
+                      <Link href="/login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white">
+                        <User className="mr-2 h-4 w-4" />
+                        Client Sign In
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/affiliate-login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white">
+                        <User className="mr-2 h-4 w-4" />
+                        Affiliate Sign In
+                      </Link>
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
+                </DropdownMenu>
                 <Button
                   size="sm"
                   className="text-white rounded-full hover:opacity-90 transition-opacity px-6 py-4 font-medium"
@@ -132,7 +165,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -158,7 +191,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary-600 font-medium"
+                  className="text-gray-700 hover:text-[#2563eb] font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.title}
@@ -185,9 +218,14 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full rounded-full" asChild>
-                      <Link href="/login">Sign In</Link>
-                    </Button>
+                    <div className="space-y-2">
+                      <Button variant="outline" className="w-full rounded-full border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-medium" asChild>
+                        <Link href="/login">Client Sign In</Link>
+                      </Button>
+                      <Button variant="outline" className="w-full rounded-full border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 font-medium" asChild>
+                        <Link href="/affiliate-login">Affiliate Sign In</Link>
+                      </Button>
+                    </div>
                     <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity px-[1.25rem] py-4" style={{ backgroundColor: '#155dfc' }} asChild>
                       <Link href="/book-demo">Book Demo</Link>
                     </Button>

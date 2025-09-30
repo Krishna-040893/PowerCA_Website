@@ -57,13 +57,13 @@ export async function loadPolyfills() {
     // Element.prototype.matches polyfill
     if (!Element.prototype.matches) {
       Element.prototype.matches =
-        (Element.prototype as any).msMatchesSelector ||
+        (Element.prototype as unknown as { msMatchesSelector?: typeof Element.prototype.matches }).msMatchesSelector ||
         Element.prototype.webkitMatchesSelector;
     }
 
     // Object.entries polyfill
     if (!Object.entries) {
-      Object.entries = function(obj: any) {
+      Object.entries = function(obj: Record<string, unknown>) {
         const ownProps = Object.keys(obj);
         let i = ownProps.length;
         const resArray = new Array(i);
@@ -76,14 +76,14 @@ export async function loadPolyfills() {
 
     // Object.values polyfill
     if (!Object.values) {
-      Object.values = function(obj: any) {
+      Object.values = function(obj: Record<string, unknown>) {
         return Object.keys(obj).map(key => obj[key]);
       };
     }
 
     // Array.prototype.includes polyfill
     if (!Array.prototype.includes) {
-      Array.prototype.includes = function(searchElement: any, fromIndex?: number) {
+      Array.prototype.includes = function<T>(this: T[], searchElement: T, fromIndex?: number): boolean {
         const O = Object(this);
         const len = parseInt(O.length, 10) || 0;
         if (len === 0) return false;
@@ -134,7 +134,7 @@ export async function loadPolyfills() {
 
     // Array.from polyfill
     if (!Array.from) {
-      Array.from = function(arrayLike: any, mapFn?: Function, thisArg?: any) {
+      Array.from = function<T, U>(arrayLike: ArrayLike<T>, mapFn?: (v: T, k: number) => U, thisArg?: unknown): U[] {
         const C = this;
         const items = Object(arrayLike);
         if (arrayLike == null) {
@@ -180,12 +180,12 @@ export async function loadPolyfills() {
         return evt;
       }
       CustomEvent.prototype = window.Event.prototype;
-      window.CustomEvent = CustomEvent as any;
+      (window as unknown as { CustomEvent: CustomEventInit }).CustomEvent = CustomEvent as unknown as CustomEventInit;
     }
 
     // RequestIdleCallback polyfill
     if (!window.requestIdleCallback) {
-      (window as any).requestIdleCallback = function(callback: Function, options?: { timeout?: number }) {
+      (window as unknown as { requestIdleCallback: (cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void, opts?: { timeout?: number }) => number }).requestIdleCallback = function(callback, options) {
         const start = Date.now();
         return setTimeout(function() {
           callback({
@@ -197,7 +197,7 @@ export async function loadPolyfills() {
         }, options?.timeout || 1);
       };
 
-      (window as any).cancelIdleCallback = function(id: number) {
+      (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback = function(id: number) {
         clearTimeout(id);
       };
     }

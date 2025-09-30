@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft, Calendar, Clock, User, AlertCircle, FileText, Download, CheckCircle, Info } from 'lucide-react'
@@ -22,8 +23,8 @@ export default function TaxAuditDeadlineExtensionPage() {
   return (
     <article className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
-        <div className="container mx-auto px-6 py-12">
+      <div className="relative bg-gradient-to-r from-red-600 to-orange-600 text-white overflow-hidden">
+        <div className="relative container mx-auto px-6 py-12">
           <Link href="/blog">
             <Button variant="ghost" className="text-white hover:bg-white/10 mb-6">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -46,11 +47,11 @@ export default function TaxAuditDeadlineExtensionPage() {
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg">
               Tax Audit Report Filing Deadline Extended to October 31, 2025
             </h1>
 
-            <p className="text-xl text-orange-100">
+            <p className="text-xl text-white drop-shadow-md">
               CBDT announces one-month extension for tax audit report filing for AY 2025-26 after representations from CA bodies and High Court intervention
             </p>
 
@@ -79,7 +80,7 @@ export default function TaxAuditDeadlineExtensionPage() {
             </Alert>
 
             <div className="prose prose-lg max-w-none">
-              <h2 className="text-2xl font-bold mt-8 mb-4">Official Notification Details</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Official Notification Details</h2>
 
               <div className="bg-gray-50 border-l-4 border-gray-500 p-6 mb-6">
                 <h3 className="font-semibold mb-3">CBDT Notification - September 25, 2025</h3>
@@ -94,7 +95,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </p>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Key Points of the Extension</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Key Points of the Extension</h2>
 
               <div className="space-y-4">
                 <Card className="p-6">
@@ -140,7 +141,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Reasons for Extension</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Reasons for Extension</h2>
 
               <div className="bg-blue-50 p-6 rounded-lg mb-6">
                 <h3 className="font-semibold mb-3">1. Professional Bodies' Representations</h3>
@@ -178,7 +179,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </AlertDescription>
               </Alert>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Portal Performance Statistics</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Portal Performance Statistics</h2>
 
               <p className="mb-4">
                 CBDT clarified that the Income-tax e-filing portal has been operating smoothly without technical glitches:
@@ -203,7 +204,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">What This Means for CAs and Taxpayers</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">What This Means for CAs and Taxpayers</h2>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -251,7 +252,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Action Points for CAs</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Action Points for CAs</h2>
 
               <Card className="p-6 bg-gray-50 my-6">
                 <h3 className="font-bold mb-4 text-lg">Immediate Steps to Take:</h3>
@@ -289,7 +290,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </ol>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Compliance Checklist</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Compliance Checklist</h2>
 
               <div className="bg-blue-50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-4">Ensure These Are Completed Before October 31:</h3>
@@ -333,7 +334,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Historical Context</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Historical Context</h2>
 
               <p>
                 This extension continues a pattern seen in recent years where CBDT has been responsive to
@@ -379,7 +380,7 @@ export default function TaxAuditDeadlineExtensionPage() {
                 </table>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Conclusion</h2>
 
               <p>
                 The CBDT's decision to extend the tax audit report filing deadline demonstrates a balanced approach
