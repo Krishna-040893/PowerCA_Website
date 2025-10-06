@@ -315,28 +315,40 @@ export function isLowEndDevice(): boolean {
   return cores <= 2 || (memory > 0 && memory < 4);
 }
 
+type IdleCallbackHandle = number | ReturnType<typeof globalThis.setTimeout>;
+
+type WindowWithIdleCallbacks = typeof window & {
+  requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 /**
  * Request idle callback with fallback
  */
 export function requestIdleCallbackPolyfill(
   callback: () => void,
   options?: { timeout?: number }
-): number {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    return (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout?: number }) => number }).requestIdleCallback(callback, options);
+): IdleCallbackHandle {
+  const win = typeof window === 'undefined' ? undefined : (window as WindowWithIdleCallbacks);
+
+  if (win?.requestIdleCallback) {
+    return win.requestIdleCallback(callback, options);
   }
 
   // Fallback using setTimeout
-  return (window as any).setTimeout(callback, options?.timeout || 1);
+  return globalThis.setTimeout(callback, options?.timeout ?? 1);
 }
 
 /**
  * Cancel idle callback with fallback
  */
-export function cancelIdleCallbackPolyfill(id: number): void {
-  if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-    (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
-  } else {
-    (window as any).clearTimeout(id);
+export function cancelIdleCallbackPolyfill(handle: IdleCallbackHandle): void {
+  const win = typeof window === 'undefined' ? undefined : (window as WindowWithIdleCallbacks);
+
+  if (win?.cancelIdleCallback && typeof handle === 'number') {
+    win.cancelIdleCallback(handle);
+    return;
   }
+
+  globalThis.clearTimeout(handle as ReturnType<typeof globalThis.setTimeout>);
 }

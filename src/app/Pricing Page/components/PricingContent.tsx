@@ -1,9 +1,5 @@
+/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import svgPaths from "../imports/svg-2aofj8qut2";
-import imgPowerCaLogoOnly035Scaled1 from "figma:asset/9582726275b095841e14bb791b0f8facecc32cf0.png";
-import imgPowerCaLogoOnly051 from "figma:asset/39c55feb3fe21886d02c3101fe007c6a12fb983f.png";
-import imgRectangle168 from "figma:asset/32036470fb1e3322e3e18d7da64b7c7f789b7ec9.png";
-import imgRectangle169 from "figma:asset/cb7700b57515d3090924b9aeaea0f27f87a1dd08.png";
-import imgRectangle170 from "figma:asset/e457ae4b411fb95f50fccfb1158bc8d1dda1bbb2.png";
 import img7D34847792A446B88D06B5C89599476F1 from "figma:asset/b267a3094a98e62c12bb67d6a08a82785dc93a8d.png";
 
 function Frame2095585067() {
@@ -735,3 +731,4 @@ export default function PricingContent() {
     </div>
   );
 }
+

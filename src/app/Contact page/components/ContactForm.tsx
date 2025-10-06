@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import React, { useState } from 'react';
 import svgPaths from "../imports/svg-nk5ou0clae";
 import { imgImage1 } from "../imports/svg-05ygn";
@@ -185,9 +186,7 @@ function ContactForm() {
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add form submission logic here
+    e.preventDefault();    // Add form submission logic here
   };
 
   return (
@@ -377,3 +376,4 @@ export default function ContactPageContent() {
     </div>
   );
 }
+

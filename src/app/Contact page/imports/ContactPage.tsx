@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import svgPaths from "./svg-nk5ou0clae";
 import imgPowerCaLogoOnly035Scaled1 from "figma:asset/9582726275b095841e14bb791b0f8facecc32cf0.png";
 import imgPowerCaLogoOnly051 from "figma:asset/39c55feb3fe21886d02c3101fe007c6a12fb983f.png";
