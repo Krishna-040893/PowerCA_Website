@@ -57,7 +57,8 @@ describe('Button Component', () => {
     const button = screen.getByRole('button')
 
     expect(button).toBeDisabled()
-    expect(button).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50')
+    expect(button).toHaveClass('disabled:pointer-events-none')
+    expect(button).toHaveClass('disabled:opacity-50')
   })
 
   it('should render as child when asChild is true', () => {

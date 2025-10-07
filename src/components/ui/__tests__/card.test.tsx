@@ -15,17 +15,15 @@ describe('Card Components', () => {
       const card = screen.getByTestId('card')
 
       expect(card).toBeInTheDocument()
-      expect(card).toHaveClass(
-        'bg-card',
-        'text-card-foreground',
-        'flex',
-        'flex-col',
-        'gap-6',
-        'rounded-xl',
-        'border',
-        'py-6',
-        'shadow-sm'
-      )
+      expect(card).toHaveClass('bg-card')
+      expect(card).toHaveClass('text-card-foreground')
+      expect(card).toHaveClass('flex')
+      expect(card).toHaveClass('flex-col')
+      expect(card).toHaveClass('gap-6')
+      expect(card).toHaveClass('rounded-xl')
+      expect(card).toHaveClass('border')
+      expect(card).toHaveClass('py-6')
+      expect(card).toHaveClass('shadow-sm')
     })
 
     it('should accept custom className', () => {
@@ -56,7 +54,10 @@ describe('Card Components', () => {
       )
 
       const header = screen.getByTestId('header')
-      expect(header).toHaveClass('grid', 'items-start', 'gap-1.5', 'px-6')
+      expect(header).toHaveClass('grid')
+      expect(header).toHaveClass('items-start')
+      expect(header).toHaveClass('gap-1.5')
+      expect(header).toHaveClass('px-6')
     })
   })
 
@@ -72,7 +73,8 @@ describe('Card Components', () => {
 
       const title = screen.getByText('Test Title')
       expect(title).toBeInTheDocument()
-      expect(title).toHaveClass('leading-none', 'font-semibold')
+      expect(title).toHaveClass('leading-none')
+      expect(title).toHaveClass('font-semibold')
     })
   })
 
@@ -88,7 +90,8 @@ describe('Card Components', () => {
 
       const description = screen.getByText('Test Description')
       expect(description).toBeInTheDocument()
-      expect(description).toHaveClass('text-sm', 'text-muted-foreground')
+      expect(description).toHaveClass('text-sm')
+      expect(description).toHaveClass('text-muted-foreground')
     })
   })
 
@@ -114,7 +117,9 @@ describe('Card Components', () => {
       )
 
       const footer = screen.getByTestId('footer')
-      expect(footer).toHaveClass('flex', 'items-center', 'px-6')
+      expect(footer).toHaveClass('flex')
+      expect(footer).toHaveClass('items-center')
+      expect(footer).toHaveClass('px-6')
     })
   })
 
