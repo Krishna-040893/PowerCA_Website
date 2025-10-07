@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
+﻿/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import svgPaths from "./svg-nk5ou0clae";
 import imgPowerCaLogoOnly035Scaled1 from "figma:asset/9582726275b095841e14bb791b0f8facecc32cf0.png";
 import imgPowerCaLogoOnly051 from "figma:asset/39c55feb3fe21886d02c3101fe007c6a12fb983f.png";
@@ -21,7 +21,7 @@ function Frame2095585065() {
   return (
     <div className="h-[18px] leading-[0] relative shrink-0 text-[12px] text-center text-nowrap text-white w-[513px]">
       <div className="absolute flex flex-col font-['Poppins:Medium',_sans-serif] justify-center left-[143.5px] not-italic top-[9px] translate-x-[-50%] translate-y-[-50%]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs – Till 31st Oct 2025</p>
+        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs â€“Â Till 31st Oct 2025</p>
       </div>
       <div className="absolute flex flex-col font-['Poppins:Medium_Italic',_sans-serif] italic justify-center left-[400px] top-[9px] translate-x-[-50%] translate-y-[-50%]">
         <p className="leading-[normal] text-nowrap whitespace-pre">(Be an Early Bird to Enjoy the Offer)</p>
@@ -176,7 +176,7 @@ function Navbar() {
     <div className="absolute box-border content-stretch flex items-center justify-between left-1/2 px-[48px] py-[20px] shadow-[0px_2px_4px_1px_#e5e7eb] top-[42px] translate-x-[-50%] w-[1920px]" data-name="Navbar">
       <div className="h-[50px] relative shrink-0 w-[201px]" data-name="Power-CA-Logo-Only-03-5-scaled 1">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[117.39%] left-[-0.02%] max-w-none top-[-8.7%] w-[100.03%]" src={imgPowerCaLogoOnly035Scaled1} />
+          <img alt="" className="absolute h-[117.39%] left-[-0.02%] max-w-none top-[-8.7%] w-[100.03%]" src={imgPowerCaLogoOnly035Scaled1.src} />
         </div>
       </div>
       <Frame427319890 />
@@ -289,7 +289,7 @@ function Frame2095585167() {
         <p className="leading-[normal]">Get in Touch With Us</p>
       </div>
       <div className="flex flex-col font-['Poppins:Regular',_sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#666d80] text-[18px] text-center w-[1128px]">
-        <p className="leading-[normal]">We’re always here to chat! Reach out to us with any questions or concerns you may have, and we’ll be happy to help.</p>
+        <p className="leading-[normal]">Weâ€™re always here to chat! Reach out to us with any questions or concerns you may have, and weâ€™ll be happy to help.</p>
       </div>
     </div>
   );
@@ -507,7 +507,7 @@ function CompanyInfo() {
   return (
     <div className="content-stretch flex flex-col gap-[24px] items-start overflow-clip relative shrink-0" data-name="Company Info">
       <div className="h-[59px] relative shrink-0 w-[201px]" data-name="Power CA Logo Only-05 1">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={imgPowerCaLogoOnly051} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={imgPowerCaLogoOnly051.src} />
       </div>
       <Copyright />
       <SocialLinks />
@@ -618,13 +618,13 @@ function Frame2264() {
   return (
     <div className="content-stretch flex items-center justify-between relative shrink-0 w-[380px]">
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle168} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle168.src} />
       </div>
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle169} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle169.src} />
       </div>
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle170} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle170.src} />
       </div>
     </div>
   );
@@ -663,7 +663,7 @@ function Frame2262() {
 function Copyright1() {
   return (
     <div className="content-stretch flex font-['Poppins:Regular',_sans-serif] gap-[8px] items-start justify-center leading-[normal] not-italic overflow-clip relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre" data-name="Copyright">
-      <p className="relative shrink-0">Copyright © 2025 TBS Technologies [P] Limited.</p>
+      <p className="relative shrink-0">Copyright Â© 2025 TBS Technologies [P] Limited.</p>
       <p className="relative shrink-0">All rights reserved</p>
     </div>
   );
@@ -1122,7 +1122,7 @@ function MaskGroup() {
   return (
     <div className="absolute contents left-1/2 top-[1468px] translate-x-[-50%]" data-name="Mask group">
       <div className="absolute h-[495.152px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[141.793px_7.076px] mask-size-[1632px_450px] rounded-[12px] top-[1460.92px] translate-x-[-50%] w-[1917.59px]" data-name="image 1" style={{ left: "calc(50% + 1px)", maskImage: `url('${imgImage1}')` }}>
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[12px] size-full" src={imgImage2} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[12px] size-full" src={imgImage2.src} />
       </div>
     </div>
   );
@@ -1135,7 +1135,7 @@ export default function ContactPage() {
       <Navbar />
       <Frame2095584515 />
       <div className="absolute h-[1358px] top-[-2400px] w-[2038px]" data-name="7d348477-92a4-46b8-8d06-b5c89599476f 1" style={{ left: "calc(91.667% - 70px)" }}>
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1.src} />
       </div>
       <FooterBig4 />
       <Group31 />

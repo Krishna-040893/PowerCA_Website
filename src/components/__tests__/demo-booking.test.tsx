@@ -1,12 +1,33 @@
-import { render, screen, waitFor } from '@testing-library/react'
+﻿import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DemoBooking } from '../demo-booking'
+
+// Mock react-calendar to provide deterministic date selection
+jest.mock('react-calendar', () => {
+  const CalendarMock = ({ onChange }: { onChange?: (date: Date) => void }) => (
+    <div data-testid="calendar-mock">
+      {[10, 16, 20].map(day => (
+        <button key={day} onClick={() => onChange?.(new Date(2025, 0, day))}>
+          {day}
+        </button>
+      ))}
+    </div>
+  )
+
+  CalendarMock.displayName = 'CalendarMock'
+
+  return CalendarMock
+})
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <button {...props}>{children}</button>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <div {...props}>{children}</div>
+    ),
+    button: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <button {...props}>{children}</button>
+    ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }))
@@ -24,6 +45,7 @@ global.fetch = jest.fn()
 
 describe('DemoBooking Component', () => {
   beforeEach(() => {
+    jest.useFakeTimers()
     jest.clearAllMocks()
     ;(global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
@@ -31,130 +53,71 @@ describe('DemoBooking Component', () => {
     })
   })
 
-  it('should render the booking form', () => {
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+  })
+
+  it('should render the booking form', async () => {
     render(<DemoBooking />)
-    expect(screen.getByText(/Book Your Demo/i)).toBeInTheDocument()
+
+    await screen.findByRole('heading', { name: 'Book Your Free Demo' })
   })
 
   it('should show calendar when component mounts', async () => {
     render(<DemoBooking />)
 
-    await waitFor(() => {
-      expect(screen.getByText(/Select Date/i)).toBeInTheDocument()
-    })
+    await screen.findByRole('heading', { name: 'Select Date' })
+    expect(screen.getByTestId('calendar-mock')).toBeInTheDocument()
   })
 
   it('should allow user to select a date', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<DemoBooking />)
 
-    // Wait for the component to mount
-    await waitFor(() => {
-      expect(screen.getByText(/Select Date/i)).toBeInTheDocument()
-    })
+    await screen.findByRole('heading', { name: 'Select Date' })
 
-    // Find and click on a date button (looking for any date number)
-    const dateButtons = screen.getAllByRole('button')
-    const validDateButton = dateButtons.find(button =>
-      button.textContent && /^\d+$/.test(button.textContent) && parseInt(button.textContent) > 0
-    )
+    const dateButton = screen.getByRole('button', { name: '16' })
+    await user.click(dateButton)
 
-    if (validDateButton) {
-      await user.click(validDateButton)
-
-      // After selecting a date, time slots should be visible
-      await waitFor(() => {
-        expect(screen.getByText(/Select Time/i)).toBeInTheDocument()
-      })
-    }
+    await screen.findByRole('heading', { name: 'Select Time' })
   })
 
   it('should show form fields after selecting date and time', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<DemoBooking />)
 
-    // Wait for mount
-    await waitFor(() => {
-      expect(screen.getByText(/Select Date/i)).toBeInTheDocument()
-    })
+    await screen.findByRole('heading', { name: 'Select Date' })
+    await user.click(screen.getByRole('button', { name: '20' }))
 
-    // Select a date
-    const dateButtons = screen.getAllByRole('button')
-    const validDateButton = dateButtons.find(button =>
-      button.textContent && /^\d+$/.test(button.textContent) && parseInt(button.textContent) > 15
-    )
+    await screen.findByRole('heading', { name: 'Select Time' })
+    await user.click(screen.getByText(/10:00 AM - 11:00 AM/i))
+    await user.click(screen.getByRole('button', { name: /Next/i }))
 
-    if (validDateButton) {
-      await user.click(validDateButton)
-
-      // Wait for time slots
-      await waitFor(() => {
-        expect(screen.getByText(/Select Time/i)).toBeInTheDocument()
-      })
-
-      // Select a time slot
-      const timeButton = screen.getByText(/10:00 AM - 11:00 AM/i)
-      await user.click(timeButton)
-
-      // Click next button
-      const nextButton = screen.getByText(/Next/i)
-      await user.click(nextButton)
-
-      // Form fields should be visible
-      await waitFor(() => {
-        expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument()
-        expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument()
-        expect(screen.getByLabelText(/Phone Number/i)).toBeInTheDocument()
-      })
-    }
+    await screen.findByPlaceholderText('John Doe')
+    expect(screen.getByPlaceholderText('john@example.com')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('9876543210')).toBeInTheDocument()
   })
 
   it('should validate required fields', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<DemoBooking />)
 
-    // Navigate to form step
-    await waitFor(() => {
-      expect(screen.getByText(/Select Date/i)).toBeInTheDocument()
-    })
+    await screen.findByRole('heading', { name: 'Select Date' })
+    await user.click(screen.getByRole('button', { name: '20' }))
 
-    // Select date
-    const dateButtons = screen.getAllByRole('button')
-    const validDateButton = dateButtons.find(button =>
-      button.textContent && /^\d+$/.test(button.textContent) && parseInt(button.textContent) > 15
-    )
+    await screen.findByRole('heading', { name: 'Select Time' })
+    await user.click(screen.getByText(/10:00 AM - 11:00 AM/i))
+    await user.click(screen.getByRole('button', { name: /Next/i }))
 
-    if (validDateButton) {
-      await user.click(validDateButton)
+    await screen.findByRole('button', { name: /Confirm Booking/i })
+    await user.click(screen.getByRole('button', { name: /Confirm Booking/i }))
 
-      await waitFor(() => {
-        expect(screen.getByText(/Select Time/i)).toBeInTheDocument()
-      })
-
-      const timeButton = screen.getByText(/10:00 AM - 11:00 AM/i)
-      await user.click(timeButton)
-
-      const nextButton = screen.getByText(/Next/i)
-      await user.click(nextButton)
-
-      // Try to submit without filling fields
-      await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /Book Demo/i })
-        expect(submitButton).toBeInTheDocument()
-      })
-
-      const submitButton = screen.getByRole('button', { name: /Book Demo/i })
-      await user.click(submitButton)
-
-      // Should show validation errors
-      await waitFor(() => {
-        expect(screen.getByText(/Name is required/i)).toBeInTheDocument()
-      })
-    }
+    await screen.findByText(/Name is required/i)
   })
 
   it('should submit form with valid data', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     ;(global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
@@ -167,46 +130,21 @@ describe('DemoBooking Component', () => {
 
     render(<DemoBooking />)
 
-    await waitFor(() => {
-      expect(screen.getByText(/Select Date/i)).toBeInTheDocument()
-    })
+    await screen.findByRole('heading', { name: 'Select Date' })
+    await user.click(screen.getByRole('button', { name: '20' }))
 
-    // Select date
-    const dateButtons = screen.getAllByRole('button')
-    const validDateButton = dateButtons.find(button =>
-      button.textContent && /^\d+$/.test(button.textContent) && parseInt(button.textContent) > 15
-    )
+    await screen.findByRole('heading', { name: 'Select Time' })
+    await user.click(screen.getByText(/10:00 AM - 11:00 AM/i))
+    await user.click(screen.getByRole('button', { name: /Next/i }))
 
-    if (validDateButton) {
-      await user.click(validDateButton)
+    await screen.findByPlaceholderText('John Doe')
+    await user.type(screen.getByPlaceholderText('John Doe'), 'John Doe')
+    await user.type(screen.getByPlaceholderText('john@example.com'), 'john@example.com')
+    await user.type(screen.getByPlaceholderText('9876543210'), '9876543210')
+    await user.type(screen.getByPlaceholderText('ABC & Associates'), 'ABC & Associates')
 
-      await waitFor(() => {
-        expect(screen.getByText(/Select Time/i)).toBeInTheDocument()
-      })
+    await user.click(screen.getByRole('button', { name: /Confirm Booking/i }))
 
-      const timeButton = screen.getByText(/10:00 AM - 11:00 AM/i)
-      await user.click(timeButton)
-
-      const nextButton = screen.getByText(/Next/i)
-      await user.click(nextButton)
-
-      // Fill form
-      await waitFor(() => {
-        expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument()
-      })
-
-      await user.type(screen.getByLabelText(/Full Name/i), 'John Doe')
-      await user.type(screen.getByLabelText(/Email Address/i), 'john@example.com')
-      await user.type(screen.getByLabelText(/Phone Number/i), '9876543210')
-      await user.type(screen.getByLabelText(/Firm Name/i), 'ABC & Associates')
-
-      const submitButton = screen.getByRole('button', { name: /Book Demo/i })
-      await user.click(submitButton)
-
-      // Should show success message
-      await waitFor(() => {
-        expect(screen.getByText(/Demo Booked Successfully/i)).toBeInTheDocument()
-      })
-    }
+    await screen.findByText(/Booking Confirmed/i)
   })
 })

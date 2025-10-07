@@ -1,4 +1,4 @@
-import { logger } from './logger'
+﻿import { logger } from './logger'
 import { toISOStringSafely } from './browser-compat'
 
 // Types for monitoring
@@ -11,6 +11,7 @@ interface ErrorEvent {
   column?: number
   userAgent: string
   timestamp: string
+  context?: Record<string, unknown>
   userId?: string
   sessionId: string
 }
@@ -307,6 +308,7 @@ export function trackError(error: Error | string, context?: Record<string, unkno
   const errorObj = error instanceof Error ? error : new Error(error)
 
   monitoring.captureError({
+    type: 'error',
     message: errorObj.message,
     stack: errorObj.stack,
     url: window.location.href,
@@ -314,7 +316,7 @@ export function trackError(error: Error | string, context?: Record<string, unkno
     timestamp: new Date().toISOString(),
     sessionId: monitoring['sessionId'],
     userId: monitoring['userId'],
-    ...context,
+    context,
   })
 }
 
@@ -323,10 +325,13 @@ export function trackPerformance(metric: string, value: number, context?: Record
 
   const monitoring = getMonitoring()
   monitoring.capturePerformance({
+    type: 'performance',
     metric,
     value,
     context,
     timestamp: new Date().toISOString(),
+    sessionId: monitoring['sessionId'],
+    userId: monitoring['userId'],
   })
 }
 

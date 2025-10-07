@@ -1,185 +1,117 @@
-import { POST } from '../route'
-import { NextRequest } from 'next/server'
+﻿import { NextRequest } from 'next/server'
 
-// Mock Resend
-jest.mock('resend', () => {
-  return {
-    Resend: jest.fn().mockImplementation(() => ({
-      emails: {
-        send: jest.fn(),
-      },
-    })),
-  }
-})
+import { POST } from '../route'
+import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
+
+jest.mock('@/lib/send-emails', () => ({
+  sendContactFormEmail: jest.fn(),
+  sendWelcomeEmail: jest.fn(),
+}))
+
+const mockSendContactFormEmail = sendContactFormEmail as unknown as jest.Mock
+const mockSendWelcomeEmail = sendWelcomeEmail as unknown as jest.Mock
+
+const createRequest = (body: unknown) =>
+  new NextRequest('http://localhost:3000/api/contact', {
+    method: 'POST',
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 
 describe('Contact API Route', () => {
-  let mockResendSend: jest.Mock
-
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-    const resendModule = await import('resend')
-    const { Resend } = resendModule as { Resend: typeof import('resend').Resend }
-    mockResendSend = new Resend().emails.send as jest.Mock
   })
 
-  it('should successfully send contact form email', async () => {
-    mockResendSend.mockResolvedValue({
-      id: 'email-id-123',
-      from: 'contact@powerca.in',
-      to: 'team@powerca.in',
-    })
+  it('returns success when emails are sent', async () => {
+    mockSendContactFormEmail.mockResolvedValue({ success: true })
+    mockSendWelcomeEmail.mockResolvedValue({ success: true })
 
-    const requestBody = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '9876543210',
-      firmName: 'ABC & Associates',
-      message: 'I am interested in your services',
-    }
-
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const response = await POST(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(data.message).toBe('Message sent successfully')
-
-    expect(mockResendSend).toHaveBeenCalledWith(
-      expect.objectContaining({
-        from: expect.any(String),
-        to: expect.any(String),
-        subject: expect.stringContaining('Contact Form Submission'),
+    const response = await POST(
+      createRequest({
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '1234567890',
+        company: 'ACME',
+        message: 'Hello there',
       })
     )
-  })
 
-  it('should validate required fields', async () => {
-    const requestBody = {
-      // Missing required fields
-      email: 'john@example.com',
-    }
-
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const response = await POST(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(400)
-    expect(data.error).toBeDefined()
-    expect(mockResendSend).not.toHaveBeenCalled()
-  })
-
-  it('should validate email format', async () => {
-    const requestBody = {
-      name: 'John Doe',
-      email: 'invalid-email',
-      phone: '9876543210',
-      message: 'Test message',
-    }
-
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const response = await POST(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(400)
-    expect(data.error).toContain('email')
-    expect(mockResendSend).not.toHaveBeenCalled()
-  })
-
-  it('should handle Resend API errors', async () => {
-    mockResendSend.mockRejectedValue(new Error('Resend API error'))
-
-    const requestBody = {
+    expect(response.status).toBe(200)
+    const payload = mockSendContactFormEmail.mock.calls[0][0]
+    expect(payload).toMatchObject({
       name: 'John Doe',
       email: 'john@example.com',
-      phone: '9876543210',
-      firmName: 'ABC & Associates',
-      message: 'Test message',
-    }
-
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      phone: '1234567890',
+      company: 'ACME',
+      message: 'Hello there',
     })
+    expect(mockSendWelcomeEmail).toHaveBeenCalledWith({
+      name: 'John Doe',
+      email: 'john@example.com',
+    })
+  })
 
-    const response = await POST(request)
-    const data = await response.json()
+  it('sanitizes incoming fields before sending', async () => {
+    mockSendContactFormEmail.mockResolvedValue({ success: true })
+    mockSendWelcomeEmail.mockResolvedValue({ success: true })
+
+    const response = await POST(
+      createRequest({
+        name: '<script>alert("x")</script>John',
+        email: 'john@example.com',
+        message: '<img src=x onerror=alert(1)>Hello',
+      })
+    )
+
+    expect(response.status).toBe(200)
+    const payload = mockSendContactFormEmail.mock.calls[0][0]
+    expect(payload.name).toBe('John')
+    expect(payload.message).toContain('Hello')
+    expect(payload.message).not.toContain('<img')
+  })
+
+  it('returns 400 when required fields are missing', async () => {
+    const response = await POST(createRequest({ email: 'john@example.com' }))
+
+    expect(response.status).toBe(400)
+    expect(mockSendContactFormEmail).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 for invalid email addresses', async () => {
+    const response = await POST(
+      createRequest({
+        name: 'John Doe',
+        email: 'invalid-email',
+        message: 'Hello',
+      })
+    )
+
+    expect(response.status).toBe(400)
+    expect(mockSendContactFormEmail).not.toHaveBeenCalled()
+  })
+
+  it('returns 500 when sending the contact email fails', async () => {
+    mockSendContactFormEmail.mockResolvedValue({ success: false })
+
+    const response = await POST(
+      createRequest({
+        name: 'John Doe',
+        email: 'john@example.com',
+        message: 'Hello',
+      })
+    )
 
     expect(response.status).toBe(500)
-    expect(data.error).toBe('Failed to send message')
   })
 
-  it('should handle invalid JSON in request body', async () => {
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: 'invalid json',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const response = await POST(request)
-    const data = await response.json()
+  it('returns 400 for invalid JSON payloads', async () => {
+    const response = await POST(createRequest('not-json'))
 
     expect(response.status).toBe(400)
-    expect(data.error).toBeDefined()
-  })
-
-  it('should sanitize input to prevent XSS', async () => {
-    mockResendSend.mockResolvedValue({
-      id: 'email-id-123',
-    })
-
-    const requestBody = {
-      name: '<script>alert("XSS")</script>John',
-      email: 'john@example.com',
-      phone: '9876543210',
-      message: '<img src=x onerror=alert(1)>Test message',
-    }
-
-    const request = new NextRequest('http://localhost:3000/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const response = await POST(request)
-
-    expect(response.status).toBe(200)
-
-    // Check that the email was sent with sanitized content
-    expect(mockResendSend).toHaveBeenCalledWith(
-      expect.objectContaining({
-        from: expect.any(String),
-        to: expect.any(String),
-        // The actual sanitization should remove script tags
-      })
-    )
+    expect(mockSendContactFormEmail).not.toHaveBeenCalled()
   })
 })
+

@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
+﻿/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import svgPaths from "./svg-2aofj8qut2";
 import imgPowerCaLogoOnly035Scaled1 from "figma:asset/9582726275b095841e14bb791b0f8facecc32cf0.png";
 import imgPowerCaLogoOnly051 from "figma:asset/39c55feb3fe21886d02c3101fe007c6a12fb983f.png";
@@ -19,7 +19,7 @@ function Frame2095585065() {
   return (
     <div className="h-[18px] leading-[0] relative shrink-0 text-[12px] text-center text-nowrap text-white w-[513px]">
       <div className="absolute flex flex-col font-['Poppins:Medium',_sans-serif] justify-center left-[143.5px] not-italic top-[9px] translate-x-[-50%] translate-y-[-50%]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs – Till 31st Oct 2025</p>
+        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs â€“Â Till 31st Oct 2025</p>
       </div>
       <div className="absolute flex flex-col font-['Poppins:Medium_Italic',_sans-serif] italic justify-center left-[400px] top-[9px] translate-x-[-50%] translate-y-[-50%]">
         <p className="leading-[normal] text-nowrap whitespace-pre">(Be an Early Bird to Enjoy the Offer)</p>
@@ -174,7 +174,7 @@ function Navbar() {
     <div className="absolute box-border content-stretch flex items-center justify-between left-1/2 px-[48px] py-[20px] shadow-[0px_2px_4px_1px_#e5e7eb] top-[42px] translate-x-[-50%] w-[1920px]" data-name="Navbar">
       <div className="h-[50px] relative shrink-0 w-[201px]" data-name="Power-CA-Logo-Only-03-5-scaled 1">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[117.39%] left-[-0.02%] max-w-none top-[-8.7%] w-[100.03%]" src={imgPowerCaLogoOnly035Scaled1} />
+          <img alt="" className="absolute h-[117.39%] left-[-0.02%] max-w-none top-[-8.7%] w-[100.03%]" src={imgPowerCaLogoOnly035Scaled1.src} />
         </div>
       </div>
       <Frame427319890 />
@@ -287,7 +287,7 @@ function Frame2095585167() {
         <p className="leading-[normal]">Pricing</p>
       </div>
       <div className="flex flex-col font-['Poppins:Regular',_sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#666d80] text-[18px] text-center w-[1128px]">
-        <p className="leading-[normal]">Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.</p>
+        <p className="leading-[normal]">Pick a plan that grows with you. Our pricing is straightforwardâ€”no hidden charges, just the features you need to succeed.</p>
       </div>
     </div>
   );
@@ -505,7 +505,7 @@ function CompanyInfo() {
   return (
     <div className="content-stretch flex flex-col gap-[24px] items-start overflow-clip relative shrink-0" data-name="Company Info">
       <div className="h-[59px] relative shrink-0 w-[201px]" data-name="Power CA Logo Only-05 1">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={imgPowerCaLogoOnly051} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={imgPowerCaLogoOnly051.src} />
       </div>
       <Copyright />
       <SocialLinks />
@@ -616,13 +616,13 @@ function Frame2264() {
   return (
     <div className="content-stretch flex items-center justify-between relative shrink-0 w-[380px]">
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle168} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle168.src} />
       </div>
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle169} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle169.src} />
       </div>
       <div className="relative rounded-[16px] shrink-0 size-[110px]">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle170} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle170.src} />
       </div>
     </div>
   );
@@ -661,7 +661,7 @@ function Frame2262() {
 function Copyright1() {
   return (
     <div className="content-stretch flex font-['Poppins:Regular',_sans-serif] gap-[8px] items-start justify-center leading-[normal] not-italic overflow-clip relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre" data-name="Copyright">
-      <p className="relative shrink-0">Copyright © 2025 TBS Technologies [P] Limited.</p>
+      <p className="relative shrink-0">Copyright Â© 2025 TBS Technologies [P] Limited.</p>
       <p className="relative shrink-0">All rights reserved</p>
     </div>
   );
@@ -762,7 +762,7 @@ function Frame2095585185() {
   return (
     <div className="absolute bg-[rgba(48,107,234,0.1)] box-border content-stretch flex items-center justify-between left-1/2 pl-[24px] pr-[16px] py-[16px] rounded-[50px] top-[1493px] translate-x-[-50%] w-[1632px]">
       <div aria-hidden="true" className="absolute border-2 border-[#b6c9f3] border-solid inset-0 pointer-events-none rounded-[50px]" />
-      <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[#001525] text-[24px] text-center text-nowrap whitespace-pre">Refer Power CA Pricing Policy Document</p>
+      <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[#001525] text-[24px] text-center text-nowrap whitespace-pre">Refer Power CAÂ PricingÂ Policy Document</p>
       <Button1 />
     </div>
   );
@@ -816,7 +816,7 @@ function Frame2095585186() {
           <p className="font-['Inter:Medium',_sans-serif] font-medium leading-[42px] min-w-full relative shrink-0 text-[28px] text-white" style={{ width: "min-content" }}>
             Power CA
           </p>
-          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only – Till 31st Oct 2025</p>
+          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only â€“Â Till 31st Oct 2025</p>
         </div>
       </div>
     </div>
@@ -834,7 +834,7 @@ function Frame2095585194() {
 function Price() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-white" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid font-['Inter:Semi_Bold',_sans-serif] font-semibold line-through relative shrink-0 text-[36px]">1,00,000</p>
     </div>
   );
@@ -907,7 +907,7 @@ function Frame2095585181() {
 function Price1() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-white" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="font-['Inter:Semi_Bold',_sans-serif] font-semibold relative shrink-0 text-[36px]">50,000</p>
     </div>
   );
@@ -1138,7 +1138,7 @@ function Frame2095585197() {
 function Price3() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-[#001525]" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="font-['Inter:Semi_Bold',_sans-serif] font-semibold relative shrink-0 text-[36px]">12,500</p>
     </div>
   );
@@ -1273,7 +1273,7 @@ function Frame2095585198() {
   return (
     <div className="content-stretch flex flex-col gap-[10px] items-center relative shrink-0 w-full">
       <Button3 />
-      <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[#666d80] text-[12px] text-center text-nowrap whitespace-pre">Currently you don’t have plan yet !</p>
+      <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[#666d80] text-[12px] text-center text-nowrap whitespace-pre">Currently you donâ€™t have plan yet !</p>
     </div>
   );
 }
@@ -1311,7 +1311,7 @@ export default function PricingPage() {
       <Navbar />
       <Frame2095584515 />
       <div className="absolute h-[1358px] top-[-2400px] w-[2038px]" data-name="7d348477-92a4-46b8-8d06-b5c89599476f 1" style={{ left: "calc(91.667% - 70px)" }}>
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1.src} />
       </div>
       <FooterBig4 />
       <Frame2095585185 />

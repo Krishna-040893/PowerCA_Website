@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
+﻿/* eslint-disable @next/next/no-img-element -- Figma-exported layout relies on raw <img> for precise positioning */
 import svgPaths from "../imports/svg-2aofj8qut2";
 import img7D34847792A446B88D06B5C89599476F1 from "figma:asset/b267a3094a98e62c12bb67d6a08a82785dc93a8d.png";
 
@@ -106,7 +106,7 @@ function Frame2095585167() {
         <p className="leading-[normal]">Pricing</p>
       </div>
       <div className="flex flex-col font-['Poppins:Regular',_sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#666d80] text-[18px] text-center w-[1128px]">
-        <p className="leading-[normal]">Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.</p>
+        <p className="leading-[normal]">Pick a plan that grows with you. Our pricing is straightforwardâ€”no hidden charges, just the features you need to succeed.</p>
       </div>
     </div>
   );
@@ -229,7 +229,7 @@ function Frame2095585186() {
           <p className="font-['Inter:Medium',_sans-serif] font-medium leading-[42px] min-w-full relative shrink-0 text-[28px] text-white" style={{ width: "min-content" }}>
             Power CA
           </p>
-          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only – Till 31st Oct 2025</p>
+          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only â€“ Till 31st Oct 2025</p>
         </div>
       </div>
     </div>
@@ -247,7 +247,7 @@ function Frame2095585194() {
 function Price() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-white" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid font-['Inter:Semi_Bold',_sans-serif] font-semibold line-through relative shrink-0 text-[36px]">1,00,000</p>
     </div>
   );
@@ -320,7 +320,7 @@ function Frame2095585181() {
 function Price1() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-white" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="font-['Inter:Semi_Bold',_sans-serif] font-semibold relative shrink-0 text-[36px]">50,000</p>
     </div>
   );
@@ -552,7 +552,7 @@ function Frame2095585197() {
 function Price3() {
   return (
     <div className="content-stretch flex gap-[6px] items-start leading-[42px] relative shrink-0 text-[#001525]" data-name="Price">
-      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">₹</p>
+      <p className="font-['Inter:Medium',_sans-serif] font-medium relative shrink-0 text-[28px]">â‚¹</p>
       <p className="font-['Inter:Semi_Bold',_sans-serif] font-semibold relative shrink-0 text-[36px]">12,500</p>
     </div>
   );
@@ -723,7 +723,7 @@ export default function PricingContent() {
     <div className="bg-white relative min-h-screen w-full" data-name="Pricing Content">
       <Frame2095584515 />
       <div className="absolute h-[1358px] top-[-2400px] w-[2038px]" data-name="7d348477-92a4-46b8-8d06-b5c89599476f 1" style={{ left: "calc(91.667% - 70px)" }}>
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={img7D34847792A446B88D06B5C89599476F1.src} />
       </div>
       <Frame2095585185 />
       <Frame2095585190 />

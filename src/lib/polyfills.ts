@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Polyfills for browser compatibility
  * This file loads polyfills conditionally based on browser support
  */
@@ -187,7 +187,7 @@ export async function loadPolyfills() {
     if (!window.requestIdleCallback) {
       (window as unknown as { requestIdleCallback: (cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void, opts?: { timeout?: number }) => number }).requestIdleCallback = function(callback, options) {
         const start = Date.now();
-        return setTimeout(function() {
+        return window.setTimeout(function() {
           callback({
             didTimeout: false,
             timeRemaining: function() {
