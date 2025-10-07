@@ -19,10 +19,40 @@ export const authOptions: NextAuthOptions = {
 
         // Ensure Supabase is configured
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
-          throw new Error('Supabase is not configured')
+          console.warn('Supabase is not configured properly')
+          // In development, allow authentication without Supabase
+          if (process.env.NODE_ENV === 'development') {
+            // Continue to demo login handling below
+          } else {
+            throw new Error('Supabase is not configured')
+          }
         }
 
         try {
+          // In development, allow demo login without database
+          if (process.env.NODE_ENV === 'development') {
+            if (credentials.email === 'demo@powerca.in' && credentials.password === 'demo123') {
+              return {
+                id: 'demo-user',
+                email: 'demo@powerca.in',
+                name: 'Demo User',
+                firmName: 'Demo Firm',
+                role: 'user',
+              }
+            }
+
+            // For any other dev credentials, create a demo user
+            if (credentials.email.includes('@') && credentials.password.length >= 6) {
+              return {
+                id: 'dev-user-' + Date.now(),
+                email: credentials.email,
+                name: 'Development User',
+                firmName: 'Dev Firm',
+                role: 'user',
+              }
+            }
+          }
+
           const supabase = createAdminClient()
 
           // Check if user exists
@@ -32,7 +62,15 @@ export const authOptions: NextAuthOptions = {
             .eq('email', credentials.email)
             .single()
 
-          if (error || !user) {
+          if (error) {
+            console.warn('Database error during auth:', error.message)
+            if (process.env.NODE_ENV === 'development') {
+              return null // Let it fail gracefully in development
+            }
+            throw new Error('User not found')
+          }
+
+          if (!user) {
             throw new Error('Invalid credentials')
           }
 
@@ -51,7 +89,18 @@ export const authOptions: NextAuthOptions = {
             role: user.role || 'user',
           }
         } catch (error) {
-          console.error('Auth error:', error)
+          console.error('Auth error details:', {
+            error: error instanceof Error ? error.message : error,
+            stack: error instanceof Error ? error.stack : undefined,
+            env: process.env.NODE_ENV,
+            supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'not set',
+            credentials: { email: credentials.email, hasPassword: !!credentials.password }
+          })
+
+          // Don't throw in development to prevent NextAuth errors
+          if (process.env.NODE_ENV === 'development') {
+            return null
+          }
           throw new Error('Authentication failed')
         }
       }

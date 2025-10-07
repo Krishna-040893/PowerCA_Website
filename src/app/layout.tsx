@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import {Toaster  } from '@/components/ui/sonner'
 import {SessionProvider  } from '@/components/providers/session-provider'
@@ -8,6 +9,12 @@ import {GoogleTagManager, GoogleTagManagerNoscript  } from '@/components/google-
 import { GlobalErrorBoundary } from '@/components/error-boundary'
 import { MonitoringProvider } from '@/components/monitoring-provider'
 import { BrowserCheck } from '@/components/browser-check'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 // Force dynamic rendering for all pages due to session usage
 export const dynamic = 'force-dynamic'
@@ -70,13 +77,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-      </head>
+      <head />
       <body
-        className="font-sans antialiased"
+        className={`${inter.variable} font-inter antialiased`}
       >
         <GlobalErrorBoundary>
           <BrowserCheck />

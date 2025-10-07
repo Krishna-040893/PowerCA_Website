@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ClientLogos } from '@/components/client-logos'
 import { ProfessionRotator } from '@/components/home/profession-rotator'
 import { BenefitsAccordion } from '@/components/home/benefits-accordion'
-import { TestimonialsCarousel } from '@/components/home/testimonials-carousel'
+import TestimonialsSection from '@/components/testimonials-section'
 import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
 import './testimonial-scroll.css'
 
@@ -101,7 +101,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative py-[100px] flex items-center justify-center overflow-hidden bg-white">
         {/* Optimized background image using next/image */}
-        <div className="absolute inset-0 px-12">
+        <div className="absolute inset-0 px-2.5 sm:px-6 lg:px-12">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
             <Image
               src="/images/hero-bg.jpg"
@@ -130,10 +130,12 @@ export default function Home() {
             </div>
 
             {/* Main Heading with SEO Keywords */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-gray-900 leading-tight mb-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-8">
               Practice Management Software for
               <br />
-              <ProfessionRotator />
+              <span className="mt-4 block">
+                <ProfessionRotator />
+              </span>
             </h1>
 
             {/* Description */}
@@ -145,7 +147,27 @@ export default function Home() {
 
             {/* Value Proposition */}
             <div className="mb-12">
-              <div className="flex items-center justify-center text-gray-500 text-sm md:text-base">
+              {/* Mobile Layout - Stacked */}
+              <div className="md:hidden space-y-4 text-center">
+                <div className="flex items-center justify-center text-gray-500 text-sm">
+                  <div className="w-6 h-px bg-gray-300 mr-2"></div>
+                  <span>Save 10+ hours weekly</span>
+                  <div className="w-6 h-px bg-gray-300 ml-2"></div>
+                </div>
+                <div className="flex items-center justify-center text-gray-500 text-sm">
+                  <div className="w-6 h-px bg-gray-300 mr-2"></div>
+                  <span>Ensure 100% compliance</span>
+                  <div className="w-6 h-px bg-gray-300 ml-2"></div>
+                </div>
+                <div className="flex items-center justify-center text-gray-500 text-sm">
+                  <div className="w-6 h-px bg-gray-300 mr-2"></div>
+                  <span>Grow effortlessly</span>
+                  <div className="w-6 h-px bg-gray-300 ml-2"></div>
+                </div>
+              </div>
+
+              {/* Desktop Layout - Horizontal */}
+              <div className="hidden md:flex items-center justify-center text-gray-500 text-sm md:text-base">
                 <div className="flex items-center">
                   <div className="w-8 h-px bg-gray-300 mr-3"></div>
                   <span className="whitespace-nowrap">Save 10+ hours weekly</span>
@@ -162,7 +184,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
                 href="/book-demo"
-                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[200px]"
               >
                 <span>Book Your Demo</span>
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +194,7 @@ export default function Home() {
               <a
                 href="/docs/PowercaPromoters.pdf"
                 download="PowercaPromoters.pdf"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
               >
                 📥 Promoter's Perspective
               </a>
@@ -202,24 +224,24 @@ export default function Home() {
           <div className="grid lg:grid-cols-4 gap-12 items-start">
             {/* Left Content - Title */}
             <div className="lg:col-span-1">
-              <h2 className="font-semibold leading-tight font-inter" style={{ fontSize: '48px', width: '458px', color: '#001525' }}>
-                Streamline your practice
+              <h2 className="font-semibold leading-normal text-4xl md:text-[42px] text-gray-900 font-inter">
+                Streamline Your Practice
               </h2>
             </div>
 
             {/* Center Content - Description */}
-            <div className="lg:col-span-2 lg:ml-30">
-              <p className="text-lg text-gray-600 leading-relaxed">
+            <div className="lg:col-span-2">
+              <p className="text-lg text-gray-600 leading-relaxed font-inter">
                 Power CA helps you organize and streamline your office functional areas like task management, client management, staff management, billing
                 and manage all information related to your practice in an accessible in-house application.
               </p>
             </div>
 
             {/* Right Content - Button */}
-            <div className="lg:col-span-1 flex justify-start lg:justify-end">
+            <div className="lg:col-span-1 flex items-start justify-start lg:justify-end">
               <Link
                 href="/register"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-inter"
               >
                 Register Now
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,7 +274,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-5 gap-12 items-start mb-16">
             {/* Left Content - Title */}
             <div className="lg:col-span-2">
-              <h2 className="text-4xl md:text-5xl font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
+              <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                 Important Power CA
                 <br />
                 Modules
@@ -271,7 +293,7 @@ export default function Home() {
             <div className="lg:col-span-1 flex items-center justify-start lg:justify-end">
               <Link
                 href="/modules"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
+                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
               >
                 All Modules
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +306,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Job Card Management - Featured Card */}
             <div className="group p-8 rounded-2xl text-white hover:bg-blue-700 transition-all duration-300 transform hover:scale-105" style={{ backgroundColor: '#155dfc' }}>
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Image
                   src="/images/job-card-icon.svg"
                   alt="Job Card Management Module Icon - Track and manage all client jobs with intuitive dashboard for CA practices"
@@ -393,12 +415,12 @@ export default function Home() {
           <div className="container mx-auto px-6 lg:px-8 relative z-10">
             {/* Full Width Header Section */}
             <div className="flex justify-between items-center mb-16">
-              <h2 className="font-semibold font-inter" style={{ color: '#001525', fontSize: '48px', lineHeight: '1.1' }}>
+              <h2 className="font-semibold font-inter" style={{ color: '#001525', fontSize: '42px', lineHeight: '1.1' }}>
                 Start using Power CA today!
               </h2>
               <Link
                 href="/pricing"
-                className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-full hover:opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
+                className="inline-flex items-center px-8 py-4 text-white font-medium rounded-full hover:opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
                 style={{ backgroundColor: '#155dfc' }}
               >
                 Pricing Plan
@@ -579,26 +601,7 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-8 items-center mb-16">
-            {/* Left Content - Title */}
-            <div className="lg:col-span-6">
-              <h2 className="text-4xl md:text-5xl font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
-                What Practicing Chartered
-                <br />
-                Accountants Say
-              </h2>
-            </div>
-
-            {/* Center Content - Description */}
-            <div className="lg:col-span-6">
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Don't just take our word for it. Here's what our clients have to say about PowerCA.
-              </p>
-            </div>
-          </div>
-
-          {/* Testimonials Carousel Component */}
-          <TestimonialsCarousel />
+          <TestimonialsSection />
         </div>
       </section>
 
@@ -614,7 +617,7 @@ export default function Home() {
             <div className="grid lg:grid-cols-12 gap-8 items-center">
               {/* Left Content - Title */}
               <div className="lg:col-span-5">
-                <h2 className="text-4xl md:text-5xl font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
+                <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                   Client - Server Model
                 </h2>
               </div>
@@ -628,8 +631,8 @@ export default function Home() {
 
               {/* Right Content - Book Demo Button */}
               <div className="lg:col-span-2 flex justify-end">
-                <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
-                  Book Your Demo
+                <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                  Book Demo
                   <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -755,7 +758,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-12 gap-8 items-center">
             {/* Left Content - Title */}
             <div className="lg:col-span-6">
-              <h2 className="text-4xl md:text-5xl font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
+              <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                 Benefits of PowerCA
               </h2>
             </div>

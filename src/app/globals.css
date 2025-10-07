@@ -361,7 +361,7 @@
     @apply border-gray-200;
   }
   body {
-    @apply font-sans;
+    @apply font-inter;
   }
   code, pre {
     @apply font-mono;

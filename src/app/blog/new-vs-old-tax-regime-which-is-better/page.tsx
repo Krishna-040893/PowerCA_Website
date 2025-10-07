@@ -72,7 +72,7 @@ export default function TaxRegimeComparisonPage() {
               </p>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Understanding Both Tax Regimes</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Understanding Both Tax Regimes</h2>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">New Tax Regime (Default from FY 2023-24 onwards)</h3>
 
@@ -180,7 +180,7 @@ export default function TaxRegimeComparisonPage() {
               </ul>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Detailed Comparison with Examples</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Detailed Comparison with Examples</h2>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Example 1: Salaried Employee (₹10 Lakhs Annual Income)</h3>
 
@@ -273,7 +273,7 @@ export default function TaxRegimeComparisonPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Who Should Choose Which Regime?</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Who Should Choose Which Regime?</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="p-6">
@@ -317,7 +317,7 @@ export default function TaxRegimeComparisonPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Quick Decision Framework</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Quick Decision Framework</h2>
 
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="font-semibold mb-4">Calculate Your Break-Even Point:</h3>
@@ -351,7 +351,7 @@ export default function TaxRegimeComparisonPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Tax Planning Strategies</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Tax Planning Strategies</h2>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">If You Choose New Regime:</h3>
             <ul className="space-y-2">
@@ -370,7 +370,7 @@ export default function TaxRegimeComparisonPage() {
               <li>• Keep all investment proofs organized for filing</li>
             </ul>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Conclusion</h2>
 
             <p>
               The choice between new and old tax regime depends entirely on your personal financial situation.

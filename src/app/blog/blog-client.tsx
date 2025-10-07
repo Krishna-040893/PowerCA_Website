@@ -26,7 +26,7 @@ const blogPosts = [
     date: 'September 25, 2025',
     category: 'breaking-news',
     readTime: '5 min read',
-    image: '/images/hero-background.png',
+    image: '/images/tax-audit-deadline-extended-feature.png',
     isBreaking: true,
     link: '/blog/tax-audit-deadline-extended-october-31-2025'
   },
@@ -38,7 +38,7 @@ const blogPosts = [
     date: 'September 24, 2025',
     category: 'compliance',
     readTime: '15 min read',
-    image: '/images/hero-background.png',
+    image: '/images/tds-compliance-checklist-feature.png',
     link: '/blog/tds-compliance-checklist-complete-guide'
   },
   {
@@ -49,7 +49,7 @@ const blogPosts = [
     date: 'September 23, 2025',
     category: 'technology',
     readTime: '12 min read',
-    image: '/images/hero-background.png',
+    image: '/images/practice-management-software-feature.png',
     link: '/blog/why-cas-need-practice-management-software'
   },
   {
@@ -60,7 +60,7 @@ const blogPosts = [
     date: 'September 22, 2025',
     category: 'tax-planning',
     readTime: '10 min read',
-    image: '/images/hero-background.png',
+    image: '/images/new-vs-old-tax-regime-feature.png',
     link: '/blog/new-vs-old-tax-regime-which-is-better'
   },
   {
@@ -74,36 +74,7 @@ const blogPosts = [
     image: '/images/hero-background.png',
     link: '/blog/how-to-file-gst-returns-2025'
   },
-  {
-    id: 6,
-    title: 'Essential Audit Practices for CA Firms in 2025',
-    excerpt: 'Discover the latest audit methodologies and compliance requirements that every CA firm should implement to stay competitive.',
-    author: 'Priya Sharma',
-    date: 'September 15, 2025',
-    category: 'best-practices',
-    readTime: '5 min read',
-    image: '/images/hero-background.png'
-  },
-  {
-    id: 7,
-    title: 'Digital Transformation in Accounting: A Complete Guide',
-    excerpt: 'Learn how to modernize your accounting practice with digital tools and automated workflows for improved efficiency.',
-    author: 'Rajesh Kumar',
-    date: 'September 12, 2025',
-    category: 'technology',
-    readTime: '8 min read',
-    image: '/images/hero-background.png'
-  },
-  {
-    id: 8,
-    title: 'Time Management Strategies for Busy CA Practices',
-    excerpt: 'Proven techniques to optimize your time, increase productivity, and maintain work-life balance in your CA practice.',
-    author: 'Vikram Singh',
-    date: 'September 8, 2025',
-    category: 'tips',
-    readTime: '4 min read',
-    image: '/images/hero-background.png'
-  }
+
 ]
 
 const authors = [
@@ -160,8 +131,11 @@ export default function BlogPageClient() {
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6">
-              The Power CA Blog
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-6">
+              The Power CA
+              <br />
+              <span className="text-blue-600">Blog</span>
+
             </h1>
 
             {/* Subtitle */}
@@ -178,7 +152,7 @@ export default function BlogPageClient() {
                 placeholder="Search you want"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-6 pr-12 py-4 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-16 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
+                className="w-full pl-6 pr-12 py-6 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-24 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
               />
               <Search className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
             </div>
@@ -186,7 +160,7 @@ export default function BlogPageClient() {
               <Button
                 size="lg"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-16 min-w-16"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-24 min-w-24"
               >
                 <Image
                   src="/images/filter-icon.png"
@@ -289,7 +263,7 @@ export default function BlogPageClient() {
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Categories */}
           <div className="mb-12 pt-20 pb-5">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            <h2 className="text-3xl font-semibold text-gray-900 mb-8 text-center leading-normal">
               Explore Trending Topics
             </h2>
             <div className="flex flex-wrap gap-3 justify-center">
@@ -320,6 +294,15 @@ export default function BlogPageClient() {
                       ? 'bg-gradient-to-br from-red-500 to-orange-600'
                       : 'bg-gradient-to-br from-blue-500 to-blue-600'
                   }`}>
+                    {post.image && (
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     {post.isBreaking && (
                       <div className="absolute top-4 right-4 bg-yellow-400 text-red-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">

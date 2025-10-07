@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+﻿import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Button } from '../button'
 
@@ -40,16 +40,16 @@ describe('Button Component', () => {
 
   it('should apply different sizes', () => {
     const { rerender } = render(<Button size="default">Default</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-10')
-
-    rerender(<Button size="sm">Small</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-9')
-
-    rerender(<Button size="lg">Large</Button>)
     expect(screen.getByRole('button')).toHaveClass('h-11')
 
+    rerender(<Button size="sm">Small</Button>)
+    expect(screen.getByRole('button')).toHaveClass('h-10')
+
+    rerender(<Button size="lg">Large</Button>)
+    expect(screen.getByRole('button')).toHaveClass('h-12')
+
     rerender(<Button size="icon">Icon</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-10 w-10')
+    expect(screen.getByRole('button')).toHaveClass('size-11')
   })
 
   it('should be disabled when disabled prop is true', () => {
@@ -57,7 +57,8 @@ describe('Button Component', () => {
     const button = screen.getByRole('button')
 
     expect(button).toBeDisabled()
-    expect(button).toHaveClass('disabled:pointer-events-none disabled:opacity-50')
+    expect(button).toHaveClass('disabled:pointer-events-none')
+    expect(button).toHaveClass('disabled:opacity-50')
   })
 
   it('should render as child when asChild is true', () => {
@@ -88,3 +89,4 @@ describe('Button Component', () => {
     expect(button).toHaveClass('inline-flex') // Default class should still be present
   })
 })
+

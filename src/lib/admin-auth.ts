@@ -1,12 +1,17 @@
-import {NextRequest  } from 'next/server'
+import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 
-// Ensure JWT_SECRET is properly configured
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error('CRITICAL: NEXTAUTH_SECRET environment variable is not configured. This is required for secure authentication.')
-}
+function getJwtSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET
+  if (!secret) {
+    throw new Error(
+      'CRITICAL: NEXTAUTH_SECRET environment variable is not configured. This is required for secure authentication.'
+    )
+  }
+
+  return secret
+}
 
 export interface AdminUser {
   username: string
@@ -20,10 +25,8 @@ export async function verifyAdminToken(token: string): Promise<jwt.JwtPayload | 
       return null
     }
 
-    // Verify the token
-    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
+    const decoded = jwt.verify(token, getJwtSecret()) as jwt.JwtPayload
 
-    // Check if token is expired
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
       return null
     }
@@ -37,10 +40,8 @@ export async function verifyAdminToken(token: string): Promise<jwt.JwtPayload | 
 
 export async function verifyAdminRequest(request: NextRequest): Promise<AdminUser | null> {
   try {
-    // Check for token in cookies (set by login) - use synchronous access from request
     const tokenFromCookie = request.cookies.get('adminToken')?.value
 
-    // Check for token in Authorization header (for API calls)
     const authHeader = request.headers.get('authorization')
     const tokenFromHeader = authHeader?.startsWith('Bearer ')
       ? authHeader.substring(7)

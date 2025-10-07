@@ -1,172 +1,74 @@
-import { renderHook } from '@testing-library/react'
+﻿import { renderHook } from '@testing-library/react'
 import { useSession } from '../use-session'
-import { useRouter } from 'next/navigation'
+import { useSession as useNextAuthSession } from 'next-auth/react'
 
-// Mock next/navigation
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(),
 }))
 
-// Mock fetch
-global.fetch = jest.fn()
+const mockedUseNextAuthSession = useNextAuthSession as unknown as jest.Mock
 
-describe('useSession Hook', () => {
-  const mockPush = jest.fn()
-  const mockRouter = {
-    push: mockPush,
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-    back: jest.fn(),
-  }
-
+describe('useSession hook', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    mockedUseNextAuthSession.mockReset()
   })
 
-  it('should initialize with loading state', () => {
-    ;(global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {})) // Never resolves
+  it('returns loading state when NextAuth is loading', () => {
+    mockedUseNextAuthSession.mockReturnValue({
+      data: null,
+      status: 'loading',
+      update: jest.fn(),
+    })
 
     const { result } = renderHook(() => useSession())
 
     expect(result.current.isLoading).toBe(true)
-    expect(result.current.user).toBeNull()
+    expect(result.current.isAuthenticated).toBe(false)
+    expect(result.current.user).toBeUndefined()
   })
 
-  it('should fetch user session on mount', async () => {
-    const mockUser = {
-      id: '123',
-      email: 'test@example.com',
-      name: 'Test User',
-    }
-
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ user: mockUser }),
+  it('returns authenticated state when session is present', () => {
+    const user = { id: '1', email: 'test@example.com', name: 'Test User' }
+    mockedUseNextAuthSession.mockReturnValue({
+      data: { user },
+      status: 'authenticated',
+      update: jest.fn(),
     })
 
     const { result } = renderHook(() => useSession())
 
-    // Initial state
-    expect(result.current.isLoading).toBe(true)
-
-    // Wait for the effect to complete
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    // Session should be loaded
-    expect(global.fetch).toHaveBeenCalledWith('/api/auth/session')
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.user).toEqual(user)
   })
 
-  it('should handle session check failure', async () => {
-    ;(global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'))
-
-    const { result } = renderHook(() => useSession())
-
-    // Wait for the effect to complete
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(result.current.user).toBeNull()
-  })
-
-  it('should handle logout', async () => {
-    const mockUser = {
-      id: '123',
-      email: 'test@example.com',
-      name: 'Test User',
-    }
-
-    ;(global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ user: mockUser }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true }),
-      })
-
-    renderHook(() => useSession())
-
-    // Wait for initial load
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    // Call logout
-    // logout method doesn't exist in this hook
-
-    // Should have called logout endpoint
-    expect(global.fetch).toHaveBeenCalledWith('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    })
-
-    // Should redirect to home
-    expect(mockPush).toHaveBeenCalledWith('/')
-  })
-
-  it('should check authentication status', async () => {
-    const mockUser = {
-      id: '123',
-      email: 'test@example.com',
-      name: 'Test User',
-    }
-
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ user: mockUser }),
+  it('returns unauthenticated state when session is missing', () => {
+    mockedUseNextAuthSession.mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: jest.fn(),
     })
 
     const { result } = renderHook(() => useSession())
 
-    // Wait for initial load
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    // Call checkAuth
-    const isAuthenticated = result.current.isAuthenticated
-
-    expect(global.fetch).toHaveBeenCalledWith('/api/auth/session')
-    expect(isAuthenticated).toBe(true)
+    expect(result.current.isAuthenticated).toBe(false)
+    expect(result.current.user).toBeUndefined()
   })
 
-  it('should return false when user is not authenticated', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ user: null }),
+  it('exposes the raw session data and update function', () => {
+    const user = { id: '1', email: 'test@example.com' }
+    const update = jest.fn()
+
+    mockedUseNextAuthSession.mockReturnValue({
+      data: { user },
+      status: 'authenticated',
+      update,
     })
 
     const { result } = renderHook(() => useSession())
 
-    // Wait for initial load
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    const isAuthenticated = result.current.isAuthenticated
-    expect(isAuthenticated).toBe(false)
-  })
-
-  it('should provide consistent user data after loading', async () => {
-    const mockUser = {
-      id: '123',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'user',
-    }
-
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ user: mockUser }),
-    })
-
-    const { result, rerender } = renderHook(() => useSession())
-
-    // Initial state
-    expect(result.current.isLoading).toBe(true)
-
-    // Wait for loading to complete
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    // Rerender to check if state persists
-    rerender()
-
-    // User should be consistent after rerender
-    expect(result.current.user).toEqual(mockUser)
+    expect(result.current.session).toEqual({ user })
+    expect(result.current.update).toBe(update)
   })
 })
+
