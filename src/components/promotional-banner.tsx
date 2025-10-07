@@ -27,22 +27,24 @@ export default function PromotionalBanner() {
   return (
     <div className="fixed top-0 w-full bg-slate-900 text-white py-2.5 px-4 text-center text-sm z-50">
       <div className="container mx-auto">
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          {/* NEW badge */}
-          <span className="inline-flex items-center px-2.5 py-1 bg-blue-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+        <div className="flex items-center justify-center gap-1 sm:gap-3 flex-wrap">
+          {/* NEW badge - smaller on mobile */}
+          <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-blue-600 text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wide">
             NEW
           </span>
 
-          {/* Promotional text */}
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            <span className="text-white font-medium">Special discount 75% for CAs – Till 31st Oct 2025</span>
-            <span className="text-slate-300 italic text-xs hidden sm:inline">(Be an Early bird to Enjoy the Offer)</span>
+          {/* Promotional text - responsive */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
+            <span className="text-white font-medium text-[11px] sm:text-sm">
+              Special discount 50% off CAs
+            </span>
+            <span className="text-slate-300 italic text-[10px] hidden sm:inline">(Till 31st Oct 2025)</span>
           </div>
 
-          {/* Click Here button */}
+          {/* Click Here button - compact on mobile */}
           <a
             href="/pricing"
-            className="inline-flex items-center px-4 py-1.5 bg-white text-slate-900 text-xs font-bold rounded-full hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-sm"
+            className="inline-flex items-center px-2 sm:px-4 py-1 sm:py-1.5 bg-white text-slate-900 text-[10px] sm:text-xs font-bold rounded-full hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-sm whitespace-nowrap"
           >
             Click Here
           </a>

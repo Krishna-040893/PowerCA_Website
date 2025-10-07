@@ -105,7 +105,7 @@ export default function AboutPage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-900 leading-tight mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-8">
               Explore Power CA –
               <br />
               <span className="text-blue-600">Built by a Team of Passionate Experts</span>
@@ -122,7 +122,7 @@ export default function AboutPage() {
             <div className="flex justify-center">
               <Link
                 href="/"
-                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 <span>Visit Our Main Site</span>
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-4 gap-12 items-start">
             {/* Left Content - Title */}
             <div className="lg:col-span-2">
-              <h2 className="font-semibold leading-tight font-inter text-4xl md:text-5xl text-gray-900">
+              <h2 className="font-semibold leading-normal font-inter text-4xl md:text-[42px] text-gray-900">
                 Elevate your practice to the next level with PowerCA
               </h2>
             </div>
@@ -154,7 +154,7 @@ export default function AboutPage() {
 
             {/* Right Content - Button */}
             <div className="lg:col-span-1 flex items-start justify-start lg:justify-end">
-              <button className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              <button className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                 All Modules
               </button>
             </div>
@@ -242,7 +242,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-12 gap-8 items-center mb-16">
               {/* Left - Title */}
               <div className="lg:col-span-5">
-                <h2 className="text-4xl md:text-5xl font-semibold text-gray-900">
+                <h2 className="text-4xl md:text-[42px] font-semibold text-gray-900 leading-normal">
                   Our Team Members
                 </h2>
               </div>
@@ -401,7 +401,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-12 gap-8 items-center">
             {/* Left - Title */}
             <div className="lg:col-span-4">
-              <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 leading-tight">
+              <h2 className="text-4xl md:text-[42px] font-semibold text-gray-900 leading-normal">
                 Our Mission, Vision & Values
               </h2>
             </div>
@@ -418,7 +418,7 @@ export default function AboutPage() {
 
             {/* Right - All Modules Button */}
             <div className="lg:col-span-3 flex justify-start lg:justify-end">
-              <button className="inline-flex items-center justify-center pl-6 pr-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              <button className="inline-flex items-center justify-center pl-6 pr-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                 All Modules
               </button>
             </div>

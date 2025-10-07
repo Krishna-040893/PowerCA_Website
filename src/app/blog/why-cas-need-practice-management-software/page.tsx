@@ -76,7 +76,7 @@ export default function PracticeManagementBenefitsPage() {
                 </p>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">The Current State of CA Practice in India</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">The Current State of CA Practice in India</h2>
 
               <p>
                 The Indian CA profession is at a crossroads. With over 3.5 lakh practicing CAs serving millions of businesses,
@@ -107,7 +107,7 @@ export default function PracticeManagementBenefitsPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">10 Game-Changing Benefits of Practice Management Software</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">10 Game-Changing Benefits of Practice Management Software</h2>
 
               <div className="space-y-6">
                 {/* Benefit 1 */}
@@ -360,7 +360,7 @@ export default function PracticeManagementBenefitsPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Real Case Studies from Indian CA Firms</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Real Case Studies from Indian CA Firms</h2>
 
               <div className="space-y-6">
                 <Card className="p-6 bg-blue-50">
@@ -418,7 +418,7 @@ export default function PracticeManagementBenefitsPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">ROI Analysis: The Numbers Don't Lie</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">ROI Analysis: The Numbers Don't Lie</h2>
 
               <Card className="p-6 mb-6">
                 <h3 className="font-bold mb-4">Typical Investment vs Returns</h3>
@@ -450,7 +450,7 @@ export default function PracticeManagementBenefitsPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Common Concerns Addressed</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Common Concerns Addressed</h2>
 
               <div className="space-y-4">
                 <Alert className="border-orange-200 bg-orange-50">
@@ -484,7 +484,7 @@ export default function PracticeManagementBenefitsPage() {
                 </Alert>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Implementation Roadmap</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Implementation Roadmap</h2>
 
               <div className="space-y-4">
                 <Card className="p-4 border-l-4 border-blue-500">
@@ -528,7 +528,7 @@ export default function PracticeManagementBenefitsPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">The Future is Already Here</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">The Future is Already Here</h2>
 
               <p>
                 By 2027, it's estimated that 80% of CA firms will use practice management software. Early adopters
@@ -553,7 +553,7 @@ export default function PracticeManagementBenefitsPage() {
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion: The Time to Act is Now</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Conclusion: The Time to Act is Now</h2>
 
               <p>
                 Practice management software isn't just a tool - it's a strategic investment in your firm's future.

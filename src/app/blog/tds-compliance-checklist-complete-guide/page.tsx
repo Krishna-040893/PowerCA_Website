@@ -76,7 +76,7 @@ export default function TDSComplianceChecklistPage() {
                 </AlertDescription>
               </Alert>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">1. TDS Deduction Checklist</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">1. TDS Deduction Checklist</h2>
 
               <Card className="p-6 mb-6">
                 <h3 className="font-semibold text-lg mb-4">Before Making Payment</h3>
@@ -119,7 +119,7 @@ export default function TDSComplianceChecklistPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">2. Major TDS Sections & Rates (FY 2025-26)</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">2. Major TDS Sections & Rates (FY 2025-26)</h2>
 
               <div className="overflow-x-auto mb-6">
                 <table className="w-full border-collapse">
@@ -217,7 +217,7 @@ export default function TDSComplianceChecklistPage() {
                 </AlertDescription>
               </Alert>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">3. TDS Deposit Checklist</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">3. TDS Deposit Checklist</h2>
 
               <Card className="p-6 mb-6">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -273,7 +273,7 @@ export default function TDSComplianceChecklistPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">4. TDS Return Filing Schedule</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">4. TDS Return Filing Schedule</h2>
 
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <Card className="p-4">
@@ -337,7 +337,7 @@ export default function TDSComplianceChecklistPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">5. TDS Return Filing Checklist</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">5. TDS Return Filing Checklist</h2>
 
               <Card className="p-6 mb-6">
                 <h3 className="font-semibold text-lg mb-4">Pre-Filing Requirements</h3>
@@ -380,7 +380,7 @@ export default function TDSComplianceChecklistPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">6. TDS Certificate Issuance</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">6. TDS Certificate Issuance</h2>
 
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <Card className="p-4 bg-blue-50">
@@ -428,7 +428,7 @@ export default function TDSComplianceChecklistPage() {
                 </Card>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">7. Common TDS Compliance Errors to Avoid</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">7. Common TDS Compliance Errors to Avoid</h2>
 
               <div className="space-y-4 mb-6">
                 <Alert className="border-red-200 bg-red-50">
@@ -458,7 +458,7 @@ export default function TDSComplianceChecklistPage() {
                 </Alert>
               </div>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">8. Penalties for Non-Compliance</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">8. Penalties for Non-Compliance</h2>
 
               <Card className="p-6 mb-6 bg-red-50">
                 <h3 className="font-semibold text-lg mb-4 text-red-900">Penalty Provisions</h3>
@@ -501,7 +501,7 @@ export default function TDSComplianceChecklistPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">9. Month-wise TDS Compliance Calendar</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">9. Month-wise TDS Compliance Calendar</h2>
 
               <Card className="p-6 mb-6">
                 <h3 className="font-semibold text-lg mb-4">Recurring Monthly Tasks</h3>
@@ -535,7 +535,7 @@ export default function TDSComplianceChecklistPage() {
                 </div>
               </Card>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">10. Best Practices for TDS Compliance</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">10. Best Practices for TDS Compliance</h2>
 
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <Card className="p-4">
@@ -600,7 +600,7 @@ export default function TDSComplianceChecklistPage() {
                 </AlertDescription>
               </Alert>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Conclusion</h2>
 
               <p>
                 TDS compliance is a critical aspect of tax administration that requires meticulous attention to detail

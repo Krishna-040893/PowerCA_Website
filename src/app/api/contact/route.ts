@@ -1,21 +1,64 @@
-import {NextRequest, NextResponse  } from 'next/server'
-import {sendContactFormEmail, sendWelcomeEmail  } from '@/lib/send-emails'
+﻿import DOMPurify from 'isomorphic-dompurify'
+import { NextRequest, NextResponse } from 'next/server'
+
+import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const sanitizeRequired = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return ''
+  }
+
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }).trim()
+}
+
+const sanitizeOptional = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const sanitized = DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }).trim()
+
+  return sanitized || undefined
+}
 
 export async function POST(request: NextRequest) {
+  let body: unknown
+
   try {
-    const body = await request.json()
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
-    const { name, email, phone, company, message } = body
+  if (typeof body !== 'object' || body === null) {
+    return NextResponse.json({ error: 'Invalid request payload' }, { status: 400 })
+  }
 
-    // Validate required fields
-    if (!name || !email || !message) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+  const data = body as Record<string, unknown>
 
-    // Send contact form email to admin
+  const name = sanitizeRequired(data.name)
+  const email = sanitizeRequired(data.email)
+  const message = sanitizeRequired(data.message)
+  const phone = sanitizeOptional(data.phone)
+  const company = sanitizeOptional(data.company)
+
+  if (!name || !email || !message) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (!emailRegex.test(email)) {
+    return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+  }
+
+  try {
     const contactResult = await sendContactFormEmail({
       name,
       email,
@@ -28,7 +71,6 @@ export async function POST(request: NextRequest) {
       throw new Error('Failed to send contact email')
     }
 
-    // Send welcome email to the user
     const welcomeResult = await sendWelcomeEmail({
       name,
       email,
@@ -50,3 +92,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

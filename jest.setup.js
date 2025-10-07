@@ -1,5 +1,73 @@
-// Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom'
+﻿const { TextDecoder, TextEncoder } = require('util')
+const { ReadableStream, WritableStream, TransformStream } = require('stream/web')
+const { MessageChannel, MessagePort, MessageEvent } = require('worker_threads')
+
+if (!globalThis.TextEncoder) {
+  globalThis.TextEncoder = TextEncoder
+}
+
+if (!globalThis.TextDecoder) {
+  globalThis.TextDecoder = TextDecoder
+}
+
+if (!globalThis.ReadableStream) {
+  globalThis.ReadableStream = ReadableStream
+}
+
+if (!globalThis.WritableStream) {
+  globalThis.WritableStream = WritableStream
+}
+
+if (!globalThis.TransformStream) {
+  globalThis.TransformStream = TransformStream
+}
+
+if (!globalThis.MessageChannel) {
+  globalThis.MessageChannel = MessageChannel
+}
+
+if (!globalThis.MessagePort) {
+  globalThis.MessagePort = MessagePort
+}
+
+if (!globalThis.MessageEvent) {
+  globalThis.MessageEvent = MessageEvent
+}
+
+const {
+  fetch: undiciFetch,
+  Headers,
+  Request: UndiciRequest,
+  Response,
+  FormData,
+  File,
+} = require('undici')
+
+if (!globalThis.fetch) {
+  globalThis.fetch = undiciFetch
+}
+
+if (!globalThis.Headers) {
+  globalThis.Headers = Headers
+}
+
+if (!globalThis.Request) {
+  globalThis.Request = UndiciRequest
+}
+
+if (!globalThis.Response) {
+  globalThis.Response = Response
+}
+
+if (!globalThis.FormData) {
+  globalThis.FormData = FormData
+}
+
+if (!globalThis.File) {
+  globalThis.File = File
+}
+
+require('@testing-library/jest-dom')
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -45,3 +113,4 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError
 })
+
