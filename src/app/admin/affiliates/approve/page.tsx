@@ -16,18 +16,25 @@ import {toast  } from 'sonner'
 
 interface AffiliateApplication {
   id: string
-  user_id: string
-  company_name: string
-  website_url: string
+  name: string
+  email: string
+  phone: string
+  city: string
+  state: string
+  business_type: string
+  company_name?: string
+  designation?: string
+  experience?: string
   promotion_method: string
-  expected_referrals: string
-  reason: string
+  target_audience: string
+  monthly_leads?: string
   status: string
   created_at: string
-  user?: {
-    name: string
+  referral_code?: string
+  approved_at?: string
+  registrations: {
+    username: string
     email: string
-    phone: string
   }
 }
 
@@ -55,9 +62,9 @@ export default function AdminAffiliateApprovalPage() {
 
       const data = await response.json()
 
-      // Filter for pending applications
-      const pendingApps = (data || []).filter((app: AffiliateApplication) => app.status === 'pending')
-      setApplications(pendingApps)
+      // Filter for approved affiliates only
+      const approvedApps = (data || []).filter((app: AffiliateApplication) => app.status === 'approved')
+      setApplications(approvedApps)
     } catch (err) {
       console.error('Error fetching applications:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -87,10 +94,11 @@ export default function AdminAffiliateApprovalPage() {
   }, [getAuthHeaders])
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !authLoading) {
       fetchApplications()
     }
-  }, [isAuthenticated, fetchApplications])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading])
 
   const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
     setProcessing(true)
@@ -155,8 +163,8 @@ export default function AdminAffiliateApprovalPage() {
 
   return (
     <AdminPageWrapper
-      title="Affiliate Approvals"
-      description="Review and approve affiliate partnership requests"
+      title="Approved Affiliates"
+      description="View and manage approved affiliate partners"
       actions={
         <Button onClick={fetchApplications} variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -170,10 +178,10 @@ export default function AdminAffiliateApprovalPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Pending Applications</p>
-                  <p className="text-3xl font-bold text-yellow-600">{applications.length}</p>
+                  <p className="text-sm font-medium text-gray-600">Approved Affiliates</p>
+                  <p className="text-3xl font-bold text-green-600">{applications.length}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -193,7 +201,7 @@ export default function AdminAffiliateApprovalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Affiliates</p>
-                  <p className="text-3xl font-bold text-blue-600">12</p>
+                  <p className="text-3xl font-bold text-blue-600">{applications.length}</p>
                 </div>
                 <Star className="h-8 w-8 text-blue-600" />
               </div>
@@ -206,8 +214,8 @@ export default function AdminAffiliateApprovalPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Pending Affiliate Applications</CardTitle>
-                <CardDescription>Review and approve affiliate partnership requests</CardDescription>
+                <CardTitle>Approved Affiliate Partners</CardTitle>
+                <CardDescription>All approved and active affiliate partners</CardDescription>
               </div>
               <Button onClick={fetchApplications} variant="outline" size="sm">
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -229,7 +237,7 @@ export default function AdminAffiliateApprovalPage() {
               </div>
             ) : applications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No pending affiliate applications
+                No approved affiliates found
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -238,8 +246,8 @@ export default function AdminAffiliateApprovalPage() {
                     <TableRow>
                       <TableHead>Applicant</TableHead>
                       <TableHead>Company</TableHead>
-                      <TableHead>Website</TableHead>
-                      <TableHead>Expected Referrals</TableHead>
+                      <TableHead>Location & Phone</TableHead>
+                      <TableHead>Expected Leads</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Applied Date</TableHead>
                       <TableHead>Actions</TableHead>
@@ -250,26 +258,18 @@ export default function AdminAffiliateApprovalPage() {
                       <TableRow key={application.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{application.user?.name || 'Unknown'}</p>
-                            <p className="text-sm text-gray-500">{application.user?.email}</p>
+                            <p className="font-medium">{application.name || 'Unknown'}</p>
+                            <p className="text-sm text-gray-500">{application.email}</p>
                           </div>
                         </TableCell>
-                        <TableCell>{application.company_name}</TableCell>
+                        <TableCell>{application.company_name || '-'}</TableCell>
                         <TableCell>
-                          {application.website_url ? (
-                            <a
-                              href={application.website_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              View Site
-                            </a>
-                          ) : (
-                            '-'
-                          )}
+                          <div>
+                            <p className="text-sm">{application.phone || '-'}</p>
+                            <p className="text-xs text-gray-500">{application.city}, {application.state}</p>
+                          </div>
                         </TableCell>
-                        <TableCell>{application.expected_referrals}</TableCell>
+                        <TableCell>{application.monthly_leads || '-'}</TableCell>
                         <TableCell>{getStatusBadge(application.status)}</TableCell>
                         <TableCell>
                           {format(new Date(application.created_at), 'MMM dd, yyyy')}
@@ -298,11 +298,11 @@ export default function AdminAffiliateApprovalPage() {
 
         {/* Review Dialog */}
         <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-white">
             <DialogHeader>
-              <DialogTitle>Review Affiliate Application</DialogTitle>
+              <DialogTitle>Approved Affiliate Details</DialogTitle>
               <DialogDescription>
-                Review the application details and make a decision
+                View the approved affiliate information
               </DialogDescription>
             </DialogHeader>
 
@@ -311,19 +311,27 @@ export default function AdminAffiliateApprovalPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Applicant Name</label>
-                    <p className="text-sm">{selectedApplication.user?.name || 'Unknown'}</p>
+                    <p className="text-sm">{selectedApplication.name || 'Unknown'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Email</label>
-                    <p className="text-sm">{selectedApplication.user?.email || '-'}</p>
+                    <p className="text-sm">{selectedApplication.email || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Phone</label>
+                    <p className="text-sm">{selectedApplication.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Location</label>
+                    <p className="text-sm">{selectedApplication.city}, {selectedApplication.state}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Company</label>
-                    <p className="text-sm">{selectedApplication.company_name}</p>
+                    <p className="text-sm">{selectedApplication.company_name || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Website</label>
-                    <p className="text-sm">{selectedApplication.website_url || '-'}</p>
+                    <label className="text-sm font-medium text-gray-600">Business Type</label>
+                    <p className="text-sm capitalize">{selectedApplication.business_type || 'Individual'}</p>
                   </div>
                 </div>
 
@@ -335,49 +343,40 @@ export default function AdminAffiliateApprovalPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reason for Partnership</label>
+                  <label className="text-sm font-medium text-gray-600">Target Audience</label>
                   <p className="text-sm mt-1 p-3 bg-gray-50 rounded">
-                    {selectedApplication.reason}
+                    {selectedApplication.target_audience}
                   </p>
                 </div>
 
-                <div>
-                  <Label htmlFor="notes">Admin Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
-                    placeholder="Add any notes about this application..."
-                    rows={3}
-                  />
-                </div>
+                {selectedApplication.referral_code && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Referral Code</label>
+                    <p className="text-sm mt-1 p-3 bg-green-50 rounded border border-green-200">
+                      <code className="font-mono font-bold text-green-700">{selectedApplication.referral_code}</code>
+                    </p>
+                  </div>
+                )}
+
+                {selectedApplication.approved_at && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <label className="text-sm font-medium text-green-800">Approval Status</label>
+                    <div className="flex items-center gap-2 mt-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <p className="text-sm text-green-700">
+                        Approved on {format(new Date(selectedApplication.approved_at), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             <DialogFooter>
               <Button
-                variant="outline"
                 onClick={() => setShowReviewDialog(false)}
-                disabled={processing}
               >
-                Cancel
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'reject')}
-                disabled={processing || !selectedApplication}
-                className="text-red-600 border-red-300 hover:bg-red-50"
-              >
-                <XCircle className="h-4 w-4 mr-1" />
-                Reject
-              </Button>
-              <Button
-                onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'approve')}
-                disabled={processing || !selectedApplication}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-1" />
-                Approve
+                Close
               </Button>
             </DialogFooter>
           </DialogContent>

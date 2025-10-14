@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import bcrypt from 'bcryptjs'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists in registrations table
     const { data: user, error } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*')
       .eq('email', email)
       .single()
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: 'User not found in database',
         details: error.message,
-        table: 'registrations'
+        table: REGISTRATION_FORMS_TABLE
       })
     }
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if password field exists
-    if (!user.password) {
+    if (!user.password_hash) {
       return NextResponse.json({
         error: 'User has no password stored',
         user: {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     let passwordError = null
 
     try {
-      passwordMatch = await bcrypt.compare(password, user.password)
+      passwordMatch = await bcrypt.compare(password, user.password_hash)
     } catch (err) {
       passwordError = err instanceof Error ? err.message : 'Password check failed'
     }
@@ -61,14 +62,14 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        hasPassword: !!user.password,
-        passwordLength: user.password ? user.password.length : 0
+        hasPassword: !!user.password_hash,
+        passwordLength: user.password_hash ? user.password_hash.length : 0
       },
       passwordMatch,
       passwordError,
       debug: {
         providedPassword: password,
-        storedPasswordHash: user.password ? user.password.substring(0, 20) + '...' : null
+        storedPasswordHash: user.password_hash ? user.password_hash.substring(0, 20) + '...' : null
       }
     })
 

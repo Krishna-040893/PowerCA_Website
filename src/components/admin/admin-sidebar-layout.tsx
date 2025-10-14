@@ -5,7 +5,7 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Bell, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star } from 'lucide-react'
+import { Users, Settings, LogOut, Menu, X, ChevronLeft, Bell, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
@@ -29,6 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments'
 }
 
 interface NavSection {
@@ -36,7 +37,17 @@ interface NavSection {
   items: NavItem[]
 }
 
-const navigation: NavSection[] = [
+interface Counts {
+  bookings: number
+  registrations: number
+  affiliates: number
+  pendingApprovals: number
+  referrals: number
+  pendingPayments: number
+  payments: number
+}
+
+const getBaseNavigation = (): NavSection[] => [
   {
     title: 'Main',
     items: [
@@ -46,16 +57,18 @@ const navigation: NavSection[] = [
   {
     title: 'Management',
     items: [
-      { title: 'Bookings', href: '/admin/bookings', icon: Calendar, badge: 3, badgeVariant: 'default' },
-      { title: 'Registrations', href: '/admin/registrations', icon: FileText },
-      { title: 'Users', href: '/admin/users/manage', icon: Users },
+      { title: 'Bookings', href: '/admin/bookings', icon: Calendar, countKey: 'bookings', badgeVariant: 'default' },
+      { title: 'Registrations', href: '/admin/registrations', icon: FileText, countKey: 'registrations', badgeVariant: 'default' },
+      { title: 'Payments', href: '/admin/payments', icon: CreditCard, countKey: 'payments', badgeVariant: 'default' },
     ]
   },
   {
     title: 'Affiliates',
     items: [
-      { title: 'All Affiliates', href: '/admin/affiliates', icon: Star },
-      { title: 'Approvals', href: '/admin/affiliates/approve', icon: UserCheck, badge: 'New', badgeVariant: 'destructive' },
+      { title: 'All Affiliates', href: '/admin/affiliates', icon: Star, countKey: 'affiliates', badgeVariant: 'default' },
+      { title: 'Approvals', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
+      { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
+      { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Star, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
   },
   {
@@ -70,8 +83,58 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
   const { isAuthenticated, isLoading, adminUser, handleLogout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [navigation, setNavigation] = useState<NavSection[]>(getBaseNavigation())
+  const [counts, setCounts] = useState<Counts>({
+    bookings: 0,
+    registrations: 0,
+    affiliates: 0,
+    pendingApprovals: 0,
+    referrals: 0,
+    pendingPayments: 0,
+    payments: 0
+  })
   const pathname = usePathname()
   const _router = useRouter()
+
+  // Fetch counts from API
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const response = await fetch('/api/admin/counts')
+        if (response.ok) {
+          const data = await response.json()
+          setCounts(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch counts:', error)
+      }
+    }
+
+    if (isAuthenticated) {
+      fetchCounts()
+      // Refresh counts every 30 seconds
+      const interval = setInterval(fetchCounts, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
+
+  // Update navigation with counts
+  useEffect(() => {
+    const baseNav = getBaseNavigation()
+    const updatedNav = baseNav.map(section => ({
+      ...section,
+      items: section.items.map(item => {
+        if (item.countKey && counts[item.countKey] > 0) {
+          return {
+            ...item,
+            badge: counts[item.countKey]
+          }
+        }
+        return item
+      })
+    }))
+    setNavigation(updatedNav)
+  }, [counts])
 
   // Check if sidebar should be collapsed based on saved preference
   useEffect(() => {

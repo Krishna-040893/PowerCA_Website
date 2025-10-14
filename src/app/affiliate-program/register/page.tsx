@@ -41,7 +41,6 @@ export default function AffiliateRegisterPage() {
     // Contact Information
     city: '',
     state: '',
-    website: '',
 
     // Affiliate Information
     promotionMethod: '',
@@ -49,7 +48,8 @@ export default function AffiliateRegisterPage() {
     monthlyLeads: '',
 
     // Payment Information
-    paymentEmail: '',
+    accountNumber: '',
+    ifscCode: '',
     panNumber: '',
     gstNumber: ''
   })
@@ -77,7 +77,6 @@ export default function AffiliateRegisterPage() {
     if (!formData.state) newErrors.state = 'State is required'
     if (!formData.promotionMethod) newErrors.promotionMethod = 'Please describe your promotion method'
     if (!formData.targetAudience) newErrors.targetAudience = 'Please describe your target audience'
-    if (!formData.paymentEmail) newErrors.paymentEmail = 'Payment email is required'
 
     // Business type specific validation
     if (formData.businessType === 'company' && !formData.companyName) {
@@ -89,8 +88,16 @@ export default function AffiliateRegisterPage() {
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email'
     }
-    if (formData.paymentEmail && !emailRegex.test(formData.paymentEmail)) {
-      newErrors.paymentEmail = 'Please enter a valid payment email'
+
+    // IFSC Code validation
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/
+    if (formData.ifscCode && !ifscRegex.test(formData.ifscCode)) {
+      newErrors.ifscCode = 'Please enter a valid IFSC code (e.g., SBIN0001234)'
+    }
+
+    // Account Number validation
+    if (formData.accountNumber && !/^\d{9,18}$/.test(formData.accountNumber)) {
+      newErrors.accountNumber = 'Account number must be 9-18 digits'
     }
 
     // Password validation
@@ -131,55 +138,61 @@ export default function AffiliateRegisterPage() {
     setLoading(true)
 
     try {
-      // First register the user
-      const registerResponse = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          role: 'user', // Basic user registration
-          firmName: formData.companyName || null
-        }),
-      })
-
-      const registerResult = await registerResponse.json()
-
-      if (!registerResponse.ok) {
-        throw new Error(registerResult.message || 'Registration failed')
-      }
-
-      // Then submit affiliate application
+      // Submit affiliate application directly (no registration_forms table)
       const affiliateResponse = await fetch('/api/affiliate/apply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: registerResult.user.id,
-          name: formData.fullName,
-          accountEmail: formData.email,
-          paymentEmail: formData.paymentEmail,
-          websiteUrl: formData.website,
-          promotionMethod: `${formData.promotionMethod}\n\nTarget Audience: ${formData.targetAudience}\nBusiness Type: ${formData.businessType}\nExperience: ${formData.experience}\nExpected Monthly Leads: ${formData.monthlyLeads}`
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password, // Store password in affiliate_registrations
+          city: formData.city,
+          state: formData.state,
+          businessType: formData.businessType,
+          companyName: formData.companyName,
+          designation: formData.designation,
+          experience: formData.experience,
+          promotionMethod: formData.promotionMethod,
+          targetAudience: formData.targetAudience,
+          monthlyLeads: formData.monthlyLeads,
+          accountNumber: formData.accountNumber,
+          ifscCode: formData.ifscCode,
+          panNumber: formData.panNumber,
+          gstNumber: formData.gstNumber
         }),
       })
 
-      const affiliateResult = await affiliateResponse.json()
+      // Try to parse JSON, but handle errors
+      let affiliateResult
+      try {
+        const responseText = await affiliateResponse.text()
+        console.log('Raw API Response:', responseText)
+        affiliateResult = responseText ? JSON.parse(responseText) : {}
+      } catch (parseError) {
+        console.error('Failed to parse API response:', parseError)
+        affiliateResult = { error: 'Invalid server response' }
+      }
 
       if (affiliateResponse.ok) {
         toast.success('🎉 Registration successful! Your affiliate application has been submitted and is under review. You will receive an email notification once approved.')
         router.push('/affiliate-program?success=true')
       } else {
-        throw new Error(affiliateResult.error || 'Affiliate application failed')
+        // Show detailed error information
+        console.error('API Error Response:', affiliateResult)
+        console.error('Response status:', affiliateResponse.status)
+
+        const errorMessage = affiliateResult.details
+          ? `${affiliateResult.error}: ${affiliateResult.details}`
+          : affiliateResult.error || 'Affiliate application failed'
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error('Registration error:', error)
-      toast.error(error instanceof Error ? error.message : 'Registration failed. Please try again.')
+      const errorMsg = error instanceof Error ? error.message : 'Registration failed. Please try again.'
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -428,18 +441,6 @@ export default function AffiliateRegisterPage() {
                         placeholder="e.g., 5 years in software sales"
                       />
                     </div>
-
-                    <div>
-                      <Label htmlFor="website">Website URL</Label>
-                      <Input
-                        id="website"
-                        type="url"
-                        value={formData.website}
-                        onChange={(e) => handleInputChange('website', e.target.value)}
-                        className="mt-1"
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -504,16 +505,31 @@ export default function AffiliateRegisterPage() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="paymentEmail">Payment Email *</Label>
+                    <Label htmlFor="accountNumber">Bank Account Number</Label>
                     <Input
-                      id="paymentEmail"
-                      type="email"
-                      value={formData.paymentEmail}
-                      onChange={(e) => handleInputChange('paymentEmail', e.target.value)}
+                      id="accountNumber"
+                      type="text"
+                      value={formData.accountNumber}
+                      onChange={(e) => handleInputChange('accountNumber', e.target.value)}
                       className="mt-1"
-                      placeholder="Email for commission payments"
+                      placeholder="Enter account number"
+                      maxLength={18}
                     />
-                    {errors.paymentEmail && <p className="text-red-500 text-sm mt-1">{errors.paymentEmail}</p>}
+                    {errors.accountNumber && <p className="text-red-500 text-sm mt-1">{errors.accountNumber}</p>}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="ifscCode">IFSC Code</Label>
+                    <Input
+                      id="ifscCode"
+                      type="text"
+                      value={formData.ifscCode}
+                      onChange={(e) => handleInputChange('ifscCode', e.target.value.toUpperCase())}
+                      className="mt-1"
+                      placeholder="SBIN0001234"
+                      maxLength={11}
+                    />
+                    {errors.ifscCode && <p className="text-red-500 text-sm mt-1">{errors.ifscCode}</p>}
                   </div>
 
                   <div>
@@ -525,6 +541,7 @@ export default function AffiliateRegisterPage() {
                       onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
                       className="mt-1"
                       placeholder="ABCDE1234F"
+                      maxLength={10}
                     />
                   </div>
 
@@ -537,6 +554,7 @@ export default function AffiliateRegisterPage() {
                       onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
                       className="mt-1"
                       placeholder="22AAAAA0000A1Z5"
+                      maxLength={15}
                     />
                   </div>
                 </div>

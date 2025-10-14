@@ -2,6 +2,8 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {getServerSession  } from 'next-auth/next'
 import {authOptions  } from '@/lib/auth'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import {sendReferralLinkEmail  } from '@/lib/resend'
 
 // GET - Fetch affiliate details
 export async function GET(_request: NextRequest) {
@@ -19,8 +21,8 @@ export async function GET(_request: NextRequest) {
 
     // First check if user is an affiliate
     const { data: userData, error: userError } = await supabase
-      .from('registrations')
-      .select('id, role, affiliate_id')
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, role')
       .eq('id', session.user.id)
       .single()
 
@@ -38,6 +40,14 @@ export async function GET(_request: NextRequest) {
       )
     }
 
+    // Fetch admin-assigned referral code and affiliate ID
+    const { data: affiliateReg } = await supabase
+      .from('affiliate_registrations')
+      .select('referral_code, affiliate_id, status')
+      .eq('user_id', userData.id)
+      .eq('status', 'approved')
+      .single()
+
     // Fetch affiliate details (using affiliate_profiles table)
     const { data: affiliateDetails, error: detailsError } = await supabase
       .from('affiliate_profiles')
@@ -52,11 +62,18 @@ export async function GET(_request: NextRequest) {
       )
     }
 
+    // Merge admin-assigned code with profile data
+    const mergedDetails = affiliateDetails ? {
+      ...affiliateDetails,
+      referral_code: affiliateReg?.referral_code || affiliateDetails.referral_code, // Use admin code
+      affiliate_id: affiliateReg?.affiliate_id || affiliateDetails.affiliate_id // Use admin ID
+    } : null
+
     return NextResponse.json({
       success: true,
-      affiliateDetails: affiliateDetails || null,
+      affiliateDetails: mergedDetails,
       userId: userData.id,
-      affiliateId: userData.affiliate_id
+      affiliateId: affiliateReg?.affiliate_id || null
     })
 
   } catch {
@@ -91,8 +108,8 @@ export async function POST(request: NextRequest) {
     // Verify user is an affiliate
 
     const { data: userData, error: userError } = await supabase
-      .from('registrations')
-      .select('id, role, affiliate_id')
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, role')
       .eq('id', session.user.id)
       .single()
 
@@ -142,7 +159,7 @@ export async function POST(request: NextRequest) {
     // Prepare insert data
     const insertData = {
       user_id: userData.id,
-      affiliate_id: body.affiliateId || userData.affiliate_id, // Use admin-assigned ID
+      affiliate_id: body.affiliateId || null,
       referral_code: generateReferralCode(),
       firm_name: body.firmName,
       firm_address: body.firmAddress,
@@ -170,18 +187,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update user's affiliate_details_completed flag in registrations table
-    await supabase
-      .from('registrations')
-      .update({
-        affiliate_details_completed: true,
-        affiliate_id: newDetails.affiliate_id || userData.affiliate_id
-      })
-      .eq('id', userData.id)
+    // Send email to customer if email is provided
+    if (body.contactEmail && newDetails) {
+      try {
+        const referralLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${newDetails.referral_code}`
+
+        const emailResult = await sendReferralLinkEmail({
+          customerName: body.contactPerson || body.firmName || 'Customer',
+          customerEmail: body.contactEmail,
+          affiliateName: session.user.name || 'Your Partner',
+          referralCode: newDetails.referral_code,
+          referralLink: referralLink,
+          firmName: body.firmName
+        })
+
+        if (emailResult.success) {
+          console.log('✅ Referral link email sent successfully to:', body.contactEmail)
+        } else {
+          console.error('❌ Failed to send referral link email:', emailResult.error)
+          // Don't fail the operation if email fails
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending referral link email:', emailError)
+        // Don't fail the operation if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Affiliate details created successfully',
+      emailSent: !!body.contactEmail,
       affiliateDetails: newDetails
     })
 
@@ -211,8 +246,8 @@ export async function PUT(request: NextRequest) {
     // Verify user is an affiliate
 
     const { data: userData, error: userError } = await supabase
-      .from('registrations')
-      .select('id, role, affiliate_id')
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, role')
       .eq('id', session.user.id)
       .single()
 

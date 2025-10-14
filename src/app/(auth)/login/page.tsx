@@ -8,9 +8,9 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import { signIn } from 'next-auth/react'
-import {useRouter  } from 'next/navigation'
-import {Eye, EyeOff, Mail, Lock, ArrowLeft  } from 'lucide-react'
+import { signIn, signOut } from 'next-auth/react'
+import {useRouter, useSearchParams  } from 'next/navigation'
+import {Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle  } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -18,11 +18,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/account'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
     try {
       const result = await signIn('credentials', {
@@ -32,10 +36,35 @@ export default function LoginPage() {
       })
 
       if (result?.ok) {
-        router.push('/dashboard')
+        // Check if user is an affiliate by fetching session
+        const response = await fetch('/api/auth/session')
+        const session = await response.json()
+
+        // Block affiliates from client login
+        if (session?.user?.role?.toLowerCase() === 'affiliate') {
+          // Sign out immediately to prevent login
+          await signOut({ redirect: false })
+
+          setError('You are an affiliate partner. Please use the Affiliate Login page.')
+          setIsLoading(false)
+
+          // Redirect to affiliate login after 2 seconds
+          setTimeout(() => {
+            router.push('/affiliate-login')
+          }, 2000)
+          return
+        }
+
+        // Refresh the router to update session
+        router.refresh()
+        // Redirect to callback URL or account page
+        router.push(callbackUrl)
+      } else {
+        setError(result?.error || 'Invalid email or password. Please try again.')
       }
     } catch (error) {
       console.error('Login error:', error)
+      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -110,6 +139,16 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-red-800 font-medium">{error}</p>
+                </div>
+              </div>
+            )}
+
             {/* Email/Phone Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-900 font-medium">
@@ -241,10 +280,23 @@ export default function LoginPage() {
               <p className="text-gray-600">
                 Don't have an Account?{' '}
                 <Link
-                  href="/register"
+                  href={callbackUrl && callbackUrl !== '/account' ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
                   className="text-blue-600 hover:text-blue-800 font-medium underline"
                 >
                   Sign Up
+                </Link>
+              </p>
+            </div>
+
+            {/* Affiliate Login Link */}
+            <div className="text-center pt-2">
+              <p className="text-gray-600 text-sm">
+                Are you an Affiliate Partner?{' '}
+                <Link
+                  href="/affiliate-login"
+                  className="text-purple-600 hover:text-purple-800 font-medium underline"
+                >
+                  Login Here
                 </Link>
               </p>
             </div>

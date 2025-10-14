@@ -83,13 +83,15 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error fetching stats:', error)
     }
-  }, [getAuthHeaders])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !refreshing) {
       fetchDashboardStats()
     }
-  }, [isAuthenticated, fetchDashboardStats])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   const refreshData = async () => {
     setRefreshing(true)

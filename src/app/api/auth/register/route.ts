@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import bcrypt from 'bcryptjs'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {REGISTRATION_FORMS_TABLE, PROFESSIONAL_REGISTRATIONS_TABLE, STUDENT_REGISTRATIONS_TABLE  } from '@/lib/constants/tables'
 import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured, handleValidationError  } from '@/lib/error-handler'
 import {validatePassword  } from '@/lib/password-validator'
 import {sanitizeInput, sanitizeEmail, sanitizePhone  } from '@/lib/sanitizer'
@@ -45,7 +46,7 @@ export async function GET(_request: NextRequest) {
 
         // Fetch from the registrations table
         const { data: users, error } = await supabase
-          .from('registrations')
+          .from(REGISTRATION_FORMS_TABLE)
           .select('*')
           .order('created_at', { ascending: false })
 
@@ -127,7 +128,7 @@ export async function GET(_request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, username, password, phone, role, professionalType, membershipNo, registrationNo, instituteName, firmName, membershipNumber } = body
+    const { name, email, username, password, phone, role, professionalType, membershipNo, registrationNo, instituteName, membershipNumber } = body
 
     // Validate required fields
     const validationErrors: string[] = []
@@ -165,6 +166,37 @@ export async function POST(request: NextRequest) {
     const sanitizedName = sanitizeInput(name, { maxLength: 255 })
     const sanitizedPhone = sanitizePhone(phone)
     const sanitizedUsername = username ? sanitizeInput(username, { maxLength: 50 }) : null
+    const usernameFallbackSource =
+      sanitizedUsername && sanitizedUsername.length > 0
+        ? sanitizedUsername
+        : sanitizeInput(
+            (username && username.trim()) ||
+              (typeof email === 'string' ? email.split('@')[0] : '') ||
+              sanitizedName.replace(/[^a-zA-Z0-9]/g, ''),
+            { maxLength: 50 }
+          )
+    const finalUsername =
+      usernameFallbackSource && usernameFallbackSource.length > 0
+        ? usernameFallbackSource.toLowerCase()
+        : `user${Date.now()}`
+
+    const sanitizedProfessionalType = role === 'Professional'
+      ? sanitizeInput(professionalType, { maxLength: 50 })
+      : null
+    const sanitizedMembershipNumber = role === 'Professional'
+      ? sanitizeInput(membershipNo || membershipNumber, { maxLength: 50 })
+      : null
+    const sanitizedRegistrationNumber = role === 'Student'
+      ? sanitizeInput(registrationNo, { maxLength: 50 })
+      : null
+    const sanitizedInstituteName = role === 'Student'
+      ? sanitizeInput(instituteName, { maxLength: 255 })
+      : null
+
+    const agreedToTerms = body.agreedToTerms === true || body.agreed_to_terms === true || body.terms === true
+    if (!agreedToTerms) {
+      return handleValidationError(['You must accept the terms and conditions to register'])
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12) // Use 12 rounds for better security
@@ -179,9 +211,9 @@ export async function POST(request: NextRequest) {
 
         // Check if user already exists in registrations table
         const { data: existingUser, error: _checkError } = await supabase
-          .from('registrations')
+          .from(REGISTRATION_FORMS_TABLE)
           .select('id')
-          .or(`email.eq.${sanitizedEmail}${sanitizedUsername ? `,username.eq.${sanitizedUsername}` : ''}`)
+          .or(`email.eq.${sanitizedEmail}${finalUsername ? `,username.eq.${finalUsername}` : ''}`)
           .maybeSingle()
 
         if (existingUser) {
@@ -193,19 +225,23 @@ export async function POST(request: NextRequest) {
 
         // Insert into registrations table with correct column names
         const { data: newUser, error: insertError } = await supabase
-          .from('registrations')
+          .from(REGISTRATION_FORMS_TABLE)
           .insert({
             name: sanitizedName,
             email: sanitizedEmail,
-            username: sanitizedUsername,
-            password: hashedPassword,
+            username: finalUsername,
+            password_hash: hashedPassword,
             phone: sanitizedPhone,
-            role: role || 'user',
-            professional_type: role === 'Professional' ? sanitizeInput(professionalType, { maxLength: 50 }) : null,
-            membership_no: role === 'Professional' ? sanitizeInput(membershipNo || membershipNumber, { maxLength: 50 }) : null,
-            registration_no: role === 'Student' ? sanitizeInput(registrationNo, { maxLength: 50 }) : null,
-            institute_name: role === 'Student' ? sanitizeInput(instituteName, { maxLength: 255 }) : null,
-            firm_name: firmName ? sanitizeInput(firmName, { maxLength: 255 }) : null
+            role: role === 'Student' ? 'student' : 'professional',
+            professional_type: sanitizedProfessionalType,
+            membership_number: sanitizedMembershipNumber,
+            registration_number: sanitizedRegistrationNumber,
+            institute_name: sanitizedInstituteName,
+            agreed_to_terms: agreedToTerms,
+            is_verified: false,
+            is_active: true,
+            last_login: null,
+            login_count: 0
           })
           .select()
           .single()
@@ -222,6 +258,62 @@ export async function POST(request: NextRequest) {
           return handleDatabaseError(insertError)
         }
 
+        if (role === 'Professional') {
+          const professionalData = {
+            name: sanitizedName,
+            email: sanitizedEmail,
+            phone: sanitizedPhone,
+            username: finalUsername,
+            password_hash: hashedPassword,
+            professional_type: sanitizedProfessionalType,
+            membership_number: sanitizedMembershipNumber,
+            agreed_to_terms: agreedToTerms
+          }
+
+          const { error: professionalError } = await supabase
+            .from(PROFESSIONAL_REGISTRATIONS_TABLE)
+            .insert([professionalData])
+
+          if (professionalError) {
+            logger.error('Professional registration insert error', professionalError)
+            await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
+            if (professionalError.code === '23505') {
+              return createErrorResponse(
+                ErrorType.VALIDATION,
+                professionalError.message?.includes('email') ? 'Email already registered' : 'Membership number already registered'
+              )
+            }
+            return handleDatabaseError(professionalError)
+          }
+        } else if (role === 'Student') {
+          const studentData = {
+            name: sanitizedName,
+            email: sanitizedEmail,
+            phone: sanitizedPhone,
+            username: finalUsername,
+            password_hash: hashedPassword,
+            registration_number: sanitizedRegistrationNumber,
+            institute_name: sanitizedInstituteName,
+            agreed_to_terms: agreedToTerms
+          }
+
+          const { error: studentError } = await supabase
+            .from(STUDENT_REGISTRATIONS_TABLE)
+            .insert([studentData])
+
+          if (studentError) {
+            logger.error('Student registration insert error', studentError)
+            await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
+            if (studentError.code === '23505') {
+              return createErrorResponse(
+                ErrorType.VALIDATION,
+                studentError.message?.includes('email') ? 'Email already registered' : 'Registration number already registered'
+              )
+            }
+            return handleDatabaseError(studentError)
+          }
+        }
+
         logger.info('User registration successful', { userId: newUser.id })
 
         // Sync to HubSpot (non-blocking)
@@ -231,8 +323,8 @@ export async function POST(request: NextRequest) {
           firstName: newUser.name?.split(' ')[0],
           lastName: newUser.name?.split(' ').slice(1).join(' '),
           phone: newUser.phone,
-          firmName: newUser.firm_name,
-          caNumber: newUser.membership_no,
+          firmName: (newUser as { firm_name?: string }).firm_name,
+          caNumber: newUser.membership_number,
           status: 'lead'
         }).catch(error => {
           logger.error('Failed to sync to HubSpot', error)
@@ -263,22 +355,17 @@ export async function POST(request: NextRequest) {
     const newUser = {
       id: `user_${Date.now()}`,
       email: sanitizedEmail,
-      username: sanitizedUsername,
+      username: finalUsername,
       name: sanitizedName,
       phone: sanitizedPhone,
-      user_role: role || 'user',
       professional_type: role === 'Professional' ? professionalType : null,
-      membership_no: role === 'Professional' ? (membershipNo || membershipNumber) : null,
       membership_number: role === 'Professional' ? (membershipNo || membershipNumber) : null,
-      registration_no: role === 'Student' ? registrationNo : null,
+      registration_number: role === 'Student' ? registrationNo : null,
       institute_name: role === 'Student' ? instituteName : null,
-      firm_name: firmName || null,
-      password: hashedPassword,
-      role: 'user',
-      is_verified: false,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      agreed_to_terms: agreedToTerms,
+      password_hash: hashedPassword,
+      role: role === 'Student' ? 'student' : 'professional',
+      created_at: new Date().toISOString()
     }
 
     // Save to file
@@ -294,7 +381,7 @@ export async function POST(request: NextRequest) {
           existingUsers = JSON.parse(fileContent)
 
           // Check if user already exists
-          if (existingUsers.find((u: FileUserData) => u.email === sanitizedEmail || (sanitizedUsername && u.username === sanitizedUsername))) {
+          if (existingUsers.find((u: FileUserData) => u.email === sanitizedEmail || u.username === finalUsername)) {
             return createErrorResponse(
               ErrorType.VALIDATION,
               'User with this email or username already exists'

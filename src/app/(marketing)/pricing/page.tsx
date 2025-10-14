@@ -4,46 +4,94 @@ import { Check, Calendar, Clock } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useSubscription } from '@/hooks/useSubscription'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function PricingPage() {
   const { data: session } = useSession()
   const subscriptionStatus = useSubscription()
+  const searchParams = useSearchParams()
+  const [referralInfo, setReferralInfo] = useState<{ ref?: string; cus?: string } | null>(null)
 
-  const handleLaunchOfferPurchase = async () => {
+  useEffect(() => {
+    // Detect referral parameters from URL
+    const ref = searchParams.get('ref')
+    const cus = searchParams.get('cus')
+
+    if (ref || cus) {
+      // Store referral info in localStorage to persist through login
+      const referralData = { ref: ref || undefined, cus: cus || undefined }
+      localStorage.setItem('affiliate_referral', JSON.stringify(referralData))
+      setReferralInfo(referralData)
+      console.log('🔗 Affiliate referral detected:', referralData)
+    } else {
+      // Check if referral info exists in localStorage
+      const stored = localStorage.getItem('affiliate_referral')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setReferralInfo(parsed)
+          console.log('🔗 Affiliate referral loaded from storage:', parsed)
+        } catch (e) {
+          console.error('Failed to parse stored referral:', e)
+        }
+      }
+    }
+  }, [searchParams])
+
+  const handleLaunchOfferPurchase = () => {
     if (!session) {
-      // Redirect to login
-      window.location.href = '/login'
+      // Build callback URL with referral params
+      const currentUrl = new URL(window.location.href)
+      const params = new URLSearchParams()
+
+      if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+      if (referralInfo?.cus) params.append('cus', referralInfo.cus)
+
+      const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
+
+      // Redirect to login with callback URL to return to checkout
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(checkoutUrl)}`
       return
     }
 
-    try {
-      // Create subscription record
-      const response = await fetch('/api/subscription/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan: 'launch_offer'
-        }),
-      })
+    // Build checkout URL with referral params
+    const params = new URLSearchParams()
+    if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+    if (referralInfo?.cus) params.append('cus', referralInfo.cus)
 
-      if (response.ok) {
-        // Redirect to payment or dashboard
-        window.location.href = '/dashboard'
-      } else {
-        const error = await response.json()
-        console.error('Failed to create subscription:', error)
-        alert('Failed to process subscription. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error creating subscription:', error)
-      alert('An error occurred. Please try again.')
-    }
+    const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
+
+    // Redirect to checkout page for payment
+    window.location.href = checkoutUrl
   }
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Affiliate Referral Banner */}
+      {referralInfo?.ref && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-200">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🎁</span>
+                <div>
+                  <p className="text-sm font-semibold text-green-700">
+                    You're purchasing through an affiliate referral!
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Referral Code: <span className="font-mono font-bold text-blue-600">{referralInfo.ref}</span>
+                    {referralInfo.cus && (
+                      <> • Customer ID: <span className="font-mono font-bold text-blue-600">{referralInfo.cus}</span></>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative py-20">
         <div
@@ -183,10 +231,11 @@ export default function PricingPage() {
                 <button
                   onClick={handleLaunchOfferPurchase}
                   disabled={subscriptionStatus.hasLaunchOffer}
+                  title={subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
                   className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
                     subscriptionStatus.hasLaunchOffer
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-white text-[#306bea] hover:bg-gray-50'
+                      : 'bg-white text-[#306bea] hover:bg-gray-50 cursor-pointer'
                   }`}
                 >
                   {subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}

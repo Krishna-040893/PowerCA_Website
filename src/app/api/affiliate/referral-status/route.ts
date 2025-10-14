@@ -35,13 +35,15 @@ export async function GET(_req: NextRequest) {
       })
     }
 
-    // Check if affiliate has made any referrals
+    // Check if affiliate has made any referrals (ALL statuses)
     const { data: referrals, error: referralError } = await supabase
       .from('affiliate_referrals')
       .select('*')
       .eq('affiliate_profile_id', affiliateProfile.id)
-      .eq('status', 'converted')
       .order('created_at', { ascending: false })
+
+    console.log('🔍 [Referral Status] Profile ID:', affiliateProfile.id)
+    console.log('🔍 [Referral Status] Referrals found:', referrals?.length, referrals)
 
     if (referralError) {
       console.error('Error fetching referrals:', referralError)
@@ -57,8 +59,12 @@ export async function GET(_req: NextRequest) {
     const referralCount = referrals?.length || 0
     const referredDetails = hasReferred ? referrals[0] : null
 
-    // Check if affiliate can make more referrals (limited to 1)
-    const canRefer = referralCount < 1
+    // Count referrals by status
+    const pendingCount = referrals?.filter(r => r.status === 'pending').length || 0
+    const completedCount = referrals?.filter(r => r.status === 'completed' || r.status === 'converted').length || 0
+
+    // Affiliates can make unlimited referrals
+    const canRefer = true
 
     // Also get payment referral details if available
     let paymentDetails = null
@@ -76,10 +82,12 @@ export async function GET(_req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const response = {
       success: true,
       hasReferred,
       referralCount,
+      pendingCount,
+      completedCount,
       referredDetails: referredDetails ? {
         ...referredDetails,
         payment: paymentDetails
@@ -89,12 +97,23 @@ export async function GET(_req: NextRequest) {
         id: affiliateProfile.id,
         referral_code: affiliateProfile.referral_code,
         total_referrals: affiliateProfile.total_referrals || 0,
+        successful_referrals: affiliateProfile.successful_referrals || 0,
+        pending_referrals: affiliateProfile.pending_referrals || 0,
         status: affiliateProfile.status
       },
       message: hasReferred
-        ? 'You have successfully completed your one allowed referral'
-        : 'You can refer one person after completing your profile and payment'
+        ? `You have ${referralCount} total referrals (${pendingCount} pending, ${completedCount} completed)`
+        : 'You can refer multiple customers to PowerCA'
+    }
+
+    console.log('📤 [Referral Status] Returning:', {
+      referralCount,
+      pendingCount,
+      completedCount,
+      hasReferred
     })
+
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('Error fetching referral status:', error)

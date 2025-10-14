@@ -65,55 +65,39 @@ export function Header() {
             {status === 'loading' ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : session ? (
-              <>
-                <Button
-                  size="sm"
-                  className="text-white rounded-full hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#155dfc' }}
-                  asChild
-                >
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <User className="w-4 h-4" />
-                      <span>{session?.user?.name || session?.user?.email || 'User'}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <User className="w-4 h-4" />
+                    <span>{session?.user?.name || session?.user?.email || 'User'}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {session?.user?.role === 'admin' && (
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="flex items-center cursor-pointer">
+                      <Link href="/admin" className="flex items-center cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
-                        Dashboard
+                        Admin Panel
                       </Link>
                     </DropdownMenuItem>
-                    {session?.user?.role === 'admin' && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex items-center cursor-pointer">
-                          <User className="mr-2 h-4 w-4" />
-                          Admin Panel
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex items-center cursor-pointer">
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                      className="text-red-600 cursor-pointer"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center cursor-pointer">
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <DropdownMenu>
@@ -205,9 +189,6 @@ export function Header() {
                     <div className="px-4 py-2 text-sm text-gray-600">
                       Signed in as {session?.user?.name || session?.user?.email || 'User'}
                     </div>
-                    <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity" style={{ backgroundColor: '#155dfc' }} asChild>
-                      <Link href="/dashboard">Dashboard</Link>
-                    </Button>
                     <Button
                       variant="outline"
                       className="w-full text-red-600 rounded-full"

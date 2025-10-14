@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createClient  } from '@supabase/supabase-js'
 import {Resend  } from 'resend'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -25,71 +26,107 @@ const resend = new Resend(resendApiKey)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, name, accountEmail, paymentEmail, websiteUrl, promotionMethod } = body
+    const {
+      fullName,
+      email,
+      phone,
+      password,
+      city,
+      state,
+      businessType,
+      companyName,
+      designation,
+      experience,
+      promotionMethod,
+      targetAudience,
+      monthlyLeads,
+      accountNumber,
+      ifscCode,
+      panNumber,
+      gstNumber,
+      referredByCode // Optional: Referral code of the affiliate who referred this person
+    } = body
 
-    if (!userId || !name || !accountEmail || !paymentEmail || !promotionMethod) {
+    if (!fullName || !email || !phone || !password || !city || !state || !promotionMethod || !targetAudience) {
       return NextResponse.json(
         { error: 'All required fields must be provided' },
         { status: 400 }
       )
     }
 
-    // Check if user exists
-    const { data: user, error: userError } = await supabase
-      .from('registrations')
-      .select('id, name, email, role')
-      .eq('id', userId)
-      .single()
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    // Check if user already has an application
-    const { data: existingApplication } = await supabase
-      .from('affiliate_applications')
+    // Check if email already registered as affiliate
+    const { data: existingRegistration } = await supabase
+      .from('affiliate_registrations')
       .select('id, status')
-      .eq('user_id', userId)
+      .eq('email', email)
       .single()
 
-    if (existingApplication) {
+    if (existingRegistration) {
       return NextResponse.json(
-        { error: `You already have a ${existingApplication.status} affiliate application` },
+        { error: `This email already has a ${existingRegistration.status} affiliate application` },
         { status: 400 }
       )
     }
 
-    // Create affiliate application
-    const { data: application, error: applicationError } = await supabase
-      .from('affiliate_applications')
+    // Hash password using bcrypt
+    const bcrypt = require('bcryptjs')
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Validate referral code if provided
+    let referrerExists = false
+    if (referredByCode) {
+      const { data: referrer } = await supabase
+        .from('affiliate_registrations')
+        .select('referral_code, status')
+        .eq('referral_code', referredByCode)
+        .eq('status', 'approved')
+        .single()
+
+      if (referrer) {
+        referrerExists = true
+      }
+    }
+
+    // Create affiliate registration with password
+    const { data: registration, error: registrationError } = await supabase
+      .from('affiliate_registrations')
       .insert({
-        user_id: userId,
-        name,
-        account_email: accountEmail,
-        payment_email: paymentEmail,
-        website_url: websiteUrl,
+        full_name: fullName,
+        email,
+        phone,
+        password: hashedPassword, // Store hashed password
+        city,
+        state,
+        business_type: businessType || 'individual',
+        company_name: companyName,
+        designation,
+        experience,
         promotion_method: promotionMethod,
+        target_audience: targetAudience,
+        monthly_leads: monthlyLeads,
+        account_number: accountNumber,
+        ifsc_code: ifscCode,
+        pan_number: panNumber,
+        gst_number: gstNumber,
+        referred_by_code: referrerExists ? referredByCode : null, // Only store if referrer is valid
         status: 'pending'
       })
       .select()
       .single()
 
-    if (applicationError) {
-      console.error('Error creating affiliate application:', applicationError)
+    if (registrationError) {
+      console.error('Error creating affiliate registration:', registrationError)
+      console.error('Full error details:', JSON.stringify(registrationError, null, 2))
       return NextResponse.json(
-        { error: 'Failed to submit affiliate application' },
+        {
+          error: 'Failed to submit affiliate registration',
+          details: registrationError.message || registrationError.toString(),
+          code: registrationError.code,
+          hint: registrationError.hint
+        },
         { status: 500 }
       )
     }
-
-    // Update user affiliate status
-    await supabase
-      .from('registrations')
-      .update({ affiliate_status: 'applied' })
-      .eq('id', userId)
 
     // Send notification email to admin
     const adminEmailHtml = `
@@ -108,28 +145,38 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <div class="header">
-              <h2>New Affiliate Application</h2>
+              <h2>New Affiliate Registration</h2>
             </div>
             <div class="content">
-              <p>A new affiliate application has been submitted.</p>
+              <p>A new affiliate registration has been submitted.</p>
 
               <div class="info-row">
-                <span class="label">Applicant Name:</span> ${name}
+                <span class="label">Applicant Name:</span> ${fullName}
               </div>
               <div class="info-row">
-                <span class="label">Account Email:</span> ${accountEmail}
+                <span class="label">Email:</span> ${email}
               </div>
               <div class="info-row">
-                <span class="label">Payment Email:</span> ${paymentEmail}
+                <span class="label">Phone:</span> ${phone}
               </div>
               <div class="info-row">
-                <span class="label">Website URL:</span> ${websiteUrl || 'Not provided'}
+                <span class="label">City:</span> ${city}, ${state}
               </div>
+              <div class="info-row">
+                <span class="label">Business Type:</span> ${businessType || 'Individual'}
+              </div>
+              ${companyName ? `<div class="info-row"><span class="label">Company Name:</span> ${companyName}</div>` : ''}
+              ${accountNumber ? `<div class="info-row"><span class="label">Account Number:</span> ${accountNumber}</div>` : ''}
+              ${ifscCode ? `<div class="info-row"><span class="label">IFSC Code:</span> ${ifscCode}</div>` : ''}
+              ${panNumber ? `<div class="info-row"><span class="label">PAN Number:</span> ${panNumber}</div>` : ''}
               <div class="info-row">
                 <span class="label">Promotion Method:</span> ${promotionMethod}
               </div>
+              <div class="info-row">
+                <span class="label">Target Audience:</span> ${targetAudience}
+              </div>
 
-              <p style="margin-top: 20px;">Please review this application in the admin panel.</p>
+              <p style="margin-top: 20px;">Please review this registration in the admin panel.</p>
             </div>
           </div>
         </body>
@@ -140,18 +187,18 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'PowerCA <contact@powerca.in>',
         to: 'contact@powerca.in',
-        subject: 'New Affiliate Application - PowerCA',
+        subject: 'New Affiliate Registration - PowerCA',
         html: adminEmailHtml,
       })
     } catch (emailError) {
       console.error('Email sending error:', emailError)
-      // Don't fail the application if email fails
+      // Don't fail the registration if email fails
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Affiliate application submitted successfully!',
-      applicationId: application.id
+      message: 'Affiliate registration submitted successfully!',
+      registrationId: registration.id
     })
 
   } catch (error) {

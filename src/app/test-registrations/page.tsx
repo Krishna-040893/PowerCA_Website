@@ -3,6 +3,7 @@
 import {useState  } from 'react'
 import {createClient  } from '@supabase/supabase-js'
 import type { Registration } from '@/types/admin'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -22,7 +23,7 @@ export default function TestRegistrationsPage() {
     try {
       // Test basic connection
       const { data, error } = await supabase
-        .from('registrations')
+        .from(REGISTRATION_FORMS_TABLE)
         .select('*')
         .limit(5)
 
