@@ -26,28 +26,31 @@ export default function AboutPage() {
 
   // Team members data - flat array of all members
   const allTeamMembers = [
-    { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/karthikeyan-profile.png', initials: 'KR' },
-    { name: 'thirunavukkarasu M', role: 'Manager', category: 'manager', image: null, initials: 'TM' },
-    { name: 'Sangeetha P', role: 'Developer', category: 'developers', image: null, initials: 'SP' },
-    { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: null, initials: 'MA' },
-    { name: 'John Doe', role: 'CEO', category: 'ceo', image: null, initials: 'JD' },
-    { name: 'Jane Smith', role: 'Partner', category: 'partners', image: null, initials: 'JS' },
-    { name: 'Mike Wilson', role: 'Admin', category: 'admin', image: null, initials: 'MW' },
-    { name: 'Sarah Connor', role: 'Tester', category: 'testing', image: null, initials: 'SC' },
-    { name: 'Alex Johnson', role: 'Designer', category: 'designers', image: null, initials: 'AJ' },
-    { name: 'Lisa Brown', role: 'Partner', category: 'partners', image: null, initials: 'LB' }
+    { name: 'Arul Maniam TS', role: 'Founder', category: 'founder', image: '/images/team/arul-maniam-ca.jpg', initials: 'AM' },
+    { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/team/karthikeyan-r.jpg', initials: 'KR' },
+    { name: 'Thirunavukkarasu M', role: 'Manager', category: 'manager', image: '/images/team/thirunavukkarasu.jpg', initials: 'TM' },
+    { name: 'Sangeetha P', role: 'Developer', category: 'developers', image: '/images/team/sangeetha-p.jpg', initials: 'SP' },
+    { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: '/images/team/mansur-ali-b.jpg', initials: 'MA' },
+    { name: 'Maheshwari R', role: 'Developer', category: 'developers', image: '/images/team/maheshwari-r.jpg', initials: 'MW' },
+    { name: 'Vanithamani D', role: 'Developer', category: 'developers', image: '/images/team/vanithamani-d.jpg', initials: 'VD' },
+    { name: 'Karthikeyan G', role: 'Web Designer', category: 'webdesigner', image: '/images/team/karthikeyan-g.jpg', initials: 'KG' },
+    { name: 'Nikila R', role: 'Web Designer', category: 'webdesigner', image: null, initials: 'NR' },
+    { name: 'Jegatheeshwari', role: 'Admin', category: 'admin', image: null, initials: 'JW' },
+    { name: 'Ramajayanthi', role: 'Customer Support', category: 'customersupport', image: null, initials: 'RJ' },
+    { name: 'Kalishwari', role: 'Testing', category: 'testing', image: null, initials: 'KL' },
+    { name: 'Satheeshkumar', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
   ]
 
   // Filter categories
   const filterCategories = [
     { value: 'all', label: 'All' },
-    { value: 'ceo', label: 'CEO' },
-    { value: 'partners', label: 'Partners' },
+    { value: 'founder', label: 'Founder' },
     { value: 'manager', label: 'Manager' },
     { value: 'admin', label: 'Admin' },
-    { value: 'developers', label: 'Developers' },
+    { value: 'webdesigner', label: 'Web Designer' },
     { value: 'testing', label: 'Testing' },
-    { value: 'designers', label: 'Designers' }
+    { value: 'customersupport', label: 'Coustomer Support' },
+    { value: 'dba', label: 'DBA' }
   ]
 
   // Filter members based on selected category
@@ -154,9 +157,12 @@ export default function AboutPage() {
 
             {/* Right Content - Button */}
             <div className="lg:col-span-1 flex items-start justify-start lg:justify-end">
-              <button className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              <Link
+                href="/modules"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
                 All Modules
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -189,8 +195,8 @@ export default function AboutPage() {
                 <blockquote className="text-blue-700 text-lg font-medium mb-4">
                   "Power CA has helped me streamline my practice, increasing its efficiency and productivity."
                 </blockquote>
-                <div className="flex items-center">
-                  <div>
+                <div className="flex items-center justify-end">
+                  <div className="text-right">
                     <p className="text-gray-900 font-semibold text-base">CA Arul Maniam</p>
                     <p className="text-gray-600 text-sm">Practicing Chartered Accountant</p>
                   </div>
@@ -292,41 +298,8 @@ export default function AboutPage() {
               </div>
             </div>
 
-          {/* Header with Navigation */}
-          <div className="flex justify-between items-center mb-12">
-            <h3 className="text-2xl font-semibold text-gray-900">All Members</h3>
-            <div className="flex space-x-3">
-              <button
-                onClick={prevSlide}
-                disabled={currentSlide === 0}
-                className={`w-12 h-12 rounded-full border border-gray-300 bg-white flex items-center justify-center transition-colors ${
-                  currentSlide === 0
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={nextSlide}
-                disabled={currentSlide >= totalSlides - 1}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                  currentSlide >= totalSlides - 1
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
           {/* Team Members Carousel */}
-          <div className="relative overflow-hidden mb-12">
+          <div className="relative overflow-hidden mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {getVisibleMembers().map((member, index) => {
                 const gradients = [
@@ -338,7 +311,7 @@ export default function AboutPage() {
                 return (
                   <div
                     key={`${currentSlide}-${index}`}
-                    className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
+                    className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
                     style={{
                       animation: 'slideInFromRight 0.5s ease-out'
                     }}
@@ -380,17 +353,52 @@ export default function AboutPage() {
             }
           `}</style>
 
-          {/* Pagination Dots */}
-          <div className="flex justify-center space-x-2">
-            {Array.from({ length: totalSlides }, (_, index) => (
+          {/* Carousel Controls */}
+          <div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            <div />
+            <div className="flex justify-center space-x-2">
+              {Array.from({ length: totalSlides }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`rounded-full transition-all ${
+                    index === currentSlide
+                      ? 'w-3 h-3 bg-blue-600'
+                      : 'w-2 h-2 bg-gray-300 opacity-80'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
               <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentSlide ? 'bg-blue-600' : 'bg-gray-300'
+                onClick={prevSlide}
+                disabled={currentSlide === 0}
+                className={`w-12 h-12 rounded-full border border-gray-300 bg-white flex items-center justify-center transition-colors ${
+                  currentSlide === 0
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-50'
                 }`}
-              />
-            ))}
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <button
+                onClick={nextSlide}
+                disabled={currentSlide >= totalSlides - 1}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                  currentSlide >= totalSlides - 1
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -418,9 +426,12 @@ export default function AboutPage() {
 
             {/* Right - All Modules Button */}
             <div className="lg:col-span-3 flex justify-start lg:justify-end">
-              <button className="inline-flex items-center justify-center pl-6 pr-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              <Link
+                href="/modules"
+                className="inline-flex items-center justify-center pl-6 pr-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
                 All Modules
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -428,13 +439,13 @@ export default function AboutPage() {
           <div className="mt-16 grid md:grid-cols-3 gap-8">
             {/* Mission Card */}
             <div className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-shadow" style={{ borderColor: '#B6C9F3' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                 <Image
                   src="/images/mission-icon.svg"
                   alt="Mission Icon"
                   width={32}
                   height={32}
-                  className="w-8 h-8"
+                  className="w-8 h-8 rounded-full"
                 />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Our Mission</h3>
@@ -445,13 +456,13 @@ export default function AboutPage() {
 
             {/* Vision Card */}
             <div className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-shadow" style={{ borderColor: '#B6C9F3' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                 <Image
                   src="/images/vision-icon.svg"
                   alt="Vision Icon"
                   width={32}
                   height={32}
-                  className="w-8 h-8"
+                  className="w-8 h-8 rounded-full"
                 />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Our Vision</h3>
@@ -462,13 +473,13 @@ export default function AboutPage() {
 
             {/* Values Card */}
             <div className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-shadow" style={{ borderColor: '#B6C9F3' }}>
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                 <Image
                   src="/images/values-icon.svg"
                   alt="Values Icon"
                   width={32}
                   height={32}
-                  className="w-8 h-8"
+                  className="w-8 h-8 rounded-full"
                 />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Our Values</h3>

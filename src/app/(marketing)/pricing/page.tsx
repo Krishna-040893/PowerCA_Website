@@ -305,9 +305,9 @@ export default function PricingPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="pb-12 md:pb-24">
+      <div className="pb-8 md:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 max-w-6xl mx-auto">
+          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-3 max-w-6xl mx-auto">
             <p className="text-lg md:text-2xl font-medium text-[#001525] text-center md:text-left">
               Refer Power CA Pricing Policy Document
             </p>

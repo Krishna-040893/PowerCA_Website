@@ -11,8 +11,8 @@ interface ModuleCardProps {
 
 function ModuleCard({ iconSrc, title, description }: ModuleCardProps) {
   return (
-    <div className="bg-white border-2 rounded-xl p-6 h-full" style={{ borderColor: '#b6c9f3' }}>
-      <div className="bg-white border-2 rounded-lg p-2 w-fit mb-5" style={{ borderColor: '#b6c9f3' }}>
+    <div className="bg-white border-2 rounded-2xl p-6 h-full" style={{ borderColor: '#b6c9f3' }}>
+      <div className="bg-white border-2 rounded-[10px] p-2 w-fit mb-5" style={{ borderColor: '#b6c9f3' }}>
         <Image
           src={iconSrc}
           alt={`${title} icon`}

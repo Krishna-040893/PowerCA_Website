@@ -289,7 +289,7 @@ function MapSection() {
       <div className="h-[495px] rounded-[12px] w-full max-w-[1917px] mx-auto overflow-hidden relative bg-slate-100 border-2 border-gray-200">
         {/* Interactive Map Container - Clickable Map */}
         <a
-          href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
+          href="https://maps.app.goo.gl/m8Wxi2UVVdsHyXhh7"
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full h-full relative group cursor-pointer"
@@ -346,7 +346,7 @@ function MapSection() {
                 Palani Road, Udumalpet
               </p>
               <a
-                href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
+                href="https://maps.app.goo.gl/m8Wxi2UVVdsHyXhh7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 text-xs mt-2 font-medium hover:text-blue-800 transition-colors inline-block"

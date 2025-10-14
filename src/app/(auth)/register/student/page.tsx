@@ -86,7 +86,7 @@ export default function StudentRegisterPage() {
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="group flex items-center gap-3 px-6 py-3 backdrop-blur-md border border-white/20 rounded-full transition-all duration-300"
         >
           <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />

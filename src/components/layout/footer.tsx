@@ -2,11 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { blogPosts } from '@/data/blog-posts'
 
 export function Footer() {
+  const recentPosts = blogPosts.slice(0, 3)
+
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
-      <div className="container mx-auto px-6 lg:px-8">
+    <footer className="bg-gray-900 text-white pt-16 pb-8 rounded-t-3xl">
+      <div className="w-full px-6 sm:px-12 lg:px-[144px] mx-auto">
         <div className="grid lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-1">
@@ -79,7 +82,7 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="pl-4 lg:pl-6">
             <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
             <ul className="space-y-3 text-sm text-gray-300">
               <li><Link href="/" className="hover:text-blue-400 transition-colors">Home</Link></li>
@@ -123,32 +126,29 @@ export function Footer() {
 
             {/* Blogs Section */}
             <div>
-              <h4 className="text-lg font-semibold mb-4">Blogs</h4>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-orange-400 rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-white rounded-full mx-auto mb-1 flex items-center justify-center">
-                      <span className="text-orange-400 text-xs font-bold">📊</span>
+              <h4 className="text-lg font-semibold mb-4">Recent Blog Posts</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {recentPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={post.link}
+                    className="group relative overflow-hidden rounded-xl bg-white/5 transition-transform duration-300 hover:scale-[1.02] min-h-[80px] sm:min-h-[120px]"
+                  >
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(min-width: 640px) 33vw, (min-width: 0px) 100vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:from-blue-900/80 group-hover:via-blue-900/40" />
+                    <div className="relative flex h-full items-end p-3 sm:p-4">
+                      <h5 className="text-sm sm:text-xs font-semibold text-white leading-snug line-clamp-3">
+                        {post.title}
+                      </h5>
                     </div>
-                    <span className="text-xs text-white">Blog 1</span>
-                  </div>
-                </div>
-                <div className="bg-pink-400 rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-white rounded-full mx-auto mb-1 flex items-center justify-center">
-                      <span className="text-pink-400 text-xs font-bold">💼</span>
-                    </div>
-                    <span className="text-xs text-white">Blog 2</span>
-                  </div>
-                </div>
-                <div className="bg-green-400 rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-white rounded-full mx-auto mb-1 flex items-center justify-center">
-                      <span className="text-green-400 text-xs font-bold">📈</span>
-                    </div>
-                    <span className="text-xs text-white">Blog 3</span>
-                  </div>
-                </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col lg:flex-row justify-between items-center">
             <div className="text-sm text-gray-400 mb-4 lg:mb-0">
-              Copyright © 2025 TBS Technologies [P] Limited. All rights reserved
+              Copyright Ac 2025 TBS Technologies [P] Limited. All rights reserved
             </div>
 
             {/* Back to Top Button */}
@@ -173,9 +173,9 @@ export function Footer() {
 
             <div className="flex space-x-6 text-sm text-gray-400">
               <Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
-              <span>•</span>
+              <span>|</span>
               <Link href="/terms" className="hover:text-blue-400 transition-colors">Terms and Conditions</Link>
-              <span>•</span>
+              <span>|</span>
               <Link href="/refund-policy" className="hover:text-blue-400 transition-colors">Refund Policy</Link>
             </div>
           </div>

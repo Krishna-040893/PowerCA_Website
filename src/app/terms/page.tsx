@@ -6,7 +6,7 @@ export default function TermsPage() {
 
 export const metadata = {
   title: 'Terms and Conditions - PowerCA',
-  description: 'Read the terms and conditions for using PowerCA practice management platform.',
+  description: 'Review the terms and conditions for using the PowerCA software license.',
 }
 
 // Enable static generation for this page
