@@ -219,7 +219,10 @@ class MonitoringService {
   }
 
   public capturePerformance(event: PerformanceEvent) {
-    logger.info('Performance event', event)
+    // Only log in development, skip in production to reduce noise
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info('Performance metric', { metric: event.metric, value: event.value, context: event.context })
+    }
 
     this.queue.push(event)
 
@@ -248,6 +251,13 @@ class MonitoringService {
   private async flush() {
     if (this.queue.length === 0) return
 
+    // Skip flushing in development mode to avoid unnecessary errors
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('Monitoring: Skipping flush in development mode')
+      this.queue = []
+      return
+    }
+
     const events = [...this.queue]
     this.queue = []
 
@@ -268,9 +278,11 @@ class MonitoringService {
         }),
       })
     } catch (error) {
-      // If sending fails, put events back in queue
-      this.queue.unshift(...events)
-      logger.error('Failed to send monitoring events', error)
+      // If sending fails, put events back in queue (but limit queue size)
+      if (this.queue.length < this.maxQueueSize) {
+        this.queue.unshift(...events.slice(0, this.maxQueueSize - this.queue.length))
+      }
+      logger.debug('Failed to send monitoring events (non-critical)', error)
     }
   }
 

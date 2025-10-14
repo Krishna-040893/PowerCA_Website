@@ -152,7 +152,7 @@ export default function BlogPageClient() {
                 placeholder="Search you want"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-6 pr-12 py-6 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-24 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
+                className="w-full pl-12 pr-16 py-6 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-24 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
               />
               <Search className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
             </div>

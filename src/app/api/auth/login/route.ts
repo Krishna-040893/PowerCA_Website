@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import bcrypt from 'bcryptjs'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {logger  } from '@/lib/logger'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch user from registrations table
     const { data: user, error } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*')
       .or(`email.eq.${email},username.eq.${email}`)
       .single()
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password_hash)
     if (!passwordMatch) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -57,13 +58,12 @@ export async function POST(request: NextRequest) {
       role: user.role || 'subscriber', // Default role for new registrations
       professional_type: user.professional_type,
       profile_completed: profile ? true : false,
-      is_affiliate: user.is_affiliate || false,
-      affiliate_status: user.affiliate_status
+      is_affiliate: false,
+      affiliate_status: 'none'
     }
 
-    // Update last login
     await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .update({
         last_login: new Date().toISOString(),
         login_count: (user.login_count || 0) + 1

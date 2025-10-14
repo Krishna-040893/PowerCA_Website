@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {requireAdminAuth  } from '@/lib/admin-auth-helper'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
       if (userIds.length > 0) {
         const { data: users } = await supabase
-          .from('registrations')
+          .from(REGISTRATION_FORMS_TABLE)
           .select('id, name, email')
           .in('id', userIds)
 

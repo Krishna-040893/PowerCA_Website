@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {syncMiddleware  } from '@/middleware/hubspot-sync'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {logger  } from '@/lib/logger'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch registrations from Supabase
         const { data: registrations, error } = await supabase
-          .from('registrations')
+          .from(REGISTRATION_FORMS_TABLE)
           .select('*')
           .order('created_at', { ascending: false })
 

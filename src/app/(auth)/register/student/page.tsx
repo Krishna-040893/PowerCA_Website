@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState  } from 'react'
+import {useState, useEffect  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -10,8 +10,8 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {useRouter  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, GraduationCap, Building2, Shield  } from 'lucide-react'
+import {useRouter, useSearchParams  } from 'next/navigation'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, GraduationCap, Building2, Shield, CheckCircle2  } from 'lucide-react'
 
 export default function StudentRegisterPage() {
   const [formData, setFormData] = useState({
@@ -19,30 +19,202 @@ export default function StudentRegisterPage() {
     mobile: '',
     email: '',
     instituteName: '',
-    registrationNo: '',
+    registrationNumber: '',
+    password: ''
+  })
+  const [fieldErrors, setFieldErrors] = useState({
+    name: '',
+    mobile: '',
+    email: '',
+    instituteName: '',
+    registrationNumber: '',
     password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl')
+
+  // Extract referral parameters from URL
+  const getReferralParams = () => {
+    // Check direct params first
+    const ref = searchParams.get('ref')
+    const cus = searchParams.get('cus')
+
+    if (ref && cus) {
+      return { ref, cus }
+    }
+
+    // Check callbackUrl params
+    if (callbackUrl) {
+      try {
+        const url = new URL(callbackUrl, window.location.origin)
+        const urlRef = url.searchParams.get('ref')
+        const urlCus = url.searchParams.get('cus')
+        if (urlRef && urlCus) {
+          return { ref: urlRef, cus: urlCus }
+        }
+      } catch {
+        // Invalid URL, ignore
+      }
+    }
+
+    return { ref: null, cus: null }
+  }
+
+  const validateField = (field: string, value: string) => {
+    let error = ''
+
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          error = 'Name is required'
+        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+          error = 'Name must contain only characters'
+        } else if (value.trim().length < 2) {
+          error = 'Name must be at least 2 characters'
+        }
+        break
+
+      case 'mobile':
+        if (!value.trim()) {
+          error = 'Mobile number is required'
+        } else if (!/^\d{10}$/.test(value.trim())) {
+          error = 'Mobile number must be exactly 10 digits'
+        }
+        break
+
+      case 'email':
+        if (!value.trim()) {
+          error = 'Email is required'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          error = 'Enter a valid email with @ and .'
+        }
+        break
+
+      case 'instituteName':
+        if (!value.trim()) {
+          error = 'Institute name is required'
+        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+          error = 'Institute name must contain only characters'
+        }
+        break
+
+      case 'registrationNumber':
+        if (!value.trim()) {
+          error = 'Registration number is required'
+        } else if (!/^[a-zA-Z0-9]+$/.test(value.trim())) {
+          error = 'Registration number must contain only letters and numbers'
+        }
+        break
+
+      case 'password':
+        if (!value) {
+          error = 'Password is required'
+        } else if (value.length < 8) {
+          error = 'Password must be at least 8 characters'
+        } else if (!/(?=.*[A-Z])/.test(value)) {
+          error = 'Password must contain at least one uppercase letter'
+        } else if (!/(?=.*[0-9])/.test(value)) {
+          error = 'Password must contain at least one number'
+        } else if (!/(?=.*[!@#$%^&*])/.test(value)) {
+          error = 'Password must contain at least one special character (!@#$%^&*)'
+        }
+        break
+    }
+
+    setFieldErrors(prev => ({ ...prev, [field]: error }))
+    return error === ''
+  }
+
+  const validateForm = () => {
+    const nameValid = validateField('name', formData.name)
+    const mobileValid = validateField('mobile', formData.mobile)
+    const emailValid = validateField('email', formData.email)
+    const instituteValid = validateField('instituteName', formData.instituteName)
+    const registrationValid = validateField('registrationNumber', formData.registrationNumber)
+    const passwordValid = validateField('password', formData.password)
+
+    return nameValid && mobileValid && emailValid && instituteValid && registrationValid && passwordValid
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (fieldErrors[field as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleBlur = (field: string) => {
+    validateField(field, formData[field as keyof typeof formData] as string)
+  }
+
+  const generateUsername = () => {
+    const emailPart = formData.email.trim().split('@')[0] || ''
+    const namePart = formData.name.trim().replace(/\s+/g, '') || ''
+    const base = (emailPart || namePart || 'user').toLowerCase()
+    const sanitized = base.replace(/[^a-z0-9]/g, '').slice(0, 16)
+    const randomSuffix = Math.random().toString(36).slice(-6)
+    return `${sanitized || 'user'}${randomSuffix}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!agreeToTerms) {
+      setErrorMessage('Please agree to the terms and conditions to continue.')
+      return
+    }
+    if (!validateForm()) {
+      return
+    }
     setIsLoading(true)
+    setErrorMessage(null)
 
     try {
-      // Add registration logic here
-      // After successful registration, redirect to login
-      router.push('/login')
-    } catch {
-      // Handle registration error
-      setIsLoading(false)
-      return
+      const registrationNumber = formData.registrationNumber.trim()
+      const { ref, cus } = getReferralParams()
+
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        username: generateUsername(),
+        phone: formData.mobile.trim(),
+        password: formData.password,
+        role: 'student',
+        instituteName: formData.instituteName.trim(),
+        registrationNumber: registrationNumber.length > 0 ? registrationNumber : null,
+        professionalType: null,
+        membershipNumber: null,
+        agreedToTerms: agreeToTerms,
+        // Include referral params if available
+        ...(ref && cus && { referralCode: ref, customerId: cus })
+      }
+
+      const response = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        setErrorMessage(result?.error || 'Registration failed. Please try again.')
+        return
+      }
+
+      // Preserve callbackUrl when redirecting to login after successful registration
+      const loginUrl = callbackUrl
+        ? `/login?registered=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
+        : '/login?registered=1'
+      router.push(loginUrl)
+    } catch (error) {
+      console.error('Registration error:', error)
+      setErrorMessage('Unable to register right now. Please try again later.')
     } finally {
       setIsLoading(false)
     }
@@ -119,7 +291,7 @@ export default function StudentRegisterPage() {
           <div className="mb-8 flex justify-center">
             <div className="bg-blue-50 border border-blue-200 rounded-full p-2 inline-flex">
               <Link
-                href="/register"
+                href={callbackUrl ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
                 className="px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 text-gray-500 hover:bg-gray-100"
               >
                 <Shield className="w-4 h-4 inline mr-2" />
@@ -149,11 +321,17 @@ export default function StudentRegisterPage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
+                      onBlur={() => handleBlur('name')}
                       placeholder="Enter Your Name"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.name ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                   </div>
+                  {fieldErrors.name && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 {/* Mobile Field */}
@@ -168,11 +346,17 @@ export default function StudentRegisterPage() {
                       type="tel"
                       value={formData.mobile}
                       onChange={(e) => handleInputChange('mobile', e.target.value)}
+                      onBlur={() => handleBlur('mobile')}
                       placeholder="Enter Your Mobile number"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.mobile ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                   </div>
+                  {fieldErrors.mobile && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.mobile}</p>
+                  )}
                 </div>
 
                 {/* Institute Name Field */}
@@ -187,11 +371,17 @@ export default function StudentRegisterPage() {
                       type="text"
                       value={formData.instituteName}
                       onChange={(e) => handleInputChange('instituteName', e.target.value)}
+                      onBlur={() => handleBlur('instituteName')}
                       placeholder="Institute Name"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.instituteName ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                   </div>
+                  {fieldErrors.instituteName && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.instituteName}</p>
+                  )}
                 </div>
               </div>
 
@@ -209,11 +399,17 @@ export default function StudentRegisterPage() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      onBlur={() => handleBlur('email')}
                       placeholder="Enter Your Email"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.email ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                   </div>
+                  {fieldErrors.email && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                  )}
                 </div>
 
                 {/* Registration Number Field */}
@@ -226,12 +422,18 @@ export default function StudentRegisterPage() {
                     <Input
                       id="registrationNo"
                       type="text"
-                      value={formData.registrationNo}
-                      onChange={(e) => handleInputChange('registrationNo', e.target.value)}
+                      value={formData.registrationNumber}
+                      onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
+                      onBlur={() => handleBlur('registrationNumber')}
                       placeholder="Number"
-                      className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.registrationNumber ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                     />
                   </div>
+                  {fieldErrors.registrationNumber && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.registrationNumber}</p>
+                  )}
                 </div>
 
                 {/* Password Field */}
@@ -246,8 +448,11 @@ export default function StudentRegisterPage() {
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
+                      onBlur={() => handleBlur('password')}
                       placeholder="Enter Your Password"
-                      className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className={`pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.password ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                     <button
@@ -262,6 +467,13 @@ export default function StudentRegisterPage() {
                       )}
                     </button>
                   </div>
+                  {fieldErrors.password ? (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Password must contain at least 8 characters, one capital letter, one lowercase letter and numbers
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -286,6 +498,12 @@ export default function StudentRegisterPage() {
               </Label>
             </div>
 
+            {errorMessage && (
+              <p className="text-center text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
+
             {/* Sign Up Button */}
             <div className="flex justify-center">
               <Button
@@ -306,7 +524,7 @@ export default function StudentRegisterPage() {
               <p className="text-gray-600">
                 Already have an account?{' '}
                 <Link
-                  href="/login"
+                  href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/login'}
                   className="text-blue-600 hover:text-blue-800 font-medium underline"
                 >
                   Sign In

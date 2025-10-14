@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { createClient } from '@/lib/supabase/client'
 
 export interface UserSubscription {
   id: string
@@ -37,23 +36,20 @@ export function useSubscription(): SubscriptionStatus {
       }
 
       try {
-        const supabase = createClient()
+        // Use API route instead of direct Supabase query to bypass RLS
+        const response = await fetch('/api/subscriptions/status')
 
-        // Get user's subscriptions
-        const { data: subscriptions, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('Error fetching subscriptions:', error)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Error fetching subscriptions:', errorData)
           setSubscriptionStatus(prev => ({ ...prev, isLoading: false }))
           return
         }
 
+        const { subscriptions } = await response.json()
+
         // Find Launch Offer subscription
-        const launchOfferSub = subscriptions?.find(sub =>
+        const launchOfferSub = subscriptions?.find((sub: UserSubscription) =>
           sub.plan === 'launch_offer' || sub.plan === 'first_year'
         )
 
