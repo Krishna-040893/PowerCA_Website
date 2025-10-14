@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const order = await razorpay.orders.create(options)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const order = await razorpay.orders.create(options as any)
 
     // Store order details in database for tracking (optional)
     try {

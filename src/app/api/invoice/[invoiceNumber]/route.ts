@@ -4,10 +4,10 @@ import { logger } from '@/lib/logger'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { invoiceNumber: string } }
+  { params }: { params: Promise<{ invoiceNumber: string }> }
 ) {
   try {
-    const { invoiceNumber } = params
+    const { invoiceNumber } = await params
 
     if (!invoiceNumber) {
       return NextResponse.json({ error: 'Invoice number is required' }, { status: 400 })

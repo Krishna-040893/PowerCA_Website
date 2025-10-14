@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments'
 }
 
 interface NavSection {

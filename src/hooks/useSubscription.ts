@@ -49,7 +49,7 @@ export function useSubscription(): SubscriptionStatus {
         const { subscriptions } = await response.json()
 
         // Find Launch Offer subscription
-        const launchOfferSub = subscriptions?.find(sub =>
+        const launchOfferSub = subscriptions?.find((sub: UserSubscription) =>
           sub.plan === 'launch_offer' || sub.plan === 'first_year'
         )
 

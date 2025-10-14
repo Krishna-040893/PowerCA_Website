@@ -68,26 +68,7 @@ export default function AdminAffiliateApprovalPage() {
     } catch (err) {
       console.error('Error fetching applications:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
-
-      // Set sample data for demo
-      setApplications([
-        {
-          id: '1',
-          user_id: '1',
-          company_name: 'CA Solutions Ltd',
-          website_url: 'https://casolutions.com',
-          promotion_method: 'Email marketing and social media campaigns',
-          expected_referrals: '50-100',
-          reason: 'We have a large client base of CAs who would benefit from your platform',
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          user: {
-            name: 'Rahul Sharma',
-            email: 'rahul@casolutions.com',
-            phone: '9876543210'
-          }
-        }
-      ])
+      setApplications([])
     } finally {
       setLoading(false)
     }

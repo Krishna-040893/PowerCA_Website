@@ -52,18 +52,33 @@ export async function GET(request: NextRequest) {
       }, { status: 404 })
     }
 
+    // Handle affiliate_profiles as it may be returned as array or object
+    const affiliateProfile = Array.isArray(referral.affiliate_profiles)
+      ? referral.affiliate_profiles[0]
+      : referral.affiliate_profiles
+
+    // Handle registration_forms as it may be returned as array or object
+    const registrationForms = affiliateProfile?.registration_forms
+    const registrationForm = registrationForms && Array.isArray(registrationForms)
+      ? registrationForms[0]
+      : registrationForms
+
+    const affiliateName = (registrationForm && typeof registrationForm === 'object' && 'name' in registrationForm)
+      ? registrationForm.name
+      : 'Affiliate Partner'
+
     console.log('✅ Referral validated successfully:', {
       referralCode: ref,
       customerId: cus,
-      firmName: referral.affiliate_profiles?.firm_name
+      firmName: affiliateProfile?.firm_name
     })
 
     return NextResponse.json({
       success: true,
       valid: true,
       referralId: referral.id,
-      affiliateName: referral.affiliate_profiles?.registration_forms?.name || 'Affiliate Partner',
-      firmName: referral.affiliate_profiles?.firm_name,
+      affiliateName,
+      firmName: affiliateProfile?.firm_name,
       customerName: referral.referred_name,
       customerEmail: referral.referred_email
     })

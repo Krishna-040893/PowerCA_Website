@@ -401,8 +401,8 @@ export async function POST(request: NextRequest) {
           firstName: newUser.name?.split(' ')[0],
           lastName: newUser.name?.split(' ').slice(1).join(' '),
           phone: newUser.phone,
-          firmName: newUser.firm_name,
-          caNumber: newUser.membership_no || newUser.membership_number,
+          firmName: undefined, // firm_name not available in file storage
+          caNumber: (newUser as {membership_no?: string; membership_number?: string}).membership_no || newUser.membership_number,
           status: 'lead'
         }).catch(error => {
           logger.error('Failed to sync to HubSpot', error)
