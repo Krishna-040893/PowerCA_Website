@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
           date: new Date().toISOString().split('T')[0],
           time: '10:00 AM - 11:00 AM',
           type: 'demo',
-          status: 'CONFIRMED',
           message: 'Interested in practice management features',
           created_at: new Date().toISOString()
         },
@@ -54,7 +53,6 @@ export async function GET(request: NextRequest) {
           date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
           time: '02:00 PM - 03:00 PM',
           type: 'demo',
-          status: 'PENDING',
           message: 'Need help with GST compliance',
           created_at: new Date(Date.now() - 86400000).toISOString() // Yesterday
         },
@@ -67,7 +65,6 @@ export async function GET(request: NextRequest) {
           date: new Date(Date.now() - 172800000).toISOString().split('T')[0], // 2 days ago
           time: '11:00 AM - 12:00 PM',
           type: 'consultation',
-          status: 'COMPLETED',
           message: 'Looking for client management solutions',
           created_at: new Date(Date.now() - 259200000).toISOString() // 3 days ago
         }
@@ -118,7 +115,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   date DATE NOT NULL,
   time VARCHAR(50) NOT NULL,
   type VARCHAR(50) DEFAULT 'demo',
-  status VARCHAR(50) DEFAULT 'PENDING',
   message TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

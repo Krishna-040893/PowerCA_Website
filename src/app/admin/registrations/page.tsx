@@ -12,13 +12,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {Loader2, RefreshCw, Download, Users, UserCheck, TrendingUp, Search, Eye, GraduationCap  } from 'lucide-react'
 import { format } from 'date-fns'
-import dynamic from 'next/dynamic'
-
-// Dynamic import for heavy component
-const EnhancedLeadInsights = dynamic(
-  () => import('@/components/admin/EnhancedLeadInsights'),
-  { loading: () => <div className="animate-pulse h-64 bg-gray-100 rounded-lg" />, ssr: false }
-)
 
 interface Registration {
   id: string
@@ -110,30 +103,29 @@ export default function AdminRegistrationsPage() {
     } finally {
       setLoading(false)
     }
-  }, [getAuthHeaders])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchRegistrations()
     }
-  }, [isAuthenticated, fetchRegistrations])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Username', 'Phone', 'Role', 'Professional Type', 'Membership No', 'Registration No', 'Institute', 'Created At']
+    const headers = ['Name', 'Email', 'Phone', 'Role', 'Created At']
     const csvContent = [
       headers.join(','),
-      ...registrations.map(reg => [
-        reg.name,
-        reg.email,
-        reg.username,
-        reg.phone || '',
-        reg.role,
-        reg.professional_type || '',
-        reg.membership_no || '',
-        reg.registration_no || '',
-        reg.institute_name || '',
-        format(new Date(reg.created_at), 'yyyy-MM-dd HH:mm:ss')
-      ].map(field => `"${field}"`).join(','))
+      ...registrations.map(reg => {
+        return [
+          reg.name,
+          reg.email,
+          reg.phone || '',
+          reg.role,
+          format(new Date(reg.created_at), 'yyyy-MM-dd HH:mm:ss')
+        ].map(field => `"${field}"`).join(',')
+      })
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv; // Unused variable commented outcharset=utf-8;' })
@@ -150,7 +142,7 @@ export default function AdminRegistrationsPage() {
   const filteredRegistrations = registrations.filter(reg => {
     const matchesSearch = reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         reg.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         reg.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.id.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesRole = roleFilter === 'all' || reg.role === roleFilter
@@ -284,7 +276,7 @@ export default function AdminRegistrationsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search by name, email, username or ID..."
+                  placeholder="Search by name, email, phone or ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -328,10 +320,7 @@ export default function AdminRegistrationsPage() {
                     <TableRow>
                       <TableHead>NAME</TableHead>
                       <TableHead>EMAIL</TableHead>
-                      <TableHead>USERNAME</TableHead>
                       <TableHead>PHONE</TableHead>
-                      <TableHead>PROFESSIONAL TYPE</TableHead>
-                      <TableHead>MEMBERSHIP NO</TableHead>
                       <TableHead>ROLE</TableHead>
                       <TableHead>DATE</TableHead>
                       <TableHead>ACTIONS</TableHead>
@@ -342,10 +331,7 @@ export default function AdminRegistrationsPage() {
                       <TableRow key={registration.id}>
                         <TableCell className="font-medium">{registration.name || '-'}</TableCell>
                         <TableCell>{registration.email || '-'}</TableCell>
-                        <TableCell>{registration.username || '-'}</TableCell>
                         <TableCell>{registration.phone || '-'}</TableCell>
-                        <TableCell>{registration.professional_type || '-'}</TableCell>
-                        <TableCell>{registration.membership_no || '-'}</TableCell>
                         <TableCell>
                           <Badge variant={registration.role === 'Professional' ? 'default' : registration.role === 'Student' ? 'secondary' : 'outline'}>
                             {registration.role || '-'}
@@ -365,7 +351,7 @@ export default function AdminRegistrationsPage() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="bg-white max-w-3xl">
                               <DialogHeader>
                                 <DialogTitle>Registration Details</DialogTitle>
                                 <DialogDescription>
@@ -374,13 +360,6 @@ export default function AdminRegistrationsPage() {
                               </DialogHeader>
                               {selectedRegistration && (
                                 <div className="space-y-6">
-                                  {/* HubSpot Lead Insights */}
-                                  {selectedRegistration.email && (
-                                    <div className="border-b pb-4">
-                                      <EnhancedLeadInsights userEmail={selectedRegistration.email} />
-                                    </div>
-                                  )}
-
                                   {/* Registration Details */}
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>

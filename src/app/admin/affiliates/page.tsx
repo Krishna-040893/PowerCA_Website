@@ -12,17 +12,31 @@ import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, ArrowLeft, L
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
+import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 
 interface AffiliateApplication {
   id: string
   name: string
-  account_email: string
-  payment_email: string
-  website_url?: string
+  email: string
+  phone: string
+  city: string
+  state: string
+  business_type: string
+  company_name?: string
+  designation?: string
+  experience?: string
   promotion_method: string
+  target_audience: string
+  monthly_leads?: string
+  account_number?: string
+  ifsc_code?: string
+  pan_number?: string
+  gst_number?: string
   status: string
   admin_notes?: string
   created_at: string
+  referral_code?: string
+  approved_at?: string
   registrations: {
     username: string
     email: string
@@ -91,13 +105,15 @@ export default function AdminAffiliatesPage() {
     } finally {
       setLoading(false)
     }
-  }, [getAuthHeaders])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchApplications()
     }
-  }, [isAuthenticated, fetchApplications])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   const handleApplicationAction = async (applicationId: string, status: 'approved' | 'rejected') => {
     setProcessingId(applicationId)
@@ -119,15 +135,43 @@ export default function AdminAffiliatesPage() {
       const result = await response.json()
 
       if (response.ok) {
-        // Update the application in local state
+        // Update the application in local state with referral code if approved
         setApplications(prev => prev.map(app =>
           app.id === applicationId
-            ? { ...app, status, admin_notes: adminNotes }
+            ? {
+                ...app,
+                status,
+                admin_notes: adminNotes,
+                referral_code: result.referral_code || app.referral_code
+              }
             : app
         ))
         setSelectedApp(null)
         setAdminNotes('')
-        toast.success(`Application ${status} successfully!`)
+
+        if (status === 'approved' && result.referral_code) {
+          const appUrl = window.location.origin
+          const affiliateAccountUrl = `${appUrl}/affiliate/account`
+
+          toast.success(
+            <div className="space-y-2">
+              <p className="font-semibold">✅ Application Approved!</p>
+              <p className="text-sm">Referral Code: <code className="bg-green-100 px-1 rounded">{result.referral_code}</code></p>
+              <p className="text-sm">Affiliate will receive an approval email.</p>
+              <a
+                href={affiliateAccountUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:underline block mt-1"
+              >
+                View Affiliate Account Page →
+              </a>
+            </div>,
+            { duration: 8000 }
+          )
+        } else {
+          toast.success(`Application ${status} successfully!`)
+        }
       } else {
         toast.error(result.error || `Failed to ${status} application`)
       }
@@ -191,45 +235,21 @@ export default function AdminAffiliatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/admin')}
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to Dashboard</span>
-              </Button>
-              <div className="border-l pl-4">
-                <h1 className="text-2xl font-bold text-gray-900">Affiliate Management</h1>
-                <p className="text-sm text-gray-600">Welcome back, {adminUser.username}</p>
-              </div>
-            </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="text-red-600 hover:bg-red-50"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">Affiliate Management</h1>
-          <p className="text-sm text-gray-600">Review and manage affiliate applications</p>
-        </div>
-
+    <AdminPageWrapper
+      title="Affiliate Management"
+      description="Review and manage affiliate applications"
+      actions={
+        <Button
+          onClick={fetchApplications}
+          variant="outline"
+          disabled={loading}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      }
+    >
+      <div>
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
@@ -281,23 +301,10 @@ export default function AdminAffiliatesPage() {
         {/* Main Content Card */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Affiliate Applications</CardTitle>
-                <CardDescription>
-                  Review affiliate applications and approve or reject them
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchApplications}
-                disabled={loading}
-              >
-                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </div>
+            <CardTitle>Affiliate Applications</CardTitle>
+            <CardDescription>
+              Review affiliate applications and approve or reject them
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -321,10 +328,10 @@ export default function AdminAffiliatesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Applicant</TableHead>
-                      <TableHead>Account Email</TableHead>
-                      <TableHead>Payment Email</TableHead>
-                      <TableHead>Website</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Referral Code</TableHead>
                       <TableHead>Applied Date</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -333,27 +340,10 @@ export default function AdminAffiliatesPage() {
                     {applications.map((application) => (
                       <TableRow key={application.id}>
                         <TableCell className="font-medium">
-                          <div>
-                            <p>{application.name}</p>
-                            <p className="text-sm text-gray-500">@{application.registrations.username}</p>
-                          </div>
+                          {application.name}
                         </TableCell>
-                        <TableCell>{application.account_email}</TableCell>
-                        <TableCell>{application.payment_email}</TableCell>
-                        <TableCell>
-                          {application.website_url ? (
-                            <a
-                              href={application.website_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              View Site
-                            </a>
-                          ) : (
-                            <span className="text-gray-500">-</span>
-                          )}
-                        </TableCell>
+                        <TableCell>{application.email}</TableCell>
+                        <TableCell>{application.phone}</TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(application.status)}>
                             <div className="flex items-center gap-1">
@@ -361,6 +351,15 @@ export default function AdminAffiliatesPage() {
                               {application.status}
                             </div>
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {application.referral_code ? (
+                            <code className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-mono">
+                              {application.referral_code}
+                            </code>
+                          ) : (
+                            <span className="text-gray-400 text-sm">Not generated</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {format(new Date(application.created_at), 'MMM dd, yyyy')}
@@ -381,7 +380,7 @@ export default function AdminAffiliatesPage() {
                                   Review
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
+                              <DialogContent className="max-w-2xl bg-white">
                                 <DialogHeader>
                                   <DialogTitle>Review Affiliate Application</DialogTitle>
                                   <DialogDescription>
@@ -390,48 +389,140 @@ export default function AdminAffiliatesPage() {
                                 </DialogHeader>
 
                                 {selectedApp && (
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <label className="text-sm font-medium">Name</label>
-                                        <p className="text-sm text-gray-600">{selectedApp.name}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium">Account Email</label>
-                                        <p className="text-sm text-gray-600">{selectedApp.account_email}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium">Payment Email</label>
-                                        <p className="text-sm text-gray-600">{selectedApp.payment_email}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium">Website</label>
-                                        <p className="text-sm text-gray-600">
-                                          {selectedApp.website_url || 'Not provided'}
-                                        </p>
+                                  <div className="space-y-6 max-h-[600px] overflow-y-auto">
+                                    {/* Personal Information */}
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Information</h3>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Full Name</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.name}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Email</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.email}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Phone</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Location</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.city}, {selectedApp.state}</p>
+                                        </div>
                                       </div>
                                     </div>
 
-                                    <div>
-                                      <label className="text-sm font-medium">Promotion Method</label>
-                                      <p className="text-sm text-gray-600 mt-1 p-3 bg-gray-50 rounded">
-                                        {selectedApp.promotion_method}
-                                      </p>
+                                    {/* Business Information */}
+                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Business Information</h3>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Business Type</label>
+                                          <p className="text-sm text-gray-900 mt-1 capitalize">{selectedApp.business_type || 'Individual'}</p>
+                                        </div>
+                                        {selectedApp.company_name && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">Company Name</label>
+                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.company_name}</p>
+                                          </div>
+                                        )}
+                                        {selectedApp.designation && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">Designation</label>
+                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.designation}</p>
+                                          </div>
+                                        )}
+                                        {selectedApp.experience && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">Experience</label>
+                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.experience}</p>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
 
+                                    {/* Affiliate Information */}
+                                    <div className="bg-green-50 p-4 rounded-lg">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Affiliate Information</h3>
+                                      <div className="space-y-3">
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Promotion Method</label>
+                                          <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                            {selectedApp.promotion_method}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Target Audience</label>
+                                          <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                            {selectedApp.target_audience}
+                                          </p>
+                                        </div>
+                                        {selectedApp.monthly_leads && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">Expected Monthly Referrals</label>
+                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.monthly_leads}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Payment Information */}
+                                    <div className="bg-purple-50 p-4 rounded-lg">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Payment Information</h3>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        {selectedApp.account_number && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">Account Number</label>
+                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.account_number}</p>
+                                          </div>
+                                        )}
+                                        {selectedApp.ifsc_code && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">IFSC Code</label>
+                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.ifsc_code}</p>
+                                          </div>
+                                        )}
+                                        {selectedApp.pan_number && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">PAN Number</label>
+                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.pan_number}</p>
+                                          </div>
+                                        )}
+                                        {selectedApp.gst_number && (
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-500">GST Number</label>
+                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.gst_number}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Status Information */}
+                                    {selectedApp.referral_code && (
+                                      <div className="bg-yellow-50 p-4 rounded-lg">
+                                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Referral Code</h3>
+                                        <code className="bg-green-100 text-green-800 px-3 py-2 rounded font-mono text-lg">
+                                          {selectedApp.referral_code}
+                                        </code>
+                                      </div>
+                                    )}
+
+                                    {/* Admin Notes */}
                                     <div>
-                                      <label className="text-sm font-medium">Admin Notes</label>
+                                      <label className="text-sm font-medium text-gray-900">Admin Notes</label>
                                       <Textarea
                                         value={adminNotes}
                                         onChange={(e) => setAdminNotes(e.target.value)}
                                         placeholder="Add notes about this application..."
                                         rows={3}
-                                        className="mt-1"
+                                        className="mt-2"
                                       />
                                     </div>
 
+                                    {/* Action Buttons */}
                                     {selectedApp.status === 'pending' && (
-                                      <div className="flex justify-end gap-2 pt-4">
+                                      <div className="flex justify-end gap-2 pt-4 border-t">
                                         <Button
                                           variant="outline"
                                           onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
@@ -472,6 +563,6 @@ export default function AdminAffiliatesPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminPageWrapper>
   )
 }

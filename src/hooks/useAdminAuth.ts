@@ -1,4 +1,4 @@
-import {useState, useEffect  } from 'react'
+import {useState, useEffect, useCallback  } from 'react'
 import {useRouter  } from 'next/navigation'
 
 interface AdminUser {
@@ -57,12 +57,12 @@ export function useAdminAuth() {
     router.push('/admin-login')
   }
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = useCallback(() => {
     const token = localStorage.getItem('adminToken')
     return {
       'Authorization': token ? `Bearer ${token}` : '',
     }
-  }
+  }, [])
 
   return {
     isAuthenticated,

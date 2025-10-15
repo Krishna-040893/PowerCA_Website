@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {requireAdminAuth  } from '@/lib/admin-auth-helper'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {createErrorResponse, ErrorType, handleDatabaseError  } from '@/lib/error-handler'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Get all users with Affiliate role from registrations
     const { data: affiliateUsers, error: usersError } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*')
       .eq('role', 'Affiliate')
       .order('created_at', { ascending: false })

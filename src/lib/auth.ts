@@ -29,64 +29,80 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // In development, allow demo login without database
-          if (process.env.NODE_ENV === 'development') {
-            if (credentials.email === 'demo@powerca.in' && credentials.password === 'demo123') {
-              return {
-                id: 'demo-user',
-                email: 'demo@powerca.in',
-                name: 'Demo User',
-                firmName: 'Demo Firm',
-                role: 'user',
-              }
-            }
-
-            // For any other dev credentials, create a demo user
-            if (credentials.email.includes('@') && credentials.password.length >= 6) {
-              return {
-                id: 'dev-user-' + Date.now(),
-                email: credentials.email,
-                name: 'Development User',
-                firmName: 'Dev Firm',
-                role: 'user',
-              }
-            }
-          }
-
           const supabase = createAdminClient()
 
-          // Check if user exists
-          const { data: user, error } = await supabase
-            .from('users')
+          // First, check if it's an affiliate in affiliate_registrations table
+          // Allow login for all statuses (pending, approved, rejected) so affiliates can see their status
+          const { data: affiliate, error: affiliateError } = await supabase
+            .from('affiliate_registrations')
             .select('*')
             .eq('email', credentials.email)
             .single()
 
-          if (error) {
-            console.warn('Database error during auth:', error.message)
-            if (process.env.NODE_ENV === 'development') {
-              return null // Let it fail gracefully in development
+          if (affiliate && !affiliateError) {
+            // Check if affiliate has a password
+            if (!affiliate.password) {
+              throw new Error('Your account needs a password reset. Please contact support.')
             }
-            throw new Error('User not found')
+
+            // Verify password
+            const passwordMatch = await bcrypt.compare(credentials.password, affiliate.password)
+
+            if (!passwordMatch) {
+              throw new Error('Invalid email or password')
+            }
+
+            return {
+              id: affiliate.id,
+              email: affiliate.email,
+              name: affiliate.full_name,
+              phone: affiliate.phone,
+              firmName: affiliate.company_name || null,
+              role: 'affiliate',
+              status: affiliate.status, // Include status for UI to show pending/rejected pages
+            }
           }
 
-          if (!user) {
-            throw new Error('Invalid credentials')
+          // If not an affiliate, check registration_forms table for regular users
+          const { data: user, error } = await supabase
+            .from('registration_forms')
+            .select('*')
+            .eq('email', credentials.email)
+            .single()
+
+          if (error || !user) {
+            console.warn('Database error during auth:', error?.message || 'User not found')
+
+            // In development, allow demo login as fallback
+            if (process.env.NODE_ENV === 'development') {
+              if (credentials.email === 'demo@powerca.in' && credentials.password === 'demo123') {
+                return {
+                  id: 'demo-user',
+                  email: 'demo@powerca.in',
+                  name: 'Demo User',
+                  firmName: 'Demo Firm',
+                  role: 'subscriber',
+                }
+              }
+            }
+
+            throw new Error('Invalid email or password')
           }
 
           // Verify password
-          const passwordMatch = await bcrypt.compare(credentials.password, user.password)
+          const passwordMatch = await bcrypt.compare(credentials.password, user.password_hash)
 
           if (!passwordMatch) {
-            throw new Error('Invalid password')
+            throw new Error('Invalid email or password')
           }
 
           return {
             id: user.id,
             email: user.email,
             name: user.name,
-            firmName: user.firm_name,
-            role: user.role || 'user',
+            phone: user.phone,
+            firmName: user.firm_name || null,
+            role: user.role || 'subscriber',
           }
         } catch (error) {
           console.error('Auth error details:', {
@@ -97,11 +113,8 @@ export const authOptions: NextAuthOptions = {
             credentials: { email: credentials.email, hasPassword: !!credentials.password }
           })
 
-          // Don't throw in development to prevent NextAuth errors
-          if (process.env.NODE_ENV === 'development') {
-            return null
-          }
-          throw new Error('Authentication failed')
+          // Re-throw the error to show in login UI
+          throw error instanceof Error ? error : new Error('Authentication failed')
         }
       }
     }),
@@ -114,10 +127,9 @@ export const authOptions: NextAuthOptions = {
     ] : []),
   ],
   pages: {
-    signIn: '/auth/login',
-    signOut: '/auth/logout',
-    error: '/auth/error',
-    newUser: '/dashboard'
+    signIn: '/login',
+    error: '/login',
+    newUser: '/account'
   },
   session: {
     strategy: 'jwt',
@@ -129,8 +141,10 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.email = user.email
         token.name = user.name
+        token.phone = user.phone
         token.firmName = user.firmName
         token.role = user.role
+        token.status = user.status
       }
       return token
     },
@@ -139,8 +153,10 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string
+        session.user.phone = token.phone as string
         session.user.firmName = token.firmName as string
         session.user.role = token.role as 'admin' | 'subscriber' | 'affiliate' | 'Affiliate' | 'Admin'
+        session.user.status = token.status as 'pending' | 'approved' | 'rejected' | 'suspended' | undefined
       }
       return session
     }
