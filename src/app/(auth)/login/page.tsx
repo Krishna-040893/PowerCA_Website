@@ -50,15 +50,13 @@ export default function LoginPage() {
 
           // Redirect to affiliate login after 2 seconds
           setTimeout(() => {
-            router.push('/affiliate-login')
+            window.location.href = '/affiliate-login'
           }, 2000)
           return
         }
 
-        // Refresh the router to update session
-        router.refresh()
-        // Redirect to callback URL or account page
-        router.push(callbackUrl)
+        // Use window.location.href for full page reload to ensure session is established
+        window.location.href = callbackUrl
       } else {
         setError(result?.error || 'Invalid email or password. Please try again.')
       }
