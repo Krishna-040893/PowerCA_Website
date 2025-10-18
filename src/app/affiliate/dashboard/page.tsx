@@ -7,7 +7,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/comp
 import {Button  } from '@/components/ui/button'
 import {Badge  } from '@/components/ui/badge'
 import {AffiliateReferral  } from '@/types/common'
-import { Users, DollarSign, TrendingUp,
+import { Users, IndianRupee, TrendingUp,
   Copy, CheckCircle, Clock,
   Building2
  } from 'lucide-react'
@@ -138,7 +138,7 @@ export default function AffiliateDashboard() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Building2 className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Affiliate Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Affiliate Referral</h1>
           </div>
           <p className="text-gray-600">
             Welcome back, {affiliateData?.affiliateDetails?.firm_name || session?.user?.name}
@@ -224,7 +224,7 @@ export default function AffiliateDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <IndianRupee className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹{stats.totalCommission.toFixed(2)}</div>
@@ -305,7 +305,7 @@ export default function AffiliateDashboard() {
                 className="justify-start"
                 onClick={() => router.push('/affiliate/withdraw')}
               >
-                <DollarSign className="h-4 w-4 mr-2" />
+                <IndianRupee className="h-4 w-4 mr-2" />
                 Withdraw Funds
               </Button>
             </div>

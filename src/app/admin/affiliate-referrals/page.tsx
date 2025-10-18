@@ -29,10 +29,12 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  DollarSign,
+  IndianRupee,
+  RotateCw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
+import { toast } from 'sonner'
 
 interface Referral {
   id: string
@@ -68,7 +70,7 @@ export default function AffiliateReferralsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedAffiliate, setExpandedAffiliate] = useState<string | null>(null)
-  const [totalReferrals, setTotalReferrals] = useState(0)
+  const [syncingReferral, setSyncingReferral] = useState<string | null>(null)
 
   const fetchReferrals = async () => {
     try {
@@ -78,7 +80,6 @@ export default function AffiliateReferralsPage() {
 
       if (result.success) {
         setData(result.data)
-        setTotalReferrals(result.totalReferrals)
       }
     } catch (error) {
       console.error('Failed to fetch referrals:', error)
@@ -115,10 +116,10 @@ export default function AffiliateReferralsPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; icon: any; label: string }> = {
+    const variants: Record<string, { variant: 'outline' | 'default' | 'destructive'; icon: React.ComponentType<{ className?: string }>; label: string }> = {
       pending: { variant: 'outline', icon: Clock, label: 'Pending' },
       completed: { variant: 'default', icon: CheckCircle, label: 'Completed' },
-      converted: { variant: 'default', icon: DollarSign, label: 'Paid' },
+      converted: { variant: 'default', icon: IndianRupee, label: 'Paid' },
       expired: { variant: 'destructive', icon: XCircle, label: 'Expired' },
     }
 
@@ -126,7 +127,7 @@ export default function AffiliateReferralsPage() {
     const Icon = config.icon
 
     return (
-      <Badge variant={config.variant as any} className="flex items-center gap-1 w-fit">
+      <Badge variant={config.variant} className="flex items-center gap-1 w-fit">
         <Icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -160,6 +161,44 @@ export default function AffiliateReferralsPage() {
     }),
     { total: 0, pending: 0, completed: 0, converted: 0 }
   )
+
+  const syncReferralStatus = async (referral: Referral) => {
+    if (!referral.payment_id && !referral.order_id) {
+      toast.error('No payment information available for this referral')
+      return
+    }
+
+    setSyncingReferral(referral.id)
+    try {
+      const adminToken = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/payments/sync-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          payment_id: referral.payment_id,
+          order_id: referral.order_id,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        toast.success(`Status synced from Razorpay: ${result.data.razorpay_status}`)
+        // Refresh the referrals list
+        await fetchReferrals()
+      } else {
+        toast.error(result.error || 'Failed to sync status')
+      }
+    } catch (error) {
+      console.error('Error syncing referral status:', error)
+      toast.error('Failed to sync status from Razorpay')
+    } finally {
+      setSyncingReferral(null)
+    }
+  }
 
   return (
     <AdminPageWrapper
@@ -341,6 +380,7 @@ export default function AffiliateReferralsPage() {
                               <TableHead>Status</TableHead>
                               <TableHead>Payment</TableHead>
                               <TableHead>Created</TableHead>
+                              <TableHead>Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -386,6 +426,20 @@ export default function AffiliateReferralsPage() {
                                     <Calendar className="w-4 h-4" />
                                     {formatDate(referral.created_at)}
                                   </div>
+                                </TableCell>
+                                <TableCell>
+                                  {(referral.payment_id || referral.order_id) && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => syncReferralStatus(referral)}
+                                      disabled={syncingReferral === referral.id}
+                                      className="bg-white hover:bg-gray-50"
+                                      title="Sync status from Razorpay"
+                                    >
+                                      <RotateCw className={`h-4 w-4 ${syncingReferral === referral.id ? 'animate-spin' : ''}`} />
+                                    </Button>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}

@@ -19,7 +19,10 @@ interface FormErrors {
   firmName?: string
   email?: string
   phone?: string
+  country?: string
+  address?: string
   city?: string
+  state?: string
   postcode?: string
   terms?: string
 }
@@ -30,6 +33,100 @@ interface ReferralInfo {
   validated?: boolean
   affiliateName?: string
   firmName?: string
+}
+
+// Country-State mapping
+const countryStates: Record<string, string[]> = {
+  'India': [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ],
+  'United States': [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+    'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+    'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+    'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+    'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
+    'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma',
+    'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+    'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+    'West Virginia', 'Wisconsin', 'Wyoming'
+  ],
+  'United Kingdom': [
+    'England', 'Scotland', 'Wales', 'Northern Ireland'
+  ],
+  'Canada': [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+    'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+    'Quebec', 'Saskatchewan', 'Yukon'
+  ],
+  'Australia': [
+    'Australian Capital Territory', 'New South Wales', 'Northern Territory', 'Queensland',
+    'South Australia', 'Tasmania', 'Victoria', 'Western Australia'
+  ],
+  'Germany': [
+    'Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg',
+    'Hesse', 'Lower Saxony', 'Mecklenburg-Vorpommern', 'North Rhine-Westphalia',
+    'Rhineland-Palatinate', 'Saarland', 'Saxony', 'Saxony-Anhalt',
+    'Schleswig-Holstein', 'Thuringia'
+  ],
+  'United Arab Emirates': [
+    'Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'
+  ],
+  'France': [
+    'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Brittany', 'Centre-Val de Loire',
+    'Corsica', 'Grand Est', 'Hauts-de-France', 'Île-de-France', 'Normandy',
+    'Nouvelle-Aquitaine', 'Occitanie', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'
+  ],
+  'China': [
+    'Anhui', 'Beijing', 'Chongqing', 'Fujian', 'Gansu', 'Guangdong', 'Guangxi',
+    'Guizhou', 'Hainan', 'Hebei', 'Heilongjiang', 'Henan', 'Hong Kong', 'Hubei',
+    'Hunan', 'Inner Mongolia', 'Jiangsu', 'Jiangxi', 'Jilin', 'Liaoning', 'Macau',
+    'Ningxia', 'Qinghai', 'Shaanxi', 'Shandong', 'Shanghai', 'Shanxi', 'Sichuan',
+    'Tianjin', 'Tibet', 'Xinjiang', 'Yunnan', 'Zhejiang'
+  ],
+  'Japan': [
+    'Aichi', 'Akita', 'Aomori', 'Chiba', 'Ehime', 'Fukui', 'Fukuoka', 'Fukushima',
+    'Gifu', 'Gunma', 'Hiroshima', 'Hokkaido', 'Hyogo', 'Ibaraki', 'Ishikawa',
+    'Iwate', 'Kagawa', 'Kagoshima', 'Kanagawa', 'Kochi', 'Kumamoto', 'Kyoto',
+    'Mie', 'Miyagi', 'Miyazaki', 'Nagano', 'Nagasaki', 'Nara', 'Niigata',
+    'Oita', 'Okayama', 'Okinawa', 'Osaka', 'Saga', 'Saitama', 'Shiga',
+    'Shimane', 'Shizuoka', 'Tochigi', 'Tokushima', 'Tokyo', 'Tottori',
+    'Toyama', 'Wakayama', 'Yamagata', 'Yamaguchi', 'Yamanashi'
+  ],
+  'Brazil': [
+    'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal',
+    'Espírito Santo', 'Goiás', 'Maranhão', 'Mato Grosso', 'Mato Grosso do Sul',
+    'Minas Gerais', 'Pará', 'Paraíba', 'Paraná', 'Pernambuco', 'Piauí',
+    'Rio de Janeiro', 'Rio Grande do Norte', 'Rio Grande do Sul', 'Rondônia',
+    'Roraima', 'Santa Catarina', 'São Paulo', 'Sergipe', 'Tocantins'
+  ],
+  'Mexico': [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
+    'Chihuahua', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero',
+    'Hidalgo', 'Jalisco', 'Mexico City', 'México', 'Michoacán', 'Morelos',
+    'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo',
+    'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala',
+    'Veracruz', 'Yucatán', 'Zacatecas'
+  ],
+  'Spain': [
+    'Andalusia', 'Aragon', 'Asturias', 'Balearic Islands', 'Basque Country',
+    'Canary Islands', 'Cantabria', 'Castile and León', 'Castile-La Mancha',
+    'Catalonia', 'Ceuta', 'Extremadura', 'Galicia', 'La Rioja', 'Madrid',
+    'Melilla', 'Murcia', 'Navarre', 'Valencia'
+  ],
+  'Italy': [
+    'Abruzzo', 'Aosta Valley', 'Apulia', 'Basilicata', 'Calabria', 'Campania',
+    'Emilia-Romagna', 'Friuli-Venezia Giulia', 'Lazio', 'Liguria', 'Lombardy',
+    'Marche', 'Molise', 'Piedmont', 'Sardinia', 'Sicily', 'Trentino-South Tyrol',
+    'Tuscany', 'Umbria', 'Veneto'
+  ]
 }
 
 export default function CheckoutPage() {
@@ -47,7 +144,7 @@ export default function CheckoutPage() {
     firstName: '',
     firmName: '',
     gstNo: '',
-    country: 'India',
+    country: '',
     address: '',
     city: '',
     state: '',
@@ -58,6 +155,10 @@ export default function CheckoutPage() {
     orderNotes: '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+
+  // Get states for selected country
+  const availableStates = countryStates[formData.country] || countryStates['default']
+  const hasStateDropdown = formData.country && countryStates[formData.country] !== undefined
 
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
@@ -163,10 +264,21 @@ export default function CheckoutPage() {
   }, [session])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
+    const { name, value } = e.target
+
+    // If country changes, reset the state field
+    if (name === 'country') {
+      setFormData(prev => ({
+        ...prev,
+        country: value,
+        state: '', // Reset state when country changes
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const validateForm = () => {
@@ -177,7 +289,10 @@ export default function CheckoutPage() {
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid'
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
+    if (!formData.country.trim()) newErrors.country = 'Country is required'
+    if (!formData.address.trim()) newErrors.address = 'Street address is required'
     if (!formData.city.trim()) newErrors.city = 'Town/City is required'
+    if (!formData.state.trim()) newErrors.state = 'State is required'
     if (!formData.postcode.trim()) newErrors.postcode = 'Postcode is required'
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
@@ -217,6 +332,7 @@ export default function CheckoutPage() {
             company: formData.company,
             firmName: formData.firmName,
             gst: formData.gstNo,
+            address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
           },
           // Include referral information
           referralInfo: referralInfo ? {
@@ -280,6 +396,7 @@ export default function CheckoutPage() {
                 company: formData.company,
                 firmName: formData.firmName,
                 gst: formData.gstNo,
+                address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
               },
               productDetails: {
                 name: product.name,
@@ -330,12 +447,31 @@ export default function CheckoutPage() {
 
   return (
     <>
+      <style jsx global>{`
+        .checkout-page input::placeholder,
+        .checkout-page textarea::placeholder {
+          color: #666D80 !important;
+          opacity: 1;
+        }
+        .checkout-page input::-webkit-input-placeholder,
+        .checkout-page textarea::-webkit-input-placeholder {
+          color: #666D80 !important;
+        }
+        .checkout-page input::-moz-placeholder,
+        .checkout-page textarea::-moz-placeholder {
+          color: #666D80 !important;
+        }
+        .checkout-page input:-ms-input-placeholder,
+        .checkout-page textarea:-ms-input-placeholder {
+          color: #666D80 !important;
+        }
+      `}</style>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="lazyOnload"
       />
 
-      <div className="min-h-screen bg-white py-8 sm:py-12">
+      <div className="min-h-screen bg-white py-8 sm:py-12 checkout-page">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Affiliate Referral Banner */}
           {referralInfo?.ref && (
@@ -413,7 +549,7 @@ export default function CheckoutPage() {
                   {/* GST No */}
                   <div>
                     <Label htmlFor="gstNo" className="text-sm font-medium text-gray-700">
-                      GST No (optional)
+                      GST No <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="gstNo"
@@ -434,25 +570,74 @@ export default function CheckoutPage() {
                       name="country"
                       value={formData.country}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? 'border-red-500' : 'border-gray-300'}`}
                     >
+                      <option value="">Select Country</option>
                       <option value="India">India</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Australia">Australia</option>
+                      <option value="Afghanistan">Afghanistan</option>
+                      <option value="Albania">Albania</option>
+                      <option value="Algeria">Algeria</option>
+                      <option value="Argentina">Argentina</option>
+                      <option value="Austria">Austria</option>
+                      <option value="Bangladesh">Bangladesh</option>
+                      <option value="Belgium">Belgium</option>
+                      <option value="Brazil">Brazil</option>
+                      <option value="China">China</option>
+                      <option value="Denmark">Denmark</option>
+                      <option value="Egypt">Egypt</option>
+                      <option value="Finland">Finland</option>
+                      <option value="France">France</option>
+                      <option value="Germany">Germany</option>
+                      <option value="Greece">Greece</option>
+                      <option value="Hong Kong">Hong Kong</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Ireland">Ireland</option>
+                      <option value="Italy">Italy</option>
+                      <option value="Japan">Japan</option>
+                      <option value="Malaysia">Malaysia</option>
+                      <option value="Mexico">Mexico</option>
+                      <option value="Netherlands">Netherlands</option>
+                      <option value="New Zealand">New Zealand</option>
+                      <option value="Norway">Norway</option>
+                      <option value="Pakistan">Pakistan</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="Poland">Poland</option>
+                      <option value="Portugal">Portugal</option>
+                      <option value="Russia">Russia</option>
+                      <option value="Saudi Arabia">Saudi Arabia</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="South Africa">South Africa</option>
+                      <option value="South Korea">South Korea</option>
+                      <option value="Spain">Spain</option>
+                      <option value="Sri Lanka">Sri Lanka</option>
+                      <option value="Sweden">Sweden</option>
+                      <option value="Switzerland">Switzerland</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Turkey">Turkey</option>
+                      <option value="United Arab Emirates">United Arab Emirates</option>
+                      <option value="Vietnam">Vietnam</option>
                     </select>
+                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
                   </div>
 
                   {/* Street Address */}
                   <div>
                     <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                      Street address (optional)
+                      Street address <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="address"
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      placeholder="House number and street name"
-                      className="mt-1 border-gray-300"
+                      placeholder="Street address"
+                      className={`mt-1 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
 
                   {/* Town/City */}
@@ -470,29 +655,39 @@ export default function CheckoutPage() {
                     {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                   </div>
 
-                  {/* State/County */}
+                  {/* State */}
                   <div>
                     <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-                      State / County (optional)
+                      State / County <span className="text-red-500">*</span>
                     </Label>
-                    <select
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select State</option>
-                      <option value="Tamil Nadu">Tamil Nadu</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Kerala">Kerala</option>
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Delhi">Delhi</option>
-                      <option value="Gujarat">Gujarat</option>
-                      <option value="Rajasthan">Rajasthan</option>
-                      <option value="Uttar Pradesh">Uttar Pradesh</option>
-                      <option value="West Bengal">West Bengal</option>
-                    </select>
+                    {hasStateDropdown ? (
+                      <select
+                        id="state"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        className={`mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
+                      >
+                        <option value="">Select State</option>
+                        {availableStates.map((state) => (
+                          <option key={state} value={state}>
+                            {state}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Input
+                        id="state"
+                        name="state"
+                        type="text"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        placeholder={formData.country ? "Enter your state or county" : "Please select a country first"}
+                        disabled={!formData.country}
+                        className={`mt-1 ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
+                      />
+                    )}
+                    {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                   </div>
 
                   {/* Postcode/ZIP */}
@@ -544,8 +739,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Additional Information */}
-              <div>
+              {/* Additional Information
+              /*<div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Additional information</h3>
                 <div>
                   <Label htmlFor="orderNotes" className="text-sm font-medium text-gray-700">
@@ -561,12 +756,12 @@ export default function CheckoutPage() {
                     className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-              </div>
+              </div>*/}
             </div>
 
             {/* Right Column - Order Summary */}
             <div className="space-y-6">
-              {/* Apply Coupon */}
+              {/* Apply Coupon
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Apply Coupon</h3>
                 <div className="flex gap-2">
@@ -587,20 +782,21 @@ export default function CheckoutPage() {
                 <p className="text-xs text-gray-500 mt-2">
                   If you have a coupon code, please apply it below.
                 </p>
-              </div>
+              </div>*/}
 
               {/* Purchase Plan */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Purchase Plan</h3>
 
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center overflow-hidden">
+                  <div className="w-20 h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md">
                     <Image
-                      src="/images/powerca-logo-main.png"
+                      src="/images/power-ca-logo-footer.png"
                       alt="PowerCA"
-                      width={60}
-                      height={60}
-                      className="object-contain filter brightness-0 invert"
+                      width={80}
+                      height={80}
+                      className="object-contain filter brightness-0 invert p-2"
+                      unoptimized
                     />
                   </div>
                   <div className="flex-1">

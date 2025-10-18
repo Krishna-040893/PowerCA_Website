@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState, useEffect  } from 'react'
+import {useState  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -12,7 +12,7 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, CheckCircle2  } from 'lucide-react'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield  } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

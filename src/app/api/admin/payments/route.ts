@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch payment orders from Supabase
+    // Fetch payments from Supabase
     const { data: payments, error } = await supabase
-      .from('payment_orders')
+      .from('payments')
       .select('*')
       .order('created_at', { ascending: false })
 

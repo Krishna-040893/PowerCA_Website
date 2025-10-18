@@ -22,10 +22,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Create a lookup map by affiliate_id
-    const affiliateMap = new Map()
-    affiliateRegs?.forEach((reg: any) => {
+    const affiliateMap = new Map<string, Record<string, unknown>>()
+    affiliateRegs?.forEach((reg: Record<string, unknown>) => {
       if (reg.affiliate_id) {
-        affiliateMap.set(reg.affiliate_id, reg)
+        affiliateMap.set(reg.affiliate_id as string, reg)
       }
     })
 
@@ -51,10 +51,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Group referrals by affiliate
-    const groupedByAffiliate: Record<string, any> = {}
+    const groupedByAffiliate: Record<string, Record<string, unknown>> = {}
 
-    referrals?.forEach((referral: any) => {
-      const affId = referral.affiliate_id
+    referrals?.forEach((referral: Record<string, unknown>) => {
+      const affId = referral.affiliate_id as string
 
       // Get affiliate details from the map
       const affiliateInfo = affiliateMap.get(affId) || {}

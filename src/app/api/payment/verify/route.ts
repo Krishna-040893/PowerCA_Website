@@ -96,17 +96,35 @@ export async function POST(req: NextRequest) {
     const customerEmail = customerDetails?.email || session?.user?.email || userInfo.email || 'guest@powerca.in'
     const customerName = customerDetails?.name || session?.user?.name || userInfo.name || 'Customer'
 
+    // Check if user exists before saving payment
+    let validUserId = null
+    if (session?.user?.id) {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', session.user.id)
+        .single()
+
+      if (existingUser) {
+        validUserId = session.user.id
+      } else {
+        logger.warn('Session user ID does not exist in users table, saving payment without user_id', {
+          sessionUserId: session.user.id
+        })
+      }
+    }
+
     // Save payment to database
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
-        user_id: session?.user?.id || null,
+        user_id: validUserId,
         order_id: normalizedOrderId,
         payment_id: normalizedPaymentId,
         signature: normalizedSignature,
         amount: totalAmount, // Store total amount (including GST) for payments table
         currency: 'INR',
-        status: 'success',
+        status: 'captured', // Use actual Razorpay payment status
         plan: productDetails?.name || 'PowerCA Implementation',
         email: customerEmail,
         phone: customerDetails?.phone || userInfo.phone,
@@ -177,8 +195,10 @@ export async function POST(req: NextRequest) {
     // Use already calculated values (no need to recalculate GST)
     const subtotal = paymentAmount // Base amount (excluding GST)
     const gst = {
-      cgst: gstAmount / 2,
-      sgst: gstAmount / 2,
+      cgstRate: 9,
+      cgstAmount: gstAmount / 2,
+      sgstRate: 9,
+      sgstAmount: gstAmount / 2,
       totalTax: gstAmount
     }
     const grandTotal = totalAmount // Total amount (including GST)
@@ -189,7 +209,7 @@ export async function POST(req: NextRequest) {
       customerName: customerName,
       customerEmail: customerEmail,
       customerPhone: customerDetails?.phone || userInfo.phone,
-      customerCompany: customerDetails?.company || userInfo.company,
+      customerCompany: customerDetails?.firmName || userInfo.firmName || customerDetails?.company || userInfo.company,
       customerAddress: customerDetails?.address || userInfo.address,
       customerGSTN: customerDetails?.gst || userInfo.gstNumber,
       orderId: normalizedOrderId,
@@ -210,7 +230,12 @@ export async function POST(req: NextRequest) {
     // Generate PDF invoice
     let invoicePDF = null
     try {
+      logger.info('Generating PDF invoice', { invoiceNumber })
       invoicePDF = await generateInvoicePDF(invoiceData)
+      logger.info('PDF invoice generated successfully', {
+        invoiceNumber,
+        pdfSize: invoicePDF ? invoicePDF.length : 0
+      })
     } catch (pdfError) {
       logger.error('Failed to generate PDF invoice', pdfError)
       // Continue without PDF if generation fails
@@ -241,6 +266,11 @@ export async function POST(req: NextRequest) {
           console.warn('Resend not configured, skipping confirmation email')
           return
         }
+        logger.info('Sending payment confirmation email', {
+          to: customerEmail,
+          invoiceNumber,
+          hasAttachment: !!invoicePDF
+        })
         await resend.emails.send({
           from: 'PowerCA <contact@powerca.in>',
           to: customerEmail,
@@ -325,8 +355,13 @@ export async function POST(req: NextRequest) {
           `,
           attachments: invoicePDF ? [{
             filename: `PowerCA-Invoice-${invoiceNumber}.pdf`,
-            content: invoicePDF,
+            content: Buffer.from(invoicePDF).toString('base64'),
           }] : [],
+        })
+        logger.info('Payment confirmation email sent successfully', {
+          to: customerEmail,
+          invoiceNumber,
+          attachmentIncluded: !!invoicePDF
         })
       } catch (emailError) {
         logger.error('Failed to send confirmation email', emailError)

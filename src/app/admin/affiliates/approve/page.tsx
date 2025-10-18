@@ -8,8 +8,6 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
-import {Textarea  } from '@/components/ui/textarea'
-import {Label  } from '@/components/ui/label'
 import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
 import { format } from 'date-fns'
 import {toast  } from 'sonner'
@@ -45,8 +43,6 @@ export default function AdminAffiliateApprovalPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
-  const [reviewNotes, setReviewNotes] = useState('')
-  const [processing, setProcessing] = useState(false)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)

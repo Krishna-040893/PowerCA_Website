@@ -1,4 +1,7 @@
-import puppeteer from 'puppeteer-core'
+import puppeteer from 'puppeteer'
+import { generateTBSInvoiceHTML } from './invoice-tbs-template'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export interface InvoiceData {
   invoiceNumber: string
@@ -88,7 +91,7 @@ export function calculateGST(amount: number, isInterState: boolean = false) {
   }
 }
 
-// Generate HTML invoice
+// Generate HTML invoice - TBS Technologies Design
 export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }): string {
   const formatCurrency = (amount: number) => `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   const formatDate = (date: Date) => new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -481,7 +484,30 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
 
 // Generate PDF invoice
 export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
-  const htmlContent = generateInvoiceHTML(data)
+  // Read header logo (Group 12.png) and convert to base64
+  const headerLogoPath = path.join(process.cwd(), 'public', 'images', 'Group 12.png')
+  let headerLogoBase64 = ''
+
+  try {
+    const headerLogoBuffer = fs.readFileSync(headerLogoPath)
+    headerLogoBase64 = `data:image/png;base64,${headerLogoBuffer.toString('base64')}`
+  } catch (error) {
+    console.warn('Header logo file not found, using placeholder')
+  }
+
+  // Read product logo (power-ca-logo-footer.png) and convert to base64
+  const productLogoPath = path.join(process.cwd(), 'public', 'images', 'power-ca-logo-footer.png')
+  let productLogoBase64 = ''
+
+  try {
+    const productLogoBuffer = fs.readFileSync(productLogoPath)
+    productLogoBase64 = `data:image/png;base64,${productLogoBuffer.toString('base64')}`
+  } catch (error) {
+    console.warn('Product logo file not found, using placeholder')
+  }
+
+  // Generate HTML content from TBS template with both logos
+  const htmlContent = generateTBSInvoiceHTML(data, headerLogoBase64, productLogoBase64)
 
   let browser = null
   try {

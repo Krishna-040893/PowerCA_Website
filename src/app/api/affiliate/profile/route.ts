@@ -1,156 +1,177 @@
-import {NextRequest, NextResponse  } from 'next/server'
-import {createAdminClient  } from '@/lib/supabase/admin'
+/**
+ * API Route: Affiliate Profile
+ * GET - Fetch affiliate profile data from affiliate_registrations table
+ * PUT - Update affiliate profile data in affiliate_registrations table
+ */
 
-// GET affiliate profile
-export async function GET(_request: NextRequest) {
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+/**
+ * GET /api/affiliate/profile
+ * Fetch affiliate profile data from affiliate_registrations table
+ */
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Get user ID from session
-    const userId = 'current-user-id' // This should come from session
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const userRole = session.user.role
+
+    // Check if user is an affiliate
+    if (userRole !== 'affiliate' && userRole !== 'Affiliate') {
+      return NextResponse.json(
+        { error: 'Access denied. Only affiliates can access this endpoint.' },
+        { status: 403 }
+      )
+    }
 
     const supabase = createAdminClient()
 
-    // Get affiliate profile
-    const { data: profile, error } = await supabase
-      .from('affiliate_profiles')
+    // Fetch affiliate data from affiliate_registrations table
+    const { data: affiliateData, error } = await supabase
+      .from('affiliate_registrations')
       .select('*')
-      .eq('user_id', userId)
+      .eq('email', session.user.email)
       .single()
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No profile found
-        return NextResponse.json({
-          success: false,
-          needsProfile: true,
-          message: 'Affiliate profile not found'
-        })
-      }
-
       console.error('Error fetching affiliate profile:', error)
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch profile' },
+        { error: 'Failed to fetch profile data' },
         { status: 500 }
+      )
+    }
+
+    if (!affiliateData) {
+      return NextResponse.json(
+        { error: 'Affiliate profile not found' },
+        { status: 404 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      profile
+      data: affiliateData
     })
   } catch (error) {
-    console.error('Error in GET /api/affiliate/profile:', error)
+    console.error('Affiliate profile fetch error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error'
+      },
       { status: 500 }
     )
   }
 }
 
-// POST - Create affiliate profile
-export async function POST(request: NextRequest) {
+/**
+ * PUT /api/affiliate/profile
+ * Update affiliate profile data in affiliate_registrations table
+ */
+export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
-    const {
-      company_name,
-      website_url,
-      description,
-      address,
-      city,
-      state,
-      country,
-      postal_code,
-      bank_name,
-      account_number,
-      ifsc_code,
-      pan_number,
-      gst_number
-    } = body
-
-    // TODO: Get user ID from session
-    const userId = 'current-user-id' // This should come from session
-
-    const supabase = createAdminClient()
-
-    // Check if user is an affiliate
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', userId)
-      .single()
-
-    if (userError || !user) {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       )
     }
 
-    if (user.role !== 'affiliate') {
+    const userRole = session.user.role
+
+    // Check if user is an affiliate
+    if (userRole !== 'affiliate' && userRole !== 'Affiliate') {
       return NextResponse.json(
-        { success: false, error: 'User is not an affiliate' },
+        { error: 'Access denied. Only affiliates can access this endpoint.' },
         { status: 403 }
       )
     }
 
-    // Check if profile already exists
-    const { data: existingProfile } = await supabase
-      .from('affiliate_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single()
+    // Parse request body
+    const body = await request.json()
+    const {
+      full_name,
+      phone,
+      city,
+      state,
+      company_name,
+      designation,
+      experience,
+      website,
+      promotion_method,
+      target_audience,
+      monthly_leads,
+      account_number,
+      ifsc_code,
+      pan_number,
+      gst_number,
+    } = body
 
-    if (existingProfile) {
+    // Validate required fields
+    if (!full_name || !phone || !city || !state) {
       return NextResponse.json(
-        { success: false, error: 'Affiliate profile already exists' },
+        { error: 'Missing required fields: full_name, phone, city, state' },
         { status: 400 }
       )
     }
 
-    // Generate unique affiliate code
-    const affiliateCode = 'AFF' + Math.random().toString(36).substr(2, 7).toUpperCase()
+    const supabase = createAdminClient()
 
-    // Create affiliate profile
-    const { data: newProfile, error: insertError } = await supabase
-      .from('affiliate_profiles')
-      .insert({
-        user_id: userId,
-        affiliate_code: affiliateCode,
-        company_name,
-        website_url,
-        description,
-        address,
+    // Update affiliate data
+    const { data: updatedData, error } = await supabase
+      .from('affiliate_registrations')
+      .update({
+        full_name,
+        phone,
         city,
         state,
-        country: country || 'India',
-        postal_code,
-        bank_name,
+        company_name,
+        designation,
+        experience,
+        website,
+        promotion_method,
+        target_audience,
+        monthly_leads,
         account_number,
         ifsc_code,
         pan_number,
         gst_number,
-        status: 'approved', // Auto-approve for now
-        approved_at: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
+      .eq('email', session.user.email)
       .select()
       .single()
 
-    if (insertError) {
-      console.error('Error creating affiliate profile:', insertError)
+    if (error) {
+      console.error('Error updating affiliate profile:', error)
       return NextResponse.json(
-        { success: false, error: 'Failed to create profile' },
+        { error: 'Failed to update profile' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      profile: newProfile,
-      message: 'Affiliate profile created successfully'
+      message: 'Profile updated successfully',
+      data: updatedData
     })
   } catch (error) {
-    console.error('Error in POST /api/affiliate/profile:', error)
+    console.error('Affiliate profile update error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error'
+      },
       { status: 500 }
     )
   }

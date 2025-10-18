@@ -9,7 +9,7 @@ import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
 import { signIn, signOut } from 'next-auth/react'
-import {useRouter, useSearchParams  } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import {Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle  } from 'lucide-react'
 
 export default function LoginPage() {
@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/account'
 

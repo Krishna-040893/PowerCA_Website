@@ -3,11 +3,11 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useRouter  } from 'next/navigation'
 import {useSession, signOut  } from 'next-auth/react'
-import {Building2, Globe, Link, User, MapPin, Save, AlertCircle, Clock, XCircle, LogOut  } from 'lucide-react'
+import {Building2, Globe, Link, User, Save, AlertCircle, Clock, XCircle, LogOut  } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
-import {AffiliateApplication  } from '@/types/common'
 import {toast  } from 'sonner'
 import {Button  } from '@/components/ui/button'
+import ProfilePhotoUpload from '@/components/profile-photo-upload'
 
 export default function AffiliateAccountPage() {
   const router = useRouter()
@@ -16,7 +16,6 @@ export default function AffiliateAccountPage() {
   const [affiliateId, setAffiliateId] = useState('Loading...')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [existingDetails, setExistingDetails] = useState<AffiliateApplication | null>(null)
   const [latestReferralCode, setLatestReferralCode] = useState<string>('')
   const [latestCustomerId, setLatestCustomerId] = useState<string>('')
   const [referralStatus, setReferralStatus] = useState<{
@@ -37,6 +36,7 @@ export default function AffiliateAccountPage() {
     affiliateId: string
     referralCode: string
   } | null>(null)
+  const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     contactEmail: '',
@@ -142,9 +142,8 @@ export default function AffiliateAccountPage() {
             setReferredBy(data.referredBy)
           }
 
-          // If profile exists, save it but don't populate the form
+          // If profile exists, save the latest referral code
           if (data.profile) {
-            setExistingDetails(data.profile)
             // Save the latest referral code
             if (data.profile.referral_code) {
               setLatestReferralCode(data.profile.referral_code)
@@ -189,7 +188,30 @@ export default function AffiliateAccountPage() {
 
     // Fetch affiliate details - this will check approval status
     fetchAffiliateDetails()
+    fetchProfilePhoto()
   }, [session, status, router, fetchAffiliateDetails])
+
+  const fetchProfilePhoto = async () => {
+    if (!session?.user?.id) return
+
+    try {
+      const response = await fetch('/api/user/profile-photo')
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentProfilePhotoUrl(data.photoUrl)
+      }
+    } catch (error) {
+      console.error('Error fetching profile photo:', error)
+    }
+  }
+
+  const handleProfilePhotoUpdate = (newUrl: string) => {
+    setCurrentProfilePhotoUrl(newUrl)
+  }
+
+  const handleProfilePhotoDelete = () => {
+    setCurrentProfilePhotoUrl(null)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -520,23 +542,25 @@ export default function AffiliateAccountPage() {
       {/* Main Content */}
       <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header Section - Enhanced */}
-        <div className="relative mb-8 overflow-hidden">
+        <div className="relative mb-8 overflow-hidden rounded-2xl">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-90"></div>
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00em0wLTEyYzAtMi4yMS0xLjc5LTQtNC00cy00IDEuNzktNCA0IDEuNzkgNCA0IDQgNC0xLjc5IDQtNHptMTIgMTJjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
-          <div className="relative px-8 py-12">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-6">
-                <div className="h-20 w-20 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-2xl">
-                  <Building2 className="h-10 w-10 text-white" />
-                </div>
+          <div className="relative px-6 py-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                {/* Profile Photo */}
+
                 <div className="text-white">
-                  <h1 className="text-3xl md:text-4xl font-bold mb-2">Affiliate Dashboard</h1>
-                  <p className="text-blue-100 text-lg">Manage your referrals and track your earnings</p>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-1">Affiliate Referral</h1>
+                  <p className="text-blue-100 text-sm">Manage your referrals and track your earnings</p>
                 </div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md border-2 border-white/30 px-8 py-6 rounded-2xl shadow-2xl">
-                <p className="text-sm text-blue-100 mb-1 font-medium">Your Affiliate ID</p>
-                <p className="text-3xl font-black text-white tracking-wider">{affiliateId}</p>
+              <div className="flex flex-col gap-4">
+                <div className="bg-white/20 backdrop-blur-md border-2 border-white/30 px-8 py-6 rounded-2xl shadow-2xl">
+                  <p className="text-sm text-blue-100 mb-1 font-medium">Your Affiliate ID</p>
+                  <p className="text-2xl font-black text-white tracking-wider">{affiliateId}</p>
+                </div>
+
               </div>
             </div>
           </div>
@@ -814,7 +838,7 @@ export default function AffiliateAccountPage() {
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
                   <Building2 className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900">Referral Details</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Referral Details</h2>
               </div>
               <p className="text-gray-600 ml-13">Track all your referrals, payment status, and commission earnings</p>
             </div>

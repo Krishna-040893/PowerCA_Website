@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { paymentId, commissionPaid } = body
+    const { paymentId, commissionPaid, paymentMode, paymentDate } = body
 
     if (!paymentId) {
       return NextResponse.json(
@@ -83,14 +83,24 @@ export async function PUT(req: NextRequest) {
       )
     }
 
+    // Validate payment details if marking as paid
+    if (commissionPaid && (!paymentMode || !paymentDate)) {
+      return NextResponse.json(
+        { success: false, error: 'Payment mode and date are required when marking as paid' },
+        { status: 400 }
+      )
+    }
+
     const supabase = createAdminClient()
 
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       commission_paid: commissionPaid,
     }
 
     if (commissionPaid) {
       updateData.commission_paid_at = new Date().toISOString()
+      updateData.payment_mode = paymentMode
+      updateData.payment_date = paymentDate
     }
 
     const { data, error } = await supabase
@@ -102,8 +112,9 @@ export async function PUT(req: NextRequest) {
 
     if (error) {
       logger.error('Failed to update commission status', error)
+      console.error('Database error details:', error)
       return NextResponse.json(
-        { success: false, error: 'Failed to update commission' },
+        { success: false, error: `Failed to update commission: ${error.message}` },
         { status: 500 }
       )
     }

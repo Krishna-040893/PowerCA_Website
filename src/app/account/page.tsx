@@ -7,18 +7,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   User,
   Mail,
   Phone,
-  CreditCard,
+  MapPin,
+  Building2,
   ShoppingBag,
   Trash2,
   LogOut,
-  ArrowLeft,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Package,
+  Settings,
+  Loader2,
+  FileText,
+  Calendar,
+  IndianRupee,
+  Edit2,
+  Save,
+  X,
+  Camera
 } from 'lucide-react'
-import Link from 'next/link'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +41,50 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
+import Image from 'next/image'
+import ProfilePhotoUpload from '@/components/profile-photo-upload'
+
+interface BillingAddress {
+  name: string
+  email: string
+  phone?: string
+  firmName?: string
+  company?: string
+  address?: string
+  gstNumber?: string
+}
+
+interface OrderHistory {
+  invoiceNumber: string
+  orderId: string
+  paymentId: string
+  amount: number
+  gst: number
+  total: number
+  status: string
+  issuedAt: string
+  paidAt: string
+}
+
+interface UserData {
+  billingAddress: BillingAddress | null
+  orderHistory: OrderHistory[]
+  totalOrders: number
+}
 
 export default function AccountPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [isLoadingData, setIsLoadingData] = useState(true)
+  const [activeTab, setActiveTab] = useState('profile')
+  const [isEditingBilling, setIsEditingBilling] = useState(false)
+  const [editedBilling, setEditedBilling] = useState<BillingAddress | null>(null)
+  const [isSavingBilling, setIsSavingBilling] = useState(false)
+  const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -42,24 +92,173 @@ export default function AccountPage() {
     }
   }, [status, router])
 
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchUserData()
+      fetchProfilePhoto()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.email])
+
+  const fetchProfilePhoto = async () => {
+    if (!session?.user?.id) return
+
+    try {
+      const response = await fetch('/api/user/profile-photo')
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentProfilePhotoUrl(data.photoUrl)
+      }
+    } catch (error) {
+      console.error('Error fetching profile photo:', error)
+    }
+  }
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoadingData(true)
+      const response = await fetch('/api/user/data')
+      const result = await response.json()
+
+      if (result.success) {
+        setUserData(result.data)
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+    } finally {
+      setIsLoadingData(false)
+    }
+  }
+
+  const handleEditBilling = () => {
+    setEditedBilling(userData?.billingAddress || null)
+    setIsEditingBilling(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditingBilling(false)
+    setEditedBilling(null)
+  }
+
+  const handleSaveBilling = async () => {
+    if (!editedBilling) return
+
+    setIsSavingBilling(true)
+    try {
+      // Call API to update billing information
+      const response = await fetch('/api/user/billing', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedBilling),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save billing information')
+      }
+
+      // Update local state with saved data
+      if (userData) {
+        setUserData({
+          ...userData,
+          billingAddress: editedBilling
+        })
+      }
+
+      setIsEditingBilling(false)
+      setEditedBilling(null)
+
+      // Show success message
+      alert('Billing information saved successfully!')
+    } catch (error) {
+      console.error('Error saving billing info:', error)
+      alert(error instanceof Error ? error.message : 'Failed to save billing information. Please try again.')
+    } finally {
+      setIsSavingBilling(false)
+    }
+  }
+
+  const handleProfilePhotoUpdate = (newUrl: string) => {
+    setCurrentProfilePhotoUrl(newUrl)
+  }
+
+  const handleProfilePhotoDelete = () => {
+    setCurrentProfilePhotoUrl(null)
+  }
+
   const handleDeleteAccount = async () => {
     setIsDeleting(true)
     try {
-      // Add delete account API call here
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Placeholder
-      await signOut({ callbackUrl: '/' })
+      const response = await fetch('/api/user/delete', {
+        method: 'DELETE',
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        await signOut({ callbackUrl: '/' })
+      } else {
+        throw new Error(result.error || 'Failed to delete account')
+      }
     } catch (error) {
       console.error('Error deleting account:', error)
+      alert('Failed to delete account. Please try again or contact support.')
       setIsDeleting(false)
     }
   }
 
+  const handleDownloadInvoice = async (invoiceNumber: string) => {
+    try {
+      const response = await fetch(`/api/invoice/download/${invoiceNumber}`)
+
+      if (!response.ok) {
+        throw new Error('Failed to download invoice')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `PowerCA-Invoice-${invoiceNumber}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Failed to download invoice:', error)
+      alert('Failed to download invoice. Please try again or contact support.')
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount)
+  }
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return 'N/A'
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return 'N/A'
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  }
+
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your account...</p>
         </div>
       </div>
     )
@@ -70,192 +269,528 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-gray-50">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100 shadow-md">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-white" />
+            <div className="flex items-center space-x-6">
+              {/* Profile Photo Display with Edit Button */}
+              <div className="flex-shrink-0">
+                <ProfilePhotoUpload
+                  currentPhotoUrl={currentProfilePhotoUrl}
+                  onPhotoUpdate={handleProfilePhotoUpdate}
+                  onPhotoDelete={handleProfilePhotoDelete}
+                  size="md"
+                  editable={true}
+                />
               </div>
-              <h2 className="text-base font-semibold text-gray-900">
-                {session.user?.name || 'User'}
-              </h2>
+
+              <div className="flex flex-col justify-center">
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                  {session.user?.name || 'Welcome'}
+                </h1>
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  {session.user?.email}
+                </p>
+              </div>
             </div>
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="default"
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-gray-600 hover:text-red-600"
+              className="text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
-          <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
-        </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          {/* Individual Spaced Tabs */}
+          <TabsList className="flex flex-wrap gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
+            <TabsTrigger
+              value="profile"
+              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger
+              value="billing"
+              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              Billing Address
+            </TabsTrigger>
+            <TabsTrigger
+              value="orders"
+              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+            >
+              <ShoppingBag className="h-4 w-4 mr-2" />
+              Order History
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="space-y-6">
-          {/* Account Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-              <CardDescription>Your personal details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="name"
-                      value={session.user?.name || ''}
-                      disabled
-                      className="pl-10 bg-gray-50"
-                    />
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6 mt-6">
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-blue-600/15 border-b py-6">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Account Information
+                </CardTitle>
+                <CardDescription>Your personal details and account information</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="name"
+                        value={session.user?.name || 'Not provided'}
+                        disabled
+                        className="pl-10 bg-gray-50 border-gray-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="email"
+                        value={session.user?.email || 'Not provided'}
+                        disabled
+                        className="pl-10 bg-gray-50 border-gray-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="phone"
+                        value={session.user?.phone || userData?.billingAddress?.phone || 'Not provided'}
+                        disabled
+                        className="pl-10 bg-gray-50 border-gray-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role" className="text-sm font-medium text-gray-700">Account Type</Label>
+                    <div className="relative">
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                        {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="email"
-                      value={session.user?.email || ''}
-                      disabled
-                      className="pl-10 bg-gray-50"
-                    />
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Account Status</p>
+                      <p className="text-sm text-gray-500">Your account is active and in good standing</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="phone"
-                      value={session.user?.phone || 'Not provided'}
-                      disabled
-                      className="pl-10 bg-gray-50"
-                    />
+          {/* Billing Address Tab */}
+          <TabsContent value="billing" className="space-y-6 mt-6">
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-blue-600/15 border-b py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <MapPin className="h-5 w-5 text-purple-600" />
+                      Billing Address
+                    </CardTitle>
+                    <CardDescription>Your billing and company information</CardDescription>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role">Account Type</Label>
-                  <Input
-                    id="role"
-                    value={session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
-                    disabled
-                    className="bg-gray-50 capitalize"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button variant="outline" size="sm" disabled>
-                  Edit Information (Coming Soon)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Billing Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Billing Details
-              </CardTitle>
-              <CardDescription>Manage your payment methods</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-4">No payment methods added yet</p>
-                <Button variant="outline" size="sm" disabled>
-                  Add Payment Method (Coming Soon)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* My Orders */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
-                My Orders
-              </CardTitle>
-              <CardDescription>View your order history</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-4">No orders yet</p>
-                <p className="text-sm text-gray-500">Your purchase history will appear here</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Danger Zone - Delete Account */}
-          <Card className="border-red-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
-                <AlertCircle className="h-5 w-5" />
-                Danger Zone
-              </CardTitle>
-              <CardDescription>Permanently delete your account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  Once you delete your account, there is no going back. Please be certain.
-                </p>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Account
+                  {!isEditingBilling && userData?.billingAddress && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditBilling}
+                      className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Edit
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your
-                        account and remove your data from our servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteAccount}
-                        disabled={isDeleting}
-                        className="bg-red-600 hover:bg-red-700"
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {isLoadingData ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    <span className="ml-3 text-gray-600">Loading billing information...</span>
+                  </div>
+                ) : userData?.billingAddress ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Full Name</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <Input
+                            value={isEditingBilling ? editedBilling?.name || '' : userData.billingAddress.name || 'N/A'}
+                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, name: e.target.value } : null)}
+                            disabled={!isEditingBilling}
+                            className={`pl-10 ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <Input
+                            value={isEditingBilling ? editedBilling?.email || '' : userData.billingAddress.email || 'N/A'}
+                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, email: e.target.value } : null)}
+                            disabled={!isEditingBilling}
+                            className={`pl-10 ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Phone</Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <Input
+                            value={isEditingBilling ? editedBilling?.phone || '' : userData.billingAddress.phone || 'N/A'}
+                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                            disabled={!isEditingBilling}
+                            className={`pl-10 ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Firm/Company Name</Label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <Input
+                            value={isEditingBilling ? editedBilling?.firmName || editedBilling?.company || '' : userData.billingAddress.firmName || userData.billingAddress.company || 'N/A'}
+                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, firmName: e.target.value } : null)}
+                            disabled={!isEditingBilling}
+                            className={`pl-10 ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                          />
+                        </div>
+                      </div>
+
+                      {(userData.billingAddress.gstNumber || isEditingBilling) && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">GST Number</Label>
+                          <div className="relative">
+                            <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Input
+                              value={isEditingBilling ? editedBilling?.gstNumber || '' : userData.billingAddress.gstNumber || ''}
+                              onChange={(e) => setEditedBilling(prev => prev ? { ...prev, gstNumber: e.target.value } : null)}
+                              disabled={!isEditingBilling}
+                              className={`pl-10 font-mono text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {(userData.billingAddress.address || isEditingBilling) && (
+                        <div className="space-y-2 md:col-span-2">
+                          <Label className="text-sm font-medium text-gray-700">Address</Label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                            <textarea
+                              value={isEditingBilling ? editedBilling?.address || '' : userData.billingAddress.address || ''}
+                              onChange={(e) => setEditedBilling(prev => prev ? { ...prev, address: e.target.value } : null)}
+                              disabled={!isEditingBilling}
+                              rows={3}
+                              className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
+                                isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {isEditingBilling && (
+                      <div className="flex items-center justify-end gap-3 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancelEdit}
+                          disabled={isSavingBilling}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSaveBilling}
+                          disabled={isSavingBilling}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          {isSavingBilling ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600 mb-2">No billing address available</p>
+                    <p className="text-sm text-gray-500">Your billing information will appear here after your first purchase</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Order History Tab */}
+          <TabsContent value="orders" className="space-y-6 mt-6">
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-blue-600/15 border-b py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <ShoppingBag className="h-5 w-5 text-green-600" />
+                      Order History
+                    </CardTitle>
+                    <CardDescription>View and download your invoices</CardDescription>
+                  </div>
+                  {userData && userData.totalOrders > 0 && (
+                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                      {userData.totalOrders} {userData.totalOrders === 1 ? 'Order' : 'Orders'}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {isLoadingData ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                    <span className="ml-3 text-gray-600">Loading order history...</span>
+                  </div>
+                ) : userData && userData.orderHistory.length > 0 ? (
+                  <div className="space-y-4">
+                    {userData.orderHistory.map((order) => (
+                      <div
+                        key={order.invoiceNumber}
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
                       >
-                        {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Package className="h-4 w-4 text-gray-400" />
+                                  <p className="font-semibold text-gray-900">Invoice #{order.invoiceNumber}</p>
+                                </div>
+                                <p className="text-xs text-gray-500 font-mono">Order ID: {order.orderId}</p>
+                              </div>
+                              <Badge
+                                className={
+                                  order.status === 'paid'
+                                    ? 'bg-green-100 text-green-800 border-green-200'
+                                    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                }
+                              >
+                                {order.status === 'paid' ? '✓ Paid' : order.status}
+                              </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">Amount</p>
+                                <p className="font-medium text-gray-900 flex items-center">
+                                  <IndianRupee className="h-3 w-3" />
+                                  {formatCurrency(order.amount).replace('₹', '')}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">GST</p>
+                                <p className="font-medium text-gray-900 flex items-center">
+                                  <IndianRupee className="h-3 w-3" />
+                                  {formatCurrency(order.gst).replace('₹', '')}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">Total</p>
+                                <p className="font-semibold text-green-700 flex items-center">
+                                  <IndianRupee className="h-3 w-3" />
+                                  {formatCurrency(order.total).replace('₹', '')}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1 flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Date
+                                </p>
+                                <p className="font-medium text-gray-900 text-xs">{formatDate(order.paidAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadInvoice(order.invoiceNumber)}
+                            className="w-full md:w-auto border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Invoice
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600 mb-2">No orders yet</p>
+                    <p className="text-sm text-gray-500 mb-4">Your purchase history will appear here</p>
+                    <Button asChild variant="outline" className="border-green-200 text-green-600 hover:bg-green-50">
+                      <Link href="/pricing">Browse Pricing</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6 mt-6">
+            <Card className="shadow-lg border-2 border-red-200">
+              <CardHeader className="bg-blue-600/15 border-b border-red-200 py-6">
+                <CardTitle className="flex items-center gap-2 text-xl text-red-700">
+                  <AlertCircle className="h-5 w-5" />
+                  Account Settings
+                </CardTitle>
+                <CardDescription>Manage your account preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  {/* Danger Zone - More Visible */}
+                  <div className="bg-white border-2 border-red-300 rounded-lg p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center">
+                          <Trash2 className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-red-900 mb-2">Delete Account</h3>
+                        <p className="text-sm text-red-800 mb-4">
+                          Permanently delete your account and all associated data. This action cannot be undone.
+                        </p>
+                        <div className="bg-white border border-red-200 rounded-lg p-4 mb-4">
+                          <p className="text-sm font-semibold text-red-900 mb-2">This will permanently delete:</p>
+                          <ul className="text-sm text-red-800 space-y-1.5 ml-4 list-disc">
+                            <li>Your personal information and profile</li>
+                            <li>All order history and invoices</li>
+                            <li>Billing and payment information</li>
+                            <li>Any associated data with your account</li>
+                          </ul>
+                        </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="lg"
+                              className="w-full md:w-auto bg-red-600 hover:bg-red-700 shadow-lg"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete My Account Permanently
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="max-w-md">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="flex items-center gap-2 text-red-600 text-xl">
+                                <AlertCircle className="h-6 w-6" />
+                                Confirm Account Deletion
+                              </AlertDialogTitle>
+                              <AlertDialogDescription className="text-base">
+                                <div className="space-y-3 mt-4">
+                                  <p className="font-semibold text-gray-900">
+                                    Are you absolutely sure you want to delete your account?
+                                  </p>
+                                  <p className="text-gray-700">
+                                    This action cannot be undone. All your data will be permanently removed:
+                                  </p>
+                                  <ul className="ml-4 space-y-1.5 list-disc text-gray-700">
+                                    <li>Personal information and profile</li>
+                                    <li>Order history and invoices</li>
+                                    <li>Billing information</li>
+                                    <li>All account data</li>
+                                  </ul>
+                                </div>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="mt-6">
+                              <AlertDialogCancel className="mr-2">Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleDeleteAccount}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                {isDeleting ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Yes, Delete Permanently
+                                  </>
+                                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   )

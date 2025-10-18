@@ -11,8 +11,7 @@ import {Checkbox  } from '@/components/ui/checkbox'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Star,
   ArrowLeft,
-  User, Mail, Building,
-  MessageSquare,
+  Mail,
   Shield, CheckCircle,
   Eye,
   EyeOff

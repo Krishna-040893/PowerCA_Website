@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {requireAdminAuth  } from '@/lib/admin-auth-helper'
 import {createClient  } from '@supabase/supabase-js'
 import {sendAffiliateApprovalEmail  } from '@/lib/resend'
+import {logger  } from '@/lib/logger'
 
 // Get all affiliate applications (Admin only)
 export async function GET(request: NextRequest) {
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (error) {
-      console.error('Supabase error:', error)
+      logger.error('Supabase error', error)
 
       // If table doesn't exist, return empty array
       if (error.message?.includes('affiliate_registrations') || error.code === '42P01') {
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(mappedApplications)
 
   } catch (error) {
-    console.error('Admin affiliates error:', error)
+    logger.error('Admin affiliates error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -140,7 +141,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { applicationId, status, adminNotes, approvedBy } = body
+    const { applicationId, status, adminNotes } = body
 
     // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -170,7 +171,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (fetchError) {
-      console.error('Failed to fetch affiliate registration:', fetchError)
+      logger.error('Failed to fetch affiliate registration', fetchError)
       return NextResponse.json(
         { error: 'Failed to find affiliate registration' },
         { status: 500 }
@@ -178,7 +179,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update data based on status
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       status,
       updated_at: new Date().toISOString()
     }
@@ -199,14 +200,14 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Supabase error updating affiliate registration:', error)
+      logger.error('Supabase error updating affiliate registration', error)
       return NextResponse.json(
         { error: error.message || 'Failed to update application' },
         { status: 500 }
       )
     }
 
-    console.log('Affiliate application updated successfully:', {
+    logger.info('Affiliate application updated successfully', {
       applicationId,
       status,
       referralCode: data.referral_code
@@ -226,13 +227,13 @@ export async function PUT(request: NextRequest) {
         })
 
         if (emailResult.success) {
-          console.log('Affiliate approval email sent successfully to:', affiliateReg.email)
+          logger.info('Affiliate approval email sent successfully', { email: affiliateReg.email })
         } else {
-          console.error('Failed to send affiliate approval email:', emailResult.error)
+          logger.error('Failed to send affiliate approval email', emailResult.error)
           // Don't fail the request if email fails - approval is already done
         }
       } catch (emailError) {
-        console.error('Error sending affiliate approval email:', emailError)
+        logger.error('Error sending affiliate approval email', emailError)
         // Don't fail the request if email fails - approval is already done
       }
     }
@@ -244,7 +245,7 @@ export async function PUT(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Update application error:', error)
+    logger.error('Update application error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

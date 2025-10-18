@@ -7,7 +7,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Textarea  } from '@/components/ui/textarea'
-import {Star, DollarSign, Users, TrendingUp } from 'lucide-react'
+import {Star, IndianRupee, Users, TrendingUp } from 'lucide-react'
 import {User  } from '@/types/common'
 import {toast  } from 'sonner'
 
@@ -110,7 +110,7 @@ export default function AffiliateApplicationPage() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6 text-center">
-              <DollarSign className="h-8 w-8 text-green-500 mx-auto mb-3" />
+              <IndianRupee className="h-8 w-8 text-green-500 mx-auto mb-3" />
               <h3 className="font-semibold text-lg mb-2">Earn Commission</h3>
               <p className="text-gray-600">Get 10% commission on every successful referral</p>
             </CardContent>
