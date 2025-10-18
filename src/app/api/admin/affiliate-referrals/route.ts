@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
 
+interface AffiliateGroup {
+  affiliate_id: string
+  affiliate_name: string
+  affiliate_email: string
+  affiliate_company: string
+  referral_code: string
+  referrals: Record<string, unknown>[]
+  stats: {
+    total: number
+    pending: number
+    completed: number
+    converted: number
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = createAdminClient()
@@ -51,7 +66,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Group referrals by affiliate
-    const groupedByAffiliate: Record<string, Record<string, unknown>> = {}
+    const groupedByAffiliate: Record<string, AffiliateGroup> = {}
 
     referrals?.forEach((referral: Record<string, unknown>) => {
       const affId = referral.affiliate_id as string
@@ -62,10 +77,10 @@ export async function GET(req: NextRequest) {
       if (!groupedByAffiliate[affId]) {
         groupedByAffiliate[affId] = {
           affiliate_id: affId,
-          affiliate_name: affiliateInfo.full_name || 'Unknown',
-          affiliate_email: affiliateInfo.email || '',
-          affiliate_company: affiliateInfo.company_name || '',
-          referral_code: referral.referral_code,
+          affiliate_name: (affiliateInfo.full_name as string) || 'Unknown',
+          affiliate_email: (affiliateInfo.email as string) || '',
+          affiliate_company: (affiliateInfo.company_name as string) || '',
+          referral_code: (referral.referral_code as string) || '',
           referrals: [],
           stats: {
             total: 0,

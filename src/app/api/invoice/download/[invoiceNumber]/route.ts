@@ -92,8 +92,8 @@ export async function GET(
     logger.info('Generating invoice PDF', { invoiceNumber })
     const pdfBuffer = await generateInvoicePDF(invoiceData) // Use default template
 
-    // Return PDF as download
-    return new NextResponse(pdfBuffer, {
+    // Return PDF as download - Convert Buffer to Uint8Array for Next.js compatibility
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="PowerCA-Invoice-${invoiceNumber}.pdf"`,

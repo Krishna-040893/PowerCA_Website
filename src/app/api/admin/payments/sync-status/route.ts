@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     // Strategy: Always try to use order_id first since it's always present
     // Then fall back to payment_id if order_id is not available
 
-    let razorpayPaymentData = null
+    let razorpayPaymentData: { amount: string | number; status: string; method?: string; currency?: string; created_at?: number; order_id?: string } | null = null
     let effectiveOrderId = order_id
 
     // If we have payment_id, fetch payment details from Razorpay
@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
       })
 
       // Update affiliate referrals if applicable (pass payment amount from Razorpay)
-      const razorpayAmountInRupees = razorpayPaymentData.amount / 100 // Convert paise to rupees
+      const razorpayAmountInRupees = Number(razorpayPaymentData.amount) / 100 // Convert paise to rupees
       await updateAffiliateReferrals(supabase, effectiveOrderId, dbStatus, razorpayAmountInRupees)
 
       return NextResponse.json({
@@ -281,9 +281,9 @@ export async function POST(req: NextRequest) {
           db_status: dbStatus,
           razorpay_details: {
             method: razorpayPaymentData.method,
-            amount: razorpayPaymentData.amount / 100, // Convert paise to rupees
+            amount: Number(razorpayPaymentData.amount) / 100, // Convert paise to rupees
             currency: razorpayPaymentData.currency,
-            created_at: new Date(razorpayPaymentData.created_at * 1000).toISOString()
+            created_at: new Date((razorpayPaymentData.created_at || 0) * 1000).toISOString()
           }
         }
       })

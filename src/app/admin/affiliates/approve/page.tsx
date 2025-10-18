@@ -77,40 +77,6 @@ export default function AdminAffiliateApprovalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading])
 
-  const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
-    setProcessing(true)
-    try {
-      const response = await fetch('/api/admin/affiliates', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
-        },
-        body: JSON.stringify({
-          applicationId,
-          status: action === 'approve' ? 'approved' : 'rejected',
-          adminNotes: reviewNotes,
-          approvedBy: adminUser?.username
-        })
-      })
-
-      if (response.ok) {
-        await fetchApplications()
-        setShowReviewDialog(false)
-        setReviewNotes('')
-        setSelectedApplication(null)
-        toast.success(`Application ${action}d successfully`)
-      } else {
-        throw new Error(`Failed to ${action} application`)
-      }
-    } catch (err) {
-      console.error(`Error ${action}ing application:`, err)
-      toast.error(`Failed to ${action} application`)
-    } finally {
-      setProcessing(false)
-    }
-  }
-
   const getStatusBadge = (status: string) => {
     const config = {
       pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
