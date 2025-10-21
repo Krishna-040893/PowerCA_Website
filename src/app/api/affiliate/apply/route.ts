@@ -16,12 +16,7 @@ const supabase = createClient(
 )
 
 const resendApiKey = process.env.RESEND_API_KEY
-
-if (!resendApiKey) {
-  throw new Error('Missing Resend API key')
-}
-
-const resend = new Resend(resendApiKey)
+const resend = resendApiKey ? new Resend(resendApiKey) : null
 
 export async function POST(request: NextRequest) {
   try {
@@ -184,17 +179,21 @@ export async function POST(request: NextRequest) {
     `
 
     // Send notification email to admin
-    try {
-      const adminEmailResult = await resend.emails.send({
-        from: 'PowerCA <contact@powerca.in>',
-        to: 'contact@powerca.in',
-        subject: 'New Affiliate Registration - PowerCA',
-        html: adminEmailHtml,
-      })
-      console.log('✅ Admin email sent successfully:', adminEmailResult)
-    } catch (emailError) {
-      console.error('❌ Admin email sending error:', emailError)
-      // Don't fail the registration if email fails
+    if (resend) {
+      try {
+        const adminEmailResult = await resend.emails.send({
+          from: 'PowerCA <contact@powerca.in>',
+          to: 'contact@powerca.in',
+          subject: 'New Affiliate Registration - PowerCA',
+          html: adminEmailHtml,
+        })
+        console.log('✅ Admin email sent successfully:', adminEmailResult)
+      } catch (emailError) {
+        console.error('❌ Admin email sending error:', emailError)
+        // Don't fail the registration if email fails
+      }
+    } else {
+      console.warn('Resend API key not configured; skipping admin notification email')
     }
 
     // Send confirmation email to affiliate
@@ -255,17 +254,21 @@ export async function POST(request: NextRequest) {
       </html>
     `
 
-    try {
-      const affiliateEmailResult = await resend.emails.send({
-        from: 'PowerCA <contact@powerca.in>',
-        to: email,
-        subject: 'Welcome to PowerCA Affiliate Program - Application Received',
-        html: affiliateEmailHtml,
-      })
-      console.log('✅ Affiliate confirmation email sent successfully:', affiliateEmailResult)
-    } catch (emailError) {
-      console.error('❌ Affiliate email sending error:', emailError)
-      // Don't fail the registration if email fails
+    if (resend) {
+      try {
+        const affiliateEmailResult = await resend.emails.send({
+          from: 'PowerCA <contact@powerca.in>',
+          to: email,
+          subject: 'Welcome to PowerCA Affiliate Program - Application Received',
+          html: affiliateEmailHtml,
+        })
+        console.log('✅ Affiliate confirmation email sent successfully:', affiliateEmailResult)
+      } catch (emailError) {
+        console.error('❌ Affiliate email sending error:', emailError)
+        // Don't fail the registration if email fails
+      }
+    } else {
+      console.warn('Resend API key not configured; skipping affiliate confirmation email')
     }
 
     return NextResponse.json({
