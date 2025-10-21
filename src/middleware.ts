@@ -1,8 +1,8 @@
-import {withAuth  } from 'next-auth/middleware'
-import {NextRequest, NextResponse  } from 'next/server'
+import {withAuth, type NextRequestWithAuth  } from 'next-auth/middleware'
+import {NextRequest, NextResponse, type NextFetchEvent  } from 'next/server'
 
 // Custom middleware that handles both user and admin authentication
-export async function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest, event: NextFetchEvent) {
   const pathname = req.nextUrl.pathname
 
   // Handle admin routes with JWT authentication
@@ -93,11 +93,14 @@ export async function middleware(req: NextRequest) {
       pathname.startsWith('/settings')) {
 
     // This will trigger NextAuth authentication with proper callback
-    return withAuth(req as Parameters<typeof withAuth>[0], {
+    const signInPage = pathname.startsWith('/affiliate') ? '/affiliate-login' : '/login'
+    const authMiddleware = withAuth({
       pages: {
-        signIn: pathname.startsWith('/affiliate') ? '/affiliate-login' : '/login',
+        signIn: signInPage,
       },
     })
+
+    return authMiddleware(req as NextRequestWithAuth, event)
   }
 
   // Allow all other routes

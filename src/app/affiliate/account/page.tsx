@@ -451,7 +451,7 @@ export default function AffiliateAccountPage() {
               </ul>
             </div>
             <div className="mt-6 text-center text-sm text-gray-500">
-              <p>If you have any questions, contact us at <a href="mailto:affiliates@powerca.in" className="text-blue-600 hover:underline">affiliates@powerca.in</a></p>
+              <p>If you have any questions, contact us at <a href="mailto:affiliates@powerca.in" className="text-blue-600 hover:underline">contact@powerca.in</a></p>
             </div>
             </div>
           </div>
