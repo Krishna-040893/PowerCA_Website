@@ -45,8 +45,10 @@ export default function AdminLoginPage() {
         // Store token and user data in localStorage for admin panel
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
-        // Redirect to admin dashboard
-        router.push('/admin')
+
+        // Force full page reload to ensure localStorage and cookies are properly set
+        // Critical for Vercel deployments where router.push might not wait for storage
+        window.location.href = '/admin'
       } else {
         setError(data.message || 'Login failed')
       }

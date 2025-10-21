@@ -36,15 +36,20 @@ export default function AffiliateLoginPage() {
       })
 
       if (result?.ok) {
-        // Wait a moment for session to be established (important for Vercel)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log('✅ Affiliate login successful, verifying session...')
+
+        // Wait for session to be established (important for Vercel)
+        await new Promise(resolve => setTimeout(resolve, 800))
 
         // Check if user is an affiliate by fetching session
         const response = await fetch('/api/auth/session')
         const session = await response.json()
 
+        console.log('📋 Session data:', { role: session?.user?.role, status: session?.user?.status })
+
         // Block non-affiliates from affiliate login
         if (session?.user?.role?.toLowerCase() !== 'affiliate') {
+          console.log('⛔ User is not an affiliate, signing out')
           // Sign out immediately to prevent login
           await signOut({ redirect: false })
 
@@ -58,12 +63,13 @@ export default function AffiliateLoginPage() {
           return
         }
 
+        console.log('✅ Affiliate verified, redirecting to:', callbackUrl)
+
         // Use window.location.href for full page reload to ensure session is established
-        // Add a small delay to ensure session cookie is set (critical for Vercel)
-        setTimeout(() => {
-          window.location.href = callbackUrl
-        }, 300)
+        // Critical for Vercel deployments
+        window.location.href = callbackUrl
       } else {
+        console.error('❌ Login failed:', result?.error)
         setError(result?.error || 'Invalid email or password. Please try again.')
       }
     } catch (error) {

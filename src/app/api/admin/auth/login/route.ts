@@ -175,6 +175,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Log successful authentication before creating response
+    console.log('✅ Admin authentication successful:', {
+      username: adminUser.username,
+      timestamp: new Date().toISOString()
+    })
+
     // Create response with token
     const response = NextResponse.json({
       success: true,
@@ -188,11 +194,13 @@ export async function POST(request: NextRequest) {
     })
 
     // Set HTTP-only cookie for better security
+    // Use 'lax' sameSite for Vercel compatibility
     response.cookies.set('adminToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400 // 24 hours
+      sameSite: 'lax', // Changed from 'strict' for Vercel compatibility
+      maxAge: 86400, // 24 hours
+      path: '/' // Explicitly set path for Vercel
     })
 
     // Log successful admin login for security audit
