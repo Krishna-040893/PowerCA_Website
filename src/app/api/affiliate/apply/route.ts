@@ -42,9 +42,27 @@ export async function POST(request: NextRequest) {
       referredByCode // Optional: Referral code of the affiliate who referred this person
     } = body
 
+    // Detailed validation logging
+    console.log('📝 Affiliate registration attempt:', { email, fullName, city, state })
+
     if (!fullName || !email || !phone || !password || !city || !state || !promotionMethod || !targetAudience) {
+      const missingFields = []
+      if (!fullName) missingFields.push('fullName')
+      if (!email) missingFields.push('email')
+      if (!phone) missingFields.push('phone')
+      if (!password) missingFields.push('password')
+      if (!city) missingFields.push('city')
+      if (!state) missingFields.push('state')
+      if (!promotionMethod) missingFields.push('promotionMethod')
+      if (!targetAudience) missingFields.push('targetAudience')
+
+      console.error('❌ Missing required fields:', missingFields)
       return NextResponse.json(
-        { error: 'All required fields must be provided' },
+        {
+          error: 'All required fields must be provided',
+          missingFields,
+          hint: `Please provide: ${missingFields.join(', ')}`
+        },
         { status: 400 }
       )
     }
@@ -271,6 +289,8 @@ export async function POST(request: NextRequest) {
       console.warn('Resend API key not configured; skipping affiliate confirmation email')
     }
 
+    console.log('✅ Affiliate registration successful:', registration.id)
+
     return NextResponse.json({
       success: true,
       message: 'Affiliate registration submitted successfully!',
@@ -278,9 +298,13 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error submitting affiliate application:', error)
+    console.error('❌ Fatal error submitting affiliate application:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Failed to submit affiliate application' },
+      {
+        error: 'Failed to submit affiliate application',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
