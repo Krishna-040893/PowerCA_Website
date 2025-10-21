@@ -32,9 +32,13 @@ export default function AffiliateLoginPage() {
         email,
         password,
         redirect: false,
+        callbackUrl: callbackUrl, // Explicitly pass callbackUrl
       })
 
       if (result?.ok) {
+        // Wait a moment for session to be established (important for Vercel)
+        await new Promise(resolve => setTimeout(resolve, 500))
+
         // Check if user is an affiliate by fetching session
         const response = await fetch('/api/auth/session')
         const session = await response.json()
@@ -55,7 +59,10 @@ export default function AffiliateLoginPage() {
         }
 
         // Use window.location.href for full page reload to ensure session is established
-        window.location.href = callbackUrl
+        // Add a small delay to ensure session cookie is set (critical for Vercel)
+        setTimeout(() => {
+          window.location.href = callbackUrl
+        }, 300)
       } else {
         setError(result?.error || 'Invalid email or password. Please try again.')
       }
@@ -63,7 +70,12 @@ export default function AffiliateLoginPage() {
       console.error('Login error:', error)
       setError('An unexpected error occurred. Please try again.')
     } finally {
-      setIsLoading(false)
+      // Don't set loading to false if redirect is happening
+      if (!error) {
+        // Keep loading state if successful
+      } else {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -154,7 +166,7 @@ export default function AffiliateLoginPage() {
             {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-900 font-medium">
-                Email / Phone
+                Email
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -163,7 +175,7 @@ export default function AffiliateLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Your Email or Phone"
+                  placeholder="Enter Your Email"
                   className="pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
                   required
                 />

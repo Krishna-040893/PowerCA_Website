@@ -183,15 +183,88 @@ export async function POST(request: NextRequest) {
       </html>
     `
 
+    // Send notification email to admin
     try {
-      await resend.emails.send({
+      const adminEmailResult = await resend.emails.send({
         from: 'PowerCA <contact@powerca.in>',
         to: 'contact@powerca.in',
         subject: 'New Affiliate Registration - PowerCA',
         html: adminEmailHtml,
       })
+      console.log('✅ Admin email sent successfully:', adminEmailResult)
     } catch (emailError) {
-      console.error('Email sending error:', emailError)
+      console.error('❌ Admin email sending error:', emailError)
+      // Don't fail the registration if email fails
+    }
+
+    // Send confirmation email to affiliate
+    const affiliateEmailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9fafb; padding: 30px 20px; border: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; padding: 12px 30px; background: #1e40af; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .info-box { background: white; padding: 15px; border-left: 4px solid #3b82f6; margin: 15px 0; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">Welcome to PowerCA Affiliate Program!</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${fullName},</p>
+
+              <p>Thank you for applying to the PowerCA Affiliate Program! We're excited to have you on board.</p>
+
+              <div class="info-box">
+                <h3 style="margin-top: 0; color: #1e40af;">Application Status: Under Review</h3>
+                <p style="margin-bottom: 0;">Our team will review your application within 3-5 business days. You will receive an email notification once your application is approved.</p>
+              </div>
+
+              <h3 style="color: #1e40af;">Your Registration Details:</h3>
+              <ul style="background: white; padding: 20px; border-radius: 4px;">
+                <li><strong>Email:</strong> ${email}</li>
+                <li><strong>Phone:</strong> ${phone}</li>
+                <li><strong>City:</strong> ${city}, ${state}</li>
+                <li><strong>Business Type:</strong> ${businessType || 'Individual'}</li>
+              </ul>
+
+              <h3 style="color: #1e40af;">What's Next?</h3>
+              <ol>
+                <li>Our team will review your application</li>
+                <li>You'll receive an approval email with your unique referral code</li>
+                <li>Once approved, you can login to your affiliate dashboard</li>
+                <li>Start referring clients and earn 10% commission!</li>
+              </ol>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXTAUTH_URL || 'https://powerca.in'}/affiliate-login" class="button">Login to Your Account</a>
+              </div>
+
+              <p style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+                If you have any questions, please contact us at <a href="mailto:contact@powerca.in">contact@powerca.in</a>
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+
+    try {
+      const affiliateEmailResult = await resend.emails.send({
+        from: 'PowerCA <contact@powerca.in>',
+        to: email,
+        subject: 'Welcome to PowerCA Affiliate Program - Application Received',
+        html: affiliateEmailHtml,
+      })
+      console.log('✅ Affiliate confirmation email sent successfully:', affiliateEmailResult)
+    } catch (emailError) {
+      console.error('❌ Affiliate email sending error:', emailError)
       // Don't fail the registration if email fails
     }
 

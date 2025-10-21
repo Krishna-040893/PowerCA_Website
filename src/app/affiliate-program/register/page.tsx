@@ -12,9 +12,11 @@ import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Star,
   ArrowLeft,
   Mail,
-  Shield, CheckCircle,
+  Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  FileText,
+  Download
  } from 'lucide-react'
 import {toast  } from 'sonner'
 
@@ -183,8 +185,11 @@ export default function AffiliateRegisterPage() {
       }
 
       if (affiliateResponse.ok) {
-        toast.success('🎉 Registration successful! Your affiliate application has been submitted and is under review. You will receive an email notification once approved.')
-        router.push('/affiliate-program?success=true')
+        toast.success('🎉 Registration successful! Your affiliate application has been submitted and is under review. Please login to access your account.')
+        // Use setTimeout to allow toast to show before redirect
+        setTimeout(() => {
+          window.location.href = '/affiliate-login'
+        }, 1500)
       } else {
         // Show detailed error information
         console.error('API Error Response:', affiliateResult)
@@ -545,42 +550,43 @@ export default function AffiliateRegisterPage() {
             </div>
 
             {/* Terms and Conditions */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h4 className="font-semibold text-gray-900 text-base mb-4">Terms & Conditions</h4>
-              <ul className="text-sm text-gray-600 space-y-2 mb-4">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Commission rate: 10% on all successful referrals
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Monthly commission payments via bank transfer
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Application review within 3-5 business days
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Must comply with our marketing guidelines
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Affiliate status can be terminated for policy violations
-                </li>
-              </ul>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <h4 className="font-semibold text-gray-900 text-base">Affiliate Program Terms & Conditions</h4>
+              </div>
 
-              <div className="flex items-start space-x-2">
+              <div className="bg-white p-4 rounded-lg border border-blue-200 mb-4">
+                <p className="text-sm text-gray-700 mb-4">
+                  Please review our complete Affiliate Program Terms & Conditions before registering. This document outlines all program details, commission structure, payment terms, and your rights and responsibilities as an affiliate partner.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a
+                    href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download="Affiliate-Terms-and-Conditions.pdf"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Terms &amp; Conditions (PDF)
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-2 bg-white p-3 rounded-lg border-2 border-blue-300">
                 <Checkbox
                   id="terms"
                   checked={agreeToTerms}
                   onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                  className="mt-1"
                 />
-                <Label htmlFor="terms" className="text-sm cursor-pointer">
-                  I agree to the PowerCA Affiliate Program Terms & Conditions and Privacy Policy <span className="text-red-500">*</span>
+                <Label htmlFor="terms" className="text-sm cursor-pointer text-gray-900">
+                  I have read, understood, and agree to the <a href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf" target="_blank" className="text-blue-600 hover:text-blue-800 underline font-medium">PowerCA Affiliate Program Terms & Conditions</a> and <a href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-800 underline font-medium">Privacy Policy</a> <span className="text-red-500">*</span>
                 </Label>
               </div>
-              {errors.terms && <p className="text-red-500 text-sm mt-1">{errors.terms}</p>}
+              {errors.terms && <p className="text-red-500 text-sm mt-2 flex items-center gap-1"><span className="font-bold">!</span> {errors.terms}</p>}
             </div>
 
             {/* Submit Button */}

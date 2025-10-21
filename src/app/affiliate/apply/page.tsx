@@ -223,13 +223,23 @@ export default function AffiliateApplicationPage() {
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Terms & Conditions</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Commission rate: 10% on successful referrals</li>
-                  <li>• Payments are processed monthly</li>
-                  <li>• You must comply with our marketing guidelines</li>
-                  <li>• Applications are reviewed within 3-5 business days</li>
-                  <li>• Affiliate status can be revoked for policy violations</li>
-                </ul>
+                <p className="text-sm text-gray-600 mb-3">
+                  Please review the detailed step-by-step affiliate requirements in our Terms &amp; Conditions PDF before
+                  submitting your application.
+                </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <a
+                    href="/docs/PowerCA-Affiliate-Terms.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Download Terms & Conditions (PDF)
+                  </a>
+                </Button>
               </div>
 
               <div className="flex justify-end gap-4">

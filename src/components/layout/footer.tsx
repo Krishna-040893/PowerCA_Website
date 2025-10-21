@@ -8,7 +8,7 @@ export function Footer() {
   const recentPosts = blogPosts.slice(0, 3)
 
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8 rounded-t-3xl">
+    <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="w-full px-6 sm:px-12 lg:px-[144px] mx-auto">
         <div className="grid lg:grid-cols-4 gap-12">
           {/* Company Info */}

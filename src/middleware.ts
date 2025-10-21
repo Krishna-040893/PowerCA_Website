@@ -80,16 +80,24 @@ export async function middleware(req: NextRequest) {
   }
 
   // For non-admin routes, use the existing NextAuth logic
+  const isProtectedAffiliateRoute =
+    pathname === '/affiliate' ||
+    pathname.startsWith('/affiliate/')
+
   if (pathname.startsWith('/dashboard') ||
-      pathname.startsWith('/affiliate') ||
+      isProtectedAffiliateRoute ||
       pathname.startsWith('/api/protected') ||
       pathname.startsWith('/clients') ||
       pathname.startsWith('/documents') ||
       pathname.startsWith('/reports') ||
       pathname.startsWith('/settings')) {
 
-    // This will trigger NextAuth authentication
-    return withAuth(req as Parameters<typeof withAuth>[0])
+    // This will trigger NextAuth authentication with proper callback
+    return withAuth(req as Parameters<typeof withAuth>[0], {
+      pages: {
+        signIn: pathname.startsWith('/affiliate') ? '/affiliate-login' : '/login',
+      },
+    })
   }
 
   // Allow all other routes
