@@ -134,7 +134,20 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax', // Important for Vercel deployments
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   callbacks: {
     async signIn({ user }) {
       // Allow all sign-ins (role check is done in the login page)

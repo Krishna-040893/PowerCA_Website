@@ -39,16 +39,40 @@ export default function AffiliateLoginPage() {
         console.log('✅ Affiliate login successful, verifying session...')
 
         // Wait for session to be established (important for Vercel)
-        await new Promise(resolve => setTimeout(resolve, 800))
+        // Increased delay for Vercel edge network
+        await new Promise(resolve => setTimeout(resolve, 1200))
 
         // Check if user is an affiliate by fetching session
-        const response = await fetch('/api/auth/session')
-        const session = await response.json()
+        // Try multiple times to ensure session is established on Vercel
+        let session = null
+        let retries = 0
+        const maxRetries = 3
+
+        while (retries < maxRetries) {
+          const response = await fetch('/api/auth/session', {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          })
+          const data = await response.json()
+
+          if (data?.user?.role) {
+            session = data
+            break
+          }
+
+          retries++
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+        }
 
         console.log('📋 Session data:', { role: session?.user?.role, status: session?.user?.status })
 
         // Block non-affiliates from affiliate login
-        if (session?.user?.role?.toLowerCase() !== 'affiliate') {
+        if (!session?.user || session?.user?.role?.toLowerCase() !== 'affiliate') {
           console.log('⛔ User is not an affiliate, signing out')
           // Sign out immediately to prevent login
           await signOut({ redirect: false })

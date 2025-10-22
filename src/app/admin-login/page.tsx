@@ -46,6 +46,16 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
 
+        // Wait for localStorage to be fully written (critical for Vercel edge)
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // Verify storage was successful before redirecting
+        const storedToken = localStorage.getItem('adminToken')
+        if (!storedToken) {
+          setError('Failed to save session. Please try again.')
+          return
+        }
+
         // Force full page reload to ensure localStorage and cookies are properly set
         // Critical for Vercel deployments where router.push might not wait for storage
         window.location.href = '/admin'
