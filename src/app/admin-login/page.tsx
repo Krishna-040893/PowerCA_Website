@@ -25,6 +25,8 @@ export default function AdminLoginPage() {
     setIsLoading(true)
     setError('')
 
+    console.log('🔐 Admin login attempt:', { username })
+
     try {
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
@@ -34,14 +36,20 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ username, password }),
       })
 
+      console.log('📡 API Response status:', response.status)
+
       const data = await response.json()
+      console.log('📦 API Response data:', { success: data.success, hasToken: !!data.token })
 
       if (!response.ok) {
+        console.error('❌ Login failed:', data.message)
         setError(data.message || 'Invalid credentials')
         return
       }
 
       if (data.success) {
+        console.log('✅ Login successful, storing credentials...')
+
         // Store token and user data in localStorage for admin panel
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
@@ -52,18 +60,22 @@ export default function AdminLoginPage() {
         // Verify storage was successful before redirecting
         const storedToken = localStorage.getItem('adminToken')
         if (!storedToken) {
+          console.error('❌ Failed to save token to localStorage')
           setError('Failed to save session. Please try again.')
           return
         }
+
+        console.log('✅ Token saved, redirecting to /admin...')
 
         // Force full page reload to ensure localStorage and cookies are properly set
         // Critical for Vercel deployments where router.push might not wait for storage
         window.location.href = '/admin'
       } else {
+        console.error('❌ Login failed:', data.message)
         setError(data.message || 'Login failed')
       }
-    } catch {
-      console.error('Login error:', error)
+    } catch (err) {
+      console.error('❌ Login error:', err)
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
