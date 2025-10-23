@@ -48,15 +48,6 @@ export default function AdminPage() {
   })
   const [refreshing, setRefreshing] = useState(false)
 
-  // Clean up URL if coming from login
-  useEffect(() => {
-    const url = new URL(window.location.href)
-    if (url.searchParams.has('from_login')) {
-      url.searchParams.delete('from_login')
-      router.replace(url.pathname, { scroll: false })
-    }
-  }, [router])
-
   const fetchDashboardStats = useCallback(async () => {
     try {
       // Fetch bookings stats

@@ -56,9 +56,6 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
 
-        // Wait longer for cookie to be set properly on Vercel edge (increased from 100ms to 500ms)
-        await new Promise(resolve => setTimeout(resolve, 500))
-
         // Verify storage was successful before redirecting
         const storedToken = localStorage.getItem('adminToken')
         if (!storedToken) {
@@ -69,9 +66,13 @@ export default function AdminLoginPage() {
 
         console.log('✅ Token saved, redirecting to /admin...')
 
-        // Use router.replace with a query parameter to bypass middleware check on first load
-        // This allows time for the cookie to be properly set
-        router.replace('/admin?from_login=true')
+        // CRITICAL FIX: Wait 1 second to ensure cookie is fully set before redirect
+        // This is necessary on Vercel edge runtime where cookie processing can be delayed
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // Use window.location.href for full page navigation with cookies
+        // This ensures the cookie is included in the next request
+        window.location.href = '/admin'
       } else {
         console.error('❌ Login failed:', data.error?.message || data.message)
         setError(data.error?.message || data.message || 'Login failed')
