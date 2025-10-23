@@ -56,22 +56,17 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
 
-        // Verify storage was successful before redirecting
-        const storedToken = localStorage.getItem('adminToken')
-        if (!storedToken) {
-          console.error('❌ Failed to save token to localStorage')
-          setError('Failed to save session. Please try again.')
-          return
-        }
+        // CRITICAL: Also set the cookie manually on client-side to ensure it's available immediately
+        // The server sets an httpOnly cookie, but we also need a readable one for immediate redirect
+        document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`
 
-        console.log('✅ Token saved, redirecting to /admin...')
+        console.log('✅ Token saved to localStorage and cookie, redirecting to /admin...')
 
-        // CRITICAL FIX: Wait 1 second to ensure cookie is fully set before redirect
-        // This is necessary on Vercel edge runtime where cookie processing can be delayed
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Small delay to ensure cookie is written
+        await new Promise(resolve => setTimeout(resolve, 100))
 
-        // Use window.location.href for full page navigation with cookies
-        // This ensures the cookie is included in the next request
+        // Use window.location.href for full page navigation
+        // The cookie we just set will be included in this request
         window.location.href = '/admin'
       } else {
         console.error('❌ Login failed:', data.error?.message || data.message)
