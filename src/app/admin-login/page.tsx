@@ -56,18 +56,22 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
 
-        // CRITICAL: Also set the cookie manually on client-side to ensure it's available immediately
-        // The server sets an httpOnly cookie, but we also need a readable one for immediate redirect
-        document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`
+        // CRITICAL: Set the cookie with proper flags for both development and production
+        const isProduction = window.location.protocol === 'https:'
+        const cookieValue = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${isProduction ? '; Secure' : ''}`
+        document.cookie = cookieValue
 
-        console.log('✅ Token saved to localStorage and cookie, redirecting to /admin...')
+        console.log('✅ Token saved to localStorage and cookie')
+        console.log('🔄 Redirecting to /admin...')
 
-        // Small delay to ensure cookie is written
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // VERCEL FIX: Use router.push with refresh to ensure cookies are sent
+        // This is more reliable on Vercel than window.location.href
+        router.push('/admin')
 
-        // Use window.location.href for full page navigation
-        // The cookie we just set will be included in this request
-        window.location.href = '/admin'
+        // Also force a full page reload after a short delay to ensure cookies are picked up
+        setTimeout(() => {
+          window.location.href = '/admin'
+        }, 100)
       } else {
         console.error('❌ Login failed:', data.error?.message || data.message)
         setError(data.error?.message || data.message || 'Login failed')

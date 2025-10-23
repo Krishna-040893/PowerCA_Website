@@ -194,13 +194,25 @@ export async function POST(request: NextRequest) {
     })
 
     // Set HTTP-only cookie for better security
-    // Use 'lax' sameSite for Vercel compatibility
-    response.cookies.set('adminToken', token, {
+    // VERCEL FIX: Use 'lax' sameSite and ensure proper domain handling
+    const isProduction = process.env.NODE_ENV === 'production'
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'strict' for Vercel compatibility
+      secure: isProduction,
+      sameSite: 'lax' as const, // 'lax' works better on Vercel than 'strict'
       maxAge: 86400, // 24 hours
-      path: '/' // Explicitly set path for Vercel
+      path: '/', // Root path for all routes
+      // Don't set domain - let browser handle it automatically for Vercel
+    }
+
+    response.cookies.set('adminToken', token, cookieOptions)
+
+    console.log('🍪 Cookie set with options:', {
+      httpOnly: cookieOptions.httpOnly,
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      path: cookieOptions.path,
+      maxAge: cookieOptions.maxAge
     })
 
     // Log successful admin login for security audit
