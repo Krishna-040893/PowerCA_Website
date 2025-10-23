@@ -34,7 +34,7 @@ interface QuickAction {
 }
 
 export default function AdminPage() {
-  const _router = useRouter()
+  const router = useRouter()
   const { isAuthenticated, isLoading, adminUser, getAuthHeaders } = useAdminAuth()
   const [stats, setStats] = useState({
     total: 0,
@@ -47,6 +47,15 @@ export default function AdminPage() {
     revenue: 0
   })
   const [refreshing, setRefreshing] = useState(false)
+
+  // Clean up URL if coming from login
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('from_login')) {
+      url.searchParams.delete('from_login')
+      router.replace(url.pathname, { scroll: false })
+    }
+  }, [router])
 
   const fetchDashboardStats = useCallback(async () => {
     try {

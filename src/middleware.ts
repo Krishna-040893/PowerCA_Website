@@ -16,7 +16,21 @@ export async function middleware(req: NextRequest, event: NextFetchEvent) {
     const adminToken = req.cookies.get('adminToken')?.value ||
                       req.headers.get('authorization')?.replace('Bearer ', '')
 
+    // On first redirect after login, allow a brief grace period
+    // Check for a special query parameter that indicates fresh login
+    const url = new URL(req.url)
+    const fromLogin = url.searchParams.get('from_login')
+
     if (!adminToken) {
+      // If coming from login with fresh token, allow one redirect without token
+      // The client-side will have localStorage and cookie will be set on next request
+      if (fromLogin === 'true') {
+        // Remove the parameter and allow access
+        url.searchParams.delete('from_login')
+        const response = NextResponse.rewrite(url)
+        return response
+      }
+
       // Redirect to admin login if no token
       return NextResponse.redirect(new URL('/admin-login', req.url))
     }

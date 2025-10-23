@@ -20,6 +20,8 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
+  console.log('🔐 Admin Login Page loaded')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -42,8 +44,8 @@ export default function AdminLoginPage() {
       console.log('📦 API Response data:', { success: data.success, hasToken: !!data.token })
 
       if (!response.ok) {
-        console.error('❌ Login failed:', data.message)
-        setError(data.message || 'Invalid credentials')
+        console.error('❌ Login failed:', data.error?.message || data.message)
+        setError(data.error?.message || data.message || 'Invalid credentials')
         return
       }
 
@@ -54,8 +56,8 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', data.token)
         localStorage.setItem('adminUser', JSON.stringify(data.user))
 
-        // Wait for localStorage to be fully written (critical for Vercel edge)
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Wait longer for cookie to be set properly on Vercel edge (increased from 100ms to 500ms)
+        await new Promise(resolve => setTimeout(resolve, 500))
 
         // Verify storage was successful before redirecting
         const storedToken = localStorage.getItem('adminToken')
@@ -67,12 +69,12 @@ export default function AdminLoginPage() {
 
         console.log('✅ Token saved, redirecting to /admin...')
 
-        // Force full page reload to ensure localStorage and cookies are properly set
-        // Critical for Vercel deployments where router.push might not wait for storage
-        window.location.href = '/admin'
+        // Use router.replace with a query parameter to bypass middleware check on first load
+        // This allows time for the cookie to be properly set
+        router.replace('/admin?from_login=true')
       } else {
-        console.error('❌ Login failed:', data.message)
-        setError(data.message || 'Login failed')
+        console.error('❌ Login failed:', data.error?.message || data.message)
+        setError(data.error?.message || data.message || 'Login failed')
       }
     } catch (err) {
       console.error('❌ Login error:', err)

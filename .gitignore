@@ -38,6 +38,7 @@ temp_register_page.txt
 .env.local
 .env.production
 .env.development
+.env.vercel
 # Keep .env.example for documentation
 !.env.example
 
