@@ -8,7 +8,6 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {useRouter  } from 'next/navigation'
 import {signIn  } from 'next-auth/react'
 import {Eye, EyeOff, User, Lock, ArrowLeft, Shield, Loader2  } from 'lucide-react'
 import {toast  } from 'sonner'
@@ -35,7 +34,9 @@ export default function AdminLoginPage() {
       usernameType: typeof username,
       hasPassword: !!password,
       passwordLength: password?.length || 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      env: process.env.NODE_ENV,
+      nextAuthUrl: process.env.NEXTAUTH_URL || window.location.origin
     })
 
     try {
@@ -83,6 +84,12 @@ export default function AdminLoginPage() {
 
       if (result?.ok) {
         console.log('✅ Admin login successful')
+        console.log('📦 Result details:', {
+          ok: result.ok,
+          status: result.status,
+          url: result.url
+        })
+
         toast.success('Login successful!', {
           description: 'Redirecting to admin dashboard...',
           duration: 2000,
@@ -90,10 +97,12 @@ export default function AdminLoginPage() {
 
         console.log('🔄 Redirecting to /admin...')
 
-        // Successful login - add small delay to ensure session cookie is set
-        // Then use full page reload to ensure session is picked up
-        await new Promise(resolve => setTimeout(resolve, 500))
-        window.location.href = '/admin'
+        // Successful login - add delay to ensure session cookie is properly set
+        // Then use full page reload to ensure session is picked up correctly
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // Force full page reload with the callback URL
+        window.location.replace('/admin')
       } else {
         const errorMsg = 'Login failed. Please try again.'
         setError(errorMsg)
