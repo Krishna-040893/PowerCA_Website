@@ -10,7 +10,6 @@ import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
 import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
 import { format } from 'date-fns'
-import {toast  } from 'sonner'
 
 interface AffiliateApplication {
   id: string

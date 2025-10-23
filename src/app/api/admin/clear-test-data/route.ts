@@ -5,8 +5,8 @@ import {isTestMode  } from '@/lib/payment-config'
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireAdminAuth(req)
-    if (!session) {
+    const auth = await requireAdminAuth()
+    if (!auth) {
       return createUnauthorizedResponse()
     }
 

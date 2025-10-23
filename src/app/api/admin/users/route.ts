@@ -6,8 +6,8 @@ import bcrypt from 'bcryptjs'
 // GET all users for admin
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdminAuth()
-    if (!session) {
+    const auth = await requireAdminAuth()
+    if (!auth) {
       return createUnauthorizedResponse()
     }
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Try to fetch from Supabase Auth (this is more reliable)
     try {
-      const { data: { users }, error: authError } = await supabase.session.user.listUsers()
+      const { data: { users }, error: authError } = await supabase.auth.admin.listUsers()
 
       if (!authError && users) {
         // Transform user data for frontend

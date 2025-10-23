@@ -20,8 +20,8 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
+  // eslint-disable-next-line no-console
   console.log('🔐 Admin Login Page loaded')
 
   const handleSubmit = async (e: React.FormEvent) => {

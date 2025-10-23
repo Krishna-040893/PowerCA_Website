@@ -27,8 +27,7 @@ import {
   IndianRupee,
   Edit2,
   Save,
-  X,
-  Camera
+  X
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -43,7 +42,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import Image from 'next/image'
 import ProfilePhotoUpload from '@/components/profile-photo-upload'
 
 interface BillingAddress {

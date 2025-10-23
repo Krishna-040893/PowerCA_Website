@@ -27,7 +27,9 @@ export default function AffiliateAccountPage() {
   }>({ hasReferred: false, referralCount: 0, pendingCount: 0, completedCount: 0, referredDetails: null })
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null)
   const [checkingApproval, setCheckingApproval] = useState(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [referralDetails, setReferralDetails] = useState<any[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [referralSummary, setReferralSummary] = useState<any>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [referredBy, setReferredBy] = useState<{
@@ -189,7 +191,8 @@ export default function AffiliateAccountPage() {
     // Fetch affiliate details - this will check approval status
     fetchAffiliateDetails()
     fetchProfilePhoto()
-  }, [session, status, router, fetchAffiliateDetails])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status, router])
 
   const fetchProfilePhoto = async () => {
     if (!session?.user?.id) return

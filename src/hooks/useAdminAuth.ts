@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 interface AdminUser {
-  username?: string
+  username: string
   email: string
   role: string
   name: string

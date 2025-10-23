@@ -45,7 +45,6 @@ export default function PricingPage() {
   const handleLaunchOfferPurchase = () => {
     if (!session) {
       // Build callback URL with referral params
-      const currentUrl = new URL(window.location.href)
       const params = new URLSearchParams()
 
       if (referralInfo?.ref) params.append('ref', referralInfo.ref)

@@ -5,7 +5,7 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Bell, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart } from 'lucide-react'
+import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
@@ -317,10 +317,10 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary-100 text-primary-700 text-sm">
-                        {adminUser.username[0]?.toUpperCase()}
+                        {adminUser.username?.[0]?.toUpperCase() || 'A'}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden md:block text-sm">{adminUser.username}</span>
+                    <span className="hidden md:block text-sm">{adminUser.username || 'Admin'}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

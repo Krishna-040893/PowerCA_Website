@@ -23,8 +23,8 @@ const supabase = createClient(
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireAdminAuth()
-    if (!session) {
+    const auth = await requireAdminAuth()
+    if (!auth) {
       return createUnauthorizedResponse()
     }
 
@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     // Update user metadata in Supabase auth
-    const { data: user, error: updateError } = await supabase.session.user.updateUserById(
+    const { data: user, error: updateError } = await supabase.auth.admin.updateUserById(
       userId,
       {
         user_metadata: { role }

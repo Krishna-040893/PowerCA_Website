@@ -73,7 +73,6 @@ interface ReferralData {
 
 
 export default function AdminAffiliatesPage() {
-  const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading, adminUser, getAuthHeaders } = useAdminAuth()
   const [_activeTab, _setActiveTab] = useState<'applications' | 'profiles'>('profiles')
   const [applications, setApplications] = useState<AffiliateApplication[]>([])
