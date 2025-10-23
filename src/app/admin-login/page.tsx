@@ -27,39 +27,89 @@ export default function AdminLoginPage() {
     setIsLoading(true)
     setError('')
 
-    console.log('🔐 Admin login attempt:', { username })
+    console.log('🔐 Admin login attempt:', {
+      username,
+      hasPassword: !!password,
+      passwordLength: password?.length || 0,
+      timestamp: new Date().toISOString()
+    })
 
     try {
+      const requestBody = { username, password }
+      console.log('📤 Sending request:', {
+        url: '/api/admin/auth/login',
+        method: 'POST',
+        bodyKeys: Object.keys(requestBody),
+        hasUsername: !!requestBody.username,
+        hasPassword: !!requestBody.password
+      })
+
       const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(requestBody),
       })
 
       console.log('📡 API Response status:', response.status)
+      console.log('📡 API Response headers:', {
+        contentType: response.headers.get('content-type'),
+        requestId: response.headers.get('x-request-id')
+      })
 
-      const data = await response.json()
-      console.log('📦 API Response data:', { success: data.success, hasToken: !!data.token })
-
-      if (!response.ok) {
-        console.error('❌ Login failed:', data.error?.message || data.message)
-        setError(data.error?.message || data.message || 'Invalid credentials')
+      let data: unknown
+      try {
+        data = await response.json()
+        console.log('📦 API Response data:', {
+          success: (data as { success?: boolean }).success,
+          hasToken: !!(data as { token?: string }).token,
+          error: (data as { error?: { message?: string } }).error?.message
+        })
+      } catch (jsonError) {
+        console.error('❌ Failed to parse response JSON:', jsonError)
+        setError('Invalid response from server. Please try again.')
         return
       }
 
-      if (data.success) {
+      if (!response.ok) {
+        const errorMessage = (data as { error?: { message?: string }; message?: string }).error?.message ||
+                           (data as { message?: string }).message ||
+                           'Invalid credentials'
+        console.error('❌ Login failed:', {
+          status: response.status,
+          error: errorMessage,
+          fullResponse: data
+        })
+        setError(errorMessage)
+        return
+      }
+
+      const typedData = data as {
+        success?: boolean
+        token?: string
+        user?: { username: string; email: string; role: string }
+        message?: string
+        error?: { message?: string }
+      }
+
+      if (typedData.success) {
         console.log('✅ Login successful, storing credentials...')
 
         // Store token and user data in localStorage for admin panel
-        localStorage.setItem('adminToken', data.token)
-        localStorage.setItem('adminUser', JSON.stringify(data.user))
+        if (typedData.token) {
+          localStorage.setItem('adminToken', typedData.token)
+        }
+        if (typedData.user) {
+          localStorage.setItem('adminUser', JSON.stringify(typedData.user))
+        }
 
         // CRITICAL: Set the cookie with proper flags for both development and production
-        const isProduction = window.location.protocol === 'https:'
-        const cookieValue = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${isProduction ? '; Secure' : ''}`
-        document.cookie = cookieValue
+        if (typedData.token) {
+          const isProduction = window.location.protocol === 'https:'
+          const cookieValue = `adminToken=${typedData.token}; path=/; max-age=86400; SameSite=Lax${isProduction ? '; Secure' : ''}`
+          document.cookie = cookieValue
+        }
 
         console.log('✅ Token saved to localStorage and cookie')
         console.log('🔄 Redirecting to /admin...')
@@ -73,8 +123,9 @@ export default function AdminLoginPage() {
           window.location.href = '/admin'
         }, 100)
       } else {
-        console.error('❌ Login failed:', data.error?.message || data.message)
-        setError(data.error?.message || data.message || 'Login failed')
+        const errorMsg = typedData.error?.message || typedData.message || 'Login failed'
+        console.error('❌ Login failed:', errorMsg)
+        setError(errorMsg)
       }
     } catch (err) {
       console.error('❌ Login error:', err)

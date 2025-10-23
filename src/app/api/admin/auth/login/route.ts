@@ -33,10 +33,32 @@ export async function POST(request: NextRequest) {
       return rateLimitResponse(rateLimitResult.retryAfter)
     }
 
-    const { username, password } = await request.json()
+    // Parse request body with error handling for production debugging
+    let body: unknown
+    try {
+      body = await request.json()
+      console.log('📦 Request body parsed:', { hasBody: !!body, bodyType: typeof body })
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError)
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Invalid JSON in request body'
+      )
+    }
+
+    // Safely extract username and password
+    const { username, password } = (body as { username?: string; password?: string }) || {}
+
+    console.log('🔍 Credentials check:', {
+      hasUsername: !!username,
+      usernameLength: username?.length || 0,
+      hasPassword: !!password,
+      passwordLength: password?.length || 0
+    })
 
     // Validate input
     if (!username || !password) {
+      console.error('❌ Validation failed:', { username: !!username, password: !!password })
       return createErrorResponse(
         ErrorType.VALIDATION,
         'Username and password are required'
