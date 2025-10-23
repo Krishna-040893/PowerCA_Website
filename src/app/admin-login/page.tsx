@@ -92,17 +92,20 @@ export default function AdminLoginPage() {
 
         toast.success('Login successful!', {
           description: 'Redirecting to admin dashboard...',
-          duration: 2000,
+          duration: 3000,
         })
 
-        console.log('🔄 Redirecting to /admin...')
+        // Use the URL from NextAuth if available, otherwise default to /admin
+        const redirectUrl = result.url || '/admin'
+        console.log('🔄 Redirecting to:', redirectUrl)
 
-        // Successful login - add delay to ensure session cookie is properly set
-        // Then use full page reload to ensure session is picked up correctly
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Successful login - add longer delay to ensure session cookie is properly set
+        // This prevents race conditions where middleware checks before session is ready
+        await new Promise(resolve => setTimeout(resolve, 2000))
 
-        // Force full page reload with the callback URL
-        window.location.replace('/admin')
+        // Force full page reload to ensure fresh auth state
+        // Using href instead of replace to ensure proper history
+        window.location.href = redirectUrl
       } else {
         const errorMsg = 'Login failed. Please try again.'
         setError(errorMsg)
