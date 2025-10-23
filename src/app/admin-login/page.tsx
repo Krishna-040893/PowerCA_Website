@@ -58,6 +58,7 @@ export default function AdminLoginPage() {
       const result = await signIn('credentials', {
         ...credentials,
         redirect: false, // Don't auto-redirect, handle manually
+        callbackUrl: '/admin', // Specify callback URL for proper redirect
       })
 
       console.log('📦 NextAuth signIn result:', {
