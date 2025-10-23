@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createClient  } from '@supabase/supabase-js'
 
 // Initialize Supabase client with service role key
@@ -23,9 +23,9 @@ const supabase = createClient(
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const resolvedParams = await params
@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     // Update user metadata in Supabase auth
-    const { data: user, error: updateError } = await supabase.auth.admin.updateUserById(
+    const { data: user, error: updateError } = await supabase.session.user.updateUserById(
       userId,
       {
         user_metadata: { role }

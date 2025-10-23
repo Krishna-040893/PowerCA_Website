@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createClient  } from '@supabase/supabase-js'
 import {sendAffiliateApprovalEmail  } from '@/lib/resend'
 import {logger  } from '@/lib/logger'
@@ -7,9 +7,9 @@ import {logger  } from '@/lib/logger'
 // Get all affiliate applications (Admin only)
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Initialize Supabase client
@@ -135,9 +135,9 @@ export async function GET(request: NextRequest) {
 // Update affiliate application status (Admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()

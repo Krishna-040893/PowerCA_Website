@@ -170,12 +170,11 @@ export default function AffiliateReferralsPage() {
 
     setSyncingReferral(referral.id)
     try {
-      const adminToken = localStorage.getItem('adminToken')
+      // NextAuth automatically sends session cookie with fetch requests
       const response = await fetch('/api/admin/payments/sync-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`,
         },
         body: JSON.stringify({
           payment_id: referral.payment_id,

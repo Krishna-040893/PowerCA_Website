@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createAdminClient  } from '@/lib/supabase/admin'
 
 // PATCH endpoint removed - Status tracking has been disabled for bookings
@@ -7,9 +7,9 @@ import {createAdminClient  } from '@/lib/supabase/admin'
 // Get specific booking details (Admin only)
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const resolvedParams = await params
@@ -70,9 +70,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 // Delete booking (Admin only)
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const resolvedParams = await params

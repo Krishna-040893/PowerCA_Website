@@ -9,6 +9,7 @@ import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter  } from 'next/navigation'
+import {signIn  } from 'next-auth/react'
 import {Eye, EyeOff, User, Lock, ArrowLeft, Shield, Loader2  } from 'lucide-react'
 
 export default function AdminLoginPage() {
@@ -35,97 +36,34 @@ export default function AdminLoginPage() {
     })
 
     try {
-      const requestBody = { username, password }
-      console.log('📤 Sending request:', {
-        url: '/api/admin/auth/login',
-        method: 'POST',
-        bodyKeys: Object.keys(requestBody),
-        hasUsername: !!requestBody.username,
-        hasPassword: !!requestBody.password
+      // Use NextAuth signIn with credentials
+      const result = await signIn('credentials', {
+        username, // Admin uses username
+        password,
+        redirect: false, // Don't auto-redirect, handle manually
       })
 
-      const response = await fetch('/api/admin/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+      console.log('📦 NextAuth signIn result:', {
+        ok: result?.ok,
+        status: result?.status,
+        error: result?.error,
       })
 
-      console.log('📡 API Response status:', response.status)
-      console.log('📡 API Response headers:', {
-        contentType: response.headers.get('content-type'),
-        requestId: response.headers.get('x-request-id')
-      })
-
-      let data: unknown
-      try {
-        data = await response.json()
-        console.log('📦 API Response data:', {
-          success: (data as { success?: boolean }).success,
-          hasToken: !!(data as { token?: string }).token,
-          error: (data as { error?: { message?: string } }).error?.message
-        })
-      } catch (jsonError) {
-        console.error('❌ Failed to parse response JSON:', jsonError)
-        setError('Invalid response from server. Please try again.')
+      if (result?.error) {
+        console.error('❌ Login failed:', result.error)
+        setError(result.error)
         return
       }
 
-      if (!response.ok) {
-        const errorMessage = (data as { error?: { message?: string }; message?: string }).error?.message ||
-                           (data as { message?: string }).message ||
-                           'Invalid credentials'
-        console.error('❌ Login failed:', {
-          status: response.status,
-          error: errorMessage,
-          fullResponse: data
-        })
-        setError(errorMessage)
-        return
-      }
-
-      const typedData = data as {
-        success?: boolean
-        token?: string
-        user?: { username: string; email: string; role: string }
-        message?: string
-        error?: { message?: string }
-      }
-
-      if (typedData.success) {
-        console.log('✅ Login successful, storing credentials...')
-
-        // Store token and user data in localStorage for admin panel
-        if (typedData.token) {
-          localStorage.setItem('adminToken', typedData.token)
-        }
-        if (typedData.user) {
-          localStorage.setItem('adminUser', JSON.stringify(typedData.user))
-        }
-
-        // CRITICAL: Set the cookie with proper flags for both development and production
-        if (typedData.token) {
-          const isProduction = window.location.protocol === 'https:'
-          const cookieValue = `adminToken=${typedData.token}; path=/; max-age=86400; SameSite=Lax${isProduction ? '; Secure' : ''}`
-          document.cookie = cookieValue
-        }
-
-        console.log('✅ Token saved to localStorage and cookie')
+      if (result?.ok) {
+        console.log('✅ Admin login successful')
         console.log('🔄 Redirecting to /admin...')
 
-        // VERCEL FIX: Use router.push with refresh to ensure cookies are sent
-        // This is more reliable on Vercel than window.location.href
+        // Successful login - redirect to admin dashboard
         router.push('/admin')
-
-        // Also force a full page reload after a short delay to ensure cookies are picked up
-        setTimeout(() => {
-          window.location.href = '/admin'
-        }, 100)
+        router.refresh() // Refresh to pick up new session
       } else {
-        const errorMsg = typedData.error?.message || typedData.message || 'Login failed'
-        console.error('❌ Login failed:', errorMsg)
-        setError(errorMsg)
+        setError('Login failed. Please try again.')
       }
     } catch (err) {
       console.error('❌ Login error:', err)

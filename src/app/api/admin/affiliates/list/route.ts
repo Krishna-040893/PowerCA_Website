@@ -1,14 +1,14 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {createErrorResponse, ErrorType, handleDatabaseError  } from '@/lib/error-handler'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const supabase = createAdminClient()

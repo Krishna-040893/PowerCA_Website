@@ -5,78 +5,34 @@ import {NextRequest, NextResponse, type NextFetchEvent  } from 'next/server'
 export async function middleware(req: NextRequest, event: NextFetchEvent) {
   const pathname = req.nextUrl.pathname
 
-  // Handle admin routes with JWT authentication
+  // Handle admin routes with NextAuth
   if (pathname.startsWith('/admin')) {
     // Allow access to admin login page
     if (pathname === '/admin-login') {
       return NextResponse.next()
     }
 
-    // Check for admin token in cookies or headers
-    const adminToken = req.cookies.get('adminToken')?.value ||
-                      req.headers.get('authorization')?.replace('Bearer ', '')
-
-    if (!adminToken) {
-      // Redirect to admin login if no token
-      return NextResponse.redirect(new URL('/admin-login', req.url))
-    }
-
-    try {
-      // Simple JWT format validation (3 parts separated by dots)
-      // Let server-side API routes handle full verification
-      if (adminToken.split('.').length === 3) {
-        // Valid JWT format, allow access
-        return NextResponse.next()
-      } else {
-        // Invalid token format, redirect to login
-        const response = NextResponse.redirect(new URL('/admin-login', req.url))
-        response.cookies.delete('adminToken')
-        return response
+    // Use NextAuth middleware for admin routes
+    const authMiddleware = withAuth({
+      pages: {
+        signIn: '/admin-login',
+      },
+      callbacks: {
+        authorized: ({ token }) => {
+          // Only allow if user has admin role
+          return token?.role === 'admin'
+        }
       }
-    } catch {
-      // Token validation failed
-      const response = NextResponse.redirect(new URL('/admin-login', req.url))
-      response.cookies.delete('adminToken')
-      return response
-    }
+    })
+
+    return authMiddleware(req as NextRequestWithAuth, event)
   }
 
-  // Handle admin API routes
+  // Handle admin API routes with NextAuth
   if (pathname.startsWith('/api/admin')) {
-    // Allow admin auth endpoints
-    if (pathname.startsWith('/api/admin/auth')) {
-      return NextResponse.next()
-    }
-
-    // All other admin API routes require authentication
-    const adminToken = req.cookies.get('adminToken')?.value ||
-                      req.headers.get('authorization')?.replace('Bearer ', '')
-
-    if (!adminToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No admin token provided' },
-        { status: 401 }
-      )
-    }
-
-    try {
-      // Simple JWT format validation (3 parts separated by dots)
-      // Let API routes handle full server-side verification
-      if (adminToken.split('.').length === 3) {
-        // Valid JWT format, allow access - API routes will do full verification
-        return NextResponse.next()
-      } else {
-        return NextResponse.json(
-          { error: 'Unauthorized - Invalid admin token format' },
-          { status: 401 }
-        )
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Unauthorized - Token validation failed' },
-        { status: 401 }
-      )
-    }
+    // Admin API routes will handle their own authentication using getServerSession
+    // Middleware just passes through - individual routes verify admin role
+    return NextResponse.next()
   }
 
   // For non-admin routes, use the existing NextAuth logic

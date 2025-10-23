@@ -46,17 +46,10 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = useCallback(() => {
-    const token = localStorage.getItem('adminToken')
-    if (!token) {
-      router.push('/admin/login')
-    }
-  }, [router])
-
   useEffect(() => {
-    checkAuth()
     fetchDashboardData()
-  }, [checkAuth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchDashboardData = async () => {
     try {
