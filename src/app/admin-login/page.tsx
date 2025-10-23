@@ -8,11 +8,14 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {signIn  } from 'next-auth/react'
+import {signIn, useSession  } from 'next-auth/react'
+import {useRouter  } from 'next/navigation'
 import {Eye, EyeOff, User, Lock, ArrowLeft, Shield, Loader2  } from 'lucide-react'
 import {toast  } from 'sonner'
 
 export default function AdminLoginPage() {
+  const router = useRouter()
+  const { data: session, update: updateSession } = useSession()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +24,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
 
   // eslint-disable-next-line no-console
-  console.log('🔐 Admin Login Page loaded')
+  console.log('🔐 Admin Login Page loaded', { currentSession: session })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,8 +57,9 @@ export default function AdminLoginPage() {
       })
 
       // Show loading toast
-      const loadingToast = toast.loading('Authenticating...')
+      toast.loading('Authenticating...', { id: 'auth-toast' })
 
+      // Use redirect: false to handle everything manually
       const result = await signIn('credentials', {
         ...credentials,
         redirect: false, // Don't auto-redirect, handle manually
@@ -66,10 +70,11 @@ export default function AdminLoginPage() {
         ok: result?.ok,
         status: result?.status,
         error: result?.error,
+        url: result?.url
       })
 
       // Dismiss loading toast
-      toast.dismiss(loadingToast)
+      toast.dismiss('auth-toast')
 
       if (result?.error) {
         console.error('❌ Login failed:', result.error)
@@ -83,29 +88,23 @@ export default function AdminLoginPage() {
       }
 
       if (result?.ok) {
-        console.log('✅ Admin login successful')
-        console.log('📦 Result details:', {
-          ok: result.ok,
-          status: result.status,
-          url: result.url
-        })
+        console.log('✅ Admin login successful - Updating session...')
 
-        toast.success('Login successful!', {
-          description: 'Redirecting to admin dashboard...',
-          duration: 3000,
-        })
+        toast.success('Login successful!', { id: 'auth-success' })
 
-        // Use the URL from NextAuth if available, otherwise default to /admin
-        const redirectUrl = result.url || '/admin'
-        console.log('🔄 Redirecting to:', redirectUrl)
+        // Force session update to get fresh session data
+        await updateSession()
 
-        // Successful login - add longer delay to ensure session cookie is properly set
-        // This prevents race conditions where middleware checks before session is ready
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        console.log('🔄 Session updated, navigating to /admin...')
 
-        // Force full page reload to ensure fresh auth state
-        // Using href instead of replace to ensure proper history
-        window.location.href = redirectUrl
+        // Use router.push for client-side navigation
+        router.push('/admin')
+
+        // Also set a backup redirect in case router.push fails
+        setTimeout(() => {
+          console.log('⚠️ Backup redirect triggered')
+          window.location.href = '/admin'
+        }, 3000)
       } else {
         const errorMsg = 'Login failed. Please try again.'
         setError(errorMsg)
