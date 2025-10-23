@@ -13,6 +13,16 @@ export function useAdminAuth() {
   const router = useRouter()
   const { data: session, status } = useSession()
 
+  // Debug logging
+  console.log('🔍 useAdminAuth Debug:', {
+    status,
+    hasSession: !!session,
+    userRole: session?.user?.role,
+    userName: session?.user?.name,
+    userEmail: session?.user?.email,
+    fullSession: session
+  })
+
   // Check if user is authenticated and has admin role
   const isAuthenticated = status === 'authenticated' && session?.user?.role === 'admin'
   const isLoading = status === 'loading'
@@ -21,8 +31,13 @@ export function useAdminAuth() {
   useEffect(() => {
     if (status === 'loading') return // Don't redirect while loading
 
+    console.log('🔍 Auth check:', { status, hasSession: !!session, role: session?.user?.role })
+
     if (!session || session.user?.role !== 'admin') {
+      console.log('❌ Not admin, redirecting to login')
       router.push('/admin-login')
+    } else {
+      console.log('✅ Admin authenticated')
     }
   }, [session, status, router])
 

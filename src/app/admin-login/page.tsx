@@ -11,6 +11,7 @@ import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter  } from 'next/navigation'
 import {signIn  } from 'next-auth/react'
 import {Eye, EyeOff, User, Lock, ArrowLeft, Shield, Loader2  } from 'lucide-react'
+import {toast  } from 'sonner'
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('')
@@ -30,16 +31,32 @@ export default function AdminLoginPage() {
 
     console.log('🔐 Admin login attempt:', {
       username,
+      usernameValue: username,
+      usernameType: typeof username,
       hasPassword: !!password,
       passwordLength: password?.length || 0,
       timestamp: new Date().toISOString()
     })
 
     try {
-      // Use NextAuth signIn with credentials
+      // IMPORTANT: Admin uses username field (not email)
+      // Build credentials object without email field for admin login
+      const credentials: Record<string, string> = {
+        username: username.trim(), // Admin uses username (trim whitespace)
+        password: password,
+      }
+
+      console.log('📤 Sending credentials to NextAuth:', {
+        hasUsername: !!credentials.username,
+        usernameValue: credentials.username,
+        hasEmail: 'email' in credentials
+      })
+
+      // Show loading toast
+      const loadingToast = toast.loading('Authenticating...')
+
       const result = await signIn('credentials', {
-        username, // Admin uses username
-        password,
+        ...credentials,
         redirect: false, // Don't auto-redirect, handle manually
       })
 
@@ -49,25 +66,46 @@ export default function AdminLoginPage() {
         error: result?.error,
       })
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast)
+
       if (result?.error) {
         console.error('❌ Login failed:', result.error)
-        setError(result.error)
+        const errorMessage = result.error || 'Invalid credentials'
+        setError(errorMessage)
+        toast.error(errorMessage, {
+          description: 'Please check your username and password',
+          duration: 4000,
+        })
         return
       }
 
       if (result?.ok) {
         console.log('✅ Admin login successful')
+        toast.success('Login successful!', {
+          description: 'Redirecting to admin dashboard...',
+          duration: 2000,
+        })
+
         console.log('🔄 Redirecting to /admin...')
 
-        // Successful login - redirect to admin dashboard
-        router.push('/admin')
-        router.refresh() // Refresh to pick up new session
+        // Successful login - add small delay to ensure session cookie is set
+        // Then use full page reload to ensure session is picked up
+        await new Promise(resolve => setTimeout(resolve, 500))
+        window.location.href = '/admin'
       } else {
-        setError('Login failed. Please try again.')
+        const errorMsg = 'Login failed. Please try again.'
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (err) {
       console.error('❌ Login error:', err)
-      setError('An error occurred. Please try again.')
+      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
+      setError(errorMsg)
+      toast.error('Login Error', {
+        description: errorMsg,
+        duration: 5000,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -164,7 +202,9 @@ export default function AdminLoginPage() {
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="username"
+                  name="username"
                   type="text"
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter Admin Username"
@@ -184,7 +224,9 @@ export default function AdminLoginPage() {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter Admin Password"

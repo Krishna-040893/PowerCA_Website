@@ -14,38 +14,58 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
+        console.log('🔐 Authorize called with:', {
+          hasPassword: !!credentials?.password,
+          hasEmail: !!credentials?.email,
+          hasUsername: !!credentials?.username,
+          username: credentials?.username,
+          timestamp: new Date().toISOString()
+        })
+
         if (!credentials?.password) {
-          throw new Error('Invalid credentials')
+          console.error('❌ No password provided')
+          throw new Error('Password is required')
         }
 
         // Must have either email (for users/affiliates) or username (for admin)
         if (!credentials?.email && !credentials?.username) {
-          throw new Error('Invalid credentials')
+          console.error('❌ No email or username provided')
+          throw new Error('Email or username is required')
         }
 
         // Ensure Supabase is configured
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
-          console.warn('Supabase is not configured properly')
+          console.warn('⚠️ Supabase is not configured properly')
           // In development, allow authentication without Supabase
           if (process.env.NODE_ENV === 'development') {
             // Continue to demo login handling below
           } else {
-            throw new Error('Supabase is not configured')
+            throw new Error('Database is not configured')
           }
         }
 
         try {
           const supabase = createAdminClient()
+          console.log('✅ Supabase client created')
 
           // First, check if it's an admin login (username-based)
           if (credentials.username) {
+            console.log('🔍 Looking up admin user:', credentials.username)
+
             const { data: admin, error: adminError } = await supabase
               .from('admin_users')
               .select('*')
               .eq('username', credentials.username)
               .single()
 
+            console.log('📊 Admin lookup result:', {
+              found: !!admin,
+              error: adminError?.message,
+              username: credentials.username
+            })
+
             if (admin && !adminError) {
+              console.log('✅ Admin user found:', admin.username)
               // Check if account is locked
               if (admin.locked_until) {
                 const lockoutTime = new Date(admin.locked_until).getTime()
@@ -232,7 +252,9 @@ export const authOptions: NextAuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: process.env.NODE_ENV === 'production'
+        ? `__Secure-next-auth.session-token`
+        : `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax', // Important for Vercel deployments
