@@ -25,10 +25,8 @@ export async function middleware(req: NextRequest, event: NextFetchEvent) {
       // If coming from login with fresh token, allow one redirect without token
       // The client-side will have localStorage and cookie will be set on next request
       if (fromLogin === 'true') {
-        // Remove the parameter and allow access
-        url.searchParams.delete('from_login')
-        const response = NextResponse.rewrite(url)
-        return response
+        // Allow access - client-side will clean up the URL parameter
+        return NextResponse.next()
       }
 
       // Redirect to admin login if no token
