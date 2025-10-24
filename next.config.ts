@@ -125,6 +125,8 @@ const nextConfig: NextConfig = {
         hostname: '*.supabase.co',
       },
     ],
+    // Configure allowed quality values for Next.js 16+ compatibility
+    qualities: [75, 85, 90, 100],
   },
 };
 

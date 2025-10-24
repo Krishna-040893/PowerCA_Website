@@ -3,7 +3,7 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useRouter  } from 'next/navigation'
 import {useSession, signOut  } from 'next-auth/react'
-import {Building2, Globe, Link, User, Save, AlertCircle, Clock, XCircle, LogOut  } from 'lucide-react'
+import {Building2, Globe, Link, User, Save, AlertCircle, Clock, XCircle, LogOut, Copy  } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
 import {toast  } from 'sonner'
 import {Button  } from '@/components/ui/button'
@@ -755,34 +755,15 @@ export default function AffiliateAccountPage() {
                   <h4 className="text-lg font-bold text-amber-800 mb-4 flex items-center gap-2">
                     🔗 {latestCustomerId ? 'Latest Customer Referral Link' : 'Your Referral Link'}
                   </h4>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={latestCustomerId
-                        ? `${window.location.origin}/pricing?ref=${latestReferralCode}&cus=${latestCustomerId}`
-                        : `${window.location.origin}/pricing?ref=${latestReferralCode}`
-                      }
-                      readOnly
-                      className="flex-1 px-4 py-3 text-sm border-2 border-yellow-300 rounded-xl bg-white font-mono focus:outline-none shadow-sm"
-                    />
-                    <button
-                      onClick={async () => {
-                        const { copyToClipboard } = await import('@/lib/browser-compat')
-                        const referralLink = latestCustomerId
-                          ? `${window.location.origin}/pricing?ref=${latestReferralCode}&cus=${latestCustomerId}`
-                          : `${window.location.origin}/pricing?ref=${latestReferralCode}`
-                        const success = await copyToClipboard(referralLink)
-                        if (success) {
-                          toast.success('Referral link copied to clipboard!')
-                        } else {
-                          toast.error('Failed to copy. Please manually copy the link.')
-                        }
-                      }}
-                      className="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
-                    >
-                      Copy
-                    </button>
-                  </div>
+                  <input
+                    type="text"
+                    value={latestCustomerId
+                      ? `${window.location.origin}/pricing?ref=${latestReferralCode}&cus=${latestCustomerId}`
+                      : `${window.location.origin}/pricing?ref=${latestReferralCode}`
+                    }
+                    readOnly
+                    className="w-full px-4 py-3 text-sm border-2 border-yellow-300 rounded-xl bg-white font-mono focus:outline-none shadow-sm"
+                  />
                   <div className="mt-4 bg-white/70 p-3 rounded-xl space-y-2">
                     <p className="text-sm font-semibold text-gray-700">
                       <span className="text-blue-700">Referral Code:</span> <span className="font-mono font-bold text-blue-800">{latestReferralCode}</span>
@@ -876,26 +857,26 @@ export default function AffiliateAccountPage() {
                   <p className="mt-4 text-gray-600 font-semibold">Loading referral details...</p>
                 </div>
               ) : (
-                <table className="w-full">
+                <table className="min-w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-100 to-blue-100 border-b-2 border-purple-200">
-                      <th className="px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Customer ID</th>
-                      <th className="px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Customer Details</th>
-                      <th className="px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Date</th>
-                      <th className="px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">Payment Status</th>
-                      <th className="px-5 py-4 text-right text-xs font-bold text-gray-800 uppercase tracking-wider">Payment Amount</th>
-                      <th className="px-5 py-4 text-right text-xs font-bold text-gray-800 uppercase tracking-wider">Commission</th>
+                      <th className="min-w-[150px] px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Customer ID</th>
+                      <th className="min-w-[250px] px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Customer Details</th>
+                      <th className="min-w-[150px] px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Date</th>
+                      <th className="min-w-[150px] px-5 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Payment Status</th>
+                      <th className="min-w-[150px] px-5 py-4 text-right text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Payment Amount</th>
+                      <th className="min-w-[180px] px-5 py-4 text-right text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Commission</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
                     {referralDetails.map((referral) => (
                       <tr key={referral.id} className="hover:bg-purple-50/50 transition-colors">
-                        <td className="px-5 py-4">
+                        <td className="min-w-[150px] px-5 py-4 whitespace-nowrap">
                           <span className="font-mono text-sm font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">
                             {referral.customer_id || 'N/A'}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="min-w-[250px] px-5 py-4">
                           <div className="text-sm">
                             <p className="font-bold text-gray-900">{referral.referred_name || 'N/A'}</p>
                             <p className="text-gray-600 font-medium">{referral.referred_email}</p>
@@ -904,7 +885,7 @@ export default function AffiliateAccountPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="min-w-[150px] px-5 py-4 whitespace-nowrap">
                           <div className="text-sm font-semibold text-gray-700">
                             {new Date(referral.created_at).toLocaleDateString('en-IN', {
                               day: '2-digit',
@@ -913,7 +894,7 @@ export default function AffiliateAccountPage() {
                             })}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="min-w-[150px] px-5 py-4 whitespace-nowrap">
                           {referral.payment_info ? (
                             <span
                               className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm ${
@@ -924,22 +905,22 @@ export default function AffiliateAccountPage() {
                                   : 'bg-gray-100 text-gray-800 border border-gray-300'
                               }`}
                             >
-                              {referral.payment_info.payment_status === 'completed' ? '✓ Paid' : '⏳ Pending'}
+                              {referral.payment_info.payment_status === 'completed' ? '✓ Paid' : 'Pending'}
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-800 border border-gray-300 shadow-sm">
-                              ⏳ Pending
+                              Pending
                             </span>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-right">
+                        <td className="min-w-[150px] px-5 py-4 text-right whitespace-nowrap">
                           <div className="text-sm font-bold text-gray-900">
                             {referral.payment_info
                               ? `₹${parseFloat(referral.payment_info.payment_amount || '0').toFixed(2)}`
                               : '-'}
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-right">
+                        <td className="min-w-[180px] px-5 py-4 text-right whitespace-nowrap">
                           <div className="text-sm">
                             {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
                               <>
@@ -949,7 +930,7 @@ export default function AffiliateAccountPage() {
                                 {referral.payment_info.commission_paid ? (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-300">✓ Paid</span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-300">⏳ Pending</span>
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-300">Pending</span>
                                 )}
                               </>
                             ) : (

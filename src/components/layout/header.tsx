@@ -103,12 +103,6 @@ export function Header() {
                       /* Admin Menu */
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/account" className="flex items-center cursor-pointer">
-                            <User className="mr-2 h-4 w-4" />
-                            My Account
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                           <Link href="/admin" className="flex items-center cursor-pointer">
                             <User className="mr-2 h-4 w-4" />
                             Admin Panel
@@ -241,9 +235,6 @@ export function Header() {
                     ) : session?.user?.role === 'admin' ? (
                       /* Admin Mobile Menu */
                       <>
-                        <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/account">My Account</Link>
-                        </Button>
                         <Button variant="outline" className="w-full rounded-full" asChild>
                           <Link href="/admin">Admin Panel</Link>
                         </Button>
