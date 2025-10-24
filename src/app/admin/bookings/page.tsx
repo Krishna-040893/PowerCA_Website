@@ -25,7 +25,7 @@ interface Booking {
 }
 
 export default function AdminBookingsPage() {
-  const { isAuthenticated, isLoading: authLoading, adminUser, getAuthHeaders } = useAdminAuth()
+  const { isAuthenticated, isLoading: authLoading, adminUser } = useAdminAuth()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,20 +35,34 @@ export default function AdminBookingsPage() {
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true)
+      console.log('📡 Fetching bookings...')
       const response = await fetch('/api/admin/bookings', {
-        headers: getAuthHeaders()
+        method: 'GET',
+        credentials: 'include', // Important: Include cookies for NextAuth session
+        headers: {
+          'Content-Type': 'application/json',
+        }
       })
+
+      console.log('📡 Response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ Bookings fetched:', data)
         setBookings(data.bookings || [])
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('❌ Failed to fetch bookings:', response.status, response.statusText, errorData)
+        setBookings([])
       }
     } catch (error) {
-      console.error('Error fetching bookings:', error)
+      console.error('❌ Error fetching bookings:', error)
+      setBookings([])
     } finally {
+      console.log('✅ Setting loading to false')
       setLoading(false)
     }
-  }, [getAuthHeaders])
+  }, [])
 
   const filterBookings = useCallback(() => {
     let filtered = [...bookings]
@@ -65,16 +79,23 @@ export default function AdminBookingsPage() {
   }, [bookings, searchTerm])
 
   useEffect(() => {
+    console.log('🔐 Auth state changed:', { isAuthenticated, authLoading })
     if (isAuthenticated) {
+      console.log('✅ User is authenticated, fetching bookings...')
       fetchBookings()
+    } else if (!authLoading) {
+      console.log('❌ User not authenticated')
     }
-  }, [isAuthenticated, fetchBookings])
+  }, [isAuthenticated, fetchBookings, authLoading])
 
   useEffect(() => {
     filterBookings()
   }, [filterBookings])
 
+  console.log('🎨 Render state:', { authLoading, isAuthenticated, hasAdminUser: !!adminUser })
+
   if (authLoading) {
+    console.log('⏳ Auth is loading...')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -83,6 +104,7 @@ export default function AdminBookingsPage() {
   }
 
   if (!isAuthenticated || !adminUser) {
+    console.log('❌ Not authenticated or no admin user, returning null')
     return null
   }
 
@@ -142,13 +164,15 @@ export default function AdminBookingsPage() {
 
             {/* Table */}
             {loading ? (
-              <div className="text-center py-8">
+              <div className="text-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
                 <p className="mt-2 text-gray-600">Loading bookings...</p>
               </div>
             ) : filteredBookings.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No bookings found
+              <div className="text-center py-16">
+                <Calendar className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Booking Data Found</h3>
+                <p className="text-gray-500">There are currently no bookings in the system.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
