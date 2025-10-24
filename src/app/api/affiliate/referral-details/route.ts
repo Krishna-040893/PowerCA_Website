@@ -8,7 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * Fetches detailed referral information including payment status and commission data
  * for the logged-in affiliate
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 

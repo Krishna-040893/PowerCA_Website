@@ -38,13 +38,6 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/admin",
-      "destination": "/admin-login",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/sitemap.xml",

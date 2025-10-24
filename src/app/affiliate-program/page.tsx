@@ -4,7 +4,7 @@ import Link from 'next/link'
 import {Button  } from '@/components/ui/button'
 import {Card, CardContent  } from '@/components/ui/card'
 import {Badge  } from '@/components/ui/badge'
-import {Star, DollarSign, Users, TrendingUp,
+import {Star, IndianRupee, Users, TrendingUp,
   Target,
   Zap,
   Shield, CheckCircle, ArrowRight,
@@ -17,7 +17,7 @@ import {Star, DollarSign, Users, TrendingUp,
 export default function AffiliateProgramPage() {
   const benefits = [
     {
-      icon: <DollarSign className="h-8 w-8 text-green-500" />,
+      icon: <IndianRupee className="h-8 w-8 text-green-500" />,
       title: 'Earn 10% Commission',
       description: 'Get 10% commission on every successful referral conversion'
     },

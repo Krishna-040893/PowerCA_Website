@@ -28,12 +28,15 @@ export async function GET() {
       message: 'Test email sent successfully!',
       result
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
     console.error('❌ Test email failed:', error)
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
     return NextResponse.json({
       success: false,
-      error: error.message || 'Unknown error',
+      error: errorMessage,
       details: error
     }, { status: 500 })
   }

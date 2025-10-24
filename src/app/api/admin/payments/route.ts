@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { requireAdminAuth } from '@/lib/admin-auth-helper'
-
-// Force Node.js runtime for JWT support
-export const runtime = 'nodejs'
+import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Initialize Supabase client
@@ -31,9 +28,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch payment orders from Supabase
+    // Fetch payments from Supabase
     const { data: payments, error } = await supabase
-      .from('payment_orders')
+      .from('payments')
       .select('*')
       .order('created_at', { ascending: false })
 

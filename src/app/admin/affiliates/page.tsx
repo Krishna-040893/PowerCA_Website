@@ -8,7 +8,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Textarea  } from '@/components/ui/textarea'
-import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, ArrowLeft, LogOut  } from 'lucide-react'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
@@ -73,7 +73,6 @@ interface ReferralData {
 
 
 export default function AdminAffiliatesPage() {
-  const router = useRouter()
   const { isAuthenticated, isLoading: isAuthLoading, adminUser, getAuthHeaders } = useAdminAuth()
   const [_activeTab, _setActiveTab] = useState<'applications' | 'profiles'>('profiles')
   const [applications, setApplications] = useState<AffiliateApplication[]>([])
@@ -207,12 +206,6 @@ export default function AdminAffiliatesPage() {
       default:
         return <Clock className="h-4 w-4" />
     }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken')
-    localStorage.removeItem('adminUser')
-    router.push('/admin-login')
   }
 
   const stats = {

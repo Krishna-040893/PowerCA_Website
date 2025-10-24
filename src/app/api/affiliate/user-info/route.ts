@@ -4,7 +4,7 @@ import {authOptions  } from '@/lib/auth'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 

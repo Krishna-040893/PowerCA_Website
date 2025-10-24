@@ -265,7 +265,7 @@ export default function AdminUsersPage() {
                             <SelectTrigger className="w-[140px]">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-white">
                               {roleOptions.map((role) => (
                                 <SelectItem key={role} value={role}>
                                   <div className="flex items-center gap-2">

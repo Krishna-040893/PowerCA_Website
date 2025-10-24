@@ -2,7 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
 
     const supabase = createAdminClient()

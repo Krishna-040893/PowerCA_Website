@@ -16,7 +16,6 @@ import {DropdownMenu,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu'
-
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
@@ -72,31 +71,64 @@ export function Header() {
                     <span>{session?.user?.name || session?.user?.email || 'User'}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {session?.user?.role === 'admin' && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin" className="flex items-center cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        Admin Panel
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center cursor-pointer">
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-red-600 cursor-pointer"
+                <DropdownMenuPortal>
+                  <DropdownMenuContent
+                    align="end"
+                    side="bottom"
+                    sideOffset={12}
+                    className="w-56 !z-[9999] shadow-xl rounded-lg border border-gray-200 bg-white"
+                    style={{ zIndex: 9999 }}
+                    avoidCollisions={true}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+
+                    <DropdownMenuSeparator />
+
+                    {/* Affiliate Menu */}
+                    {(session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate') ? (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/affiliate/profile" className="flex items-center cursor-pointer">
+                            <User className="mr-2 h-4 w-4" />
+                            My Account
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/affiliate/account" className="flex items-center cursor-pointer">
+                            <User className="mr-2 h-4 w-4" />
+                            My Referrals
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : session?.user?.role === 'admin' ? (
+                      /* Admin Menu */
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex items-center cursor-pointer">
+                            <User className="mr-2 h-4 w-4" />
+                            Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      /* Regular User Menu */
+                      <DropdownMenuItem asChild>
+                        <Link href="/account" className="flex items-center cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          My Account
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="text-red-600 cursor-pointer"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenuPortal>
               </DropdownMenu>
             ) : (
               <>
@@ -113,23 +145,23 @@ export function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuContent
-                      align="center"
+                      align="end"
                       side="bottom"
-                      sideOffset={8}
-                      className="w-48 !bg-blue-600 border border-blue-700 shadow-lg !z-[9999] text-white"
+                      sideOffset={12}
+                      className="w-56 !bg-blue-600 border border-blue-700 shadow-xl !z-[9999] text-white rounded-lg"
                       style={{ zIndex: 9999, backgroundColor: '#2563eb' }}
-                      avoidCollisions={false}
+                      avoidCollisions={true}
                     >
-                    <DropdownMenuItem asChild>
-                      <Link href="/login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white">
+                    <DropdownMenuItem asChild className="focus:bg-blue-700 focus:text-white">
+                      <Link href="/login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white px-3 py-2.5 rounded-md transition-colors">
                         <User className="mr-2 h-4 w-4" />
-                        Client Sign In
+                        <span className="font-medium">Client Sign In</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/affiliate-login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white">
+                    <DropdownMenuItem asChild className="focus:bg-blue-700 focus:text-white">
+                      <Link href="/affiliate-login" className="flex items-center cursor-pointer text-white hover:bg-blue-700 hover:text-white px-3 py-2.5 rounded-md transition-colors">
                         <User className="mr-2 h-4 w-4" />
-                        Affiliate Sign In
+                        <span className="font-medium">Affiliate Sign In</span>
                       </Link>
                     </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -189,6 +221,31 @@ export function Header() {
                     <div className="px-4 py-2 text-sm text-gray-600">
                       Signed in as {session?.user?.name || session?.user?.email || 'User'}
                     </div>
+
+                    {/* Affiliate Mobile Menu */}
+                    {(session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate') ? (
+                      <>
+                        <Button variant="outline" className="w-full rounded-full" asChild>
+                          <Link href="/affiliate/profile">My Account</Link>
+                        </Button>
+                        <Button variant="outline" className="w-full rounded-full" asChild>
+                          <Link href="/affiliate/account">My Referrals</Link>
+                        </Button>
+                      </>
+                    ) : session?.user?.role === 'admin' ? (
+                      /* Admin Mobile Menu */
+                      <>
+                        <Button variant="outline" className="w-full rounded-full" asChild>
+                          <Link href="/admin">Admin Panel</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      /* Regular User Mobile Menu */
+                      <Button variant="outline" className="w-full rounded-full" asChild>
+                        <Link href="/account">My Account</Link>
+                      </Button>
+                    )}
+
                     <Button
                       variant="outline"
                       className="w-full text-red-600 rounded-full"

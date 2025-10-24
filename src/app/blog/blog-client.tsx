@@ -3,9 +3,10 @@
 import {useState  } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {Search, Calendar, User, ArrowRight, AlertCircle } from 'lucide-react'
+import {Search, Calendar, User, ArrowRight, AlertCircle, SlidersHorizontal } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
+import { blogPosts } from '@/data/blog-posts'
 
 const categories = [
   { id: 'all', name: 'All Categories', active: true },
@@ -15,66 +16,6 @@ const categories = [
   { id: 'technology', name: 'Technology', active: false },
   { id: 'best-practices', name: 'Best Practices', active: false },
   { id: 'tips', name: 'Tips & Tricks', active: false },
-]
-
-const blogPosts = [
-  {
-    id: 1,
-    title: 'BREAKING: Tax Audit Report Due Date Extended to October 31, 2025',
-    excerpt: 'CBDT extends tax audit report filing deadline from September 30 to October 31, 2025 for AY 2025-26. Get complete details of the notification.',
-    author: 'PowerCA Team',
-    date: 'September 25, 2025',
-    category: 'breaking-news',
-    readTime: '5 min read',
-    image: '/images/tax-audit-deadline-extended-feature.png',
-    isBreaking: true,
-    link: '/blog/tax-audit-deadline-extended-october-31-2025'
-  },
-  {
-    id: 2,
-    title: 'TDS Compliance Checklist 2025-26: Complete Guide for CAs',
-    excerpt: 'Comprehensive TDS compliance checklist for FY 2025-26. Due dates, rates, forms, penalties, and best practices for error-free TDS compliance.',
-    author: 'PowerCA Team',
-    date: 'September 24, 2025',
-    category: 'compliance',
-    readTime: '15 min read',
-    image: '/images/tds-compliance-checklist-feature.png',
-    link: '/blog/tds-compliance-checklist-complete-guide'
-  },
-  {
-    id: 3,
-    title: 'Why Every CA Firm Needs Practice Management Software in 2025',
-    excerpt: 'Discover how practice management software transforms CA firms. Increase efficiency by 40%, reduce errors, automate compliance, and scale your practice.',
-    author: 'PowerCA Team',
-    date: 'September 23, 2025',
-    category: 'technology',
-    readTime: '12 min read',
-    image: '/images/practice-management-software-feature.png',
-    link: '/blog/why-cas-need-practice-management-software'
-  },
-  {
-    id: 4,
-    title: 'New vs Old Tax Regime: Which is Better for You in 2025-26?',
-    excerpt: 'Detailed comparison of New vs Old tax regime for FY 2025-26. Calculate which regime saves more tax based on your income and deductions.',
-    author: 'PowerCA Team',
-    date: 'September 22, 2025',
-    category: 'tax-planning',
-    readTime: '10 min read',
-    image: '/images/new-vs-old-tax-regime-feature.png',
-    link: '/blog/new-vs-old-tax-regime-which-is-better'
-  },
-  {
-    id: 5,
-    title: 'How to File GST Returns in 2025: Complete Guide for CAs',
-    excerpt: 'Step-by-step guide on filing GST returns in 2025. Learn about GSTR-1, GSTR-3B, deadlines, late fees, and common mistakes to avoid.',
-    author: 'PowerCA Team',
-    date: 'September 20, 2025',
-    category: 'compliance',
-    readTime: '12 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/how-to-file-gst-returns-2025'
-  },
-
 ]
 
 const authors = [
@@ -145,31 +86,26 @@ export default function BlogPageClient() {
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-4 max-w-2xl mx-auto">
+          <div className="flex gap-4 max-w-4xl mx-auto">
             <div className="relative flex-1">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-10 text-gray-400 pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Search you want"
+                placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-16 py-6 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-24 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
+                className="w-full h-16 rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-14 pr-6 text-lg text-gray-800 placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
-              <Search className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
             </div>
-            <div className="relative">
-              <Button
-                size="lg"
+            <div className="relative flex items-center">
+              <button
+                type="button"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-24 min-w-24"
+                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
+                aria-label="Toggle filters"
               >
-                <Image
-                  src="/images/filter-icon.png"
-                  alt="Filter"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                />
-              </Button>
+                <SlidersHorizontal className="w-6 h-6" />
+              </button>
 
               {showFilterDropdown && (
                 <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">

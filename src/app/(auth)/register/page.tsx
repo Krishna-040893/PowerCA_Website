@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState, useEffect  } from 'react'
+import {useState  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -12,7 +12,7 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, CheckCircle2  } from 'lucide-react'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield  } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -248,9 +248,9 @@ export default function RegisterPage() {
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="group flex items-center gap-3 px-6 py-3 backdrop-blur-md border border-white/20 rounded-full transition-all duration-300"
         >
-          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
           <span className="text-white font-medium text-sm tracking-wide">

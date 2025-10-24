@@ -1,7 +1,6 @@
 'use client'
 
-import {useState, useEffect, useCallback  } from 'react'
-import {useRouter  } from 'next/navigation'
+import {useState, useEffect  } from 'react'
 import Link from 'next/link'
 import { BarChart3, Activity, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import {AdminLayout  } from '@/components/admin/admin-layout'
@@ -32,7 +31,6 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     pendingBookings: 0,
@@ -46,17 +44,10 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = useCallback(() => {
-    const token = localStorage.getItem('adminToken')
-    if (!token) {
-      router.push('/admin/login')
-    }
-  }, [router])
-
   useEffect(() => {
-    checkAuth()
     fetchDashboardData()
-  }, [checkAuth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchDashboardData = async () => {
     try {

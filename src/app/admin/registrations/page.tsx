@@ -286,7 +286,7 @@ export default function AdminRegistrationsPage() {
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="Professional">Professional</SelectItem>
                   <SelectItem value="Student">Student</SelectItem>

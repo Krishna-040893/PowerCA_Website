@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createClient  } from '@supabase/supabase-js'
 
 // Initialize Supabase client with service role key
@@ -23,9 +23,9 @@ const supabase = createClient(
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const auth = await requireAdminAuth()
+    if (!auth) {
+      return createUnauthorizedResponse()
     }
 
     const resolvedParams = await params

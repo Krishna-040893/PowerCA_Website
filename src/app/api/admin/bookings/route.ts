@@ -1,23 +1,20 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createClient  } from '@supabase/supabase-js'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {logger  } from '@/lib/logger'
 import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured  } from '@/lib/error-handler'
-
-// Force Node.js runtime for JWT support
-export const runtime = 'nodejs'
 
 // Get all bookings (Admin only)
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin authentication using centralized helper
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Admin is authorized, proceed with the request
-    const adminUser = auth.admin
+    const adminUser = session.user
 
     // Log admin action for audit trail (without sensitive data)
     logger.adminAction('GET_BOOKINGS', adminUser.id)
@@ -157,9 +154,10 @@ CREATE POLICY "Service role can manage bookings" ON bookings
 // Create a new booking (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()

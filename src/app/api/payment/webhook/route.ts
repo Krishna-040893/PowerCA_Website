@@ -77,24 +77,69 @@ export async function POST(req: NextRequest) {
 }
 
 async function handlePaymentCaptured(payment: RazorpayPayment, supabase: SupabaseClient) {
-  const { order_id, id: payment_id, amount: _amount, email: _email, contact: _contact, notes: _notes } = payment
+  const { order_id, id: payment_id, amount, email, contact, notes } = payment
 
-  // Update payment record in database
+  // Check if payment already exists
+  const { data: existingPayment } = await supabase
+    .from('payments')
+    .select('id')
+    .eq('payment_id', payment_id)
+    .single()
+
+  if (existingPayment) {
+    console.log('Payment already exists:', payment_id)
+    return
+  }
+
+  // Get order details from payment_orders table
+  const { data: orderData } = await supabase
+    .from('payment_orders')
+    .select('*')
+    .eq('order_id', order_id)
+    .single()
+
+  // Calculate amounts
+  const totalAmount = amount / 100 // Convert paise to rupees
+  const paymentAmount = parseFloat((totalAmount / 1.18).toFixed(2))
+  const gstAmount = parseFloat((totalAmount - paymentAmount).toFixed(2))
+
+  // Insert or update payment record
   const { data: paymentRecord, error: updateError } = await supabase
     .from('payments')
-    .update({
+    .upsert({
+      order_id,
       payment_id,
-      status: 'success',
+      signature: null, // Webhook payments don't have signature
+      amount: totalAmount,
+      currency: 'INR',
+      status: 'captured', // Use actual Razorpay status
+      plan: 'PowerCA Implementation',
+      email: email || orderData?.customer_email || 'unknown@powerca.in',
+      phone: contact || orderData?.customer_phone,
+      name: orderData?.customer_name || 'Customer',
+      company: orderData?.company,
+      gst_number: orderData?.gst_number,
+      firm_name: orderData?.firm_name,
+      address: orderData?.address,
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'payment_id',
+      ignoreDuplicates: false
     })
-    .eq('order_id', order_id)
     .select()
     .single()
 
   if (updateError) {
-    console.error('Failed to update payment:', updateError)
+    console.error('Failed to upsert payment:', updateError)
     return
   }
+
+  // Update payment_orders status to 'paid'
+  await supabase
+    .from('payment_orders')
+    .update({ status: 'paid' })
+    .eq('order_id', order_id)
 
   // Generate invoice
   const invoiceData = createInvoiceData({
@@ -153,19 +198,30 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
 }
 
 async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseClient) {
-  const { order_id } = payment
+  const { order_id, id: payment_id, amount, email, contact } = payment
 
-  // Update payment status to failed
+  // Insert or update failed payment record
   const { error } = await supabase
     .from('payments')
-    .update({
-      status: 'failed',
+    .upsert({
+      order_id,
+      payment_id,
+      amount: amount / 100,
+      currency: 'INR',
+      status: 'failed', // Use actual Razorpay status
+      plan: 'PowerCA Implementation',
+      email: email || 'unknown@powerca.in',
+      phone: contact,
+      name: 'Customer',
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'payment_id',
+      ignoreDuplicates: false
     })
-    .eq('order_id', order_id)
 
   if (error) {
-    console.error('Failed to update payment status:', error)
+    console.error('Failed to upsert failed payment:', error)
   }
 }
 

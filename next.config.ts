@@ -3,12 +3,12 @@ import type { NextConfig } from "next";
 // Content Security Policy for different environments with reporting
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.live;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai;
   img-src 'self' data: https: blob:;
-  connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com;
-  frame-src 'self' https://api.razorpay.com https://*.razorpay.com;
+  connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://vercel.live https://*.vercel.live;
+  frame-src 'self' https://api.razorpay.com https://*.razorpay.com https://vercel.live;
   media-src 'self';
   object-src 'none';
   base-uri 'self';
@@ -125,6 +125,8 @@ const nextConfig: NextConfig = {
         hostname: '*.supabase.co',
       },
     ],
+    // Configure allowed quality values for Next.js 16+ compatibility
+    qualities: [75, 85, 90, 100],
   },
 };
 

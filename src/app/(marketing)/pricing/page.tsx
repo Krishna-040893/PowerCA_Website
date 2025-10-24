@@ -13,6 +13,9 @@ export default function PricingPage() {
   const searchParams = useSearchParams()
   const [referralInfo, setReferralInfo] = useState<{ ref?: string; cus?: string } | null>(null)
 
+  // Check if user is an affiliate
+  const isAffiliate = session?.user?.role === 'Affiliate' || session?.user?.role === 'affiliate'
+
   useEffect(() => {
     // Detect referral parameters from URL
     const ref = searchParams.get('ref')
@@ -42,7 +45,6 @@ export default function PricingPage() {
   const handleLaunchOfferPurchase = () => {
     if (!session) {
       // Build callback URL with referral params
-      const currentUrl = new URL(window.location.href)
       const params = new URLSearchParams()
 
       if (referralInfo?.ref) params.append('ref', referralInfo.ref)
@@ -230,16 +232,21 @@ export default function PricingPage() {
                 {/* Button */}
                 <button
                   onClick={handleLaunchOfferPurchase}
-                  disabled={subscriptionStatus.hasLaunchOffer}
-                  title={subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
+                  disabled={subscriptionStatus.hasLaunchOffer || isAffiliate}
+                  title={isAffiliate ? 'Affiliates cannot purchase directly' : subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
                   className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
-                    subscriptionStatus.hasLaunchOffer
+                    subscriptionStatus.hasLaunchOffer || isAffiliate
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-white text-[#306bea] hover:bg-gray-50 cursor-pointer'
                   }`}
                 >
-                  {subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
+                  {isAffiliate ? 'Not Available for Affiliates' : subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
                 </button>
+                {isAffiliate && (
+                  <p className="text-xs text-white/80 text-center mt-2">
+                    As an affiliate, you can refer customers but cannot purchase directly
+                  </p>
+                )}
               </div>
             </div>
 
@@ -310,6 +317,14 @@ export default function PricingPage() {
                     <button className="w-full bg-gray-200 text-gray-400 py-4 rounded-full text-lg font-medium animate-pulse">
                       Loading...
                     </button>
+                  ) : isAffiliate ? (
+                    <button
+                      disabled
+                      title="Affiliates cannot purchase directly"
+                      className="w-full bg-gray-300 text-gray-500 py-4 rounded-full text-lg font-medium cursor-not-allowed"
+                    >
+                      Not Available for Affiliates
+                    </button>
                   ) : subscriptionStatus.canRenew ? (
                     <Link href="/dashboard/subscription/renew">
                       <button className="w-full bg-[#306bea] text-white py-4 rounded-full text-lg font-medium hover:bg-[#244b9b] transition-colors">
@@ -326,7 +341,9 @@ export default function PricingPage() {
                   )}
 
                   <div className="text-xs text-[#666d80] text-center space-y-1">
-                    {!subscriptionStatus.hasLaunchOffer ? (
+                    {isAffiliate ? (
+                      <p>As an affiliate, you can refer customers but cannot purchase directly</p>
+                    ) : !subscriptionStatus.hasLaunchOffer ? (
                       <p>Currently you don't have plan yet !</p>
                     ) : subscriptionStatus.canRenew ? (
                       <div className="flex items-center justify-center space-x-2 text-green-600">
@@ -354,9 +371,9 @@ export default function PricingPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="pb-12 md:pb-24">
+      <div className="pb-8 md:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 max-w-6xl mx-auto">
+          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-3 max-w-6xl mx-auto">
             <p className="text-lg md:text-2xl font-medium text-[#001525] text-center md:text-left">
               Refer Power CA Pricing Policy Document
             </p>

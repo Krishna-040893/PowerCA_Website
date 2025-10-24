@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
+import { logger } from '@/lib/logger'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!welcomeResult.success) {
-      console.error('Failed to send welcome email, but contact form was sent')
+      logger.error('Failed to send welcome email, but contact form was sent')
     }
 
     return NextResponse.json({
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       message: 'Your message has been sent successfully!',
     })
   } catch (error) {
-    console.error('Contact form error:', error)
+    logger.error('Contact form error', error)
     return NextResponse.json(
       { error: 'Failed to send message. Please try again later.' },
       { status: 500 }

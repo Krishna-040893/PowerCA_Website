@@ -6,7 +6,7 @@ import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 import {sendReferralLinkEmail  } from '@/lib/resend'
 
 // GET - Fetch affiliate details
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
