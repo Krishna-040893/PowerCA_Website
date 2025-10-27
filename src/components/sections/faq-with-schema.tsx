@@ -39,6 +39,8 @@ export function FAQWithSchema({
   }
 
   const toggleAccordion = (index: number) => {
+    console.log('Clicked FAQ index:', index, 'Current open:', openIndex)
+    // If clicking the same item, close it. Otherwise, open the new one
     setOpenIndex(openIndex === index ? null : index)
   }
 
@@ -62,42 +64,44 @@ export function FAQWithSchema({
             )}
           </div>
 
-          <div className="max-w-3xl mx-auto">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="mb-4 border border-gray-200 rounded-lg overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleAccordion(index)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
-                  aria-expanded={openIndex === index}
-                  aria-controls={`faq-answer-${index}`}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
-                    {faq.question}
-                  </h3>
-                  <ChevronDown
-                    className={cn(
-                      'w-5 h-5 text-gray-500 flex-shrink-0 transition-transform',
-                      openIndex === index && 'rotate-180'
-                    )}
-                  />
-                </button>
-
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6">
+              {faqs.map((faq, index) => (
                 <div
-                  id={`faq-answer-${index}`}
-                  className={cn(
-                    'px-6 overflow-hidden transition-all duration-300',
-                    openIndex === index ? 'py-4 max-h-96' : 'max-h-0'
-                  )}
+                  key={index}
+                  className="border border-gray-200 rounded-lg overflow-hidden"
                 >
-                  <p className="text-gray-600 leading-relaxed">
-                    {faq.answer}
-                  </p>
+                  <button
+                    onClick={() => toggleAccordion(index)}
+                    className="w-full px-6 py-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                    aria-expanded={openIndex === index}
+                    aria-controls={`faq-answer-${index}`}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                      {faq.question}
+                    </h3>
+                    <ChevronDown
+                      className={cn(
+                        'w-5 h-5 text-gray-500 flex-shrink-0 transition-transform',
+                        openIndex === index && 'rotate-180'
+                      )}
+                    />
+                  </button>
+
+                  <div
+                    id={`faq-answer-${index}`}
+                    className={cn(
+                      'px-6 overflow-hidden transition-all duration-300 ease-in-out',
+                      openIndex === index ? 'py-4 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
+                    )}
+                  >
+                    <p className="text-gray-600 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>

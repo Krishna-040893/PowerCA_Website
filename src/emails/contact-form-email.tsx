@@ -1,17 +1,16 @@
 import * as React from 'react'
-import {Html,
+import {
+  Html,
   Head,
   Body,
   Container,
   Section,
-  Text, Link,
+  Text,
+  Link,
   Img,
   Preview,
-  Hr,
   Font,
-  Row,
-  Column,
- } from '@react-email/components'
+} from '@react-email/components'
 
 interface ContactFormEmailProps {
   name: string
@@ -30,7 +29,12 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
   message,
   subject = 'New Contact Form Submission',
 }) => {
-  const preview = `New message from ${name} at ${company || 'N/A'}`
+  const preview = `New contact from ${name}${company ? ` - ${company}` : ''}`
+  const timestamp = new Date().toLocaleString('en-IN', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+    timeZone: 'Asia/Kolkata',
+  })
 
   return (
     <Html>
@@ -48,321 +52,216 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
       </Head>
       <Preview>{preview}</Preview>
       <Body style={main}>
-        {/* Background Pattern Container */}
-        <div style={backgroundPattern}>
-          <Container style={container}>
-            {/* Header with Logo */}
-            <Section style={header}>
-              <Img
-                src="https://powerca.com/images/powerca-logo-horizontal.png"
-                width="180"
-                height="50"
-                alt="PowerCA"
-                style={logo}
-              />
-            </Section>
+        <Container style={container}>
+          {/* Hero Section */}
+          <Section style={heroSection}>
+            <div style={heroContent}>
 
-            {/* Alert Banner */}
-            <Section style={alertBanner}>
-              <Text style={alertText}>📬 New Contact Form Submission</Text>
-            </Section>
+              <Text style={heroTitle}>New Contact Form Submission</Text>
+              <Text style={heroSubtitle}>Someone reached out through your website</Text>
+            </div>
+          </Section>
 
-            {/* Main Content */}
-            <Section style={content}>
-              <Text style={headingStyle}>{subject}</Text>
+          {/* Main Content */}
+          <Section style={content}>
+            {/* Contact Details Card */}
+            <Section style={detailsCard}>
+              <Text style={cardTitle}>📋 Contact Information</Text>
 
-              {/* Contact Details Card */}
-              <Section style={detailsCard}>
-                <Text style={sectionTitle}>Contact Information</Text>
-
-                <Row style={detailRow}>
-                  <Column style={labelColumn}>
-                    <Text style={label}>Name:</Text>
-                  </Column>
-                  <Column style={valueColumn}>
-                    <Text style={value}>{name}</Text>
-                  </Column>
-                </Row>
-
-                <Row style={detailRow}>
-                  <Column style={labelColumn}>
-                    <Text style={label}>Email:</Text>
-                  </Column>
-                  <Column style={valueColumn}>
-                    <Link href={`mailto:${email}`} style={emailLink}>
-                      {email}
-                    </Link>
-                  </Column>
-                </Row>
-
-                {phone && (
-                  <Row style={detailRow}>
-                    <Column style={labelColumn}>
-                      <Text style={label}>Phone:</Text>
-                    </Column>
-                    <Column style={valueColumn}>
-                      <Link href={`tel:${phone}`} style={phoneLink}>
-                        {phone}
+              <table style={detailsTable}>
+                <tbody>
+                  <tr>
+                    <td style={labelCell}>Name</td>
+                    <td style={valueCell}>{name}</td>
+                  </tr>
+                  <tr>
+                    <td style={labelCell}>Email</td>
+                    <td style={valueCell}>
+                      <Link href={`mailto:${email}`} style={emailLink}>
+                        {email}
                       </Link>
-                    </Column>
-                  </Row>
-                )}
+                    </td>
+                  </tr>
+                  {phone && (
+                    <tr>
+                      <td style={labelCell}>Phone</td>
+                      <td style={valueCell}>
+                        <Link href={`tel:${phone}`} style={phoneLink}>
+                          {phone}
+                        </Link>
+                      </td>
+                    </tr>
+                  )}
+                  {company && (
+                    <tr>
+                      <td style={labelCell}>Company</td>
+                      <td style={valueCell}>{company}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td style={labelCell}>Submitted</td>
+                    <td style={valueCell}>{timestamp}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-                {company && (
-                  <Row style={detailRow}>
-                    <Column style={labelColumn}>
-                      <Text style={label}>Company:</Text>
-                    </Column>
-                    <Column style={valueColumn}>
-                      <Text style={value}>{company}</Text>
-                    </Column>
-                  </Row>
-                )}
-              </Section>
-
-              {/* Message Section */}
-              <Section style={messageSection}>
-                <Text style={sectionTitle}>Message</Text>
-                <Section style={messageCard}>
+              {message && (
+                <div style={messageBox}>
+                  <Text style={messageLabel}>Message:</Text>
                   <Text style={messageText}>{message}</Text>
-                </Section>
-              </Section>
-
-              {/* Action Buttons */}
-              <Section style={actionSection}>
-                <Text style={actionText}>Quick Actions:</Text>
-                <Row>
-                  <Column align="center">
-                    <Link
-                      href={`mailto:${email}?subject=Re: ${subject}`}
-                      style={actionButton}
-                    >
-                      Reply to {name}
-                    </Link>
-                  </Column>
-                </Row>
-              </Section>
+                </div>
+              )}
             </Section>
+          </Section>
 
-            <Hr style={divider} />
-
-            {/* Footer */}
-            <Section style={footerSection}>
-              <Text style={footerText}>
-                This email was sent from the PowerCA contact form.
-              </Text>
-              <Text style={timestamp}>
-                Received on {new Date().toLocaleString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZoneName: 'short',
-                })}
-              </Text>
-            </Section>
-          </Container>
-        </div>
+          {/* Footer */}
+          <Section style={footer}>
+            <Text style={footerText}>
+              © {new Date().getFullYear()} PowerCA - Practice Management Software for CAs
+            </Text>
+            <Text style={footerAddress}>TBS Technologies, Udumalpet, Tamil Nadu, India</Text>
+          </Section>
+        </Container>
       </Body>
     </Html>
   )
 }
 
+// Styles
 const main: React.CSSProperties = {
-  backgroundColor: '#f0f7ff',
+  backgroundColor: '#f3f4f6',
   fontFamily: 'Geist, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  margin: 0,
-  padding: 0,
-}
-
-const backgroundPattern: React.CSSProperties = {
-  backgroundImage: `
-    linear-gradient(45deg, rgba(29, 145, 235, 0.03) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(29, 145, 235, 0.03) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(29, 145, 235, 0.03) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(29, 145, 235, 0.03) 75%)
-  `,
-  backgroundSize: '20px 20px',
-  backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-  padding: '40px 20px',
+  padding: '20px',
 }
 
 const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
   margin: '0 auto',
-  borderRadius: '12px',
-  boxShadow: '0 8px 24px rgba(29, 145, 235, 0.08)',
-  overflow: 'hidden',
   maxWidth: '600px',
-  border: '1px solid rgba(29, 145, 235, 0.1)',
-}
-
-const header: React.CSSProperties = {
   backgroundColor: '#ffffff',
-  padding: '32px 48px 24px',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+}
+
+const heroSection: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #1D91EB 0%, #1876C9 100%)',
+  padding: '0',
+}
+
+const heroContent: React.CSSProperties = {
+  padding: '50px 40px',
   textAlign: 'center' as const,
 }
 
-const logo: React.CSSProperties = {
-  margin: '0 auto',
+const iconContainer: React.CSSProperties = {
+  fontSize: '48px',
+  marginBottom: '16px',
 }
 
-const alertBanner: React.CSSProperties = {
-  backgroundColor: 'rgba(29, 145, 235, 0.08)',
-  padding: '12px 24px',
-  borderBottom: '2px solid #1D91EB',
+const heroTitle: React.CSSProperties = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px 0',
 }
 
-const alertText: React.CSSProperties = {
-  fontSize: '14px',
-  fontWeight: '600',
-  color: '#1D91EB',
-  textAlign: 'center' as const,
-  margin: 0,
+const heroSubtitle: React.CSSProperties = {
+  color: 'rgba(255, 255, 255, 0.95)',
+  fontSize: '16px',
+  margin: '0',
 }
 
 const content: React.CSSProperties = {
-  padding: '32px 48px 48px',
-  backgroundColor: '#ffffff',
-}
-
-const headingStyle: React.CSSProperties = {
-  fontSize: '24px',
-  fontWeight: '600',
-  color: '#0F172A',
-  marginBottom: '24px',
-  marginTop: '0',
-  textAlign: 'center' as const,
+  padding: '50px',
 }
 
 const detailsCard: React.CSSProperties = {
-  backgroundColor: '#f8fafc',
-  borderRadius: '8px',
-  padding: '24px',
-  marginBottom: '24px',
-  border: '1px solid #e2e8f0',
+  backgroundColor: '#f9fafb',
+  borderRadius: '12px',
+  padding: '50px',
+  marginBottom: '0',
+  border: '1px solid #e5e7eb',
 }
 
-const sectionTitle: React.CSSProperties = {
-  fontSize: '14px',
+const cardTitle: React.CSSProperties = {
+  fontSize: '18px',
   fontWeight: '600',
-  color: '#64748b',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.5px',
-  marginBottom: '16px',
+  color: '#111827',
+  marginBottom: '20px',
   marginTop: '0',
 }
 
-const detailRow: React.CSSProperties = {
-  marginBottom: '12px',
+const detailsTable: React.CSSProperties = {
+  width: '100%',
+  borderCollapse: 'collapse' as const,
 }
 
-const labelColumn: React.CSSProperties = {
-  width: '120px',
-  paddingRight: '16px',
-}
-
-const valueColumn: React.CSSProperties = {
-  width: 'auto',
-}
-
-const label: React.CSSProperties = {
+const labelCell: React.CSSProperties = {
+  padding: '12px 0',
   fontSize: '14px',
-  color: '#64748b',
+  color: '#6b7280',
   fontWeight: '500',
-  margin: 0,
+  width: '120px',
+  verticalAlign: 'top' as const,
 }
 
-const value: React.CSSProperties = {
+const valueCell: React.CSSProperties = {
+  padding: '12px 0',
   fontSize: '14px',
-  color: '#0F172A',
-  fontWeight: '400',
-  margin: 0,
+  color: '#111827',
 }
 
 const emailLink: React.CSSProperties = {
   color: '#1D91EB',
   textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: '500',
 }
 
 const phoneLink: React.CSSProperties = {
   color: '#1D91EB',
   textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: '500',
 }
 
-const messageSection: React.CSSProperties = {
-  marginTop: '32px',
-}
-
-const messageCard: React.CSSProperties = {
+const messageBox: React.CSSProperties = {
+  marginTop: '20px',
+  padding: '16px',
   backgroundColor: '#ffffff',
   borderRadius: '8px',
-  padding: '24px',
-  border: '1px solid #e2e8f0',
   borderLeft: '4px solid #1D91EB',
 }
 
+const messageLabel: React.CSSProperties = {
+  fontSize: '13px',
+  fontWeight: '600',
+  color: '#6b7280',
+  marginBottom: '8px',
+}
+
 const messageText: React.CSSProperties = {
-  fontSize: '15px',
-  lineHeight: '24px',
-  color: '#334155',
-  margin: 0,
+  fontSize: '14px',
+  color: '#374151',
+  margin: '0',
   whiteSpace: 'pre-wrap' as const,
 }
 
-const actionSection: React.CSSProperties = {
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-
-const actionText: React.CSSProperties = {
-  fontSize: '14px',
-  color: '#64748b',
-  marginBottom: '16px',
-}
-
-const actionButton: React.CSSProperties = {
-  display: 'inline-block',
-  backgroundColor: '#1D91EB',
-  borderRadius: '8px',
-  color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: '600',
-  textDecoration: 'none',
-  padding: '12px 24px',
-  boxShadow: '0 2px 8px rgba(29, 145, 235, 0.15)',
-  transition: 'all 0.2s',
-}
-
-const divider: React.CSSProperties = {
-  borderColor: '#e2e8f0',
-  margin: '0',
-}
-
-const footerSection: React.CSSProperties = {
-  padding: '24px 48px',
-  backgroundColor: '#f8fafc',
+const footer: React.CSSProperties = {
+  backgroundColor: '#f9fafb',
+  padding: '40px 50px',
+  borderTop: '1px solid #e5e7eb',
 }
 
 const footerText: React.CSSProperties = {
   fontSize: '13px',
-  color: '#64748b',
+  color: '#6b7280',
   textAlign: 'center' as const,
-  marginBottom: '8px',
-  marginTop: 0,
+  marginTop: '0',
+  marginBottom: '4px',
 }
 
-const timestamp: React.CSSProperties = {
+const footerAddress: React.CSSProperties = {
   fontSize: '12px',
-  color: '#94a3b8',
+  color: '#9ca3af',
   textAlign: 'center' as const,
-  margin: 0,
+  margin: '0',
 }
 
 export default ContactFormEmail

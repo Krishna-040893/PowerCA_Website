@@ -1,8 +1,14 @@
 ﻿import DOMPurify from 'isomorphic-dompurify'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
 import { logger } from '@/lib/logger'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -60,6 +66,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Save contact to database
+    const { data: contact, error: dbError } = await supabase
+      .from('contacts')
+      .insert([
+        {
+          name,
+          email,
+          phone: phone || null,
+          message,
+          status: 'new',
+        },
+      ])
+      .select()
+      .single()
+
+    if (dbError) {
+      logger.error('Failed to save contact to database', dbError)
+      // Continue with email even if database save fails
+    }
+
     const contactResult = await sendContactFormEmail({
       name,
       email,
@@ -84,6 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Your message has been sent successfully!',
+      contactId: contact?.id,
     })
   } catch (error) {
     logger.error('Contact form error', error)

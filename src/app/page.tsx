@@ -598,6 +598,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            {/* Left Content - Title */}
+            <div className="lg:col-span-6">
+              <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
+                Benefits of PowerCA
+              </h2>
+            </div>
+
+            {/* Right Content - Description */}
+            <div className="lg:col-span-6">
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Discover how PowerCA streamlines audit-firm operations, automates administrative tasks, and enhances service quality with built-in best practices, digital workflows, and powerful reporting tools.
+              </p>
+            </div>
+          </div>
+
+          {/* Benefits Accordion Component */}
+          <div className="mt-8">
+            <BenefitsAccordion />
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-8">
@@ -755,38 +781,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-8 items-center">
-            {/* Left Content - Title */}
-            <div className="lg:col-span-6">
-              <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
-                Benefits of PowerCA
-              </h2>
-            </div>
-
-            {/* Right Content - Description */}
-            <div className="lg:col-span-6">
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Discover how PowerCA streamlines audit-firm operations, automates administrative tasks, and enhances service quality with built-in best practices, digital workflows, and powerful reporting tools.
-              </p>
-            </div>
-          </div>
-
-          {/* Benefits Accordion Component */}
-          <div className="mt-8">
-            <BenefitsAccordion />
-          </div>
-        </div>
-      </section>
 
       {/* FAQ Section */}
       <FAQWithSchema
         title="Frequently Asked Questions About PowerCA"
         description="Get answers to common questions about PowerCA practice management software"
         faqs={powerCAFAQs}
-        className="bg-gray-50"
+        className="bg-white"
       />
     </div>
     </>
