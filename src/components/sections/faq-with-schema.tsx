@@ -113,35 +113,27 @@ export const powerCAFAQs: FAQItem[] = [
   },
   {
     question: 'How does PowerCA help save time for CA firms?',
-    answer: 'PowerCA automates repetitive tasks like invoice generation, compliance deadline tracking, and client communications. Our users report saving 10+ hours weekly through features like automated GST filing, bulk invoice generation, and intelligent compliance reminders. The centralized dashboard gives you instant access to all client information, eliminating time wasted searching for documents.'
-  },
-  {
-    question: 'Is PowerCA compliant with Indian GST and tax regulations?',
-    answer: 'Yes, PowerCA is 100% compliant with Indian GST and tax regulations. The software automatically updates for any regulatory changes, supports all GSTR forms, handles state-specific compliance requirements, and includes features for TDS, income tax, and professional tax management. We work closely with tax professionals to ensure our software meets all statutory requirements.'
-  },
-  {
-    question: 'Can I migrate my existing data from Tally or other software?',
-    answer: 'Absolutely! PowerCA provides comprehensive data migration support from popular accounting software including Tally, Busy, Marg, and Excel. Our technical team assists with the entire migration process to ensure all your client data, transactions, and documents are transferred accurately without any data loss.'
+    answer: 'PowerCA automates repetitive tasks like invoice generation, compliance deadline tracking, and client communications. Our users report saving 10+ hours weekly. The centralized dashboard gives you instant access to all client information, eliminating time wasted searching for documents.'
   },
   {
     question: 'What kind of support does PowerCA provide?',
-    answer: 'PowerCA offers multiple levels of support including 24/7 email support, business hours phone support, live chat assistance, video training sessions, and on-site training for enterprise clients. We also provide extensive documentation, video tutorials, and regular webinars to help you maximize the software\'s potential.'
+    answer: 'PowerCA offers multiple levels of support including 24/7 email support, business hours phone support, live chat assistance, video training sessions, and on-site training for enterprise clients. We are planning to provide extensive documentation, video tutorials, help tooltips inside the app, and regular webinars to help you maximize the software\'s potential.'
   },
   {
     question: 'Is PowerCA available on mobile devices?',
-    answer: 'Yes, PowerCA is fully cloud-based and responsive, meaning you can access it from any device with an internet connection - including smartphones, tablets, laptops, and desktops. Your data syncs in real-time across all devices, allowing you to work from anywhere.'
+    answer: 'PowerCA is currently a client-server application designed for desktop use. We are planning to launch a mobile app for onsite or out of office users to add quick task updates, making it easier to stay connected with your practice while on the go.'
   },
   {
     question: 'How secure is my client data on PowerCA?',
-    answer: 'Security is our top priority. PowerCA uses bank-level 256-bit SSL encryption, automated daily backups, secure AWS cloud hosting, role-based access controls, and two-factor authentication. We are compliant with data protection regulations and ensure your client\'s sensitive financial information is always protected.'
+    answer: 'PowerCA is a client-server application where your data is stored on your own server or local infrastructure - giving you complete control and ownership of all client information. We do not store any of your client data on external servers or the cloud, ensuring maximum security and privacy. Your sensitive financial information stays within your organization\'s secure environment, protected by your own security measures and access controls.'
   },
   {
     question: 'What is the pricing structure for PowerCA?',
-    answer: 'PowerCA offers flexible pricing plans based on the size of your practice. We have plans for solo practitioners, small firms (2-5 users), medium firms (6-20 users), and enterprise solutions for large practices. All plans include a 30-day free trial with full features and no credit card required. Contact us for detailed pricing information.'
+    answer: 'PowerCA offers two pricing options: 1) Launch Offer (First Year) - ₹50,000 + taxes (50% off from ₹1,00,000, available till Oct 31, 2025) with installation, training, and ongoing support. 2) Annual Subscription - 0.20% of your annual turnover + taxes OR minimum ₹10,000 + taxes (whichever is higher), includes implementation, training, and ongoing support. Contact us to choose the plan that best fits your practice size.'
   },
   {
     question: 'Can PowerCA handle multiple branches or locations?',
-    answer: 'Yes, PowerCA is designed to handle multi-branch operations seamlessly. You can manage multiple office locations, assign location-specific users, track branch-wise performance, and consolidate reporting across all locations from a single dashboard.'
+    answer: 'Yes, PowerCA is designed to handle multiple branches, locations, and even multiple firms within the same organization. We use localized servers for each branch or location, ensuring that each operates independently with its own data and users. This setup provides maximum security and performance for each location while maintaining the flexibility to manage diverse operations across your organization.'
   },
   {
     question: 'How long does it take to implement PowerCA in my practice?',

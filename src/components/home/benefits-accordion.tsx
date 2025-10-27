@@ -17,7 +17,7 @@ const benefits = [
   {
     number: '3.',
     title: 'Built-In Best Practices',
-    description: 'Adopt proven methods from leading audit firms—targets, weekly reviews, wrap-up checklists, service requests, and detailed job notes—for quality service and proper documentation.'
+    description: 'Adopt proven methods from leading audit firms - targets, weekly reviews, wrap-up checklists, service requests, and detailed job notes - for quality service and proper documentation.'
   },
   {
     number: '4.',

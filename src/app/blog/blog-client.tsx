@@ -1,53 +1,122 @@
 'use client'
 
-import {useState  } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {Search, Calendar, User, ArrowRight, AlertCircle, SlidersHorizontal } from 'lucide-react'
+import {Search, Calendar, User, ArrowRight, AlertCircle, SlidersHorizontal, Loader2 } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
-import { blogPosts } from '@/data/blog-posts'
+import { blogPosts as staticBlogPosts } from '@/data/blog-posts'
 
-const categories = [
-  { id: 'all', name: 'All Categories', active: true },
-  { id: 'breaking-news', name: 'Breaking News', active: false },
-  { id: 'compliance', name: 'Compliance', active: false },
-  { id: 'tax-planning', name: 'Tax Planning', active: false },
-  { id: 'technology', name: 'Technology', active: false },
-  { id: 'best-practices', name: 'Best Practices', active: false },
-  { id: 'tips', name: 'Tips & Tricks', active: false },
-]
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
-const authors = [
-  { id: 'all', name: 'All Authors' },
-  { id: 'priya-sharma', name: 'Priya Sharma' },
-  { id: 'rajesh-kumar', name: 'Rajesh Kumar' },
-  { id: 'anita-patel', name: 'Anita Patel' },
-  { id: 'vikram-singh', name: 'Vikram Singh' },
-  { id: 'meera-reddy', name: 'Meera Reddy' },
-  { id: 'amit-gupta', name: 'Amit Gupta' },
-]
+const formatCategoryName = (category: string) =>
+  category
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
-const dateFilters = [
-  { id: 'all', name: 'All Dates' },
-  { id: 'march-2024', name: 'March 2024' },
-  { id: 'february-2024', name: 'February 2024' },
-  { id: 'january-2024', name: 'January 2024' },
-]
+const formatMonthYear = (dateString: string) => {
+  const date = new Date(dateString)
+
+  if (Number.isNaN(date.getTime())) {
+    return dateString
+  }
+
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
 
 export default function BlogPageClient() {
+  const [blogPosts, setBlogPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [selectedAuthor, setSelectedAuthor] = useState('all')
   const [selectedDate, setSelectedDate] = useState('all')
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch blog posts from database and merge with static posts
+  useEffect(() => {
+    async function fetchBlogPosts() {
+      try {
+        const response = await fetch('/api/blog/posts')
+        const data = await response.json()
+
+        // Merge database posts with static posts
+        // Database posts come first (newest), then static posts
+        const databasePosts = data.posts || []
+        const allPosts = [...databasePosts, ...staticBlogPosts]
+
+        setBlogPosts(allPosts)
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+        // Fallback to static posts on error
+        setBlogPosts(staticBlogPosts)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogPosts()
+  }, [])
+
+  const postsWithMeta = blogPosts.map((post) => {
+    const monthYear = formatMonthYear(post.date)
+
+    return {
+      ...post,
+      authorSlug: slugify(post.author),
+      monthYear,
+    }
+  })
+
+  const categoryOptions = [
+    { id: 'all', name: 'All Categories' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.category))).map((category) => ({
+      id: category,
+      name: formatCategoryName(category),
+    })),
+  ]
+
+  const authorOptions = [
+    { id: 'all', name: 'All Authors' },
+    ...Array.from(
+      postsWithMeta.reduce(
+        (map, post) => map.set(post.authorSlug, post.author),
+        new Map<string, string>()
+      )
+    ).map(([id, name]) => ({ id, name })),
+  ]
+
+  const dateOptions = [
+    { id: 'all', name: 'All Dates' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.monthYear))).map((value) => ({
+      id: value,
+      name: value,
+    })),
+  ]
+
+  const categoryNameLookup = new Map<string, string>(
+    categoryOptions
+      .filter((option) => option.id !== 'all')
+      .map((option) => [option.id, option.name])
+  )
+
+  const filteredPosts = postsWithMeta.filter((post) => {
+    const normalizedSearch = searchTerm.trim().toLowerCase()
+    const matchesSearch =
+      post.title.toLowerCase().includes(normalizedSearch) ||
+      post.excerpt.toLowerCase().includes(normalizedSearch)
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory
-    const matchesAuthor = selectedAuthor === 'all' || post.author.toLowerCase().replace(' ', '-') === selectedAuthor
-    const matchesDate = selectedDate === 'all' || post.date.toLowerCase().includes(selectedDate.replace('-2024', '').replace('-', ' '))
+    const matchesAuthor = selectedAuthor === 'all' || post.authorSlug === selectedAuthor
+    const matchesDate = selectedDate === 'all' || post.monthYear === selectedDate
+
     return matchesSearch && matchesCategory && matchesAuthor && matchesDate
   })
 
@@ -131,7 +200,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setActiveCategory(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {categories.map((category) => (
+                        {categoryOptions.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
                           </option>
@@ -147,7 +216,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedAuthor(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {authors.map((author) => (
+                        {authorOptions.map((author) => (
                           <option key={author.id} value={author.id}>
                             {author.name}
                           </option>
@@ -163,7 +232,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {dateFilters.map((dateFilter) => (
+                        {dateOptions.map((dateFilter) => (
                           <option key={dateFilter.id} value={dateFilter.id}>
                             {dateFilter.name}
                           </option>
@@ -203,7 +272,7 @@ export default function BlogPageClient() {
               Explore Trending Topics
             </h2>
             <div className="flex flex-wrap gap-3 justify-center">
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <Button
                   key={category.id}
                   variant={activeCategory === category.id ? 'default' : 'outline'}
@@ -250,15 +319,20 @@ export default function BlogPageClient() {
                       <span className={`${
                         post.isBreaking ? 'bg-red-600/90' : 'bg-blue-600/90'
                       } text-white text-xs font-medium px-3 py-1 rounded-full`}>
-                        {categories.find(cat => cat.id === post.category)?.name || 'General'}
+                        {categoryNameLookup.get(post.category) || formatCategoryName(post.category)}
                       </span>
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                       {post.title}
                     </h3>
+                    {post.subtitle && (
+                      <p className="text-gray-700 mb-3 text-base font-medium line-clamp-1">
+                        {post.subtitle}
+                      </p>
+                    )}
                     <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                       {post.excerpt}
                     </p>

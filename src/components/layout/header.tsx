@@ -76,7 +76,7 @@ export function Header() {
                     align="end"
                     side="bottom"
                     sideOffset={12}
-                    className="w-56 !z-[9999] shadow-xl rounded-lg border border-gray-200 bg-white"
+                    className="w-56 !z-[9999] shadow-xl rounded-2xl border border-gray-200 bg-white"
                     style={{ zIndex: 9999 }}
                     avoidCollisions={true}
                   >
@@ -89,11 +89,11 @@ export function Header() {
                         <DropdownMenuItem asChild>
                           <Link href="/affiliate/profile" className="flex items-center cursor-pointer">
                             <User className="mr-2 h-4 w-4" />
-                            My Account
+                            My Profile
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/affiliate/account" className="flex items-center cursor-pointer">
+                          <Link href="/affiliate/referral" className="flex items-center cursor-pointer">
                             <User className="mr-2 h-4 w-4" />
                             My Referrals
                           </Link>
@@ -148,7 +148,7 @@ export function Header() {
                       align="end"
                       side="bottom"
                       sideOffset={12}
-                      className="w-56 !bg-blue-600 border border-blue-700 shadow-xl !z-[9999] text-white rounded-lg"
+                      className="w-56 !bg-blue-600 border border-blue-700 shadow-xl !z-[9999] text-white rounded-2xl"
                       style={{ zIndex: 9999, backgroundColor: '#2563eb' }}
                       avoidCollisions={true}
                     >
@@ -226,10 +226,10 @@ export function Header() {
                     {(session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate') ? (
                       <>
                         <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/affiliate/profile">My Account</Link>
+                          <Link href="/affiliate/profile">My Profile</Link>
                         </Button>
                         <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/affiliate/account">My Referrals</Link>
+                          <Link href="/affiliate/referral">My Referrals</Link>
                         </Button>
                       </>
                     ) : session?.user?.role === 'admin' ? (

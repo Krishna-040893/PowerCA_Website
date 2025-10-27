@@ -5,6 +5,7 @@ import {getServerSession  } from 'next-auth'
 import {authOptions  } from '@/lib/auth'
 import {Resend  } from 'resend'
 import {generateInvoiceNumber, calculateGST, generateInvoicePDF  } from '@/lib/invoice-generator'
+import {uploadInvoiceToStorage  } from '@/lib/invoice-storage'
 import {logger  } from '@/lib/logger'
 import {createErrorResponse, ErrorType, handleConfigurationError, isServiceConfigured  } from '@/lib/error-handler'
 
@@ -227,8 +228,9 @@ export async function POST(req: NextRequest) {
       isTestMode: isTestPayment
     }
 
-    // Generate PDF invoice
+    // Generate PDF invoice and upload to storage
     let invoicePDF = null
+    let storageUrl = null
     try {
       logger.info('Generating PDF invoice', { invoiceNumber })
       invoicePDF = await generateInvoicePDF(invoiceData)
@@ -236,6 +238,14 @@ export async function POST(req: NextRequest) {
         invoiceNumber,
         pdfSize: invoicePDF ? invoicePDF.length : 0
       })
+
+      // Upload to Supabase Storage for future access
+      if (invoicePDF) {
+        storageUrl = await uploadInvoiceToStorage(invoiceNumber, invoicePDF)
+        if (storageUrl) {
+          logger.info('Invoice uploaded to storage', { invoiceNumber, storageUrl })
+        }
+      }
     } catch (pdfError) {
       logger.error('Failed to generate PDF invoice', pdfError)
       // Continue without PDF if generation fails

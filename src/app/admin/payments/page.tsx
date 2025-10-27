@@ -56,33 +56,95 @@ export default function AdminPaymentsPage() {
   const itemsPerPage = 20
 
   const fetchPayments = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     try {
-      setLoading(true)
       const response = await fetch('/api/admin/payments', {
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        signal: controller.signal
       })
 
+      clearTimeout(timeoutId)
+
       if (response.ok) {
-        const data = await response.json()
-        setPayments(data.payments || [])
+        const text = await response.text()
+        console.log('📥 Response received, length:', text?.length)
+        if (text) {
+          try {
+            const data = JSON.parse(text)
+            console.log('✅ Parsed data:', { paymentsCount: data.payments?.length, total: data.total })
+            setPayments(data.payments || [])
+            if (data.payments && data.payments.length > 0) {
+              console.log('💾 Set payments state with', data.payments.length, 'payments')
+            } else {
+              console.warn('⚠️ No payments in response')
+            }
+          } catch (parseError) {
+            console.error('JSON parse error:', parseError, 'Response:', text)
+            setPayments([])
+            toast.error('Failed to parse payment data')
+          }
+        } else {
+          console.warn('⚠️ Empty response text')
+          setPayments([])
+        }
+      } else {
+        console.error('Response not OK:', response.status, response.statusText)
+        setPayments([])
+        if (response.status === 401) {
+          toast.error('Session expired. Please log in again.')
+        } else {
+          toast.error('Failed to load payments')
+        }
       }
     } catch (error) {
-      console.error('Error fetching payments:', error)
+      clearTimeout(timeoutId)
+      // Only show error if it's not an abort error (which happens on component unmount)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request was aborted')
+        // Don't show toast for abort errors
+      } else {
+        console.error('Error fetching payments:', error)
+        setPayments([])
+        toast.error('Error loading payments')
+      }
     } finally {
       setLoading(false)
     }
-  }, [getAuthHeaders])
+
+    // Return cleanup function
+    return () => {
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [getAuthHeaders, isAuthenticated])
 
   const filterPayments = useCallback(() => {
+    console.log('🔍 Filtering payments:', { paymentsCount: payments.length, statusFilter, searchTerm })
     let filtered = [...payments]
 
     // Filter by status
     if (statusFilter !== 'all') {
+      console.log('📊 Filtering by status:', statusFilter)
       filtered = filtered.filter(payment => payment.status.toLowerCase() === statusFilter)
+      console.log('📊 After status filter:', filtered.length)
     }
 
     // Filter by search term
     if (searchTerm) {
+      console.log('🔎 Filtering by search term:', searchTerm)
       filtered = filtered.filter(payment =>
         payment.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,8 +152,10 @@ export default function AdminPaymentsPage() {
         payment.payment_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.firm_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
+      console.log('🔎 After search filter:', filtered.length)
     }
 
+    console.log('✅ Final filtered count:', filtered.length)
     setFilteredPayments(filtered)
     setCurrentPage(1) // Reset to first page when filters change
   }, [payments, statusFilter, searchTerm])
@@ -110,7 +174,8 @@ export default function AdminPaymentsPage() {
     if (isAuthenticated) {
       fetchPayments()
     }
-  }, [isAuthenticated, fetchPayments])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   useEffect(() => {
     filterPayments()

@@ -8,7 +8,7 @@ const ContentSecurityPolicy = `
   font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai;
   img-src 'self' data: https: blob:;
   connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://vercel.live https://*.vercel.live;
-  frame-src 'self' https://api.razorpay.com https://*.razorpay.com https://vercel.live;
+  frame-src 'self' https://api.razorpay.com https://*.razorpay.com https://vercel.live https://www.google.com https://*.google.com;
   media-src 'self';
   object-src 'none';
   base-uri 'self';

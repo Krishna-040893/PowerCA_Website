@@ -6,5 +6,6 @@ export const siteConfig = {
   links: {
     twitter: 'https://twitter.com/powerca',
     linkedin: 'https://linkedin.com/company/powerca',
+    instagram: 'https://instagram.com/powerca',
   },
 }

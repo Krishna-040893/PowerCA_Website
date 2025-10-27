@@ -5,7 +5,7 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe } from 'lucide-react'
+import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts'
 }
 
 interface NavSection {
@@ -46,6 +46,8 @@ interface Counts {
   pendingPayments: number
   payments: number
   paymentOrders: number
+  newsletterSubscribers: number
+  blogPosts: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -62,13 +64,15 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'Registrations', href: '/admin/registrations', icon: FileText, countKey: 'registrations', badgeVariant: 'default' },
       { title: 'Payments', href: '/admin/payments', icon: CreditCard, countKey: 'payments', badgeVariant: 'default' },
       { title: 'Payment Orders', href: '/admin/payment-orders', icon: ShoppingCart, countKey: 'paymentOrders', badgeVariant: 'default' },
+      { title: 'Newsletter Subscribers', href: '/admin/newsletter-subscribers', icon: Mail, countKey: 'newsletterSubscribers', badgeVariant: 'default' },
+      { title: 'Blog Posts', href: '/admin/blog', icon: Globe, countKey: 'blogPosts', badgeVariant: 'default' },
     ]
   },
   {
     title: 'Affiliates',
     items: [
       { title: 'All Affiliates', href: '/admin/affiliates', icon: Star, countKey: 'affiliates', badgeVariant: 'default' },
-      { title: 'Approvals', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
+      { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
       { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
       { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Star, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
@@ -94,7 +98,9 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
     referrals: 0,
     pendingPayments: 0,
     payments: 0,
-    paymentOrders: 0
+    paymentOrders: 0,
+    newsletterSubscribers: 0,
+    blogPosts: 0
   })
   const pathname = usePathname()
   const _router = useRouter()

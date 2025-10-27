@@ -59,41 +59,42 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
       <p>Thank you for choosing PowerCA! Your payment has been successfully processed and your account setup will begin shortly.</p>
       
       <div class="details-box">
-        <h3>Transaction Details</h3>
-        <div class="detail-row">
-          <span>Order ID:</span>
-          <strong>${orderId}</strong>
-        </div>
-        <div class="detail-row">
-          <span>Payment ID:</span>
-          <strong>${paymentId}</strong>
-        </div>
+        <h3>💳 PAYMENT SUMMARY</h3>
         ${invoiceNumber ? `
         <div class="detail-row">
-          <span>Invoice Number:</span>
+          <span>📋 Invoice Number - </span>
           <strong>${invoiceNumber}</strong>
         </div>
         ` : ''}
         <div class="detail-row">
-          <span>Amount Paid:</span>
+          <span>🔗 Order ID - </span>
+          <strong>${orderId}</strong>
+        </div>
+        <div class="detail-row">
+          <span>💰 Payment ID - </span>
+          <strong>${paymentId}</strong>
+        </div>
+        <div class="detail-row">
+          <span>📅 Date - </span>
+          <strong>${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+        </div>
+        <div class="detail-row">
+          <span>💵 Total Amount - </span>
           <strong>₹${amount.toLocaleString('en-IN')}</strong>
         </div>
-        <div class="detail-row">
-          <span>Plan:</span>
-          <strong>PowerCA Implementation</strong>
-        </div>
-        <div class="detail-row">
-          <span>First Year:</span>
-          <strong style="color: #4CAF50;">FREE</strong>
-        </div>
-        ${company ? `
-        <div class="detail-row">
-          <span>Company:</span>
-          <strong>${company}</strong>
-        </div>
-        ` : ''}
       </div>
-      
+
+      <div class="details-box" style="background: #E8F5E9;">
+        <h3>📦 PRODUCT DETAILS</h3>
+        <div class="detail-row">
+          <div>
+            <strong style="font-size: 15px; color: #2c3e50;">Power CA Software</strong><br>
+            <span style="font-size: 13px; color: #666; font-style: italic;">Installation and Ongoing Support & Update</span>
+          </div>
+          <strong style="color: #4CAF50;">First Year FREE</strong>
+        </div>
+      </div>
+
       <div class="next-steps">
         <h3>What Happens Next?</h3>
         

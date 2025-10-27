@@ -256,7 +256,7 @@ export default function CheckoutPage() {
       setFormData(prev => ({
         ...prev,
         email: session.user?.email || '',
-        firstName: session.user?.name?.split(' ')[0] || '',
+        firstName: session.user?.name || '',
         firmName: session.user?.firmName || '',
         phone: session.user?.phone || '',
       }))
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
   const validateForm = () => {
     const newErrors: FormErrors = {}
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required'
+    if (!formData.firstName.trim()) newErrors.firstName = 'Full name is required'
     if (!formData.firmName.trim()) newErrors.firmName = 'Firm name is required'
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid'
@@ -516,11 +516,11 @@ export default function CheckoutPage() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Details</h2>
 
                 <div className="space-y-4">
-                  {/* First Name & Firm Name */}
+                  {/* Full Name & Firm Name */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                        First Name <span className="text-red-500">*</span>
+                        Full Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="firstName"
@@ -549,13 +549,14 @@ export default function CheckoutPage() {
                   {/* GST No */}
                   <div>
                     <Label htmlFor="gstNo" className="text-sm font-medium text-gray-700">
-                      GST No <span className="text-red-500">*</span>
+                      GST No <span className="text-gray-400 text-xs">(Optional)</span>
                     </Label>
                     <Input
                       id="gstNo"
                       name="gstNo"
                       value={formData.gstNo}
                       onChange={handleInputChange}
+                      placeholder="Enter your GST number if applicable"
                       className="mt-1 border-gray-300"
                     />
                   </div>
@@ -658,7 +659,7 @@ export default function CheckoutPage() {
                   {/* State */}
                   <div>
                     <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-                      State / County <span className="text-red-500">*</span>
+                      State<span className="text-red-500">*</span>
                     </Label>
                     {hasStateDropdown ? (
                       <select
