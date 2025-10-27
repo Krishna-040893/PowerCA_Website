@@ -322,7 +322,10 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
             </div>
             `}
           </td>
-          <td><strong>Power CA Software</strong></td>
+          <td>
+            <strong>Power CA Software</strong><br>
+            <span style="font-size: 11px; color: #666; font-style: italic;">Installation and Ongoing Support & Update</span>
+          </td>
           <td class="text-right">${item.quantity}</td>
           <td class="text-right"><strong>${formatCurrency(item.amount)}</strong></td>
         </tr>

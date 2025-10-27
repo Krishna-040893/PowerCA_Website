@@ -33,36 +33,55 @@ export default function AdminBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 
   const fetchBookings = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     try {
-      setLoading(true)
-      console.log('📡 Fetching bookings...')
       const response = await fetch('/api/admin/bookings', {
         method: 'GET',
-        credentials: 'include', // Important: Include cookies for NextAuth session
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        signal: controller.signal
       })
 
-      console.log('📡 Response status:', response.status)
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Bookings fetched:', data)
         setBookings(data.bookings || [])
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        console.error('❌ Failed to fetch bookings:', response.status, response.statusText, errorData)
+        console.error('Failed to fetch bookings:', response.status, response.statusText)
         setBookings([])
       }
     } catch (error) {
-      console.error('❌ Error fetching bookings:', error)
-      setBookings([])
+      clearTimeout(timeoutId)
+      // Only show error if it's not an abort error (which happens on component unmount)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request was aborted')
+        // Don't set error state for abort errors
+      } else {
+        console.error('Error fetching bookings:', error)
+        setBookings([])
+      }
     } finally {
-      console.log('✅ Setting loading to false')
       setLoading(false)
     }
-  }, [])
+
+    // Return cleanup function
+    return () => {
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [isAuthenticated])
 
   const filterBookings = useCallback(() => {
     let filtered = [...bookings]

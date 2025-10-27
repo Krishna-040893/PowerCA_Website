@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import chromium from '@sparticuz/chromium'
 import { generateTBSInvoiceHTML } from './invoice-tbs-template'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -401,7 +402,10 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
         ${data.items.map(item => `
         <tr>
           <td>
-            <strong>${item.description}</strong>
+            <strong>Power CA Software</strong>
+            <div style="font-size: 11px; color: #666; font-style: italic; margin-top: 3px;">
+              Installation and Ongoing Support & Update
+            </div>
             <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
               ✨ Complete Setup • 🎓 Training Included • 🛠️ First Year FREE
             </div>
@@ -511,9 +515,13 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
   let browser = null
   try {
+    // Vercel-compatible Puppeteer configuration
+    const isProduction = process.env.NODE_ENV === 'production'
+
     browser = await puppeteer.launch({
+      args: isProduction ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      executablePath: isProduction ? await chromium.executablePath() : puppeteer.executablePath(),
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     })
 
     const page = await browser.newPage()

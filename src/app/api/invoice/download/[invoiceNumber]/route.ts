@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateInvoicePDF, calculateGST } from '@/lib/invoice-generator'
+import { downloadInvoiceFromStorage, uploadInvoiceToStorage } from '@/lib/invoice-storage'
 import { logger } from '@/lib/logger'
 
 export async function GET(
@@ -19,7 +20,24 @@ export async function GET(
 
     const supabase = createAdminClient()
 
-    // Fetch invoice from database
+    // Step 1: Check if PDF exists in storage (fast path)
+    logger.info('Checking storage for invoice', { invoiceNumber })
+    const cachedPDF = await downloadInvoiceFromStorage(invoiceNumber)
+
+    if (cachedPDF) {
+      logger.info('Serving invoice from storage cache', { invoiceNumber })
+      return new NextResponse(new Uint8Array(cachedPDF), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="PowerCA-Invoice-${invoiceNumber}.pdf"`,
+          'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+      })
+    }
+
+    logger.info('Invoice not in storage, generating new PDF', { invoiceNumber })
+
+    // Step 2: Fetch invoice from database
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
       .select(`
@@ -88,16 +106,20 @@ export async function GET(
       isTestMode: invoiceNumber.includes('TEST'),
     }
 
-    // Generate PDF using default HTML template
+    // Step 3: Generate PDF using default HTML template
     logger.info('Generating invoice PDF', { invoiceNumber })
     const pdfBuffer = await generateInvoicePDF(invoiceData) // Use default template
 
-    // Return PDF as download - Convert Buffer to Uint8Array for Next.js compatibility
+    // Step 4: Upload to storage for future requests
+    logger.info('Uploading generated invoice to storage', { invoiceNumber })
+    await uploadInvoiceToStorage(invoiceNumber, pdfBuffer)
+
+    // Step 5: Return PDF as download - Convert Buffer to Uint8Array for Next.js compatibility
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="PowerCA-Invoice-${invoiceNumber}.pdf"`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     })
 

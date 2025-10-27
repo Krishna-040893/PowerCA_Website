@@ -23,7 +23,10 @@ export async function GET(request: NextRequest) {
           pendingApprovals: 0,
           referrals: 0,
           pendingPayments: 0,
-          payments: 0
+          payments: 0,
+          paymentOrders: 0,
+          newsletterSubscribers: 0,
+          blogPosts: 0
         },
         { status: 200 }
       )
@@ -44,7 +47,10 @@ export async function GET(request: NextRequest) {
       pendingApprovalsResult,
       referralsResult,
       pendingPaymentsResult,
-      paymentsResult
+      paymentsResult,
+      paymentOrdersResult,
+      newsletterSubscribersResult,
+      blogPostsResult
     ] = await Promise.allSettled([
       // Total bookings count
       supabase
@@ -79,9 +85,25 @@ export async function GET(request: NextRequest) {
         .select('id', { count: 'exact', head: true })
         .eq('commission_paid', false),
 
-      // Total payment orders count
+      // Total payments count (from payments table)
+      supabase
+        .from('payments')
+        .select('id', { count: 'exact', head: true }),
+
+      // Total payment orders count (from payment_orders table)
       supabase
         .from('payment_orders')
+        .select('id', { count: 'exact', head: true }),
+
+      // Total newsletter subscribers count (active subscribers)
+      supabase
+        .from('newsletter_subscribers')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
+
+      // Total blog posts count
+      supabase
+        .from('blog_posts')
         .select('id', { count: 'exact', head: true })
     ])
 
@@ -93,6 +115,9 @@ export async function GET(request: NextRequest) {
       referrals: referralsResult.status === 'fulfilled' ? (referralsResult.value.count || 0) : 0,
       pendingPayments: pendingPaymentsResult.status === 'fulfilled' ? (pendingPaymentsResult.value.count || 0) : 0,
       payments: paymentsResult.status === 'fulfilled' ? (paymentsResult.value.count || 0) : 0,
+      paymentOrders: paymentOrdersResult.status === 'fulfilled' ? (paymentOrdersResult.value.count || 0) : 0,
+      newsletterSubscribers: newsletterSubscribersResult.status === 'fulfilled' ? (newsletterSubscribersResult.value.count || 0) : 0,
+      blogPosts: blogPostsResult.status === 'fulfilled' ? (blogPostsResult.value.count || 0) : 0,
     }
 
     return NextResponse.json(counts)
@@ -107,7 +132,10 @@ export async function GET(request: NextRequest) {
         pendingApprovals: 0,
         referrals: 0,
         pendingPayments: 0,
-        payments: 0
+        payments: 0,
+        paymentOrders: 0,
+        newsletterSubscribers: 0,
+        blogPosts: 0
       },
       { status: 200 }
     )

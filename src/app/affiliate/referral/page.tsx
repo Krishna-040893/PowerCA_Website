@@ -569,9 +569,9 @@ export default function AffiliateAccountPage() {
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Affiliate Dashboard Form */}
+        {/* Two Row Layout */}
+        <div className="space-y-8">
+          {/* First Row - Affiliate Dashboard Form */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-purple-100 p-8">
           {error && (
             <Alert className="mb-6 bg-red-50 border-red-200 rounded-xl">
@@ -637,37 +637,7 @@ export default function AffiliateAccountPage() {
             </div>
 
             {/* Default URLs (Read-only) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                  <div className="h-6 w-6 rounded bg-blue-100 flex items-center justify-center">
-                    <Link className="w-4 h-4 text-blue-600" />
-                  </div>
-                  Product URL (Demo)
-                </label>
-                <input
-                  type="text"
-                  value={formData.productUrl}
-                  readOnly
-                  className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl bg-blue-50/50 text-gray-700 font-medium focus:outline-none"
-                />
-              </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                  <div className="h-6 w-6 rounded bg-indigo-100 flex items-center justify-center">
-                    <Globe className="w-4 h-4 text-indigo-600" />
-                  </div>
-                  Website URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.websiteUrl}
-                  readOnly
-                  className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl bg-indigo-50/50 text-gray-700 font-medium focus:outline-none"
-                />
-              </div>
-            </div>
 
             {/* Customer Referral Information */}
             <div className="border-t-2 border-gray-200 pt-8">
@@ -678,10 +648,10 @@ export default function AffiliateAccountPage() {
                   </div>
                   Customer Referral Details
                 </h3>
-                <p className="text-sm text-gray-600 ml-10">Enter the details of the customer you are referring to PowerCA</p>
+                {/* <p className="text-sm text-gray-600 ml-10">Enter the details of the customer you are referring to PowerCA</p> */}
               </div>
 
-              <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Customer Name <span className="text-red-500">*</span>
@@ -695,9 +665,9 @@ export default function AffiliateAccountPage() {
                     required
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-500 mt-2 ml-1">
+                  {/* <p className="text-xs text-gray-500 mt-2 ml-1">
                     Enter the full name of the customer you're referring
-                  </p>
+                  </p> */}
                 </div>
 
                 <div>
@@ -713,15 +683,15 @@ export default function AffiliateAccountPage() {
                     required
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-500 mt-2 ml-1">
+                  {/* <p className="text-xs text-gray-500 mt-2 ml-1">
                     Referral link will be sent automatically to this email address
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
 
             {/* Referral Statistics */}
-            <div className="border-t-2 border-gray-200 pt-8">
+            <div className="border-t-2 border-gray-200">
               {referralStatus.referralCount > 0 && (
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-sm">
                   <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
@@ -751,8 +721,8 @@ export default function AffiliateAccountPage() {
 
               {/* Always show referral link if we have a code */}
               {latestReferralCode && (
-                <div className="mt-6 bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-2xl border-2 border-yellow-300 shadow-md">
-                  <h4 className="text-lg font-bold text-amber-800 mb-4 flex items-center gap-2">
+                <div className="mt-6 bg-white p-6 rounded-2xl border-2 border-gray-200 shadow-md">
+                  <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     🔗 {latestCustomerId ? 'Latest Customer Referral Link' : 'Your Referral Link'}
                   </h4>
                   <input
@@ -762,37 +732,31 @@ export default function AffiliateAccountPage() {
                       : `${window.location.origin}/pricing?ref=${latestReferralCode}`
                     }
                     readOnly
-                    className="w-full px-4 py-3 text-sm border-2 border-yellow-300 rounded-xl bg-white font-mono focus:outline-none shadow-sm"
+                    className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl bg-gray-50 font-mono focus:outline-none shadow-sm"
                   />
-                  <div className="mt-4 bg-white/70 p-3 rounded-xl space-y-2">
-                    <p className="text-sm font-semibold text-gray-700">
-                      <span className="text-blue-700">Referral Code:</span> <span className="font-mono font-bold text-blue-800">{latestReferralCode}</span>
-                      {latestCustomerId && (
-                        <>
-                          <span className="mx-2 text-gray-400">|</span>
-                          <span className="text-green-700">Customer ID:</span> <span className="font-mono font-bold text-green-800">{latestCustomerId}</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
                   {latestCustomerId ? (
-                    <div className="mt-3 bg-green-100/70 p-3 rounded-xl">
-                      <p className="text-sm text-green-800 font-medium">
-                        ✅ This link is for your latest customer ({latestCustomerId}). Create a new referral above for the next customer.
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm text-gray-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>This link is for your latest customer ({latestCustomerId}). Create a new referral above for the next customer.</span>
+                      </p>
+                      <p className="text-sm text-gray-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>Your referral code stays the same for all customers. Each customer gets a unique ID.</span>
                       </p>
                     </div>
                   ) : (
-                    <div className="mt-3 bg-yellow-100/70 p-3 rounded-xl">
-                      <p className="text-sm text-yellow-800 font-medium">
-                        Share this link with your customers. Each referral will be tracked automatically.
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm text-gray-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>Share this link with your customers. Each referral will be tracked automatically.</span>
+                      </p>
+                      <p className="text-sm text-gray-700 flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>Your referral code stays the same for all customers. Each customer gets a unique ID.</span>
                       </p>
                     </div>
                   )}
-                  <div className="mt-2 bg-blue-100/70 p-3 rounded-xl">
-                    <p className="text-sm text-blue-800 font-medium">
-                      💡 Your referral code ({latestReferralCode}) stays the same for all customers. Each customer gets a unique ID.
-                    </p>
-                  </div>
                 </div>
               )}
             </div>
@@ -802,7 +766,7 @@ export default function AffiliateAccountPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-semibold text-lg shadow-lg hover:shadow-xl disabled:shadow-none"
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-semibold text-lg shadow-lg hover:shadow-xl disabled:shadow-none"
               >
                 <Save className="w-5 h-5" />
                 {loading
@@ -824,7 +788,7 @@ export default function AffiliateAccountPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Referral Details</h2>
               </div>
-              <p className="text-gray-600 ml-13">Track all your referrals, payment status, and commission earnings</p>
+              {/* <p className="text-gray-600 ml-13">Track all your referrals, payment status, and commission earnings</p> */}
             </div>
 
             {/* Summary Cards */}

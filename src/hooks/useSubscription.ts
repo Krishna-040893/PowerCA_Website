@@ -65,16 +65,16 @@ export function useSubscription(): SubscriptionStatus {
           return
         }
 
-        // Calculate if a year has passed since the launch offer started
+        // Calculate if 11 months have passed since the launch offer started (changed from 12 months)
         const subscriptionStart = new Date(launchOfferSub.current_period_start || launchOfferSub.created_at)
-        const oneYearLater = new Date(subscriptionStart)
-        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1)
+        const elevenMonthsLater = new Date(subscriptionStart)
+        elevenMonthsLater.setMonth(elevenMonthsLater.getMonth() + 11)
 
         const now = new Date()
-        const canRenew = now >= oneYearLater
+        const canRenew = now >= elevenMonthsLater
 
         // Calculate days until renewal is possible
-        const timeDiff = oneYearLater.getTime() - now.getTime()
+        const timeDiff = elevenMonthsLater.getTime() - now.getTime()
         const daysUntilRenewal = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
         setSubscriptionStatus({
