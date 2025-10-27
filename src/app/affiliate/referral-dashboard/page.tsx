@@ -318,7 +318,7 @@ export default function AffiliateReferralDashboard() {
                 <p className="text-gray-600 mb-4">
                   You need to complete your affiliate profile before you can start referring.
                 </p>
-                <Button onClick={() => router.push('/affiliate/account')}>
+                <Button onClick={() => router.push('/affiliate/referral')}>
                   Complete Profile
                 </Button>
               </div>

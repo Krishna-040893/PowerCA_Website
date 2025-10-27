@@ -54,9 +54,9 @@ export default function AffiliateDashboard() {
           }
           setAffiliateData(completeData)
 
-          // If affiliate needs setup, redirect to account page
+          // If affiliate needs setup, redirect to referral page
           if (data.needsSetup) {
-            router.push('/affiliate/account')
+            router.push('/affiliate/referral')
             return
           }
         }
@@ -287,7 +287,7 @@ export default function AffiliateDashboard() {
               <Button
                 variant="outline"
                 className="justify-start"
-                onClick={() => router.push('/affiliate/account')}
+                onClick={() => router.push('/affiliate/referral')}
               >
                 <Building2 className="h-4 w-4 mr-2" />
                 Update Profile
