@@ -150,7 +150,7 @@ export default function AdminAffiliatesPage() {
 
         if (status === 'approved' && result.referral_code) {
           const appUrl = window.location.origin
-          const affiliateAccountUrl = `${appUrl}/affiliate/account`
+          const affiliateAccountUrl = `${appUrl}/affiliate/referral`
 
           toast.success(
             <div className="space-y-2">

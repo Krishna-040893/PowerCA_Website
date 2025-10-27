@@ -20,7 +20,7 @@ export default function AffiliateLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/affiliate/account'
+  const callbackUrl = searchParams.get('callbackUrl') || '/affiliate/referral'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
