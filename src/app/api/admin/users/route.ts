@@ -1,14 +1,14 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import bcrypt from 'bcryptjs'
 
 // GET all users for admin
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const auth = await requireAdminAuth()
+    if (!auth) {
+      return createUnauthorizedResponse()
     }
 
     const supabase = createAdminClient()

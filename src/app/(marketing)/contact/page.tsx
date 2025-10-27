@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+import { siteConfig } from '@/config/site'
+import { Linkedin, Twitter, Instagram } from 'lucide-react'
 
 // SVG paths for icons - imported from Contact page folder design
 const svgPaths = {
@@ -153,10 +155,33 @@ function ContactInfo() {
       <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0">
         <p className="font-medium leading-[42px] relative shrink-0 text-[#001525] text-[24px] text-nowrap whitespace-pre">Follow our social media :</p>
         <div className="content-stretch flex gap-[24px] items-center overflow-clip relative shrink-0">
-          <SocialIcon path={svgPaths.p1a40ca00} />
-          <SocialIcon path={svgPaths.p3dcb280} />
-          <SocialIcon path={svgPaths.p31398c00} />
-          <SocialIcon path={svgPaths.p33a52180} />
+          <a
+            href={siteConfig.links.linkedin}
+            target="_blank"
+            rel="noreferrer"
+            className="w-[44px] h-[44px] bg-[#306BEA] rounded-full flex items-center justify-center hover:bg-[#2557d1] transition-colors"
+            aria-label="LinkedIn"
+          >
+            <Linkedin className="w-5 h-5 text-white" />
+          </a>
+          <a
+            href={siteConfig.links.twitter}
+            target="_blank"
+            rel="noreferrer"
+            className="w-[44px] h-[44px] bg-[#306BEA] rounded-full flex items-center justify-center hover:bg-[#2557d1] transition-colors"
+            aria-label="Twitter"
+          >
+            <Twitter className="w-5 h-5 text-white" />
+          </a>
+          <a
+            href={siteConfig.links.instagram}
+            target="_blank"
+            rel="noreferrer"
+            className="w-[44px] h-[44px] bg-[#306BEA] rounded-full flex items-center justify-center hover:bg-[#2557d1] transition-colors"
+            aria-label="Instagram"
+          >
+            <Instagram className="w-5 h-5 text-white" />
+          </a>
         </div>
       </div>
     </div>
@@ -287,52 +312,21 @@ function MapSection() {
   return (
     <div className="w-full">
       <div className="h-[495px] rounded-[12px] w-full max-w-[1917px] mx-auto overflow-hidden relative bg-slate-100 border-2 border-gray-200">
-        {/* Interactive Map Container - Clickable Map */}
-        <a
-          href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full h-full relative group cursor-pointer"
-        >
-          {/* Clean Map Interface */}
-          <div className="w-full h-full bg-white rounded-[12px] relative overflow-hidden border border-gray-200">
-            {/* Map Container */}
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
-
-              {/* Map Icon and Text */}
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                </div>
-
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Muneer Complex</h3>
-                <p className="text-gray-600 mb-4 max-w-sm">
-                  No. 130, II Floor, Muneer Complex<br />
-                  Palani Road, Udumalpet<br />
-                  Tamil Nadu, India
-                </p>
-
-                <div className="space-y-3">
-                  <div className="bg-blue-600 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors inline-block">
-                    View Location on Google Maps
-                  </div>
-                  <p className="text-xs text-gray-500">Click anywhere to open directions</p>
-                </div>
-              </div>
-
-              {/* Decorative Elements */}
-              <div className="absolute top-4 left-4 w-2 h-2 bg-blue-400 rounded-full opacity-60"></div>
-              <div className="absolute top-8 right-8 w-3 h-3 bg-green-400 rounded-full opacity-60"></div>
-              <div className="absolute bottom-6 left-8 w-2 h-2 bg-red-400 rounded-full opacity-60"></div>
-              <div className="absolute bottom-4 right-4 w-3 h-3 bg-yellow-400 rounded-full opacity-60"></div>
-            </div>
-          </div>
-        </a>
+        {/* Embedded Google Map - TBS Technologies / Muneer Complex Location */}
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d608.3352149153551!2d77.2527547!3d10.5836394!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba9cdb2ca3bf08f%3A0x5f8035bea3394e46!2sTBS%20Technologies%20Private%20Limited!5e1!3m2!1sen!2sin!4v1761385887270!5m2!1sen!2sin"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="rounded-[12px]"
+          title="PowerCA Office Location - Muneer Complex, Udumalpet"
+        ></iframe>
 
         {/* Overlay Information Card */}
-        <div className="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10">
+        <div className="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10 pointer-events-auto">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
               <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -346,7 +340,7 @@ function MapSection() {
                 Palani Road, Udumalpet
               </p>
               <a
-                href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
+                href="https://maps.app.goo.gl/m8Wxi2UVVdsHyXhh7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 text-xs mt-2 font-medium hover:text-blue-800 transition-colors inline-block"

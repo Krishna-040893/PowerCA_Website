@@ -117,6 +117,9 @@ export default function TestimonialsSection() {
         {/* Right Content - Navigation Buttons */}
         <div className="lg:col-span-2 flex justify-end gap-4">
           <button
+            type="button"
+            aria-label="Show previous testimonial set"
+            title="Show previous testimonial set"
             onClick={prevSet}
             className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-600 hover:text-blue-600 transition-colors"
           >
@@ -125,6 +128,9 @@ export default function TestimonialsSection() {
             </svg>
           </button>
           <button
+            type="button"
+            aria-label="Show next testimonial set"
+            title="Show next testimonial set"
             onClick={nextSet}
             className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
           >
@@ -156,11 +162,14 @@ export default function TestimonialsSection() {
       </div>
 
       {/* Pagination Dots */}
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-2" role="tablist" aria-label="Testimonial groups">
         {testimonialSets.map((_, index) => (
           <button
             key={index}
+            type="button"
             onClick={() => goToSet(index)}
+            aria-label={`Show testimonial set ${index + 1}`}
+            aria-pressed={index === currentSet}
             className={`w-3 h-3 rounded-full transition-colors ${
               index === currentSet ? 'bg-gray-900' : 'bg-gray-300 hover:bg-gray-400'
             }`}

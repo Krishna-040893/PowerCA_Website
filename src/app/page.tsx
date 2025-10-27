@@ -171,9 +171,9 @@ export default function Home() {
                 <div className="flex items-center">
                   <div className="w-8 h-px bg-gray-300 mr-3"></div>
                   <span className="whitespace-nowrap">Save 10+ hours weekly</span>
-                  <span className="mx-3 text-gray-400">•</span>
+                  <span className="mx-3 text-gray-400" aria-hidden="true">|</span>
                   <span className="whitespace-nowrap">Ensure 100% compliance</span>
-                  <span className="mx-3 text-gray-400">•</span>
+                  <span className="mx-3 text-gray-400" aria-hidden="true">|</span>
                   <span className="whitespace-nowrap">Grow effortlessly</span>
                   <div className="w-8 h-px bg-gray-300 ml-3"></div>
                 </div>
@@ -196,7 +196,7 @@ export default function Home() {
                 download="PowercaPromoters.pdf"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[200px]"
               >
-                📥 Promoter's Perspective
+                Download Promoter's Perspective
               </a>
             </div>
           </div>
@@ -631,12 +631,15 @@ export default function Home() {
 
               {/* Right Content - Book Demo Button */}
               <div className="lg:col-span-2 flex justify-end">
-                <button className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                <Link
+                  href="/book-demo"
+                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                >
                   Book Demo
                   <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                </button>
+                </Link>
               </div>
             </div>
 

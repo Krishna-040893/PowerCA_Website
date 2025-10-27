@@ -246,7 +246,7 @@ export default function AdminUserManagementPage() {
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="Professional">Professional</SelectItem>
                   <SelectItem value="Student">Student</SelectItem>
@@ -414,7 +414,7 @@ export default function AdminUserManagementPage() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="Professional">Professional</SelectItem>
                       <SelectItem value="Student">Student</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>

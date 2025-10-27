@@ -1,20 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  DollarSign,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  IndianRupee,
   TrendingUp,
   Clock,
   CheckCircle,
   Search,
-  Filter,
-  Download,
   RefreshCw
 } from 'lucide-react'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
+import { toast } from 'sonner'
 
 interface AffiliatePayment {
   id: string
@@ -52,7 +66,6 @@ interface PaymentSummary {
 }
 
 export default function AffiliatePaymentsPage() {
-  const router = useRouter()
   const [payments, setPayments] = useState<AffiliatePayment[]>([])
   const [summary, setSummary] = useState<PaymentSummary>({
     totalPayments: 0,
@@ -65,7 +78,14 @@ export default function AffiliatePaymentsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const fetchPayments = async () => {
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<AffiliatePayment | null>(null)
+  const [paymentMode, setPaymentMode] = useState<string>('')
+  const [paymentDate, setPaymentDate] = useState<string>('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true)
       let url = '/api/admin/affiliate-payments'
@@ -86,28 +106,57 @@ export default function AffiliatePaymentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     fetchPayments()
-  }, [statusFilter])
+  }, [fetchPayments])
 
-  const handleMarkPaid = async (paymentId: string, isPaid: boolean) => {
+  const handleMarkPaidClick = (payment: AffiliatePayment) => {
+    setSelectedPayment(payment)
+    setPaymentMode('')
+    setPaymentDate('')
+    setDialogOpen(true)
+  }
+
+  const handleSubmitPayment = async () => {
+    if (!selectedPayment) return
+
+    if (!paymentMode || !paymentDate) {
+      toast.error('Please fill in all payment details')
+      return
+    }
+
     try {
+      setSubmitting(true)
       const response = await fetch('/api/admin/affiliate-payments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          paymentId,
-          commissionPaid: isPaid
+          paymentId: selectedPayment.id,
+          commissionPaid: true,
+          paymentMode,
+          paymentDate
         })
       })
 
-      if (response.ok) {
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success('Commission marked as paid successfully')
+        setDialogOpen(false)
+        setSelectedPayment(null)
+        setPaymentMode('')
+        setPaymentDate('')
         fetchPayments() // Refresh data
+      } else {
+        toast.error(data.error || 'Failed to update commission status')
       }
     } catch (error) {
       console.error('Failed to update commission status:', error)
+      toast.error('Failed to update commission status')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -167,7 +216,7 @@ export default function AffiliatePaymentsPage() {
                 <p className="text-sm text-gray-600 mb-1">Total Payments</p>
                 <p className="text-2xl font-bold text-gray-900">{summary.totalPayments}</p>
               </div>
-              <DollarSign className="w-10 h-10 text-blue-500" />
+              <IndianRupee className="w-10 h-10 text-blue-500" />
             </div>
           </div>
 
@@ -187,7 +236,7 @@ export default function AffiliatePaymentsPage() {
                 <p className="text-sm text-gray-600 mb-1">Total Commission</p>
                 <p className="text-xl font-bold text-gray-900">{formatCurrency(summary.totalCommission)}</p>
               </div>
-              <DollarSign className="w-10 h-10 text-purple-500" />
+              <IndianRupee className="w-10 h-10 text-purple-500" />
             </div>
           </div>
 
@@ -347,7 +396,7 @@ export default function AffiliatePaymentsPage() {
                         {!payment.commission_paid && (
                           <Button
                             size="sm"
-                            onClick={() => handleMarkPaid(payment.id, true)}
+                            onClick={() => handleMarkPaidClick(payment)}
                             className="bg-green-600 hover:bg-green-700"
                           >
                             Mark Paid
@@ -361,6 +410,101 @@ export default function AffiliatePaymentsPage() {
             </table>
           </div>
         </div>
+
+        {/* Mark Paid Dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="bg-white sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Mark Commission as Paid</DialogTitle>
+              <DialogDescription>
+                Enter payment details for affiliate commission
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedPayment && (
+              <div className="space-y-4 py-4">
+                {/* Payment Summary */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Customer:</span>
+                    <span className="text-sm font-medium">{selectedPayment.customer_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Firm:</span>
+                    <span className="text-sm font-medium">{selectedPayment.customer_firm_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Commission Amount:</span>
+                    <span className="text-sm font-bold text-green-600">
+                      {formatCurrency(selectedPayment.commission_amount)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Affiliate ID:</span>
+                    <span className="text-sm font-mono">{selectedPayment.affiliate_id}</span>
+                  </div>
+                </div>
+
+                {/* Payment Mode Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-mode">Payment Mode *</Label>
+                  <Select value={paymentMode} onValueChange={setPaymentMode}>
+                    <SelectTrigger id="payment-mode">
+                      <SelectValue placeholder="Select payment mode" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="UPI">UPI</SelectItem>
+                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="NEFT/RTGS">NEFT/RTGS</SelectItem>
+                      <SelectItem value="IMPS">IMPS</SelectItem>
+                      <SelectItem value="Cheque">Cheque</SelectItem>
+                      <SelectItem value="Cash">Cash</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Payment Date Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-date">Payment Date *</Label>
+                  <Input
+                    id="payment-date"
+                    type="datetime-local"
+                    value={paymentDate}
+                    onChange={(e) => setPaymentDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSubmitPayment}
+                disabled={submitting || !paymentMode || !paymentDate}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {submitting ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm Payment'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminPageWrapper>
   )

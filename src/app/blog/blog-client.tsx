@@ -1,112 +1,122 @@
 'use client'
 
-import {useState  } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {Search, Calendar, User, ArrowRight, AlertCircle } from 'lucide-react'
+import {Search, Calendar, User, ArrowRight, AlertCircle, SlidersHorizontal, Loader2 } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
+import { blogPosts as staticBlogPosts } from '@/data/blog-posts'
 
-const categories = [
-  { id: 'all', name: 'All Categories', active: true },
-  { id: 'breaking-news', name: 'Breaking News', active: false },
-  { id: 'compliance', name: 'Compliance', active: false },
-  { id: 'tax-planning', name: 'Tax Planning', active: false },
-  { id: 'technology', name: 'Technology', active: false },
-  { id: 'best-practices', name: 'Best Practices', active: false },
-  { id: 'tips', name: 'Tips & Tricks', active: false },
-]
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
-const blogPosts = [
-  {
-    id: 1,
-    title: 'BREAKING: Tax Audit Report Due Date Extended to October 31, 2025',
-    excerpt: 'CBDT extends tax audit report filing deadline from September 30 to October 31, 2025 for AY 2025-26. Get complete details of the notification.',
-    author: 'PowerCA Team',
-    date: 'September 25, 2025',
-    category: 'breaking-news',
-    readTime: '5 min read',
-    image: '/images/tax-audit-deadline-extended-feature.png',
-    isBreaking: true,
-    link: '/blog/tax-audit-deadline-extended-october-31-2025'
-  },
-  {
-    id: 2,
-    title: 'TDS Compliance Checklist 2025-26: Complete Guide for CAs',
-    excerpt: 'Comprehensive TDS compliance checklist for FY 2025-26. Due dates, rates, forms, penalties, and best practices for error-free TDS compliance.',
-    author: 'PowerCA Team',
-    date: 'September 24, 2025',
-    category: 'compliance',
-    readTime: '15 min read',
-    image: '/images/tds-compliance-checklist-feature.png',
-    link: '/blog/tds-compliance-checklist-complete-guide'
-  },
-  {
-    id: 3,
-    title: 'Why Every CA Firm Needs Practice Management Software in 2025',
-    excerpt: 'Discover how practice management software transforms CA firms. Increase efficiency by 40%, reduce errors, automate compliance, and scale your practice.',
-    author: 'PowerCA Team',
-    date: 'September 23, 2025',
-    category: 'technology',
-    readTime: '12 min read',
-    image: '/images/practice-management-software-feature.png',
-    link: '/blog/why-cas-need-practice-management-software'
-  },
-  {
-    id: 4,
-    title: 'New vs Old Tax Regime: Which is Better for You in 2025-26?',
-    excerpt: 'Detailed comparison of New vs Old tax regime for FY 2025-26. Calculate which regime saves more tax based on your income and deductions.',
-    author: 'PowerCA Team',
-    date: 'September 22, 2025',
-    category: 'tax-planning',
-    readTime: '10 min read',
-    image: '/images/new-vs-old-tax-regime-feature.png',
-    link: '/blog/new-vs-old-tax-regime-which-is-better'
-  },
-  {
-    id: 5,
-    title: 'How to File GST Returns in 2025: Complete Guide for CAs',
-    excerpt: 'Step-by-step guide on filing GST returns in 2025. Learn about GSTR-1, GSTR-3B, deadlines, late fees, and common mistakes to avoid.',
-    author: 'PowerCA Team',
-    date: 'September 20, 2025',
-    category: 'compliance',
-    readTime: '12 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/how-to-file-gst-returns-2025'
-  },
+const formatCategoryName = (category: string) =>
+  category
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
-]
+const formatMonthYear = (dateString: string) => {
+  const date = new Date(dateString)
 
-const authors = [
-  { id: 'all', name: 'All Authors' },
-  { id: 'priya-sharma', name: 'Priya Sharma' },
-  { id: 'rajesh-kumar', name: 'Rajesh Kumar' },
-  { id: 'anita-patel', name: 'Anita Patel' },
-  { id: 'vikram-singh', name: 'Vikram Singh' },
-  { id: 'meera-reddy', name: 'Meera Reddy' },
-  { id: 'amit-gupta', name: 'Amit Gupta' },
-]
+  if (Number.isNaN(date.getTime())) {
+    return dateString
+  }
 
-const dateFilters = [
-  { id: 'all', name: 'All Dates' },
-  { id: 'march-2024', name: 'March 2024' },
-  { id: 'february-2024', name: 'February 2024' },
-  { id: 'january-2024', name: 'January 2024' },
-]
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
 
 export default function BlogPageClient() {
+  const [blogPosts, setBlogPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [selectedAuthor, setSelectedAuthor] = useState('all')
   const [selectedDate, setSelectedDate] = useState('all')
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch blog posts from database and merge with static posts
+  useEffect(() => {
+    async function fetchBlogPosts() {
+      try {
+        const response = await fetch('/api/blog/posts')
+        const data = await response.json()
+
+        // Merge database posts with static posts
+        // Database posts come first (newest), then static posts
+        const databasePosts = data.posts || []
+        const allPosts = [...databasePosts, ...staticBlogPosts]
+
+        setBlogPosts(allPosts)
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+        // Fallback to static posts on error
+        setBlogPosts(staticBlogPosts)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogPosts()
+  }, [])
+
+  const postsWithMeta = blogPosts.map((post) => {
+    const monthYear = formatMonthYear(post.date)
+
+    return {
+      ...post,
+      authorSlug: slugify(post.author),
+      monthYear,
+    }
+  })
+
+  const categoryOptions = [
+    { id: 'all', name: 'All Categories' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.category))).map((category) => ({
+      id: category,
+      name: formatCategoryName(category),
+    })),
+  ]
+
+  const authorOptions = [
+    { id: 'all', name: 'All Authors' },
+    ...(Array.from(
+      postsWithMeta.reduce(
+        (map, post) => map.set(post.authorSlug, post.author),
+        new Map<string, string>()
+      )
+    ) as [string, string][]).map(([id, name]) => ({ id, name })),
+  ]
+
+  const dateOptions = [
+    { id: 'all', name: 'All Dates' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.monthYear))).map((value) => ({
+      id: value,
+      name: value,
+    })),
+  ]
+
+  const categoryNameLookup = new Map<string, string>(
+    categoryOptions
+      .filter((option) => option.id !== 'all')
+      .map((option) => [option.id, option.name])
+  )
+
+  const filteredPosts = postsWithMeta.filter((post) => {
+    const normalizedSearch = searchTerm.trim().toLowerCase()
+    const matchesSearch =
+      post.title.toLowerCase().includes(normalizedSearch) ||
+      post.excerpt.toLowerCase().includes(normalizedSearch)
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory
-    const matchesAuthor = selectedAuthor === 'all' || post.author.toLowerCase().replace(' ', '-') === selectedAuthor
-    const matchesDate = selectedDate === 'all' || post.date.toLowerCase().includes(selectedDate.replace('-2024', '').replace('-', ' '))
+    const matchesAuthor = selectedAuthor === 'all' || post.authorSlug === selectedAuthor
+    const matchesDate = selectedDate === 'all' || post.monthYear === selectedDate
+
     return matchesSearch && matchesCategory && matchesAuthor && matchesDate
   })
 
@@ -145,31 +155,26 @@ export default function BlogPageClient() {
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-4 max-w-2xl mx-auto">
+          <div className="flex gap-4 max-w-4xl mx-auto">
             <div className="relative flex-1">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-10 text-gray-400 pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Search you want"
+                placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-16 py-6 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-24 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
+                className="w-full h-16 rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-14 pr-6 text-lg text-gray-800 placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
-              <Search className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
             </div>
-            <div className="relative">
-              <Button
-                size="lg"
+            <div className="relative flex items-center">
+              <button
+                type="button"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-24 min-w-24"
+                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
+                aria-label="Toggle filters"
               >
-                <Image
-                  src="/images/filter-icon.png"
-                  alt="Filter"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                />
-              </Button>
+                <SlidersHorizontal className="w-6 h-6" />
+              </button>
 
               {showFilterDropdown && (
                 <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
@@ -195,7 +200,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setActiveCategory(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {categories.map((category) => (
+                        {categoryOptions.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
                           </option>
@@ -211,7 +216,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedAuthor(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {authors.map((author) => (
+                        {authorOptions.map((author) => (
                           <option key={author.id} value={author.id}>
                             {author.name}
                           </option>
@@ -227,7 +232,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {dateFilters.map((dateFilter) => (
+                        {dateOptions.map((dateFilter) => (
                           <option key={dateFilter.id} value={dateFilter.id}>
                             {dateFilter.name}
                           </option>
@@ -267,7 +272,7 @@ export default function BlogPageClient() {
               Explore Trending Topics
             </h2>
             <div className="flex flex-wrap gap-3 justify-center">
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <Button
                   key={category.id}
                   variant={activeCategory === category.id ? 'default' : 'outline'}
@@ -314,15 +319,20 @@ export default function BlogPageClient() {
                       <span className={`${
                         post.isBreaking ? 'bg-red-600/90' : 'bg-blue-600/90'
                       } text-white text-xs font-medium px-3 py-1 rounded-full`}>
-                        {categories.find(cat => cat.id === post.category)?.name || 'General'}
+                        {categoryNameLookup.get(post.category) || formatCategoryName(post.category)}
                       </span>
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                       {post.title}
                     </h3>
+                    {post.subtitle && (
+                      <p className="text-gray-700 mb-3 text-base font-medium line-clamp-1">
+                        {post.subtitle}
+                      </p>
+                    )}
                     <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                       {post.excerpt}
                     </p>

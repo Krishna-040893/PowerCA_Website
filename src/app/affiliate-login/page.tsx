@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { signIn, signOut } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, UserPlus } from 'lucide-react'
 
 export default function AffiliateLoginPage() {
@@ -19,7 +19,6 @@ export default function AffiliateLoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/affiliate/account'
 
@@ -33,15 +32,48 @@ export default function AffiliateLoginPage() {
         email,
         password,
         redirect: false,
+        callbackUrl: callbackUrl, // Explicitly pass callbackUrl
       })
 
       if (result?.ok) {
+        console.log('✅ Affiliate login successful, verifying session...')
+
+        // Wait for session to be established (important for Vercel)
+        // Increased delay for Vercel edge network
+        await new Promise(resolve => setTimeout(resolve, 1200))
+
         // Check if user is an affiliate by fetching session
-        const response = await fetch('/api/auth/session')
-        const session = await response.json()
+        // Try multiple times to ensure session is established on Vercel
+        let session = null
+        let retries = 0
+        const maxRetries = 3
+
+        while (retries < maxRetries) {
+          const response = await fetch('/api/auth/session', {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          })
+          const data = await response.json()
+
+          if (data?.user?.role) {
+            session = data
+            break
+          }
+
+          retries++
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+        }
+
+        console.log('📋 Session data:', { role: session?.user?.role, status: session?.user?.status })
 
         // Block non-affiliates from affiliate login
-        if (session?.user?.role?.toLowerCase() !== 'affiliate') {
+        if (!session?.user || session?.user?.role?.toLowerCase() !== 'affiliate') {
+          console.log('⛔ User is not an affiliate, signing out')
           // Sign out immediately to prevent login
           await signOut({ redirect: false })
 
@@ -50,21 +82,30 @@ export default function AffiliateLoginPage() {
 
           // Redirect to client login after 2 seconds
           setTimeout(() => {
-            router.push('/login')
+            window.location.href = '/login'
           }, 2000)
           return
         }
 
-        router.refresh()
-        router.push(callbackUrl)
+        console.log('✅ Affiliate verified, redirecting to:', callbackUrl)
+
+        // Use window.location.href for full page reload to ensure session is established
+        // Critical for Vercel deployments
+        window.location.href = callbackUrl
       } else {
+        console.error('❌ Login failed:', result?.error)
         setError(result?.error || 'Invalid email or password. Please try again.')
       }
     } catch (error) {
       console.error('Login error:', error)
       setError('An unexpected error occurred. Please try again.')
     } finally {
-      setIsLoading(false)
+      // Don't set loading to false if redirect is happening
+      if (!error) {
+        // Keep loading state if successful
+      } else {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -155,7 +196,7 @@ export default function AffiliateLoginPage() {
             {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-900 font-medium">
-                Email / Phone
+                Email
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -164,7 +205,7 @@ export default function AffiliateLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Your Email or Phone"
+                  placeholder="Enter Your Email"
                   className="pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
                   required
                 />

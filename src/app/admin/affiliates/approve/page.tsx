@@ -8,11 +8,8 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
-import {Textarea  } from '@/components/ui/textarea'
-import {Label  } from '@/components/ui/label'
 import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
 import { format } from 'date-fns'
-import {toast  } from 'sonner'
 
 interface AffiliateApplication {
   id: string
@@ -45,8 +42,6 @@ export default function AdminAffiliateApprovalPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
-  const [reviewNotes, setReviewNotes] = useState('')
-  const [processing, setProcessing] = useState(false)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -80,40 +75,6 @@ export default function AdminAffiliateApprovalPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading])
-
-  const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
-    setProcessing(true)
-    try {
-      const response = await fetch('/api/admin/affiliates', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
-        },
-        body: JSON.stringify({
-          applicationId,
-          status: action === 'approve' ? 'approved' : 'rejected',
-          adminNotes: reviewNotes,
-          approvedBy: adminUser?.username
-        })
-      })
-
-      if (response.ok) {
-        await fetchApplications()
-        setShowReviewDialog(false)
-        setReviewNotes('')
-        setSelectedApplication(null)
-        toast.success(`Application ${action}d successfully`)
-      } else {
-        throw new Error(`Failed to ${action} application`)
-      }
-    } catch (err) {
-      console.error(`Error ${action}ing application:`, err)
-      toast.error(`Failed to ${action} application`)
-    } finally {
-      setProcessing(false)
-    }
-  }
 
   const getStatusBadge = (status: string) => {
     const config = {

@@ -110,7 +110,7 @@ export function ClientServerModel() {
               style={{ backgroundColor: '#155dfc' }}
               asChild
             >
-              <Link href="/checkout">Book Demo</Link>
+              <Link href="/book-demo">Book Demo</Link>
             </Button>
             <Link href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">
               Talk to our experts →

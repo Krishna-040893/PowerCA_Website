@@ -5,7 +5,7 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Bell, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard } from 'lucide-react'
+import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts'
 }
 
 interface NavSection {
@@ -45,6 +45,9 @@ interface Counts {
   referrals: number
   pendingPayments: number
   payments: number
+  paymentOrders: number
+  newsletterSubscribers: number
+  blogPosts: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -60,13 +63,16 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'Bookings', href: '/admin/bookings', icon: Calendar, countKey: 'bookings', badgeVariant: 'default' },
       { title: 'Registrations', href: '/admin/registrations', icon: FileText, countKey: 'registrations', badgeVariant: 'default' },
       { title: 'Payments', href: '/admin/payments', icon: CreditCard, countKey: 'payments', badgeVariant: 'default' },
+      { title: 'Payment Orders', href: '/admin/payment-orders', icon: ShoppingCart, countKey: 'paymentOrders', badgeVariant: 'default' },
+      { title: 'Newsletter Subscribers', href: '/admin/newsletter-subscribers', icon: Mail, countKey: 'newsletterSubscribers', badgeVariant: 'default' },
+      { title: 'Blog Posts', href: '/admin/blog', icon: Globe, countKey: 'blogPosts', badgeVariant: 'default' },
     ]
   },
   {
     title: 'Affiliates',
     items: [
       { title: 'All Affiliates', href: '/admin/affiliates', icon: Star, countKey: 'affiliates', badgeVariant: 'default' },
-      { title: 'Approvals', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
+      { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
       { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
       { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Star, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
@@ -91,7 +97,10 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
     pendingApprovals: 0,
     referrals: 0,
     pendingPayments: 0,
-    payments: 0
+    payments: 0,
+    paymentOrders: 0,
+    newsletterSubscribers: 0,
+    blogPosts: 0
   })
   const pathname = usePathname()
   const _router = useRouter()
@@ -308,26 +317,20 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
 
             {/* Right Section */}
             <div className="flex items-center space-x-4">
-              {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
-              </Button>
-
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary-100 text-primary-700 text-sm">
-                        {adminUser.username[0]?.toUpperCase()}
+                        {adminUser.username?.[0]?.toUpperCase() || 'A'}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden md:block text-sm">{adminUser.username}</span>
+                    <span className="hidden md:block text-sm">{adminUser.username || 'Admin'}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-white">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>

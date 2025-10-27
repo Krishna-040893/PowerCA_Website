@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
@@ -15,9 +15,9 @@ function generateAffiliateId(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()

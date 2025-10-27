@@ -34,7 +34,7 @@ interface FileUserData {
   created_at?: string
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check if Supabase is configured
     const isSupabaseConfigured = isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY') &&

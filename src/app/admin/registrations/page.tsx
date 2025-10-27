@@ -56,16 +56,35 @@ export default function AdminRegistrationsPage() {
     total: 0,
     professionals: 0,
     students: 0,
+    checkouts: 0,
     today: 0
   })
 
   const fetchRegistrations = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     try {
+      const authHeaders = getAuthHeaders()
+
       const response = await fetch('/api/registrations', {
-        headers: getAuthHeaders()
+        headers: {
+          ...authHeaders,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         throw new Error(`Failed to fetch registrations: ${response.statusText}`)
@@ -89,22 +108,35 @@ export default function AdminRegistrationsPage() {
 
       setRegistrations(transformedRegistrations)
 
-      // Calculate stats
+      // Calculate stats (removed checkout count fetching)
       const today = new Date().toISOString().split('T')[0]
       setStats({
         total: transformedRegistrations.length,
         professionals: transformedRegistrations.filter(r => r.role === 'Professional' || r.professional_type).length,
-        students: transformedRegistrations.filter(r => r.role === 'Student').length,
+        students: transformedRegistrations.filter(r => r.role === 'Student' || r.role === 'student').length,
+        checkouts: 0,
         today: transformedRegistrations.filter(r => r.created_at?.startsWith(today)).length
       })
     } catch (err) {
-      console.error('Error fetching registrations:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      clearTimeout(timeoutId)
+      // Only show error if it's not an abort error (which happens on component unmount)
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Request was aborted')
+        // Don't set error state for abort errors - they're expected during unmount
+      } else {
+        console.error('Error fetching registrations:', err)
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
     } finally {
       setLoading(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    // Return cleanup function
+    return () => {
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [isAuthenticated, getAuthHeaders])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -190,7 +222,7 @@ export default function AdminRegistrationsPage() {
       }
     >
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -286,7 +318,7 @@ export default function AdminRegistrationsPage() {
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="Professional">Professional</SelectItem>
                   <SelectItem value="Student">Student</SelectItem>

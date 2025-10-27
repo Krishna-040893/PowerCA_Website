@@ -8,7 +8,7 @@ import {
   FileText,
   Home,
   Award,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Shield,
   ArrowRight,
@@ -41,7 +41,7 @@ const calculators = [
   {
     title: 'Income Tax Calculator',
     description: 'Calculate income tax for FY 2024-25. Compare old vs new tax regime.',
-    icon: DollarSign,
+    icon: IndianRupee,
     href: '/tools/income-tax-calculator',
     color: 'bg-green-500',
     popular: true,
@@ -113,7 +113,7 @@ const calculators = [
 ]
 
 const upcomingCalculators = [
-  { name: 'PPF Calculator', icon: DollarSign },
+  { name: 'PPF Calculator', icon: IndianRupee },
   { name: 'SIP Calculator', icon: TrendingUp },
   { name: 'FD Calculator', icon: Calculator },
   { name: 'Retirement Calculator', icon: Shield },
