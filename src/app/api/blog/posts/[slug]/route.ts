@@ -3,9 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -22,7 +23,7 @@ export async function GET(
     const { data: post, error } = await supabase
       .from('blog_posts')
       .select('*')
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .eq('is_published', true)
       .single()
 

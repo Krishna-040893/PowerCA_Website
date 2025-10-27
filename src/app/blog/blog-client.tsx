@@ -86,12 +86,12 @@ export default function BlogPageClient() {
 
   const authorOptions = [
     { id: 'all', name: 'All Authors' },
-    ...Array.from(
+    ...(Array.from(
       postsWithMeta.reduce(
         (map, post) => map.set(post.authorSlug, post.author),
         new Map<string, string>()
       )
-    ).map(([id, name]) => ({ id, name })),
+    ) as [string, string][]).map(([id, name]) => ({ id, name })),
   ]
 
   const dateOptions = [

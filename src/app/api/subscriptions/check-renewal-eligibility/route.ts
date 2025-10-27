@@ -96,16 +96,18 @@ export async function POST(request: NextRequest) {
       try {
         const renewalUrl = `${process.env.NEXTAUTH_URL || 'https://powerca.in'}/pricing`
 
+        const emailHtml = await SubscriptionRenewalAvailableEmail({
+          name: user.name,
+          email: user.email,
+          subscriptionStartDate: user.subscriptionStartDate,
+          renewalUrl
+        })
+
         await resend.emails.send({
           from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
           to: user.email,
           subject: '🎉 Your PowerCA Annual Subscription is Now Available!',
-          html: SubscriptionRenewalAvailableEmail({
-            name: user.name,
-            email: user.email,
-            subscriptionStartDate: user.subscriptionStartDate,
-            renewalUrl
-          })
+          html: emailHtml as string
         })
 
         // Find the subscription ID for this user

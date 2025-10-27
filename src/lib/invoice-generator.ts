@@ -520,9 +520,8 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
     browser = await puppeteer.launch({
       args: isProduction ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      defaultViewport: chromium.defaultViewport,
       executablePath: isProduction ? await chromium.executablePath() : puppeteer.executablePath(),
-      headless: chromium.headless,
+      headless: true,
     })
 
     const page = await browser.newPage()
