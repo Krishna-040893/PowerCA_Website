@@ -31,8 +31,12 @@ interface BlogPost {
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
+    // Use VERCEL_URL for automatic Vercel deployments, fallback to NEXT_PUBLIC_SITE_URL or localhost
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/blog/posts/${slug}`,
+      `${baseUrl}/api/blog/posts/${slug}`,
       {
         next: { revalidate: 60 }, // Revalidate every 60 seconds
       }
