@@ -117,7 +117,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <div className="mb-6 sm:mb-8">
@@ -131,8 +131,8 @@ export default function Home() {
             </div>
 
             {/* Main Heading with SEO Keywords */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6 lg:mb-8 px-2">
-              Practice Management Software for
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6 lg:mb-8 px-2 text-center">
+              <span className="lg:whitespace-nowrap">Practice Management Software for</span>
               <br />
               <span className="mt-2 sm:mt-4 block">
                 <ProfessionRotator />
