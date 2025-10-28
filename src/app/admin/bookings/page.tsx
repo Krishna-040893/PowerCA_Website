@@ -156,12 +156,12 @@ export default function AdminBookingsPage() {
         {/* Bookings Table */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>All Bookings</CardTitle>
-                <CardDescription>View and manage demo bookings</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">All Bookings</CardTitle>
+                <CardDescription className="text-sm">View and manage demo bookings</CardDescription>
               </div>
-              <Button onClick={fetchBookings} variant="outline" size="sm">
+              <Button onClick={fetchBookings} variant="outline" size="sm" className="w-full sm:w-auto">
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -169,19 +169,19 @@ export default function AdminBookingsPage() {
           </CardHeader>
           <CardContent>
             {/* Search Filter */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-2 sm:gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search by name, email or phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 text-sm"
                 />
               </div>
             </div>
 
-            {/* Table */}
+            {/* Table / Cards */}
             {loading ? (
               <div className="text-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
@@ -194,51 +194,52 @@ export default function AdminBookingsPage() {
                 <p className="text-gray-500">There are currently no bookings in the system.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Date & Time</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBookings.map((booking) => (
-                      <TableRow key={booking.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{booking.name}</p>
-                            {booking.firm_name && (
-                              <p className="text-sm text-gray-500">{booking.firm_name}</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1 text-sm">
-                              <Mail className="h-3 w-3" />
-                              {booking.email}
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Date & Time</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredBookings.map((booking) => (
+                        <TableRow key={booking.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{booking.name}</p>
+                              {booking.firm_name && (
+                                <p className="text-sm text-gray-500">{booking.firm_name}</p>
+                              )}
                             </div>
-                            <div className="flex items-center gap-1 text-sm">
-                              <Phone className="h-3 w-3" />
-                              {booking.phone}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1 text-sm">
+                                <Mail className="h-3 w-3" />
+                                {booking.email}
+                              </div>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Phone className="h-3 w-3" />
+                                {booking.phone}
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>{booking.date}</p>
-                            <p className="text-sm text-gray-500">{booking.time}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{booking.type}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p>{booking.date}</p>
+                              <p className="text-sm text-gray-500">{booking.time}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{booking.type}</Badge>
+                          </TableCell>
+                          <TableCell>
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
@@ -250,7 +251,7 @@ export default function AdminBookingsPage() {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="bg-white">
+                              <DialogContent className="bg-white max-w-md">
                                 <DialogHeader>
                                   <DialogTitle>Booking Details</DialogTitle>
                                   <DialogDescription>
@@ -263,7 +264,7 @@ export default function AdminBookingsPage() {
                                       <h4 className="font-medium mb-2">Customer Information</h4>
                                       <div className="space-y-2 text-sm">
                                         <p><User className="inline h-4 w-4 mr-2" />{selectedBooking.name}</p>
-                                        <p><Mail className="inline h-4 w-4 mr-2" />{selectedBooking.email}</p>
+                                        <p className="break-all"><Mail className="inline h-4 w-4 mr-2" />{selectedBooking.email}</p>
                                         <p><Phone className="inline h-4 w-4 mr-2" />{selectedBooking.phone}</p>
                                         {selectedBooking.firm_name && (
                                           <p className="text-gray-600">Firm: {selectedBooking.firm_name}</p>
@@ -287,13 +288,110 @@ export default function AdminBookingsPage() {
                                 )}
                               </DialogContent>
                             </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                  {filteredBookings.map((booking) => (
+                    <Card key={booking.id} className="border shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          {/* Name and Firm */}
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-semibold text-base">{booking.name}</p>
+                              {booking.firm_name && (
+                                <p className="text-sm text-gray-500">{booking.firm_name}</p>
+                              )}
+                            </div>
+                            <Badge variant="outline" className="ml-2">{booking.type}</Badge>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+
+                          {/* Contact Info */}
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                              <span className="break-all">{booking.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                              <span>{booking.phone}</span>
+                            </div>
+                          </div>
+
+                          {/* Date and Time */}
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>{booking.date}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{booking.time}</span>
+                            </div>
+                          </div>
+
+                          {/* Action Button */}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedBooking(booking)}
+                                className="w-full bg-white hover:bg-gray-50"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-white max-w-[90vw] sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Booking Details</DialogTitle>
+                                <DialogDescription className="break-all">
+                                  Booking ID: {selectedBooking?.id}
+                                </DialogDescription>
+                              </DialogHeader>
+                              {selectedBooking && (
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="font-medium mb-2">Customer Information</h4>
+                                    <div className="space-y-2 text-sm">
+                                      <p><User className="inline h-4 w-4 mr-2" />{selectedBooking.name}</p>
+                                      <p className="break-all"><Mail className="inline h-4 w-4 mr-2" />{selectedBooking.email}</p>
+                                      <p><Phone className="inline h-4 w-4 mr-2" />{selectedBooking.phone}</p>
+                                      {selectedBooking.firm_name && (
+                                        <p className="text-gray-600">Firm: {selectedBooking.firm_name}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-2">Booking Information</h4>
+                                    <div className="space-y-2 text-sm">
+                                      <p><Calendar className="inline h-4 w-4 mr-2" />{selectedBooking.date}</p>
+                                      <p><Clock className="inline h-4 w-4 mr-2" />{selectedBooking.time}</p>
+                                    </div>
+                                  </div>
+                                  {selectedBooking.message && (
+                                    <div>
+                                      <h4 className="font-medium mb-2">Message</h4>
+                                      <p className="text-sm text-gray-600 break-words">{selectedBooking.message}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

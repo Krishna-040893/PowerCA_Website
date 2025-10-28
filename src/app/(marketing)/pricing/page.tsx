@@ -73,12 +73,12 @@ export default function PricingPage() {
       {/* Affiliate Referral Banner */}
       {referralInfo?.ref && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-200">
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-center gap-3">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🎁</span>
+                <span className="text-xl sm:text-2xl">🎁</span>
                 <div>
-                  <p className="text-sm font-semibold text-green-700">
+                  <p className="text-xs sm:text-sm font-semibold text-green-700">
                     You're purchasing through an affiliate referral!
                   </p>
                   <p className="text-xs text-gray-600">
@@ -95,9 +95,9 @@ export default function PricingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-20">
         <div
-          className="absolute inset-0 rounded-2xl mx-6 lg:mx-8"
+          className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-8"
           style={{
             backgroundImage: 'url("/images/pricing-hero-bg.jpg")',
             backgroundSize: 'cover',
@@ -105,12 +105,12 @@ export default function PricingPage() {
             backgroundRepeat: 'no-repeat'
           }}
         ></div>
-        <div className="relative z-10 container mx-auto px-6 lg:px-8">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             {/* Badge */}
-            <div className="mb-8">
-              <span className="inline-flex items-center px-6 py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-sm font-medium font-inter">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" viewBox="0 0 24 24">
                   <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M6 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M6 13L14.5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -122,15 +122,15 @@ export default function PricingPage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-8 font-inter">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 font-inter px-2">
               Choose Your Perfect
               <br />
               <span className="text-blue-600">Pricing Plan</span>
             </h1>
 
             {/* Description */}
-            <div className="mb-12 max-w-5xl mx-auto">
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-4 font-inter">
+            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed font-inter">
                 Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.
               </p>
             </div>
@@ -139,9 +139,9 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <div className="relative py-12 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+      <div className="relative py-8 sm:py-10 md:py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
 
             {/* Left Card - Launch Offer */}
             <div className="relative bg-[#306bea] rounded-2xl md:rounded-3xl p-6 md:p-12 text-white shadow-2xl">

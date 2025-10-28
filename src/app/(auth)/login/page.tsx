@@ -82,7 +82,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 }}
-        className="absolute left-6 top-6 z-20"
+        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
       >
         <Link href="/" className="block">
           <Image
@@ -90,7 +90,7 @@ export default function LoginPage() {
             alt="PowerCA"
             width={200}
             height={58}
-            className="h-12 w-auto filter brightness-0 invert"
+            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
             priority
           />
         </Link>
@@ -101,16 +101,16 @@ export default function LoginPage() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="absolute right-6 top-6 z-20"
+        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-medium text-sm tracking-wide">
+          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
             Back to Home
           </span>
         </Link>
@@ -127,7 +127,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Welcome back Power CA
+              Welcome, PowerCA
             </h1>
             <p className="text-gray-600">
               Please enter your details to sign in your account

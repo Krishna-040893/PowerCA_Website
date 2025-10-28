@@ -123,25 +123,25 @@ export default function BlogPageClient() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mx-12">
+      <section className="relative overflow-hidden mx-3 sm:mx-4 md:mx-6 lg:mx-12">
         <div
-          className="relative bg-cover bg-center bg-no-repeat rounded-2xl px-12 py-16"
+          className="relative bg-cover bg-center bg-no-repeat rounded-2xl px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10 md:py-12 lg:py-16"
           style={{
             backgroundImage: `url('/images/blog-bg.jpg')`
           }}
         >
-          <div className="container mx-auto px-4 max-w-6xl relative">
-          <div className="text-center mb-12">
+          <div className="container mx-auto px-2 sm:px-4 max-w-6xl relative">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12">
             {/* Badge */}
-            <div className="inline-flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-full px-6 py-3 mb-8">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-blue-50 border border-blue-200 rounded-full px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 mb-6 sm:mb-8">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <span className="text-blue-700 text-sm font-medium">News, Guides & Best Practices</span>
+              <span className="text-blue-700 text-xs sm:text-sm font-medium">News, Guides & Best Practices</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-4 sm:mb-6 px-2">
               The Power CA
               <br />
               <span className="text-blue-600">Blog</span>
@@ -149,31 +149,31 @@ export default function BlogPageClient() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto mb-12">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
               Your go-to space for best practices, productivity ideas, and the latest updates in audit and practice management.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-4 max-w-4xl mx-auto">
+          <div className="flex gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
             <div className="relative flex-1">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-10 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-3 sm:left-4 md:left-5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-16 rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-14 pr-6 text-lg text-gray-800 placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                className="w-full h-12 sm:h-14 md:h-16 rounded-xl sm:rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-10 sm:pl-12 md:pl-14 pr-3 sm:pr-4 md:pr-6 text-sm sm:text-base md:text-lg text-gray-800 placeholder:text-sm sm:placeholder:text-base md:placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
             </div>
             <div className="relative flex items-center">
               <button
                 type="button"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
+                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
                 aria-label="Toggle filters"
               >
-                <SlidersHorizontal className="w-6 h-6" />
+                <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
               </button>
 
               {showFilterDropdown && (

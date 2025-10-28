@@ -283,51 +283,51 @@ export default function AdminPaymentsPage() {
       }
     >
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Payments</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Payments</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stats.total}</p>
               </div>
-              <CreditCard className="h-8 w-8 text-primary-600" />
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Successful</p>
-                <p className="text-3xl font-bold text-green-600">{stats.paid}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Successful</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.paid}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Failed</p>
-                <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Failed</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.failed}</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-600" />
+              <XCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-3xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Revenue</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
               </div>
-              <IndianRupee className="h-8 w-8 text-primary-600" />
+              <IndianRupee className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
             </div>
           </CardContent>
         </Card>
@@ -336,27 +336,27 @@ export default function AdminPaymentsPage() {
       {/* Payments Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle>All Payments</CardTitle>
-              <CardDescription>View and manage payment transactions</CardDescription>
+              <CardTitle className="text-lg sm:text-xl">All Payments</CardTitle>
+              <CardDescription className="text-sm">View and manage payment transactions</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by name, email, order ID, payment ID, or firm..."
+                placeholder="Search by name, email, order ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 text-sm"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent className="bg-white">
@@ -370,7 +370,7 @@ export default function AdminPaymentsPage() {
             </Select>
           </div>
 
-          {/* Table */}
+          {/* Table / Cards */}
           {loading ? (
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
@@ -381,58 +381,195 @@ export default function AdminPaymentsPage() {
               No payments found
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentPayments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{payment.order_id}</p>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentPayments.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">{payment.order_id}</p>
+                            {payment.payment_id && (
+                              <p className="text-xs text-gray-500 truncate max-w-[150px]">{payment.payment_id}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">{payment.name}</p>
+                            <p className="text-xs text-gray-500 truncate max-w-[180px]">{payment.email}</p>
+                            {payment.firm_name && (
+                              <p className="text-xs text-gray-500">{payment.firm_name}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="font-medium">₹{payment.amount.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">{payment.currency}</p>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                        <TableCell>
+                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString()}</p>
+                          <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString()}</p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => syncPaymentStatus(payment)}
+                              disabled={syncingPayment === payment.id}
+                              className="bg-white hover:bg-gray-50"
+                              title="Sync status from Razorpay"
+                            >
+                              <RotateCw className={`h-4 w-4 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />
+                            </Button>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedPayment(payment)}
+                                  className="bg-white hover:bg-gray-50"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="bg-white max-w-[90vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Payment Details</DialogTitle>
+                                  <DialogDescription className="break-all">
+                                    Order ID: {selectedPayment?.order_id}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                {selectedPayment && (
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      <div>
+                                        <h4 className="font-medium mb-2">Customer Information</h4>
+                                        <div className="space-y-2 text-sm">
+                                          <p><span className="font-medium">Name:</span> {selectedPayment.name}</p>
+                                          <p className="break-all"><span className="font-medium">Email:</span> {selectedPayment.email}</p>
+                                          {selectedPayment.phone && (
+                                            <p><span className="font-medium">Phone:</span> {selectedPayment.phone}</p>
+                                          )}
+                                          {selectedPayment.firm_name && (
+                                            <p><span className="font-medium">Firm:</span> {selectedPayment.firm_name}</p>
+                                          )}
+                                          {selectedPayment.company && (
+                                            <p><span className="font-medium">Company:</span> {selectedPayment.company}</p>
+                                          )}
+                                          {selectedPayment.address && (
+                                            <p className="break-words"><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-medium mb-2">Payment Information</h4>
+                                        <div className="space-y-2 text-sm">
+                                          <p><span className="font-medium">Amount:</span> ₹{selectedPayment.amount.toFixed(2)}</p>
+                                          <p><span className="font-medium">Currency:</span> {selectedPayment.currency}</p>
+                                          <p><span className="font-medium">Status:</span> {getStatusBadge(selectedPayment.status)}</p>
+                                          <p><span className="font-medium">Plan:</span> {selectedPayment.plan}</p>
+                                          {selectedPayment.payment_id && (
+                                            <p className="font-mono text-xs break-all"><span className="font-medium">Payment ID:</span> {selectedPayment.payment_id}</p>
+                                          )}
+                                          {selectedPayment.gst_number && (
+                                            <p><span className="font-medium">GST:</span> {selectedPayment.gst_number}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
+                                      <div>
+                                        <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                      </div>
+                                      <div>
+                                        <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile/Tablet Card View */}
+              <div className="lg:hidden space-y-4">
+                {currentPayments.map((payment) => (
+                  <Card key={payment.id} className="border shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Header: Name, Amount, Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-base truncate">{payment.name}</p>
+                            {payment.firm_name && (
+                              <p className="text-xs text-gray-500 truncate">{payment.firm_name}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <p className="font-bold text-lg whitespace-nowrap">₹{payment.amount.toFixed(2)}</p>
+                            {getStatusBadge(payment.status)}
+                          </div>
+                        </div>
+
+                        {/* Order & Payment IDs */}
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-start gap-2">
+                            <span className="font-medium text-gray-600 whitespace-nowrap">Order:</span>
+                            <span className="text-gray-900 break-all">{payment.order_id}</span>
+                          </div>
                           {payment.payment_id && (
-                            <p className="text-xs text-gray-500">{payment.payment_id}</p>
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-gray-600 whitespace-nowrap">Payment:</span>
+                              <span className="text-gray-900 break-all text-xs font-mono">{payment.payment_id}</span>
+                            </div>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{payment.name}</p>
-                          <p className="text-sm text-gray-500">{payment.email}</p>
-                          {payment.firm_name && (
-                            <p className="text-xs text-gray-500">{payment.firm_name}</p>
-                          )}
+
+                        {/* Email */}
+                        <div className="text-sm">
+                          <span className="text-gray-500 break-all">{payment.email}</span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="font-medium">₹{payment.amount.toFixed(2)}</p>
-                        <p className="text-sm text-gray-500">{payment.currency}</p>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                      <TableCell>
-                        <p className="text-sm">{new Date(payment.created_at).toLocaleDateString()}</p>
-                        <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString()}</p>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
+
+                        {/* Date */}
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <span>{new Date(payment.created_at).toLocaleDateString()}</span>
+                          <span>•</span>
+                          <span>{new Date(payment.created_at).toLocaleTimeString()}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => syncPaymentStatus(payment)}
                             disabled={syncingPayment === payment.id}
-                            className="bg-white hover:bg-gray-50"
+                            className="flex-1 bg-white hover:bg-gray-50"
                             title="Sync status from Razorpay"
                           >
-                            <RotateCw className={`h-4 w-4 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />
+                            <RotateCw className={`h-4 w-4 mr-2 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />
+                            Sync
                           </Button>
                           <Dialog>
                             <DialogTrigger asChild>
@@ -440,83 +577,84 @@ export default function AdminPaymentsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedPayment(payment)}
-                                className="bg-white hover:bg-gray-50"
+                                className="flex-1 bg-white hover:bg-gray-50"
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-4 w-4 mr-2" />
+                                Details
                               </Button>
                             </DialogTrigger>
-                          <DialogContent className="bg-white max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Payment Details</DialogTitle>
-                              <DialogDescription>
-                                Order ID: {selectedPayment?.order_id}
-                              </DialogDescription>
-                            </DialogHeader>
-                            {selectedPayment && (
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2">Customer Information</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><span className="font-medium">Name:</span> {selectedPayment.name}</p>
-                                      <p><span className="font-medium">Email:</span> {selectedPayment.email}</p>
-                                      {selectedPayment.phone && (
-                                        <p><span className="font-medium">Phone:</span> {selectedPayment.phone}</p>
-                                      )}
-                                      {selectedPayment.firm_name && (
-                                        <p><span className="font-medium">Firm:</span> {selectedPayment.firm_name}</p>
-                                      )}
-                                      {selectedPayment.company && (
-                                        <p><span className="font-medium">Company:</span> {selectedPayment.company}</p>
-                                      )}
-                                      {selectedPayment.address && (
-                                        <p><span className="font-medium">Address:</span> {selectedPayment.address}</p>
-                                      )}
+                            <DialogContent className="bg-white max-w-[90vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Payment Details</DialogTitle>
+                                <DialogDescription className="break-all">
+                                  Order ID: {selectedPayment?.order_id}
+                                </DialogDescription>
+                              </DialogHeader>
+                              {selectedPayment && (
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                      <h4 className="font-medium mb-2">Customer Information</h4>
+                                      <div className="space-y-2 text-sm">
+                                        <p><span className="font-medium">Name:</span> {selectedPayment.name}</p>
+                                        <p className="break-all"><span className="font-medium">Email:</span> {selectedPayment.email}</p>
+                                        {selectedPayment.phone && (
+                                          <p><span className="font-medium">Phone:</span> {selectedPayment.phone}</p>
+                                        )}
+                                        {selectedPayment.firm_name && (
+                                          <p><span className="font-medium">Firm:</span> {selectedPayment.firm_name}</p>
+                                        )}
+                                        {selectedPayment.company && (
+                                          <p><span className="font-medium">Company:</span> {selectedPayment.company}</p>
+                                        )}
+                                        {selectedPayment.address && (
+                                          <p className="break-words"><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium mb-2">Payment Information</h4>
+                                      <div className="space-y-2 text-sm">
+                                        <p><span className="font-medium">Amount:</span> ₹{selectedPayment.amount.toFixed(2)}</p>
+                                        <p><span className="font-medium">Currency:</span> {selectedPayment.currency}</p>
+                                        <p><span className="font-medium">Status:</span> {getStatusBadge(selectedPayment.status)}</p>
+                                        <p><span className="font-medium">Plan:</span> {selectedPayment.plan}</p>
+                                        {selectedPayment.payment_id && (
+                                          <p className="font-mono text-xs break-all"><span className="font-medium">Payment ID:</span> {selectedPayment.payment_id}</p>
+                                        )}
+                                        {selectedPayment.gst_number && (
+                                          <p><span className="font-medium">GST:</span> {selectedPayment.gst_number}</p>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2">Payment Information</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><span className="font-medium">Amount:</span> ₹{selectedPayment.amount.toFixed(2)}</p>
-                                      <p><span className="font-medium">Currency:</span> {selectedPayment.currency}</p>
-                                      <p><span className="font-medium">Status:</span> {getStatusBadge(selectedPayment.status)}</p>
-                                      <p><span className="font-medium">Plan:</span> {selectedPayment.plan}</p>
-                                      {selectedPayment.payment_id && (
-                                        <p className="font-mono text-xs"><span className="font-medium">Payment ID:</span> {selectedPayment.payment_id}</p>
-                                      )}
-                                      {selectedPayment.gst_number && (
-                                        <p><span className="font-medium">GST:</span> {selectedPayment.gst_number}</p>
-                                      )}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
+                                    <div>
+                                      <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                      <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
                                     </div>
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
-                                  <div>
-                                    <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
-                                  </div>
-                                  <div>
-                                    <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </DialogContent>
-                        </Dialog>
+                              )}
+                            </DialogContent>
+                          </Dialog>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between border-t pt-4">
-                  <div className="text-sm text-gray-600">
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t pt-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     Showing {startIndex + 1} to {Math.min(endIndex, filteredPayments.length)} of {filteredPayments.length} results
                   </div>
                   <Pagination>
-                    <PaginationContent>
+                    <PaginationContent className="flex-wrap justify-center">
                       <PaginationItem>
                         <PaginationPrevious
                           onClick={() => currentPage > 1 && goToPage(currentPage - 1)}
@@ -561,7 +699,7 @@ export default function AdminPaymentsPage() {
                   </Pagination>
                 </div>
               )}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>

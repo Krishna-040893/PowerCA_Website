@@ -22,7 +22,7 @@ import {toast  } from 'sonner'
 
 // Required field label component
 const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) => (
-  <Label htmlFor={htmlFor} className="text-gray-900 text-base font-medium">
+  <Label htmlFor={htmlFor} className="text-gray-900 text-sm sm:text-base font-medium">
     {children} <span className="text-red-500">*</span>
   </Label>
 )
@@ -211,9 +211,10 @@ export default function AffiliateRegisterPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Section with Background */}
-      <section className="relative py-12 overflow-hidden bg-white">
-        <div className="absolute inset-0 px-12">
+      {/* Hero Section */}
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+        {/* Background image with responsive padding */}
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -222,60 +223,67 @@ export default function AffiliateRegisterPage() {
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
             }}
-          >
-            <div className="absolute inset-0 bg-white/10 rounded-2xl"></div>
-          </div>
+          ></div>
         </div>
 
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-6">
-              <Link
-                href="/affiliate-program"
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full border border-blue-200"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Affiliate Program
-              </Link>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-6xl mx-auto text-center">
+            {/* Badge */}
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                Affiliate Registration
+              </span>
+            </div>
 
-              <div className="mb-4">
-                <span className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">
-                  <Star className="w-4 h-4 mr-2" />
-                  Affiliate Registration
-                </span>
-              </div>
+            {/* Main Heading */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 px-2">
+              Join PowerCA
+              <br />
+              <span className="text-blue-600">Affiliate Program</span>
+            </h1>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-4">
-                Join PowerCA Affiliate Program
-              </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            {/* Description */}
+            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">
                 Complete the form below to register as an affiliate and start earning 10% commission on every successful referral.
               </p>
+            </div>
+
+            {/* Back Button */}
+            <div className="flex justify-center px-2">
+              <Link
+                href="/affiliate-login"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto"
+              >
+                <ArrowLeft className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Back to Affiliate Login</span>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="px-12 py-8">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8">
         <div className="max-w-5xl mx-auto">
 
           {/* Registration Form */}
-          <div className="relative rounded-2xl overflow-hidden bg-gray-50 p-8">
+          <div className="relative rounded-2xl overflow-hidden bg-gray-50 p-4 sm:p-6 md:p-8">
             <Card className="bg-white shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-blue-600" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
                   Affiliate Registration Form
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm mt-1.5">
                   All information is secure and will be used only for affiliate program management
                 </CardDescription>
               </CardHeader>
 
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6 text-base">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 text-sm sm:text-base">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Left Column */}
               <div className="space-y-4">
                 <div>
@@ -382,23 +390,23 @@ export default function AffiliateRegisterPage() {
               {/* Right Column */}
               <div className="space-y-4">
                 <div>
-                  <Label className="text-gray-900 text-base font-medium">Business Type</Label>
+                  <Label className="text-gray-900 text-sm sm:text-base font-medium">Business Type</Label>
                   <RadioGroup
                     value={formData.businessType}
                     onValueChange={(value) => handleInputChange('businessType', value)}
-                    className="mt-2"
+                    className="mt-2 space-y-2"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="individual" id="individual" />
-                      <Label htmlFor="individual">Individual</Label>
+                      <Label htmlFor="individual" className="text-sm sm:text-base">Individual</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="company" id="company" />
-                      <Label htmlFor="company">Company</Label>
+                      <Label htmlFor="company" className="text-sm sm:text-base">Company</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="partnership" id="partnership" />
-                      <Label htmlFor="partnership">Partnership</Label>
+                      <Label htmlFor="partnership" className="text-sm sm:text-base">Partnership</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -550,14 +558,14 @@ export default function AffiliateRegisterPage() {
             </div>
 
             {/* Terms and Conditions */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-200">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <h4 className="font-semibold text-gray-900 text-base">Affiliate Program Terms & Conditions</h4>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Affiliate Program Terms & Conditions</h4>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border border-blue-200 mb-4">
-                <p className="text-sm text-gray-700 mb-4">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border border-blue-200 mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-gray-700 mb-3 sm:mb-4">
                   Please review our complete Affiliate Program Terms & Conditions before registering. This document outlines all program details, commission structure, payment terms, and your rights and responsibilities as an affiliate partner.
                 </p>
 
@@ -567,46 +575,50 @@ export default function AffiliateRegisterPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     download="Affiliate-Terms-and-Conditions.pdf"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+                    className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium text-xs sm:text-sm"
                   >
-                    <Download className="h-4 w-4" />
-                    Download Terms &amp; Conditions (PDF)
+                    <Download className="h-4 w-4 flex-shrink-0" />
+                    <span className="break-words">Download Terms &amp; Conditions (PDF)</span>
                   </a>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-2 bg-white p-3 rounded-lg border-2 border-blue-300">
+              <div className="flex items-start gap-2 sm:gap-3 bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-300">
                 <Checkbox
                   id="terms"
                   checked={agreeToTerms}
                   onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                  className="mt-1"
+                  className="mt-0.5 flex-shrink-0"
                 />
-                <Label htmlFor="terms" className="text-sm cursor-pointer text-gray-900">
-                  I have read, understood, and agree to the <a href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf" target="_blank" className="text-blue-600 hover:text-blue-800 underline font-medium">PowerCA Affiliate Program Terms & Conditions</a> and <a href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-800 underline font-medium">Privacy Policy</a> <span className="text-red-500">*</span>
-                </Label>
+                <label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer text-gray-700 leading-relaxed flex-1">
+                  I have read, understood, and agree to the{' '}
+                  <a href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">PowerCA Affiliate Program Terms & Conditions</a>
+                  {' '}and{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">Privacy Policy</a>
+                  {' '}<span className="text-red-500">*</span>
+                </label>
               </div>
-              {errors.terms && <p className="text-red-500 text-sm mt-2 flex items-center gap-1"><span className="font-bold">!</span> {errors.terms}</p>}
+              {errors.terms && <p className="text-red-500 text-xs sm:text-sm mt-2 flex items-center gap-1"><span className="font-bold">!</span> {errors.terms}</p>}
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => router.push('/affiliate-program')}
-                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium text-sm sm:text-base rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 order-2 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium text-sm sm:text-base rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none order-1 sm:order-2"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Registering...
+                    <span className="text-sm sm:text-base">Registering...</span>
                   </div>
                 ) : (
                   'Register as Affiliate'
