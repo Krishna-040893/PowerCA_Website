@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
-import { rateLimit, rateLimitPresets } from '@/lib/rate-limit'
-
-const checkRateLimit = rateLimit(rateLimitPresets.api)
+import { apiLimiter, getClientIp, createRateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const rateLimitResult = await checkRateLimit(request)
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Too many monitoring requests' },
-        { status: 429 }
-      )
+    // Rate limiting: 100 requests per minute
+    const ip = getClientIp(request)
+    const rateLimitResult = await apiLimiter.check(100, ip)
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
     }
 
     const { events } = await request.json()

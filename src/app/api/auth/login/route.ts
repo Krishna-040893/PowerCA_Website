@@ -3,8 +3,17 @@ import bcrypt from 'bcryptjs'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {logger  } from '@/lib/logger'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import {authLimiter, getClientIp, createRateLimitResponse  } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting: 5 login attempts per minute per IP
+  const ip = getClientIp(request)
+  const rateLimitResult = await authLimiter.check(5, ip)
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   try {
     const body = await request.json()
     const { email, password } = body

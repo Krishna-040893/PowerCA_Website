@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {logger  } from '@/lib/logger'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,28 +15,26 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        console.log('🔐 Authorize called with:', {
+        logger.debug('Authorize called', {
           hasPassword: !!credentials?.password,
           hasEmail: !!credentials?.email,
           hasUsername: !!credentials?.username,
-          username: credentials?.username,
-          timestamp: new Date().toISOString()
         })
 
         if (!credentials?.password) {
-          console.error('❌ No password provided')
+          logger.warn('No password provided')
           throw new Error('Password is required')
         }
 
         // Must have either email (for users/affiliates) or username (for admin)
         if (!credentials?.email && !credentials?.username) {
-          console.error('❌ No email or username provided')
+          logger.warn('No email or username provided')
           throw new Error('Email or username is required')
         }
 
         // Ensure Supabase is configured
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
-          console.warn('⚠️ Supabase is not configured properly')
+          logger.warn('Supabase is not configured properly')
           // In development, allow authentication without Supabase
           if (process.env.NODE_ENV === 'development') {
             // Continue to demo login handling below
@@ -46,11 +45,11 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const supabase = createAdminClient()
-          console.log('✅ Supabase client created')
+          logger.debug('Supabase client created')
 
           // First, check if it's an admin login (username-based)
           if (credentials.username) {
-            console.log('🔍 Looking up admin user:', credentials.username)
+            logger.debug('Looking up admin user')
 
             const { data: admin, error: adminError } = await supabase
               .from('admin_users')
@@ -58,14 +57,13 @@ export const authOptions: NextAuthOptions = {
               .eq('username', credentials.username)
               .single()
 
-            console.log('📊 Admin lookup result:', {
+            logger.debug('Admin lookup result', {
               found: !!admin,
-              error: adminError?.message,
-              username: credentials.username
+              hasError: !!adminError
             })
 
             if (admin && !adminError) {
-              console.log('✅ Admin user found:', admin.username)
+              logger.info('Admin user authenticated successfully')
               // Check if account is locked
               if (admin.locked_until) {
                 const lockoutTime = new Date(admin.locked_until).getTime()
@@ -181,7 +179,7 @@ export const authOptions: NextAuthOptions = {
             .single()
 
           if (error || !user) {
-            console.warn('Database error during auth:', error?.message || 'User not found')
+            logger.debug('User not found in database')
 
             // In development, allow demo login as fallback
             if (process.env.NODE_ENV === 'development') {
@@ -215,18 +213,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role || 'subscriber',
           }
         } catch (error) {
-          console.error('Auth error details:', {
-            error: error instanceof Error ? error.message : error,
-            stack: error instanceof Error ? error.stack : undefined,
-            env: process.env.NODE_ENV,
-            supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'not set',
-            credentials: {
-              email: credentials.email,
-              username: credentials.username,
-              hasPassword: !!credentials.password
-            }
-          })
-
+          logger.error('Authentication failed', error)
           // Re-throw the error to show in login UI
           throw error instanceof Error ? error : new Error('Authentication failed')
         }
@@ -247,7 +234,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days (reduced from 30 for security)
     updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
   cookies: {

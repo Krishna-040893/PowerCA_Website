@@ -3,8 +3,17 @@ import bcrypt from 'bcryptjs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { REGISTRATION_FORMS_TABLE } from '@/lib/constants/tables'
 import { logger } from '@/lib/logger'
+import { strictLimiter, getClientIp, createRateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Apply strict rate limiting: 3 registration attempts per minute per IP
+  const ip = getClientIp(request)
+  const rateLimitResult = await strictLimiter.check(3, ip)
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   try {
     const body = await request.json()
     const { name, email, phone, password, firmName } = body
