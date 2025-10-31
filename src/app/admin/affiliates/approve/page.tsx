@@ -10,6 +10,7 @@ import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
 import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
 import { format } from 'date-fns'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface AffiliateApplication {
   id: string
@@ -42,6 +43,8 @@ export default function AdminAffiliateApprovalPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -207,7 +210,9 @@ export default function AdminAffiliateApprovalPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {applications.map((application) => (
+                    {applications
+                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                      .map((application) => (
                       <TableRow key={application.id}>
                         <TableCell>
                           <div>
@@ -248,7 +253,9 @@ export default function AdminAffiliateApprovalPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                  {applications.map((application) => (
+                  {applications
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((application) => (
                     <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -314,6 +321,15 @@ export default function AdminAffiliateApprovalPage() {
                     </Card>
                   ))}
               </div>
+
+              {/* Pagination */}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={applications.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="affiliates"
+              />
             </>
             )}
           </CardContent>

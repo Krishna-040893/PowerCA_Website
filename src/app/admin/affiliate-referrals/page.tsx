@@ -35,6 +35,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface Referral {
   id: string
@@ -71,6 +72,8 @@ export default function AffiliateReferralsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedAffiliate, setExpandedAffiliate] = useState<string | null>(null)
   const [syncingReferral, setSyncingReferral] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchReferrals = async () => {
     try {
@@ -317,8 +320,11 @@ export default function AffiliateReferralsPage() {
                 {searchTerm ? 'No referrals match your search' : 'No referrals found'}
               </div>
             ) : (
+              <>
               <div className="space-y-4">
-                {filteredData.map((group) => (
+                {filteredData
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((group) => (
                   <div key={group.affiliate_id} className="border rounded-lg overflow-hidden">
                     {/* Affiliate Header */}
                     <div
@@ -461,6 +467,16 @@ export default function AffiliateReferralsPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination */}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredData.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="affiliates"
+              />
+              </>
             )}
           </CardContent>
         </Card>

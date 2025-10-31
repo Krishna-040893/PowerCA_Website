@@ -15,6 +15,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { createClient } from '@supabase/supabase-js'
 import { RichTextEditor } from '@/components/admin/rich-text-editor'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface BlogPost {
   id: string
@@ -38,6 +39,8 @@ export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const formatCategory = (category: string) => {
     return category
@@ -536,7 +539,9 @@ export default function AdminBlogPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {posts.map((post) => (
+                  {posts
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((post) => (
                     <TableRow key={post.id}>
                       <TableCell className="font-medium max-w-md">
                         <div>
@@ -590,7 +595,9 @@ export default function AdminBlogPage() {
 
             {/* Mobile Card View - Professional Design */}
             <div className="md:hidden space-y-3">
-                {posts.map((post) => (
+                {posts
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((post) => (
                   <Card key={post.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="space-y-3">
@@ -662,6 +669,15 @@ export default function AdminBlogPage() {
                   </Card>
                 ))}
             </div>
+
+            {/* Pagination */}
+            <AdminPagination
+              currentPage={currentPage}
+              totalItems={posts.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+              itemName="posts"
+            />
           </>
           )}
         </CardContent>

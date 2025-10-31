@@ -53,7 +53,7 @@ export default function AdminPaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [syncingPayment, setSyncingPayment] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const itemsPerPage = 10
 
   const fetchPayments = useCallback(async () => {
     if (!isAuthenticated) {

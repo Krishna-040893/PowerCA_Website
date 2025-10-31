@@ -59,7 +59,7 @@ export default function PaymentOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<PaymentOrder | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const itemsPerPage = 10
 
   useEffect(() => {
     fetchOrders()

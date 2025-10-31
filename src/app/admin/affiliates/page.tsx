@@ -13,6 +13,7 @@ import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface AffiliateApplication {
   id: string
@@ -83,6 +84,8 @@ export default function AdminAffiliatesPage() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
   const [adminNotes, setAdminNotes] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   // Fetch data when authenticated
 
@@ -344,7 +347,9 @@ export default function AdminAffiliatesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {applications.map((application) => (
+                    {applications
+                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                      .map((application) => (
                       <TableRow key={application.id}>
                         <TableCell className="font-medium">
                           {application.name}
@@ -561,7 +566,9 @@ export default function AdminAffiliatesPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                  {applications.map((application) => (
+                  {applications
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((application) => (
                     <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -801,13 +808,16 @@ export default function AdminAffiliatesPage() {
                     </Card>
                   ))}
               </div>
-            </>
-            )}
 
-            {applications.length > 0 && (
-              <div className="mt-4 text-sm text-gray-600">
-                Total applications: {applications.length}
-              </div>
+              {/* Pagination */}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={applications.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="applications"
+              />
+            </>
             )}
           </CardContent>
         </Card>

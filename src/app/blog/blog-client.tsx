@@ -8,7 +8,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import { blogPosts as staticBlogPosts } from '@/data/blog-posts'
 
-const POSTS_PER_PAGE = 6
+const POSTS_PER_PAGE = 8
 
 const slugify = (value: string) =>
   value
@@ -217,25 +217,25 @@ export default function BlogPageClient() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mx-3 sm:mx-4 md:mx-6 lg:mx-12">
+      <section className="relative overflow-hidden mx-2 sm:mx-4 md:mx-6 lg:mx-12">
         <div
-          className="relative bg-cover bg-center bg-no-repeat rounded-2xl px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10 md:py-12 lg:py-16"
+          className="relative bg-cover bg-center bg-no-repeat rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12 lg:py-16"
           style={{
             backgroundImage: `url('/images/blog-bg.jpg')`
           }}
         >
-          <div className="container mx-auto px-2 sm:px-4 max-w-6xl relative">
-          <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <div className="container mx-auto px-1 sm:px-4 max-w-6xl relative">
+          <div className="text-center mb-6 sm:mb-10 md:mb-12">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-blue-50 border border-blue-200 rounded-full px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 mb-6 sm:mb-8">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center gap-1.5 sm:gap-3 bg-blue-50 border border-blue-200 rounded-full px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 mb-4 sm:mb-8">
+              <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span className="text-blue-700 text-xs sm:text-sm font-medium">News, Guides & Best Practices</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-4 sm:mb-6 px-2">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-3 sm:mb-6 px-1">
               The Power CA
               <br />
               <span className="text-blue-600">Blog</span>
@@ -243,31 +243,31 @@ export default function BlogPageClient() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
+            <p className="text-xs sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto mb-6 sm:mb-10 md:mb-12 px-1 leading-relaxed">
               Your go-to space for best practices, productivity ideas, and the latest updates in audit and practice management.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
+          <div className="flex gap-1.5 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
             <div className="relative flex-1">
-              <Search className="absolute left-3 sm:left-4 md:left-5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-2.5 sm:left-4 md:left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-12 sm:h-14 md:h-16 rounded-xl sm:rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-10 sm:pl-12 md:pl-14 pr-3 sm:pr-4 md:pr-6 text-sm sm:text-base md:text-lg text-gray-800 placeholder:text-sm sm:placeholder:text-base md:placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                className="w-full h-10 sm:h-14 md:h-16 rounded-lg sm:rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-8 sm:pl-12 md:pl-14 pr-2 sm:pr-4 md:pr-6 text-xs sm:text-base md:text-lg text-gray-800 placeholder:text-xs sm:placeholder:text-base md:placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
             </div>
             <div className="relative flex items-center">
               <button
                 type="button"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
+                className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_8px_20px_rgba(20,79,237,0.35)] sm:shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
                 aria-label="Toggle filters"
               >
-                <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6" />
               </button>
 
               {showFilterDropdown && (
@@ -359,10 +359,10 @@ export default function BlogPageClient() {
 
       {/* Content Section */}
       <section className="py-0">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
           {/* Categories */}
-          <div className="mb-12 pt-20 pb-5">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-6 sm:mb-8 text-center leading-normal px-2">
+          <div className="mb-8 sm:mb-12 pt-12 sm:pt-20 pb-4 sm:pb-5">
+            <h2 className="text-xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-8 text-center leading-normal px-2">
               Explore Trending Topics
             </h2>
             <div className="relative flex items-center justify-center px-4 sm:px-8">
@@ -426,7 +426,7 @@ export default function BlogPageClient() {
 
           {/* Blog Posts Grid */}
           {!loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-6 sm:pb-8">
               {currentPosts.map((post) => {
               const postContent = (
                 <>
@@ -434,7 +434,7 @@ export default function BlogPageClient() {
                     post.isBreaking
                       ? 'bg-gradient-to-br from-red-500 to-orange-600'
                       : 'bg-gradient-to-br from-blue-500 to-blue-600'
-                  }`}>
+                  }`} style={{ borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}>
                     {post.image && (
                       <Image
                         src={post.image}
@@ -446,58 +446,62 @@ export default function BlogPageClient() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     {post.isBreaking && (
-                      <div className="absolute top-4 right-4 bg-yellow-400 text-red-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
-                        <AlertCircle className="w-3 h-3" />
-                        BREAKING
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-yellow-400 text-red-900 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
+                        <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">BREAKING</span>
+                        <span className="sm:hidden">NEW</span>
                       </div>
                     )}
-                    <div className="absolute bottom-4 left-4">
+                    <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
                       <span className={`${
                         post.isBreaking ? 'bg-red-600/90' : 'bg-blue-600/90'
-                      } text-white text-xs font-medium px-3 py-1 rounded-full`}>
+                      } text-white text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-3 sm:py-1 rounded-full`}>
                         {categoryNameLookup.get(post.category) || formatCategoryName(post.category)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <div className="p-3 sm:p-6 md:flex md:flex-col md:flex-1">
+                    <h3 className="text-sm sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                       {post.title}
                     </h3>
                     {post.subtitle && (
-                      <p className="text-gray-700 mb-3 text-base font-medium line-clamp-1">
+                      <p className="text-gray-700 mb-1.5 sm:mb-3 text-xs sm:text-base font-medium line-clamp-1">
                         {post.subtitle}
                       </p>
                     )}
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+                    <p className="text-gray-600 mb-2 sm:mb-4 line-clamp-2 text-[11px] sm:text-sm leading-relaxed md:flex-1">
                       {post.excerpt}
                     </p>
 
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            post.isBreaking
-                              ? 'bg-gradient-to-r from-red-400 to-orange-600'
-                              : 'bg-gradient-to-r from-blue-400 to-blue-600'
-                          }`}>
-                            <User className="w-4 h-4 text-white" />
+                    <div className="md:mt-auto">
+                      <div className="flex items-center justify-between text-[10px] sm:text-sm text-gray-500 mb-2 sm:mb-4">
+                        <div className="flex items-center gap-1.5 sm:gap-4">
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <div className={`w-5 h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
+                              post.isBreaking
+                                ? 'bg-gradient-to-r from-red-400 to-orange-600'
+                                : 'bg-gradient-to-r from-blue-400 to-blue-600'
+                            }`}>
+                              <User className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white" />
+                            </div>
+                            <span className="font-medium truncate max-w-[80px] sm:max-w-none">{post.author}</span>
                           </div>
-                          <span className="font-medium">{post.author}</span>
                         </div>
+                        <span className="text-blue-600 font-medium whitespace-nowrap text-[10px] sm:text-sm">{post.readTime}</span>
                       </div>
-                      <span className="text-blue-600 font-medium">{post.readTime}</span>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-sm">{post.date}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-500">
+                          <Calendar className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
+                          <span className="text-[10px] sm:text-sm">{post.date}</span>
+                        </div>
+                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0 text-[10px] sm:text-sm h-auto">
+                          <span className="hidden sm:inline">Read More</span>
+                          <span className="sm:hidden">Read</span>
+                          <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1" />
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                        Read More
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
                     </div>
                   </div>
                 </>
@@ -505,16 +509,17 @@ export default function BlogPageClient() {
 
               return post.link ? (
                 <Link href={post.link} key={post.id}>
-                  <article className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer ${
-                    post.isBreaking ? 'border-red-200 ring-2 ring-red-100' : 'border-gray-100'
-                  }`}>
+                  <article className={`bg-white shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer md:h-full md:flex md:flex-col ${
+                    post.isBreaking ? 'border-red-200 ring-1 sm:ring-2 ring-red-100' : 'border-gray-100'
+                  }`} style={{ borderRadius: '16px' }}>
                     {postContent}
                   </article>
                 </Link>
               ) : (
                 <article
                   key={post.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                  className="bg-white shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group md:h-full md:flex md:flex-col"
+                  style={{ borderRadius: '16px' }}
                 >
                   {postContent}
                 </article>
@@ -525,9 +530,9 @@ export default function BlogPageClient() {
 
           {/* Pagination */}
           {!loading && filteredPosts.length > 0 && totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-8 px-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 py-6 sm:py-8 px-2 sm:px-4">
               {/* Results Info */}
-              <div className="text-sm text-gray-600 order-2 sm:order-1">
+              <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
                 Showing <span className="font-semibold text-gray-900">{startIndex + 1}</span> to{' '}
                 <span className="font-semibold text-gray-900">{Math.min(endIndex, filteredPosts.length)}</span> of{' '}
                 <span className="font-semibold text-gray-900">{filteredPosts.length}</span> articles
@@ -539,29 +544,29 @@ export default function BlogPageClient() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className={`px-2 sm:px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-0.5 sm:gap-1 ${
                     currentPage === 1
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
                   }`}
                   aria-label="Previous page"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Previous</span>
                 </button>
 
                 {/* Page Numbers */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                   {getPageNumbers().map((page, index) => (
                     page === '...' ? (
-                      <span key={`ellipsis-${index}`} className="px-2 py-2 text-gray-400">
+                      <span key={`ellipsis-${index}`} className="px-1 sm:px-2 py-1.5 sm:py-2 text-gray-400 text-xs sm:text-sm">
                         ...
                       </span>
                     ) : (
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page as number)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-sm font-medium transition-all ${
+                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                           currentPage === page
                             ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
                             : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
@@ -577,7 +582,7 @@ export default function BlogPageClient() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className={`px-2 sm:px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-0.5 sm:gap-1 ${
                     currentPage === totalPages
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
@@ -585,7 +590,7 @@ export default function BlogPageClient() {
                   aria-label="Next page"
                 >
                   <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>

@@ -10,6 +10,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import { Loader2, Calendar, Search, Eye, RefreshCw, Phone, Mail, User, Clock } from 'lucide-react'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface Booking {
   id: string
@@ -31,6 +32,8 @@ export default function AdminBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchBookings = useCallback(async () => {
     if (!isAuthenticated) {
@@ -213,7 +216,9 @@ export default function AdminBookingsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredBookings.map((booking) => (
+                      {filteredBookings
+                        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                        .map((booking) => (
                         <TableRow key={booking.id}>
                           <TableCell>
                             <div>
@@ -302,7 +307,9 @@ export default function AdminBookingsPage() {
 
                 {/* Mobile Card View - Professional Design */}
                 <div className="md:hidden space-y-3">
-                  {filteredBookings.map((booking) => (
+                  {filteredBookings
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((booking) => (
                     <Card key={booking.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -431,6 +438,15 @@ export default function AdminBookingsPage() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Pagination */}
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredBookings.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  itemName="bookings"
+                />
               </>
             )}
           </CardContent>

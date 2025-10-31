@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, RefreshCw, Download, Mail, UserCheck, TrendingUp, Search } from 'lucide-react'
 import { format } from 'date-fns'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface NewsletterSubscriber {
   id: string
@@ -29,6 +30,8 @@ export default function NewsletterSubscribersPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchSubscribers = useCallback(async () => {
     if (!isAuthenticated) {
@@ -281,7 +284,9 @@ export default function NewsletterSubscribersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSubscribers.map((subscriber) => (
+                    {filteredSubscribers
+                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                      .map((subscriber) => (
                       <TableRow key={subscriber.id}>
                         <TableCell className="font-medium">{subscriber.email}</TableCell>
                         <TableCell>
@@ -309,7 +314,9 @@ export default function NewsletterSubscribersPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                {filteredSubscribers.map((subscriber) => (
+                {filteredSubscribers
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((subscriber) => (
                   <Card key={subscriber.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="space-y-3">
@@ -351,13 +358,16 @@ export default function NewsletterSubscribersPage() {
                   </Card>
                 ))}
               </div>
-            </>
-          )}
 
-          {subscribers.length > 0 && (
-            <div className="mt-4 text-sm text-gray-600">
-              Showing {filteredSubscribers.length} of {subscribers.length} total subscribers
-            </div>
+              {/* Pagination */}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredSubscribers.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="subscribers"
+              />
+            </>
           )}
         </CardContent>
       </Card>

@@ -12,6 +12,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {Loader2, RefreshCw, Download, Users, UserCheck, TrendingUp, Search, Eye, GraduationCap, User, Mail, Phone  } from 'lucide-react'
 import { format } from 'date-fns'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface Registration {
   id: string
@@ -52,6 +53,8 @@ export default function AdminRegistrationsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
   const [stats, setStats] = useState({
     total: 0,
     professionals: 0,
@@ -355,7 +358,9 @@ export default function AdminRegistrationsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredRegistrations.map((registration) => (
+                      {filteredRegistrations
+                        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                        .map((registration) => (
                         <TableRow key={registration.id}>
                           <TableCell className="font-medium">{registration.name || '-'}</TableCell>
                           <TableCell>{registration.email || '-'}</TableCell>
@@ -482,7 +487,9 @@ export default function AdminRegistrationsPage() {
 
                 {/* Mobile Card View - Professional Design */}
                 <div className="md:hidden space-y-3">
-                  {filteredRegistrations.map((registration) => (
+                  {filteredRegistrations
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((registration) => (
                     <Card key={registration.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -641,13 +648,16 @@ export default function AdminRegistrationsPage() {
                     </Card>
                   ))}
                 </div>
-              </>
-            )}
 
-            {registrations.length > 0 && (
-              <div className="mt-4 text-sm text-gray-600">
-                Showing {filteredRegistrations.length} of {registrations.length} total registrations
-              </div>
+                {/* Pagination */}
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredRegistrations.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  itemName="registrations"
+                />
+              </>
             )}
           </CardContent>
         </Card>

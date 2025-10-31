@@ -5,9 +5,8 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
-import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
   DropdownMenuContent,
@@ -77,12 +76,6 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Star, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
   },
-  {
-    title: 'System',
-    items: [
-      { title: 'Settings', href: '/admin/settings', icon: Settings },
-    ]
-  }
 ]
 
 export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
@@ -312,24 +305,6 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
 
-              {/* Search Bar - Hidden on small mobile, visible on tablet+ */}
-              <div className="relative w-48 sm:w-64 md:w-80 lg:w-96 hidden sm:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="pl-10 bg-gray-50 h-9 text-sm border-gray-200"
-                />
-              </div>
-
-              {/* Mobile Search Icon */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="sm:hidden hover:bg-gray-100"
-              >
-                <Search className="h-5 w-5 text-gray-600" />
-              </Button>
             </div>
 
             {/* Right Section - Mobile optimized */}
@@ -353,10 +328,6 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                   <DropdownMenuItem className="cursor-pointer">
                     <Users className="mr-2 h-4 w-4" />
                     <span className="text-sm">Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span className="text-sm">Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">

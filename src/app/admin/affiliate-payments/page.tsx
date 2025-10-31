@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface AffiliatePayment {
   id: string
@@ -78,6 +79,8 @@ export default function AffiliatePaymentsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -367,7 +370,9 @@ export default function AffiliatePaymentsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPayments.map((payment) => (
+                {filteredPayments
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(payment.payment_completed_at || payment.created_at)}
@@ -440,7 +445,9 @@ export default function AffiliatePaymentsPage() {
 
                 {/* Mobile Card View - Professional Design */}
                 <div className="md:hidden p-4 space-y-3">
-                  {filteredPayments.map((payment) => (
+                  {filteredPayments
+                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                    .map((payment) => (
                     <Card key={payment.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -516,6 +523,15 @@ export default function AffiliatePaymentsPage() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Pagination */}
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredPayments.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  itemName="payments"
+                />
               </>
             )}
           </CardContent>

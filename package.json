@@ -85,7 +85,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
     "react-resizable-panels": "^3.0.6",
-    "recharts": "^3.2.1",
+    "recharts": "^3.3.0",
     "resend": "^6.0.3",
     "resize-observer-polyfill": "^1.5.1",
     "smoothscroll-polyfill": "^0.4.4",
