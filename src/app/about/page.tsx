@@ -30,16 +30,15 @@ export default function AboutPage() {
     { name: 'Arul Maniam TS', role: 'Founder', category: 'founder', image: '/images/team/arul-maniam-ca.jpg', initials: 'AM' },
     { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/team/karthikeyan-r.jpg', initials: 'KR' },
     { name: 'Thirunavukkarasu M', role: 'Manager', category: 'manager', image: '/images/team/thirunavukkarasu.jpg', initials: 'TM' },
-    { name: 'Sangeetha P', role: 'Developer', category: 'developers', image: '/images/team/sangeetha-p.jpg', initials: 'SP' },
+    { name: 'Jagatheeshwari', role: 'Admin', category: 'admin', image: null, initials: 'JW' },
     { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: '/images/team/mansur-ali-b.jpg', initials: 'MA' },
     { name: 'Maheshwari R', role: 'Developer', category: 'developers', image: '/images/team/maheshwari-r.jpg', initials: 'MW' },
     { name: 'Vanithamani D', role: 'Developer', category: 'developers', image: '/images/team/vanithamani-d.jpg', initials: 'VD' },
     { name: 'Karthikeyan G', role: 'Web Designer', category: 'webdesigner', image: '/images/team/karthikeyan-g.jpg', initials: 'KG' },
     { name: 'Nikila R', role: 'Web Designer', category: 'webdesigner', image: null, initials: 'NR' },
-    { name: 'Jegatheeshwari', role: 'Admin', category: 'admin', image: null, initials: 'JW' },
     { name: 'Ramajayanthi', role: 'Customer Support', category: 'customersupport', image: null, initials: 'RJ' },
-    { name: 'Kalishwari', role: 'Testing', category: 'testing', image: null, initials: 'KL' },
-    { name: 'Satheeshkumar', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
+    { name: 'Kaleeswari', role: 'Testing', category: 'testing', image: null, initials: 'KL' },
+    { name: 'Satheshkumar', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
   ]
 
   // Filter categories
@@ -381,13 +380,13 @@ export default function AboutPage() {
                       animation: 'slideInFromRight 0.5s ease-out'
                     }}
                   >
-                    <div className={`w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
+                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
                       {member.image ? (
                         <Image
                           src={member.image}
                           alt={member.name}
                           width={300}
-                          height={288}
+                          height={300}
                           className="w-full h-full object-cover"
                         />
                       ) : (

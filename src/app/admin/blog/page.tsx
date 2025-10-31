@@ -455,6 +455,8 @@ export default function AdminBlogPage() {
           <Button
             size="sm"
             onClick={() => handleOpenDialog()}
+            style={{ backgroundColor: '#2563eb' }}
+            className="hover:opacity-90 text-white"
           >
             <Plus className="mr-2 h-4 w-4" />
             New Blog Post
@@ -462,51 +464,44 @@ export default function AdminBlogPage() {
         </div>
       }
     >
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-6">
+      {/* Statistics Cards - 2 Columns */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Posts</p>
-                <p className="text-3xl font-bold text-gray-900">{posts.length}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Posts</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{posts.length}</p>
+                <p className="text-xs text-gray-500 mt-1">All time</p>
               </div>
-              <FileText className="h-8 w-8 text-blue-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <FileText className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Published</p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Published</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">
                   {posts.filter(p => p.is_published).length}
                 </p>
+                <p className="text-xs text-gray-500 mt-1">Live now</p>
               </div>
-              <Eye className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Drafts</p>
-                <p className="text-3xl font-bold text-orange-600">
-                  {posts.filter(p => !p.is_published).length}
-                </p>
+              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                <Eye className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
               </div>
-              <Edit className="h-8 w-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Blog Posts Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Blog Posts</CardTitle>
+      {/* Blog Posts Table - Enhanced */}
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg sm:text-xl font-bold">All Blog Posts</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -516,17 +511,21 @@ export default function AdminBlogPage() {
           )}
 
           {loading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-12">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
               <p className="mt-2 text-gray-600">Loading blog posts...</p>
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No blog posts found. Create your first one!
+            <div className="text-center py-16">
+              <FileText className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Blog Posts Yet</h3>
+              <p className="text-gray-500">Create your first blog post to get started</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>TITLE</TableHead>
@@ -588,6 +587,82 @@ export default function AdminBlogPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Mobile Card View - Professional Design */}
+            <div className="md:hidden space-y-3">
+                {posts.map((post) => (
+                  <Card key={post.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Title and Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-sm text-gray-900 line-clamp-2">{post.title}</p>
+                                <p className="text-xs text-gray-500 truncate">{post.slug}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1 flex-shrink-0">
+                            {post.is_published ? (
+                              <Badge className="bg-green-500 text-xs">Published</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs">Draft</Badge>
+                            )}
+                            {post.is_breaking && (
+                              <Badge className="bg-red-500 text-xs">Breaking</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Category and Date */}
+                        <div className="bg-gray-50 rounded-lg p-2.5">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-gray-500">Category</p>
+                              <Badge variant="outline" className="text-xs mt-1">{formatCategory(post.category)}</Badge>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500">Published</p>
+                              <p className="text-xs font-medium text-gray-900 mt-1">
+                                {post.published_at
+                                  ? format(new Date(post.published_at), 'MMM dd, yyyy')
+                                  : '-'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-100">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenDialog(post)}
+                            className="flex-1 bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDelete(post.id)}
+                            className="px-3 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </>
           )}
         </CardContent>
       </Card>
@@ -602,7 +677,7 @@ export default function AdminBlogPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Title *</label>
+              <label className="block text-sm font-medium mb-2">Title <span className="text-red-500">*</span></label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -611,7 +686,7 @@ export default function AdminBlogPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Subtitle *</label>
+              <label className="block text-sm font-medium mb-2">Subtitle <span className="text-red-500">*</span></label>
               <Input
                 value={formData.subtitle}
                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
@@ -620,7 +695,7 @@ export default function AdminBlogPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Excerpt *</label>
+              <label className="block text-sm font-medium mb-2">Excerpt <span className="text-red-500">*</span></label>
               <Textarea
                 value={formData.excerpt}
                 onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
@@ -630,7 +705,7 @@ export default function AdminBlogPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Content *</label>
+              <label className="block text-sm font-medium mb-2">Content <span className="text-red-500">*</span></label>
               <RichTextEditor
                 value={formData.content}
                 onChange={(value) => setFormData({ ...formData, content: value })}
@@ -718,13 +793,13 @@ export default function AdminBlogPage() {
 
             {/* Documents Section */}
             <div className="border-t pt-4">
-              <label className="block text-sm font-medium mb-3">Attach Documents *</label>
+              <label className="block text-sm font-medium mb-3">Attach Documents</label>
               <p className="text-xs text-gray-500 mb-3">Add downloadable resources like PDFs, checklists, or forms</p>
               {documents.map((doc, index) => (
                 <div key={index} className="flex flex-col gap-2 mb-4 p-3 border rounded-lg bg-gray-50">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Document title * (e.g., CBDT Notification PDF)"
+                      placeholder="Document title (e.g., CBDT Notification PDF)"
                       value={doc.title}
                       onChange={(e) => {
                         const newDocs = [...documents]

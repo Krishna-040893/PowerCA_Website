@@ -214,9 +214,9 @@ export default function AffiliateProfilePage() {
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-gray-50">
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
               {/* Profile Photo Upload Component */}
               <div className="flex-shrink-0">
                 <ProfilePhotoUpload
@@ -228,15 +228,15 @@ export default function AffiliateProfilePage() {
                 />
               </div>
 
-              <div className="flex flex-col justify-center">
-                <h1 className="text-2xl font-bold text-gray-900">
+              <div className="flex flex-col justify-center items-center sm:items-start text-center sm:text-left w-full sm:w-auto">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                   {affiliateData.full_name}
                 </h1>
-                <p className="text-sm text-gray-500">{affiliateData.email}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none mx-auto sm:mx-0">{affiliateData.email}</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1">
                   {getStatusBadge(affiliateData.status)}
                   {affiliateData.referral_code && (
-                    <span className="text-sm text-green-600 font-mono font-semibold">
+                    <span className="text-xs sm:text-sm text-green-600 font-mono font-semibold">
                       Code: {affiliateData.referral_code}
                     </span>
                   )}
@@ -247,7 +247,7 @@ export default function AffiliateProfilePage() {
               variant="outline"
               size="sm"
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-gray-600 hover:text-red-600 hover:border-red-300"
+              className="text-gray-600 hover:text-red-600 hover:border-red-300 w-full sm:w-auto"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
@@ -257,51 +257,54 @@ export default function AffiliateProfilePage() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          {/* Individual Spaced Tabs */}
-          <TabsList className="flex flex-wrap gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 max-w-6xl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-8">
+          {/* Individual Spaced Tabs - responsive */}
+          <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
             <TabsTrigger
               value="profile"
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
             >
-              <User className="h-4 w-4 mr-2" />
-              Profile Information
+              <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Profile Information</span>
+              <span className="sm:hidden">Profile</span>
             </TabsTrigger>
             <TabsTrigger
               value="affiliate"
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
             >
-              <Shield className="h-4 w-4 mr-2" />
-              Affiliate Details
+              <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Affiliate Details</span>
+              <span className="sm:hidden">Affiliate</span>
             </TabsTrigger>
             <TabsTrigger
               value="payment"
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200"
+              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
             >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Payment Information
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Payment Information</span>
+              <span className="sm:hidden">Payment</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Information Tab */}
-          <TabsContent value="profile" className="space-y-6 mt-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-green-600/15 border-b py-6">
-                <div className="flex items-center justify-between">
+          <TabsContent value="profile" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <Card className="shadow-lg border-0 rounded-xl">
+              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                      <User className="h-5 w-5 text-green-600" />
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                       Profile Information
                     </CardTitle>
-                    <CardDescription>Your personal and business details</CardDescription>
+                    <CardDescription className="text-xs sm:text-sm mt-1">Your personal and business details</CardDescription>
                   </div>
                   {!isEditingProfile && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleEditProfile}
-                      className="border-green-300 text-green-700 hover:bg-green-50"
+                      className="border-green-300 text-green-700 hover:bg-green-50 w-full sm:w-auto"
                     >
                       <Edit2 className="h-4 w-4 mr-2" />
                       Edit
@@ -309,8 +312,8 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Full Name */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-700">Full Name</Label>
@@ -437,12 +440,13 @@ export default function AffiliateProfilePage() {
                 </div>
 
                 {isEditingProfile && (
-                  <div className="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCancelEdit}
                       disabled={isSaving}
+                      className="w-full sm:w-auto"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
@@ -451,7 +455,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>
@@ -472,23 +476,23 @@ export default function AffiliateProfilePage() {
           </TabsContent>
 
           {/* Affiliate Details Tab */}
-          <TabsContent value="affiliate" className="space-y-6 mt-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-green-600/15 border-b py-6">
-                <div className="flex items-center justify-between">
+          <TabsContent value="affiliate" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <Card className="shadow-lg border-0 rounded-xl">
+              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                      <Shield className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                       Affiliate Details
                     </CardTitle>
-                    <CardDescription>Your affiliate marketing strategy and goals</CardDescription>
+                    <CardDescription className="text-xs sm:text-sm mt-1">Your affiliate marketing strategy and goals</CardDescription>
                   </div>
                   {!isEditingAffiliate && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleEditAffiliate}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50 w-full sm:w-auto"
                     >
                       <Edit2 className="h-4 w-4 mr-2" />
                       Edit
@@ -496,10 +500,10 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-6">
+              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Affiliate Status & Referral Code */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-4 sm:pb-6 border-b">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">Affiliate Status</Label>
                       <div>
@@ -564,12 +568,13 @@ export default function AffiliateProfilePage() {
                 </div>
 
                 {isEditingAffiliate && (
-                  <div className="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCancelEdit}
                       disabled={isSaving}
+                      className="w-full sm:w-auto"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
@@ -578,7 +583,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>
@@ -599,23 +604,23 @@ export default function AffiliateProfilePage() {
           </TabsContent>
 
           {/* Payment Information Tab */}
-          <TabsContent value="payment" className="space-y-6 mt-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-green-600/15 border-b py-6">
-                <div className="flex items-center justify-between">
+          <TabsContent value="payment" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <Card className="shadow-lg border-0 rounded-xl">
+              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                       Payment Information
                     </CardTitle>
-                    <CardDescription>Your bank and tax details for commission payments</CardDescription>
+                    <CardDescription className="text-xs sm:text-sm mt-1">Your bank and tax details for commission payments</CardDescription>
                   </div>
                   {!isEditingPayment && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleEditPayment}
-                      className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                      className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto"
                     >
                       <Edit2 className="h-4 w-4 mr-2" />
                       Edit
@@ -623,8 +628,8 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Account Number */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-700">Bank Account Number</Label>
@@ -686,21 +691,22 @@ export default function AffiliateProfilePage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <p className="text-sm text-purple-800">
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-100">
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
+                    <p className="text-xs sm:text-sm text-purple-800">
                       <strong>Note:</strong> Your bank account details will be used for monthly commission payouts. Please ensure all information is accurate.
                     </p>
                   </div>
                 </div>
 
                 {isEditingPayment && (
-                  <div className="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCancelEdit}
                       disabled={isSaving}
+                      className="w-full sm:w-auto"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
@@ -709,7 +715,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>

@@ -121,14 +121,13 @@ export default function AdminPage() {
           <AdminStats stats={stats} isLoading={false} />
         </motion.div>
 
-        {/* HubSpot Integration */}
+        {/* HubSpot Integration - Mobile optimized */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
             <HubSpotMetricsCard />
             <HubSpotBulkSync />
           </div>

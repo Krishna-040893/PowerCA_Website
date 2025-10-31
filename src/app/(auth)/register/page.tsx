@@ -309,7 +309,7 @@ export default function RegisterPage() {
                 {/* Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-900 font-medium">
-                    Name
+                    Name <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -334,7 +334,7 @@ export default function RegisterPage() {
                 {/* Mobile Field */}
                 <div className="space-y-2">
                   <Label htmlFor="mobile" className="text-gray-900 font-medium">
-                    Mobile Number
+                    Mobile Number <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -359,7 +359,7 @@ export default function RegisterPage() {
                 {/* Professional Type */}
                 {userType === 'professional' && (
                   <div className="space-y-3">
-                    <Label className="text-gray-900 font-medium">Professional</Label>
+                    <Label className="text-gray-900 font-medium">Professional <span className="text-red-500">*</span></Label>
                     <RadioGroup
                       value={formData.professionalType}
                       onValueChange={(value) => handleInputChange('professionalType', value)}
@@ -391,7 +391,7 @@ export default function RegisterPage() {
                 {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-gray-900 font-medium">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -417,7 +417,7 @@ export default function RegisterPage() {
                 {userType === 'professional' && (
                   <div className="space-y-2">
                     <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
-                      Membership No
+                      Membership No <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -442,7 +442,7 @@ export default function RegisterPage() {
                 {/* Password Field */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-gray-900 font-medium">
-                    Password
+                    Password <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />

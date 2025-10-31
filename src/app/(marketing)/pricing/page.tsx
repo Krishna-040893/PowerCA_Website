@@ -12,6 +12,7 @@ export default function PricingPage() {
   const subscriptionStatus = useSubscription()
   const searchParams = useSearchParams()
   const [referralInfo, setReferralInfo] = useState<{ ref?: string; cus?: string } | null>(null)
+  const [isValidReferral, setIsValidReferral] = useState(false)
 
   // Check if user is an affiliate
   const isAffiliate = session?.user?.role === 'Affiliate' || session?.user?.role === 'affiliate'
@@ -42,6 +43,44 @@ export default function PricingPage() {
     }
   }, [searchParams])
 
+  // Verify if the logged-in user actually matches this referral
+  useEffect(() => {
+    const verifyReferral = async () => {
+      if (!session?.user?.email || !referralInfo?.ref || !referralInfo?.cus) {
+        setIsValidReferral(false)
+        return
+      }
+
+      try {
+        // Fetch user's actual referral info from database
+        const response = await fetch('/api/user/referral-info')
+        const data = await response.json()
+
+        if (data.hasReferral && data.referralInfo) {
+          // Check if the URL parameters match the user's actual referral
+          const matchesRef = data.referralInfo.referralCode === referralInfo.ref
+          const matchesCus = data.referralInfo.customerId === referralInfo.cus
+
+          setIsValidReferral(matchesRef && matchesCus)
+
+          if (matchesRef && matchesCus) {
+            console.log('✅ Referral verified: User matches the referral parameters')
+          } else {
+            console.log('❌ Referral mismatch: URL parameters do not match user\'s actual referral')
+          }
+        } else {
+          setIsValidReferral(false)
+          console.log('ℹ️ No referral found for this user')
+        }
+      } catch (error) {
+        console.error('Error verifying referral:', error)
+        setIsValidReferral(false)
+      }
+    }
+
+    verifyReferral()
+  }, [session, referralInfo])
+
   const handleLaunchOfferPurchase = () => {
     if (!session) {
       // Build callback URL with referral params
@@ -70,8 +109,8 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Affiliate Referral Banner */}
-      {referralInfo?.ref && (
+      {/* Affiliate Referral Banner - Only show if user is logged in and referral is verified */}
+      {session && isValidReferral && referralInfo?.ref && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-200">
           <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-center gap-2 sm:gap-3">

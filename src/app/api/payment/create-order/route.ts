@@ -44,7 +44,14 @@ export async function POST(req: NextRequest) {
       planId,
       affiliateCode,
       customerDetails,
-      referralInfo // New field for affiliate referral tracking
+      referralInfo, // New field for affiliate referral tracking
+      // Extract address fields from body
+      country,
+      address,
+      city,
+      state,
+      postcode,
+      gstNo
     } = body
 
     // Validate amount is provided
@@ -113,7 +120,14 @@ export async function POST(req: NextRequest) {
             // Add referral tracking
             referral_code: referralInfo?.referralCode || null,
             customer_id: referralInfo?.customerId || null,
-            is_affiliate_purchase: !!referralInfo?.referralCode
+            is_affiliate_purchase: !!referralInfo?.referralCode,
+            // Add address fields
+            customer_address: address || body.address,
+            customer_city: city || body.city,
+            customer_state: state || body.state,
+            customer_postcode: postcode || body.postcode,
+            customer_country: country || body.country,
+            customer_gst_no: gstNo || body.gstNo || customerDetails?.gst
           })
 
         if (error) {

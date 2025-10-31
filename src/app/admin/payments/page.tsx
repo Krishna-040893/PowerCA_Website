@@ -282,81 +282,93 @@ export default function AdminPaymentsPage() {
         </Button>
       }
     >
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        <Card>
+      {/* Stats Overview - 2 Columns on Mobile, 4 on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <Card className="border border-gray-100 shadow-sm">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Payments</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Payments</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">All transactions</p>
               </div>
-              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-gray-100 shadow-sm">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Successful</p>
-                <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.paid}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Successful</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
+                <p className="text-xs text-gray-500 mt-1">Completed</p>
               </div>
-              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-gray-100 shadow-sm">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Failed</p>
-                <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.failed}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Failed</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.failed}</p>
+                <p className="text-xs text-gray-500 mt-1">Declined</p>
               </div>
-              <XCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-red-50">
+                <XCircle className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-gray-100 shadow-sm">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
+                <p className="text-xs text-gray-500 mt-1">Earned</p>
               </div>
-              <IndianRupee className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-indigo-50">
+                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-indigo-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Payments Table */}
-      <Card>
-        <CardHeader>
+      {/* Payments Table - Enhanced */}
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle className="text-lg sm:text-xl">All Payments</CardTitle>
-              <CardDescription className="text-sm">View and manage payment transactions</CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">All Payments</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1">View and manage payment transactions</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
+          {/* Filters - Enhanced Mobile */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search by name, email, order ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 text-sm"
+                className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-full sm:w-48 h-10 border-gray-200">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent className="bg-white">

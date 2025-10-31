@@ -54,6 +54,24 @@ export default function LoginPage() {
           return
         }
 
+        // Check if user has a pending affiliate referral
+        try {
+          const referralResponse = await fetch('/api/user/referral-info')
+          const referralData = await referralResponse.json()
+
+          if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
+            // User has a pending referral, redirect to pricing with referral parameters
+            const { referralCode, customerId } = referralData.referralInfo
+            const redirectUrl = `/pricing?ref=${referralCode}&cus=${customerId}`
+            console.log('🔗 Redirecting to pricing with referral:', redirectUrl)
+            window.location.href = redirectUrl
+            return
+          }
+        } catch (referralError) {
+          console.error('Error checking referral info:', referralError)
+          // Continue with normal redirect if referral check fails
+        }
+
         // Use window.location.href for full page reload to ensure session is established
         window.location.href = callbackUrl
       } else {

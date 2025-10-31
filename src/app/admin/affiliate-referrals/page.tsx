@@ -217,69 +217,81 @@ export default function AffiliateReferralsPage() {
       <div>
         {/* Stats removed from here as they'll be in the page content */}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 -mt-2">
-          <Card>
-            <CardContent className="p-6">
+        {/* Summary Cards - Enhanced Mobile Design */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Referrals</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalStats.total}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Referrals</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{totalStats.total}</p>
+                  <p className="text-xs text-gray-500 mt-1">All referrals</p>
                 </div>
-                <Users className="w-10 h-10 text-blue-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Pending</p>
-                  <p className="text-2xl font-bold text-orange-600">{totalStats.pending}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Pending</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-orange-600">{totalStats.pending}</p>
+                  <p className="text-xs text-gray-500 mt-1">Awaiting</p>
                 </div>
-                <Clock className="w-10 h-10 text-orange-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
+                  <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{totalStats.completed}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Completed</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-green-600">{totalStats.completed}</p>
+                  <p className="text-xs text-gray-500 mt-1">Successful</p>
                 </div>
-                <CheckCircle className="w-10 h-10 text-green-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Active Affiliates</p>
-                  <p className="text-2xl font-bold text-gray-900">{data.length}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Active Affiliates</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{data.length}</p>
+                  <p className="text-xs text-gray-500 mt-1">Partners</p>
                 </div>
-                <Users className="w-10 h-10 text-purple-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-purple-50">
+                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-purple-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
+        {/* Filters - Enhanced Mobile */}
+        <Card className="mb-5 shadow-sm border border-gray-100">
           <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="flex-1 relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search by affiliate name, email, customer name, referral code..."
+                  placeholder="Search affiliates, customers, codes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full"
+                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -287,10 +299,10 @@ export default function AffiliateReferralsPage() {
         </Card>
 
         {/* Main Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Referral Details by Affiliate</CardTitle>
-            <CardDescription>
+        <Card className="shadow-sm border border-gray-100">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg sm:text-xl font-bold">Referral Details by Affiliate</CardTitle>
+            <CardDescription className="text-xs sm:text-sm mt-1">
               Click on an affiliate to view their referral customers
             </CardDescription>
           </CardHeader>

@@ -138,47 +138,52 @@ export default function AdminBookingsPage() {
         </Button>
       }
     >
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                  <p className="text-3xl font-bold text-gray-900">{bookings.length}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-primary-600" />
+        {/* Stats Overview - Enhanced Mobile Design */}
+        <Card className="shadow-sm border border-gray-100 mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Bookings</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{bookings.length}</p>
+                <p className="text-xs text-gray-500 mt-1">All time</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <Calendar className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Bookings Table */}
-        <Card>
-          <CardHeader>
+        {/* Bookings Table - Enhanced */}
+        <Card className="shadow-sm border border-gray-100">
+          <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="text-lg sm:text-xl">All Bookings</CardTitle>
-                <CardDescription className="text-sm">View and manage demo bookings</CardDescription>
+                <CardTitle className="text-lg sm:text-xl font-bold">All Bookings</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-1">View and manage demo bookings</CardDescription>
               </div>
-              <Button onClick={fetchBookings} variant="outline" size="sm" className="w-full sm:w-auto">
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            {/* Search Filter */}
-            <div className="flex gap-2 sm:gap-4 mb-6">
+            {/* Search Filter - Enhanced Mobile */}
+            <div className="flex gap-2 mb-5">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Search by name, email or phone..."
+                  placeholder="Search bookings..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 text-sm"
+                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
+              <Button
+                onClick={fetchBookings}
+                variant="outline"
+                size="sm"
+                className="px-3 border-gray-200 hover:bg-gray-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
             </div>
 
             {/* Table / Cards */}
@@ -295,91 +300,126 @@ export default function AdminBookingsPage() {
                   </Table>
                 </div>
 
-                {/* Mobile Card View */}
-                <div className="md:hidden space-y-4">
+                {/* Mobile Card View - Professional Design */}
+                <div className="md:hidden space-y-3">
                   {filteredBookings.map((booking) => (
-                    <Card key={booking.id} className="border shadow-sm">
+                    <Card key={booking.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {/* Name and Firm */}
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="font-semibold text-base">{booking.name}</p>
-                              {booking.firm_name && (
-                                <p className="text-sm text-gray-500">{booking.firm_name}</p>
-                              )}
+                          {/* Name and Type Badge */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                  <User className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 truncate">{booking.name}</p>
+                                  {booking.firm_name && (
+                                    <p className="text-xs text-gray-500 truncate">{booking.firm_name}</p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <Badge variant="outline" className="ml-2">{booking.type}</Badge>
+                            <Badge variant="outline" className="text-xs flex-shrink-0">{booking.type}</Badge>
                           </div>
 
-                          {/* Contact Info */}
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                              <span className="break-all">{booking.email}</span>
+                          {/* Contact Info - Compact */}
+                          <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                              <span className="text-xs text-gray-700 truncate">{booking.email}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                              <span>{booking.phone}</span>
-                            </div>
-                          </div>
-
-                          {/* Date and Time */}
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{booking.date}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{booking.time}</span>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                              <span className="text-xs text-gray-700">{booking.phone}</span>
                             </div>
                           </div>
 
-                          {/* Action Button */}
+                          {/* Date and Time - Enhanced */}
+                          <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                              <span className="font-medium">{booking.date}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <Clock className="h-3.5 w-3.5 text-green-500" />
+                              <span className="font-medium">{booking.time}</span>
+                            </div>
+                          </div>
+
+                          {/* Action Button - Enhanced */}
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedBooking(booking)}
-                                className="w-full bg-white hover:bg-gray-50"
+                                className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
                               >
                                 <Eye className="h-4 w-4 mr-2" />
-                                View Details
+                                View Full Details
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="bg-white max-w-[90vw] sm:max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>Booking Details</DialogTitle>
-                                <DialogDescription className="break-all">
-                                  Booking ID: {selectedBooking?.id}
+                            <DialogContent className="bg-white max-w-[90vw] sm:max-w-md rounded-xl">
+                              <DialogHeader className="border-b pb-3">
+                                <DialogTitle className="text-lg font-bold">Booking Details</DialogTitle>
+                                <DialogDescription className="text-xs text-gray-500 break-all">
+                                  ID: {selectedBooking?.id.substring(0, 8)}...
                                 </DialogDescription>
                               </DialogHeader>
                               {selectedBooking && (
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2">Customer Information</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><User className="inline h-4 w-4 mr-2" />{selectedBooking.name}</p>
-                                      <p className="break-all"><Mail className="inline h-4 w-4 mr-2" />{selectedBooking.email}</p>
-                                      <p><Phone className="inline h-4 w-4 mr-2" />{selectedBooking.phone}</p>
-                                      {selectedBooking.firm_name && (
-                                        <p className="text-gray-600">Firm: {selectedBooking.firm_name}</p>
-                                      )}
+                                <div className="space-y-4 pt-2">
+                                  {/* Customer Section */}
+                                  <div className="bg-blue-50 rounded-lg p-3">
+                                    <h4 className="font-semibold text-sm text-blue-900 mb-2.5 flex items-center gap-2">
+                                      <User className="h-4 w-4" />
+                                      Customer Information
+                                    </h4>
+                                    <div className="space-y-2">
+                                      <div className="flex items-start gap-2">
+                                        <User className="h-3.5 w-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                          <p className="text-sm font-medium text-gray-900">{selectedBooking.name}</p>
+                                          {selectedBooking.firm_name && (
+                                            <p className="text-xs text-gray-600">{selectedBooking.firm_name}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Mail className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+                                        <p className="text-xs text-gray-700 break-all">{selectedBooking.email}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Phone className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+                                        <p className="text-xs text-gray-700">{selectedBooking.phone}</p>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2">Booking Information</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><Calendar className="inline h-4 w-4 mr-2" />{selectedBooking.date}</p>
-                                      <p><Clock className="inline h-4 w-4 mr-2" />{selectedBooking.time}</p>
+
+                                  {/* Booking Info Section */}
+                                  <div className="bg-green-50 rounded-lg p-3">
+                                    <h4 className="font-semibold text-sm text-green-900 mb-2.5 flex items-center gap-2">
+                                      <Calendar className="h-4 w-4" />
+                                      Booking Information
+                                    </h4>
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <Calendar className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+                                        <p className="text-sm font-medium text-gray-900">{selectedBooking.date}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Clock className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+                                        <p className="text-sm font-medium text-gray-900">{selectedBooking.time}</p>
+                                      </div>
                                     </div>
                                   </div>
+
+                                  {/* Message Section */}
                                   {selectedBooking.message && (
-                                    <div>
-                                      <h4 className="font-medium mb-2">Message</h4>
-                                      <p className="text-sm text-gray-600 break-words">{selectedBooking.message}</p>
+                                    <div className="bg-gray-50 rounded-lg p-3">
+                                      <h4 className="font-semibold text-sm text-gray-900 mb-2">Message</h4>
+                                      <p className="text-xs text-gray-700 leading-relaxed break-words">{selectedBooking.message}</p>
                                     </div>
                                   )}
                                 </div>

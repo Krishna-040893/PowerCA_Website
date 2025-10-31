@@ -69,11 +69,6 @@ export async function POST(request: NextRequest) {
     const password =
       typeof body.password === 'string' ? body.password.trim() : ''
 
-    const emailUsernameFallback = email.split('@')[0] || ''
-    const nameFallback = name.replace(/\s+/g, '')
-    const usernameFallback = emailUsernameFallback || nameFallback || 'user'
-    const username = normalizeUsername(body.username, usernameFallback)
-
     const professionalType =
       role === 'professional'
         ? normalizeString(
@@ -112,9 +107,9 @@ export async function POST(request: NextRequest) {
       finalMembershipNumber = 'NA'
     }
 
-    if (!name || !email || !username || !phone || !password) {
+    if (!name || !email || !phone || !password) {
       return NextResponse.json(
-        { error: 'Name, email, phone, username, and password are required.' },
+        { error: 'Name, email, phone, and password are required.' },
         { status: 400 }
       )
     }
@@ -153,7 +148,6 @@ export async function POST(request: NextRequest) {
     const registrationData = {
       name,
       email,
-      username,
       phone,
       password_hash: hashedPassword,
       role,
@@ -184,12 +178,6 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           )
         }
-        if (supabaseError.message.includes('username')) {
-          return NextResponse.json(
-            { error: 'Username already taken. Please try again.' },
-            { status: 400 }
-          )
-        }
       }
 
       return NextResponse.json(
@@ -198,12 +186,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If this is a referral signup, update the affiliate_referrals table
-    if (referralCode && customerId && newUser?.id) {
-      console.log('🔗 Linking referral:', { referralCode, customerId, userId: newUser.id })
+    // Check if email exists in affiliate_referrals table (regardless of referral link usage)
+    try {
+      console.log('🔍 Checking if email exists in affiliate referrals:', email)
 
-      try {
-        // Find and update the referral record
+      // First, check if this is a direct referral link signup
+      if (referralCode && customerId) {
+        console.log('🔗 Linking referral via URL params:', { referralCode, customerId, userId: newUser.id })
+
         const { data: referralRecord, error: referralFindError } = await supabase
           .from('affiliate_referrals')
           .select('*')
@@ -212,9 +202,7 @@ export async function POST(request: NextRequest) {
           .eq('referred_email', email)
           .single()
 
-        if (referralFindError) {
-          console.error('❌ Error finding referral record:', referralFindError)
-        } else if (referralRecord) {
+        if (!referralFindError && referralRecord) {
           // Update the referral record with user details
           const { error: referralUpdateError } = await supabase
             .from('affiliate_referrals')
@@ -222,22 +210,53 @@ export async function POST(request: NextRequest) {
               referred_user_id: newUser.id,
               referred_name: name,
               referred_phone: phone,
+              status: 'pending', // Keep as pending until payment
               updated_at: new Date().toISOString()
             })
             .eq('id', referralRecord.id)
 
-          if (referralUpdateError) {
-            console.error('❌ Error updating referral record:', referralUpdateError)
+          if (!referralUpdateError) {
+            console.log('✅ Referral record updated via URL params')
+          }
+        }
+      } else {
+        // No referral link was used, but check if email was referred by an affiliate
+        console.log('📧 No referral link used, checking email in affiliate_referrals table...')
+
+        const { data: emailReferral, error: emailCheckError } = await supabase
+          .from('affiliate_referrals')
+          .select('*')
+          .eq('referred_email', email)
+          .eq('status', 'pending')
+          .single()
+
+        if (!emailCheckError && emailReferral) {
+          console.log('✅ Found existing referral for this email:', emailReferral)
+
+          // Update the referral record with the newly registered user
+          const { error: updateError } = await supabase
+            .from('affiliate_referrals')
+            .update({
+              referred_user_id: newUser.id,
+              referred_name: name,
+              referred_phone: phone,
+              status: 'pending', // Keep as pending until payment
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', emailReferral.id)
+
+          if (!updateError) {
+            console.log('✅ Linked registration to existing affiliate referral via email match')
           } else {
-            console.log('✅ Referral record updated successfully')
+            console.error('❌ Error linking to affiliate referral:', updateError)
           }
         } else {
-          console.log('⚠️ No matching referral record found')
+          console.log('ℹ️ No matching affiliate referral found for email:', email)
         }
-      } catch (referralError) {
-        console.error('❌ Error processing referral:', referralError)
-        // Don't fail the registration if referral update fails
       }
+    } catch (referralError) {
+      console.error('❌ Error processing affiliate referral:', referralError)
+      // Don't fail the registration if referral update fails
     }
 
     if (role === 'professional') {
@@ -245,7 +264,6 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
-        username,
         password_hash: hashedPassword,
         professional_type: professionalType,
         membership_number: finalMembershipNumber,
@@ -276,7 +294,6 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
-        username,
         password_hash: hashedPassword,
         institute_name: instituteName,
         registration_number: registrationNumber,
@@ -307,7 +324,6 @@ export async function POST(request: NextRequest) {
     const displayRole = role === 'professional' ? 'Professional' : 'Student'
     const htmlName = escapeHtml(name)
     const htmlEmail = escapeHtml(email)
-    const htmlUsername = escapeHtml(username)
     const htmlPhone = escapeHtml(phone)
     const htmlProfessionalType =
       role === 'professional' && professionalType
@@ -355,9 +371,6 @@ export async function POST(request: NextRequest) {
               </div>
               <div class="info-row">
                 <span class="label">Email:</span> ${htmlEmail}
-              </div>
-              <div class="info-row">
-                <span class="label">Username:</span> ${htmlUsername}
               </div>
               <div class="info-row">
                 <span class="label">Phone:</span> ${htmlPhone}
@@ -439,8 +452,7 @@ export async function POST(request: NextRequest) {
       id: newUser?.id,
       user: {
         name,
-        email,
-        username
+        email
       }
     })
 

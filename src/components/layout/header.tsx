@@ -226,23 +226,23 @@ export function Header() {
                     {(session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate') ? (
                       <>
                         <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/affiliate/profile">My Profile</Link>
+                          <Link href="/affiliate/profile" onClick={() => setIsMobileMenuOpen(false)}>My Profile</Link>
                         </Button>
                         <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/affiliate/referral">My Referrals</Link>
+                          <Link href="/affiliate/referral" onClick={() => setIsMobileMenuOpen(false)}>My Referrals</Link>
                         </Button>
                       </>
                     ) : session?.user?.role === 'admin' ? (
                       /* Admin Mobile Menu */
                       <>
                         <Button variant="outline" className="w-full rounded-full" asChild>
-                          <Link href="/admin">Admin Panel</Link>
+                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</Link>
                         </Button>
                       </>
                     ) : (
                       /* Regular User Mobile Menu */
                       <Button variant="outline" className="w-full rounded-full" asChild>
-                        <Link href="/account">My Account</Link>
+                        <Link href="/account" onClick={() => setIsMobileMenuOpen(false)}>My Account</Link>
                       </Button>
                     )}
 

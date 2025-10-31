@@ -1,15 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { blogPosts } from '@/data/blog-posts'
 import { toast } from 'sonner'
 
+interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  excerpt?: string
+  image?: string
+  date?: string
+  author?: string
+  category?: string
+}
+
 export function Footer() {
-  const recentPosts = blogPosts.slice(0, 3)
+  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([])
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Fetch recent blog posts from API
+  useEffect(() => {
+    const fetchRecentBlogs = async () => {
+      try {
+        const response = await fetch('/api/blog/posts?limit=3')
+        if (response.ok) {
+          const data = await response.json()
+          setRecentPosts(data.posts || [])
+        }
+      } catch (error) {
+        console.error('Error fetching recent blogs:', error)
+        // Silently fail - footer will just not show blogs
+      }
+    }
+
+    fetchRecentBlogs()
+  }, [])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -172,29 +200,37 @@ export function Footer() {
             {/* Blogs Section */}
             <div>
               <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Recent Blog Posts</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {recentPosts.map((post) => (
-                  <Link
-                    key={post.id}
-                    href={post.link}
-                    className="group relative overflow-hidden rounded-xl bg-white/5 transition-transform duration-300 hover:scale-[1.02] min-h-[100px] sm:min-h-[120px]"
-                  >
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(min-width: 640px) 33vw, (min-width: 0px) 100vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:from-blue-900/80 group-hover:via-blue-900/40" />
-                    <div className="relative flex h-full items-end p-3 sm:p-4">
-                      <h5 className="text-xs sm:text-sm font-semibold text-white leading-snug line-clamp-3">
-                        {post.title}
-                      </h5>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {recentPosts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {recentPosts.map((post) => (
+                    <Link
+                      key={post.id}
+                      href={`/blog/${post.slug}`}
+                      className="group relative overflow-hidden rounded-xl bg-white/5 transition-transform duration-300 hover:scale-[1.02] min-h-[100px] sm:min-h-[120px]"
+                    >
+                      {post.image && (
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(min-width: 640px) 33vw, (min-width: 0px) 100vw"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:from-blue-900/80 group-hover:via-blue-900/40" />
+                      <div className="relative flex h-full items-end p-3 sm:p-4">
+                        <h5 className="text-xs sm:text-sm font-semibold text-white leading-snug line-clamp-3">
+                          {post.title}
+                        </h5>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400 italic">
+                  No recent blog posts available
+                </div>
+              )}
             </div>
           </div>
         </div>

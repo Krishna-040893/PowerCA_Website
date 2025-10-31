@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Calendar, Clock, FileText, Download } from 'lucide-react'
 import { BlogContent } from '@/components/blog/blog-content'
+import { createClient } from '@supabase/supabase-js'
 
 interface Document {
   title: string
@@ -31,23 +32,30 @@ interface BlogPost {
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    // Use VERCEL_URL for automatic Vercel deployments, fallback to NEXT_PUBLIC_SITE_URL or localhost
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
-                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    const response = await fetch(
-      `${baseUrl}/api/blog/posts/${slug}`,
-      {
-        next: { revalidate: 60 }, // Revalidate every 60 seconds
-      }
-    )
-
-    if (!response.ok) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase configuration missing')
       return null
     }
 
-    const data = await response.json()
-    return data.post
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+    // Fetch published blog post by slug directly from the database
+    const { data: post, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single()
+
+    if (error || !post) {
+      console.error('Blog post not found:', error)
+      return null
+    }
+
+    return post as BlogPost
   } catch (error) {
     console.error('Error fetching blog post:', error)
     return null

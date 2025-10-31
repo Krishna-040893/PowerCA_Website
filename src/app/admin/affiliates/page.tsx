@@ -8,7 +8,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Textarea  } from '@/components/ui/textarea'
-import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2  } from 'lucide-react'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, User, Mail, Phone, Building  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
@@ -243,59 +243,71 @@ export default function AdminAffiliatesPage() {
       }
     >
       <div>
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
+        {/* Statistics Cards - Enhanced Mobile Design */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Applications</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Applications</p>
+                  <p className="text-3xl sm:text-4xl font-bold">{stats.total}</p>
+                  <p className="text-xs text-gray-500 mt-1">All time</p>
                 </div>
-                <Star className="h-8 w-8 text-blue-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                  <Star className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending Review</p>
-                  <p className="text-2xl font-bold">{stats.pending}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Pending Review</p>
+                  <p className="text-3xl sm:text-4xl font-bold">{stats.pending}</p>
+                  <p className="text-xs text-gray-500 mt-1">Awaiting action</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-yellow-50">
+                  <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold">{stats.approved}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Approved</p>
+                  <p className="text-3xl sm:text-4xl font-bold">{stats.approved}</p>
+                  <p className="text-xs text-gray-500 mt-1">Active partners</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rejected</p>
-                  <p className="text-2xl font-bold">{stats.rejected}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Rejected</p>
+                  <p className="text-3xl sm:text-4xl font-bold">{stats.rejected}</p>
+                  <p className="text-xs text-gray-500 mt-1">Declined</p>
                 </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+                <div className="p-3 sm:p-4 rounded-xl bg-red-50">
+                  <XCircle className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Affiliate Applications</CardTitle>
-            <CardDescription>
+        <Card className="shadow-sm border border-gray-100">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg sm:text-xl font-bold">Affiliate Applications</CardTitle>
+            <CardDescription className="text-xs sm:text-sm mt-1">
               Review affiliate applications and approve or reject them
             </CardDescription>
           </CardHeader>
@@ -316,8 +328,10 @@ export default function AdminAffiliatesPage() {
                 No affiliate applications found
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Applicant</TableHead>
@@ -358,194 +372,436 @@ export default function AdminAffiliatesPage() {
                           {format(new Date(application.created_at), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedApp(application)
-                                    setAdminNotes(application.admin_notes || '')
-                                  }}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Review
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl bg-white">
-                                <DialogHeader>
-                                  <DialogTitle>Review Affiliate Application</DialogTitle>
-                                  <DialogDescription>
-                                    Application from {selectedApp?.name}
-                                  </DialogDescription>
-                                </DialogHeader>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedApp(application)
+                                  setAdminNotes(application.admin_notes || '')
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Review
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">
+                              <DialogHeader className="border-b pb-3">
+                                <DialogTitle className="text-lg font-bold">Review Affiliate Application</DialogTitle>
+                                <DialogDescription className="text-xs sm:text-sm">
+                                  Application from {selectedApp?.name}
+                                </DialogDescription>
+                              </DialogHeader>
 
-                                {selectedApp && (
-                                  <div className="space-y-6 max-h-[600px] overflow-y-auto">
-                                    {/* Personal Information */}
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Information</h3>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Full Name</label>
-                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.name}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Email</label>
-                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.email}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Phone</label>
-                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Location</label>
-                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.city}, {selectedApp.state}</p>
-                                        </div>
+                              {selectedApp && (
+                                <div className="space-y-6 max-h-[600px] overflow-y-auto">
+                                  {/* Personal Information */}
+                                  <div className="bg-gray-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Full Name</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.name}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Email</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.email}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Phone</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Location</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.city}, {selectedApp.state}</p>
                                       </div>
                                     </div>
-
-                                    {/* Business Information */}
-                                    <div className="bg-blue-50 p-4 rounded-lg">
-                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Business Information</h3>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Business Type</label>
-                                          <p className="text-sm text-gray-900 mt-1 capitalize">{selectedApp.business_type || 'Individual'}</p>
-                                        </div>
-                                        {selectedApp.company_name && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">Company Name</label>
-                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.company_name}</p>
-                                          </div>
-                                        )}
-                                        {selectedApp.designation && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">Designation</label>
-                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.designation}</p>
-                                          </div>
-                                        )}
-                                        {selectedApp.experience && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">Experience</label>
-                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.experience}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Affiliate Information */}
-                                    <div className="bg-green-50 p-4 rounded-lg">
-                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Affiliate Information</h3>
-                                      <div className="space-y-3">
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Promotion Method</label>
-                                          <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
-                                            {selectedApp.promotion_method}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-500">Target Audience</label>
-                                          <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
-                                            {selectedApp.target_audience}
-                                          </p>
-                                        </div>
-                                        {selectedApp.monthly_leads && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">Expected Monthly Referrals</label>
-                                            <p className="text-sm text-gray-900 mt-1">{selectedApp.monthly_leads}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Payment Information */}
-                                    <div className="bg-purple-50 p-4 rounded-lg">
-                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Payment Information</h3>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        {selectedApp.account_number && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">Account Number</label>
-                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.account_number}</p>
-                                          </div>
-                                        )}
-                                        {selectedApp.ifsc_code && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">IFSC Code</label>
-                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.ifsc_code}</p>
-                                          </div>
-                                        )}
-                                        {selectedApp.pan_number && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">PAN Number</label>
-                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.pan_number}</p>
-                                          </div>
-                                        )}
-                                        {selectedApp.gst_number && (
-                                          <div>
-                                            <label className="text-xs font-medium text-gray-500">GST Number</label>
-                                            <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.gst_number}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Status Information */}
-                                    {selectedApp.referral_code && (
-                                      <div className="bg-yellow-50 p-4 rounded-lg">
-                                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Referral Code</h3>
-                                        <code className="bg-green-100 text-green-800 px-3 py-2 rounded font-mono text-lg">
-                                          {selectedApp.referral_code}
-                                        </code>
-                                      </div>
-                                    )}
-
-                                    {/* Admin Notes */}
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-900">Admin Notes</label>
-                                      <Textarea
-                                        value={adminNotes}
-                                        onChange={(e) => setAdminNotes(e.target.value)}
-                                        placeholder="Add notes about this application..."
-                                        rows={3}
-                                        className="mt-2"
-                                      />
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    {selectedApp.status === 'pending' && (
-                                      <div className="flex justify-end gap-2 pt-4 border-t">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
-                                          disabled={processingId === selectedApp.id}
-                                          className="text-red-600 border-red-300 hover:bg-red-50"
-                                        >
-                                          <XCircle className="h-4 w-4 mr-1" />
-                                          Reject
-                                        </Button>
-                                        <Button
-                                          onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
-                                          disabled={processingId === selectedApp.id}
-                                          className="bg-green-600 hover:bg-green-700"
-                                        >
-                                          <CheckCircle className="h-4 w-4 mr-1" />
-                                          Approve
-                                        </Button>
-                                      </div>
-                                    )}
                                   </div>
-                                )}
-                              </DialogContent>
-                            </Dialog>
-                          </div>
+
+                                  {/* Business Information */}
+                                  <div className="bg-blue-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Business Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Business Type</label>
+                                        <p className="text-sm text-gray-900 mt-1 capitalize">{selectedApp.business_type || 'Individual'}</p>
+                                      </div>
+                                      {selectedApp.company_name && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Company Name</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.company_name}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.designation && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Designation</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.designation}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.experience && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Experience</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.experience}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Affiliate Information */}
+                                  <div className="bg-green-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Affiliate Information</h3>
+                                    <div className="space-y-3">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Promotion Method</label>
+                                        <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                          {selectedApp.promotion_method}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Target Audience</label>
+                                        <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                          {selectedApp.target_audience}
+                                        </p>
+                                      </div>
+                                      {selectedApp.monthly_leads && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Expected Monthly Referrals</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.monthly_leads}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Payment Information */}
+                                  <div className="bg-purple-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Payment Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      {selectedApp.account_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Account Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.account_number}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.ifsc_code && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">IFSC Code</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.ifsc_code}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.pan_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">PAN Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.pan_number}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.gst_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">GST Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.gst_number}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Status Information */}
+                                  {selectedApp.referral_code && (
+                                    <div className="bg-yellow-50 p-4 rounded-xl">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Referral Code</h3>
+                                      <code className="bg-green-100 text-green-800 px-3 py-2 rounded font-mono text-lg">
+                                        {selectedApp.referral_code}
+                                      </code>
+                                    </div>
+                                  )}
+
+                                  {/* Admin Notes */}
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
+                                    <Textarea
+                                      value={adminNotes}
+                                      onChange={(e) => setAdminNotes(e.target.value)}
+                                      placeholder="Add notes about this application..."
+                                      rows={3}
+                                      className="mt-2"
+                                    />
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  {selectedApp.status === 'pending' && (
+                                    <div className="flex justify-end gap-2 pt-4 border-t">
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
+                                        disabled={processingId === selectedApp.id}
+                                        className="text-red-600 border-red-300 hover:bg-red-50"
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Reject
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
+                                        disabled={processingId === selectedApp.id}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Approve
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile Card View - Professional Design */}
+              <div className="md:hidden space-y-3">
+                  {applications.map((application) => (
+                    <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          {/* Name and Status Badge */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                  <Star className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 truncate">{application.name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{application.email}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <Badge className={getStatusBadgeColor(application.status)}>
+                              <div className="flex items-center gap-1">
+                                {getStatusIcon(application.status)}
+                                {application.status}
+                              </div>
+                            </Badge>
+                          </div>
+
+                          {/* Contact Info - Compact */}
+                          <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500">Phone:</span>
+                              <span className="text-gray-700 font-medium">{application.phone}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500">Location:</span>
+                              <span className="text-gray-700 font-medium">{application.city}, {application.state}</span>
+                            </div>
+                            {application.referral_code && (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Referral Code:</span>
+                                <code className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-mono">
+                                  {application.referral_code}
+                                </code>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Date - Enhanced */}
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                              <span className="font-medium">{format(new Date(application.created_at), 'MMM dd, yyyy')}</span>
+                            </div>
+                          </div>
+
+                          {/* Action Button - Enhanced */}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedApp(application)
+                                  setAdminNotes(application.admin_notes || '')
+                                }}
+                                className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Review Application
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">
+                              <DialogHeader className="border-b pb-3">
+                                <DialogTitle className="text-lg font-bold">Review Affiliate Application</DialogTitle>
+                                <DialogDescription className="text-xs sm:text-sm">
+                                  Application from {selectedApp?.name}
+                                </DialogDescription>
+                              </DialogHeader>
+
+                              {selectedApp && (
+                                <div className="space-y-6 max-h-[600px] overflow-y-auto">
+                                  {/* Personal Information */}
+                                  <div className="bg-gray-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Full Name</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.name}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Email</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.email}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Phone</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Location</label>
+                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.city}, {selectedApp.state}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Business Information */}
+                                  <div className="bg-blue-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Business Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Business Type</label>
+                                        <p className="text-sm text-gray-900 mt-1 capitalize">{selectedApp.business_type || 'Individual'}</p>
+                                      </div>
+                                      {selectedApp.company_name && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Company Name</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.company_name}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.designation && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Designation</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.designation}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.experience && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Experience</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.experience}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Affiliate Information */}
+                                  <div className="bg-green-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Affiliate Information</h3>
+                                    <div className="space-y-3">
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Promotion Method</label>
+                                        <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                          {selectedApp.promotion_method}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-500">Target Audience</label>
+                                        <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
+                                          {selectedApp.target_audience}
+                                        </p>
+                                      </div>
+                                      {selectedApp.monthly_leads && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Expected Monthly Referrals</label>
+                                          <p className="text-sm text-gray-900 mt-1">{selectedApp.monthly_leads}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Payment Information */}
+                                  <div className="bg-purple-50 p-4 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Payment Information</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      {selectedApp.account_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">Account Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.account_number}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.ifsc_code && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">IFSC Code</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.ifsc_code}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.pan_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">PAN Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.pan_number}</p>
+                                        </div>
+                                      )}
+                                      {selectedApp.gst_number && (
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-500">GST Number</label>
+                                          <p className="text-sm text-gray-900 mt-1 font-mono">{selectedApp.gst_number}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Status Information */}
+                                  {selectedApp.referral_code && (
+                                    <div className="bg-yellow-50 p-4 rounded-xl">
+                                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Referral Code</h3>
+                                      <code className="bg-green-100 text-green-800 px-3 py-2 rounded font-mono text-lg">
+                                        {selectedApp.referral_code}
+                                      </code>
+                                    </div>
+                                  )}
+
+                                  {/* Admin Notes */}
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
+                                    <Textarea
+                                      value={adminNotes}
+                                      onChange={(e) => setAdminNotes(e.target.value)}
+                                      placeholder="Add notes about this application..."
+                                      rows={3}
+                                      className="mt-2"
+                                    />
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  {selectedApp.status === 'pending' && (
+                                    <div className="flex justify-end gap-2 pt-4 border-t">
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
+                                        disabled={processingId === selectedApp.id}
+                                        className="text-red-600 border-red-300 hover:bg-red-50"
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Reject
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
+                                        disabled={processingId === selectedApp.id}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Approve
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </>
             )}
 
             {applications.length > 0 && (

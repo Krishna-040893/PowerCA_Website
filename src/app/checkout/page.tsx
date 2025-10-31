@@ -253,6 +253,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (session?.user) {
+      // First set basic user data from session
       setFormData(prev => ({
         ...prev,
         email: session.user?.email || '',
@@ -260,6 +261,38 @@ export default function CheckoutPage() {
         firmName: session.user?.firmName || '',
         phone: session.user?.phone || '',
       }))
+
+      // Then fetch and auto-fill from last incomplete order
+      const fetchLastOrder = async () => {
+        try {
+          const response = await fetch('/api/user/last-order')
+          const result = await response.json()
+
+          if (result.hasOrder && result.orderData) {
+            console.log('🔄 Auto-filling form from last incomplete order')
+            setFormData(prev => ({
+              ...prev,
+              // Only fill fields that are not already populated or are empty
+              firstName: result.orderData.firstName || prev.firstName,
+              firmName: result.orderData.firmName || prev.firmName,
+              gstNo: result.orderData.gstNo || prev.gstNo,
+              country: result.orderData.country || prev.country,
+              address: result.orderData.address || prev.address,
+              city: result.orderData.city || prev.city,
+              state: result.orderData.state || prev.state,
+              postcode: result.orderData.postcode || prev.postcode,
+              email: result.orderData.email || prev.email,
+              phone: result.orderData.phone || prev.phone,
+              company: result.orderData.company || prev.company,
+            }))
+          }
+        } catch (error) {
+          console.error('Error fetching last order:', error)
+          // Continue without auto-fill if there's an error
+        }
+      }
+
+      fetchLastOrder()
     }
   }, [session])
 
@@ -325,6 +358,13 @@ export default function CheckoutPage() {
           productId: product.productId,
           planType: 'implementation',
           ...formData,
+          // Send address fields separately for storage
+          country: formData.country,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          postcode: formData.postcode,
+          gstNo: formData.gstNo,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -471,8 +511,8 @@ export default function CheckoutPage() {
         strategy="lazyOnload"
       />
 
-      <div className="min-h-screen bg-white py-8 sm:py-12 checkout-page">
-        <div className="container mx-auto px-4 max-w-7xl">
+      <div className="min-h-screen bg-white py-4 sm:py-8 lg:py-12 checkout-page">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-7xl">
           {/* Affiliate Referral Banner */}
           {referralInfo?.ref && (
             <div className="mb-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4">
@@ -509,17 +549,17 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Left Column - Billing Details */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Details</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Billing Details</h2>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {/* Full Name & Firm Name */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                      <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium text-gray-700">
                         Full Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -527,12 +567,12 @@ export default function CheckoutPage() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className={`mt-1 ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`mt-1 text-sm ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
                       />
-                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                      {errors.firstName && <p className="text-red-500 text-[10px] sm:text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
-                      <Label htmlFor="firmName" className="text-sm font-medium text-gray-700">
+                      <Label htmlFor="firmName" className="text-xs sm:text-sm font-medium text-gray-700">
                         Firm Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -540,9 +580,9 @@ export default function CheckoutPage() {
                         name="firmName"
                         value={formData.firmName}
                         onChange={handleInputChange}
-                        className={`mt-1 ${errors.firmName ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`mt-1 text-sm ${errors.firmName ? 'border-red-500' : 'border-gray-300'}`}
                       />
-                      {errors.firmName && <p className="text-red-500 text-xs mt-1">{errors.firmName}</p>}
+                      {errors.firmName && <p className="text-red-500 text-[10px] sm:text-xs mt-1">{errors.firmName}</p>}
                     </div>
                   </div>
 
@@ -761,7 +801,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Right Column - Order Summary */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Apply Coupon
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Apply Coupon</h3>
@@ -786,11 +826,11 @@ export default function CheckoutPage() {
               </div>*/}
 
               {/* Purchase Plan */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Purchase Plan</h3>
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Purchase Plan</h3>
 
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-20 h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md flex-shrink-0">
                     <Image
                       src="/images/power-ca-logo-footer.png"
                       alt="PowerCA"
@@ -800,45 +840,48 @@ export default function CheckoutPage() {
                       unoptimized
                     />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">Power CA - Installation Demo</h4>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-sm text-gray-600">No. of Users</span>
-                      <div className="flex items-center border border-gray-300 rounded">
+                  <div className="flex-1 w-full sm:w-auto">
+                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-2">Power CA Software</h4>
+                    <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
+                      <span className="text-xs sm:text-sm text-gray-600">Installation and Ongoing Support & Update</span>
+                      {/* <div className="flex items-center border-2 border-gray-300 rounded-lg shadow-sm">
                         <button
                           type="button"
                           onClick={decrementQuantity}
-                          className="p-1 hover:bg-gray-100"
+                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors disabled:opacity-50"
                           disabled={quantity <= 1}
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <span className="px-3 py-1 text-sm">{quantity}</span>
+                        <span className="px-3 sm:px-4 py-1 text-sm sm:text-base font-semibold min-w-[40px] text-center">{quantity}</span>
                         <button
                           type="button"
                           onClick={incrementQuantity}
-                          className="p-1 hover:bg-gray-100"
+                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
+                      </div> */}
+                      <div className="sm:hidden ml-auto">
+                        <span className="text-base font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold">₹{(basePrice * quantity).toLocaleString()}</span>
+                  <div className="hidden sm:block text-right">
+                    <span className="text-lg font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
+                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
                     <span>Subtotal</span>
                     <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
                     <span>SGST & CGST (18%)</span>
                     <span className="font-semibold">₹{gstAmount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+                  <div className="flex justify-between text-base sm:text-lg font-bold border-t-2 border-gray-300 pt-2 mt-2 text-purple-700">
                     <span>Total</span>
                     <span>₹{total.toLocaleString()}</span>
                   </div>
@@ -846,57 +889,80 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div className="flex items-start gap-3 mb-3 sm:mb-4">
                   <input
                     type="radio"
                     id="razorpay"
                     name="payment"
                     checked
                     readOnly
-                    className="w-4 h-4"
+                    className="w-4 h-4 mt-0.5 flex-shrink-0"
                   />
-                  <Label htmlFor="razorpay" className="flex items-center gap-2 cursor-pointer">
-                    <span className="font-medium">Credit Card/Debit Card/NetBanking/UPI</span>
-                    <span className="text-xs text-gray-500 ml-2">Powered by Razorpay</span>
+                  <Label htmlFor="razorpay" className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 cursor-pointer flex-1">
+                    <span className="font-medium text-sm sm:text-base">Credit Card/Debit Card/NetBanking/UPI</span>
+                    <span className="text-[10px] sm:text-xs text-gray-500">Powered by Razorpay</span>
                   </Label>
                 </div>
-                <p className="text-sm text-gray-600 pl-6">
+                <p className="text-xs sm:text-sm text-gray-600 pl-7 leading-relaxed">
                   Pay securely by Credit or Debit card or Internet Banking through Razorpay.
                 </p>
               </div>
 
               {/* Privacy & Terms */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-xs text-gray-600 mb-3">
-                  Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our{' '}
-                  <Link href="/privacy-policy" className="text-blue-600 hover:underline">
-                    privacy policy
-                  </Link>.
-                </p>
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={agreeToTerms}
-                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                    className={errors.terms ? 'border-red-500' : ''}
-                  />
-                  <Label htmlFor="terms" className="text-sm cursor-pointer leading-tight">
-                    I have read and agree to the website{' '}
-                    <Link href="/terms" className="text-blue-600 hover:underline">
-                      terms and conditions
-                    </Link>
-                    <span className="text-red-500"> *</span>
-                  </Label>
+              <div className="bg-gradient-to-br from-gray-50 to-blue-50 border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                {/* Privacy Policy Text */}
+                {/* <div className="mb-4 sm:mb-5">
+                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                    Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our{' '}
+                    <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
+                      privacy policy
+                    </Link>.
+                  </p>
+                </div> */}
+
+                {/* Terms and Conditions Checkbox */}
+                <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="terms"
+                      checked={agreeToTerms}
+                      onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                      className={`mt-0.5 flex-shrink-0 ${errors.terms ? 'border-red-500' : 'border-gray-300'}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer leading-relaxed text-gray-700 block">
+                        I have read and agree to the website{' '}
+                        <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
+                          terms and conditions
+                        </Link> and <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
+                      privacy policy
+                    </Link>.
+                        <span className="text-red-500 font-bold"> *</span>
+                      </Label>
+                      {errors.terms && (
+                        <p className="text-red-600 text-[10px] sm:text-xs mt-2 font-medium flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                          {errors.terms}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                {errors.terms && <p className="text-red-500 text-xs mt-1 pl-6">{errors.terms}</p>}
+
+                {/* Additional Information Note */}
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+                  <p className="text-[10px] sm:text-xs text-gray-500 text-center leading-relaxed">
+                    By proceeding with the payment, you acknowledge that you have read, understood, and agreed to our terms and conditions. All transactions are secure and protected.
+                  </p>
+                </div>
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-                  <AlertCircle className="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
-                  <span className="text-red-800 text-sm">{error}</span>
+                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-3 sm:p-4 flex items-start shadow-sm">
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mr-2 sm:mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-red-800 text-xs sm:text-sm leading-relaxed">{error}</span>
                 </div>
               )}
 
@@ -904,21 +970,24 @@ export default function CheckoutPage() {
               <Button
                 onClick={handlePayment}
                 disabled={loading || !agreeToTerms}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 text-lg font-semibold rounded-md"
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-4 sm:py-6 text-base sm:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  'Place order'
+                  'Place Order'
                 )}
               </Button>
 
-              <p className="text-center text-xs text-gray-500">
-                🔒 Secure payment powered by Razorpay
-              </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <p className="text-xs sm:text-sm text-gray-700 font-medium flex items-center justify-center gap-2">
+                  <span className="text-green-600 text-base">🔒</span>
+                  Secure payment powered by Razorpay
+                </p>
+              </div>
             </div>
           </div>
         </div>

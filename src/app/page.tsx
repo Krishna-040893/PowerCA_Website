@@ -197,8 +197,11 @@ export default function Home() {
                 download="PowercaPromoters.pdf"
                 className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 w-full sm:w-auto sm:min-w-[200px] text-sm sm:text-base"
               >
-                <span className="hidden sm:inline">Download Promoter's Perspective</span>
+                <span className="hidden sm:inline">Promoter's Perspective</span>
                 <span className="sm:hidden">Promoter's Perspective</span>
+                <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
               </a>
             </div>
           </div>

@@ -17,21 +17,21 @@ export function AdminPageWrapper({
 }: AdminPageWrapperProps) {
   return (
     <AdminSidebarLayout>
-      <div className="p-8">
-        {/* Page Header */}
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page Header - Mobile optimized */}
         {(title || description || actions) && (
-          <div className="mb-8">
-            <div className="flex items-start justify-between">
-              <div>
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+              <div className="flex-1">
                 {title && (
-                  <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h1>
                 )}
                 {description && (
-                  <p className="mt-1 text-sm text-gray-600">{description}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-600">{description}</p>
                 )}
               </div>
               {actions && (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   {actions}
                 </div>
               )}
