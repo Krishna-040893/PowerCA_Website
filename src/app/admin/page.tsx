@@ -355,8 +355,8 @@ export default function AdminPage() {
                         data={pieChartData.filter(d => d.value > 0)}
                         cx="50%"
                         cy="50%"
-                        labelLine={true}
-                        label={({ name, percent }: { name: string; percent: number }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                        label
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
@@ -395,9 +395,7 @@ export default function AdminPage() {
                       endAngle={0}
                     >
                       <RadialBar
-                        minAngle={15}
                         background
-                        clockWise
                         dataKey="value"
                       />
                       <text
