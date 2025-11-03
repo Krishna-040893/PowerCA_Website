@@ -193,7 +193,8 @@ export default function AffiliateAccountPage() {
       const response = await fetch('/api/user/profile-photo')
       if (response.ok) {
         const data = await response.json()
-        setCurrentProfilePhotoUrl(data.photoUrl)
+        // TODO: Add profile photo state management
+        console.log('Profile photo URL:', data.photoUrl)
       }
     } catch (error) {
       console.error('Error fetching profile photo:', error)
