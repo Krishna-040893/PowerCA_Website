@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       logger.warn('Cashfree order missing in database, will backfill', { orderId })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let orderData: any = existingOrder || null
 
     // Check if payment already exists
@@ -133,6 +134,7 @@ export async function POST(req: NextRequest) {
       keys: paymentsData ? Object.keys(paymentsData) : []
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payment = Array.isArray(paymentsData) ? paymentsData[0] : paymentsData
 
     if (!payment || !payment.cf_payment_id) {
@@ -241,8 +243,22 @@ export async function POST(req: NextRequest) {
       // Construct address from order data or order tags as fallback
       const fullAddress = orderData.customer_address || orderTags.address || orderTags.customerAddress || null
 
+      // Validate user_id exists in auth.users to avoid foreign key constraint violation
+      let validatedUserId = null
+      if (orderData.user_id) {
+        const { data: userExists } = await supabase.auth.admin.getUserById(orderData.user_id)
+        if (userExists?.user) {
+          validatedUserId = orderData.user_id
+        } else {
+          logger.warn('User ID from order does not exist in auth.users, setting to null', {
+            orderId,
+            user_id: orderData.user_id
+          })
+        }
+      }
+
       const paymentInsertData = {
-        user_id: orderData.user_id || null,
+        user_id: validatedUserId,
         order_id: orderId,
         payment_id: payment.cf_payment_id,
         amount: totalAmount,
@@ -295,25 +311,25 @@ export async function POST(req: NextRequest) {
     }
 
     // Create subscription if needed
-    if (paymentRecord && orderData.user_id) {
+    if (paymentRecord && validatedUserId) {
       const { data: existingSubscription } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', orderData.user_id)
+        .eq('user_id', validatedUserId)
         .single()
 
       if (!existingSubscription) {
         await supabase
           .from('subscriptions')
           .insert({
-            user_id: orderData.user_id,
+            user_id: validatedUserId,
             plan: 'launch_offer',
             status: 'ACTIVE',
             current_period_start: new Date().toISOString(),
             current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
           })
 
-        logger.info('Subscription created', { userId: orderData.user_id })
+        logger.info('Subscription created', { userId: validatedUserId })
       }
     }
 

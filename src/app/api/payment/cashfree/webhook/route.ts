@@ -70,10 +70,24 @@ export async function POST(req: NextRequest) {
       const orderTags = (order?.order_tags as Record<string, string>) || {}
       const fullAddress = orderData.customer_address || orderTags.address || null
 
+      // Validate user_id exists in auth.users to avoid foreign key constraint violation
+      let validatedUserId = null
+      if (orderData.user_id) {
+        const { data: userExists } = await supabase.auth.admin.getUserById(orderData.user_id)
+        if (userExists?.user) {
+          validatedUserId = orderData.user_id
+        } else {
+          logger.warn('User ID from order does not exist in auth.users (webhook), setting to null', {
+            orderId: order.order_id,
+            user_id: orderData.user_id
+          })
+        }
+      }
+
       const { data: paymentRecord, error: paymentError } = await supabase
         .from('payments')
         .insert({
-          user_id: orderData.user_id || null,
+          user_id: validatedUserId,
           order_id: order.order_id,
           payment_id: payment.cf_payment_id,
           amount: totalAmount,
@@ -96,17 +110,17 @@ export async function POST(req: NextRequest) {
       }
 
       // Create or update subscription for the user
-      if (paymentRecord && orderData.user_id) {
+      if (paymentRecord && validatedUserId) {
         try {
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
             .select('*')
-            .eq('user_id', orderData.user_id)
+            .eq('user_id', validatedUserId)
             .single()
 
           if (!existingSubscription) {
             const subscriptionData = {
-              user_id: orderData.user_id,
+              user_id: validatedUserId,
               plan: 'launch_offer',
               status: 'ACTIVE',
               current_period_start: new Date().toISOString(),
@@ -124,7 +138,7 @@ export async function POST(req: NextRequest) {
             } else {
               logger.info('✅ Subscription created', {
                 subscriptionId: newSubscription.id,
-                userId: orderData.user_id,
+                userId: validatedUserId,
                 plan: 'launch_offer'
               })
             }
