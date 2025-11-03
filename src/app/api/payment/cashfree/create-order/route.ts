@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
     const appId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID
     const secretKey = process.env.CASHFREE_SECRET_KEY
 
+    // Auto-detect the current domain from request headers
+    const host = req.headers.get('host') || req.headers.get('x-forwarded-host')
+    const protocol = req.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3009')
+
     if (!appId || !secretKey) {
       return handleConfigurationError('Cashfree credentials')
     }
@@ -37,7 +42,9 @@ export async function POST(req: NextRequest) {
     console.log('🔧 Cashfree Environment Detection:', {
       appId: appId.substring(0, 10) + '...', // Log partial for security
       detectedEnvironment: environment,
-      baseUrl
+      baseUrl,
+      returnUrl: `${baseUrl}/payment-success?provider=cashfree&order_id={order_id}`,
+      notifyUrl: `${baseUrl}/api/payment/cashfree/webhook`
     })
 
     const session = await getServerSession(authOptions)
@@ -110,12 +117,8 @@ export async function POST(req: NextRequest) {
         customer_phone: customerDetails?.phone || body.phone || '9999999999',
       },
       order_meta: {
-        return_url: `${
-          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3009'
-        }/payment-success?provider=cashfree&order_id={order_id}`,
-        notify_url: `${
-          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3009'
-        }/api/payment/cashfree/webhook`,
+        return_url: `${baseUrl}/payment-success?provider=cashfree&order_id={order_id}`,
+        notify_url: `${baseUrl}/api/payment/cashfree/webhook`,
       },
       order_note: `PowerCA ${planType} - ${productId}`,
 
