@@ -124,9 +124,23 @@ export async function POST(req: NextRequest) {
     })
 
     const paymentsData = await paymentsResponse.json()
-    const payment = paymentsData[0] // Get the first (and usually only) payment
 
-    if (!payment) {
+    // Log the response format for debugging
+    logger.info('Cashfree payments response', {
+      orderId,
+      isArray: Array.isArray(paymentsData),
+      dataType: typeof paymentsData,
+      keys: paymentsData ? Object.keys(paymentsData) : []
+    })
+
+    const payment = Array.isArray(paymentsData) ? paymentsData[0] : paymentsData
+
+    if (!payment || !payment.cf_payment_id) {
+      logger.error('Payment details not found or invalid', {
+        orderId,
+        paymentsData,
+        hasPayment: !!payment
+      })
       throw new Error('Payment details not found')
     }
 
@@ -511,6 +525,16 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
+    // Enhanced error logging to identify the exact failure point
+    logger.error('Cashfree payment processing failed', {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : error,
+      errorType: typeof error
+    })
+
     return createErrorResponse(
       ErrorType.PAYMENT,
       error as Error,
