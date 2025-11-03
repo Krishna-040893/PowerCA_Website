@@ -398,8 +398,13 @@ function CheckoutContent() {
       }
 
       // Initialize Cashfree SDK
+      // IMPORTANT: Use 'sandbox' mode for TEST credentials to avoid authentication errors
+      // The environment returned from backend determines the correct mode
+      console.log('🔧 Cashfree environment:', orderData.environment)
+      console.log('🔑 Payment Session ID:', orderData.paymentSessionId)
+
       const cashfree = await window.Cashfree({
-        mode: orderData.environment || 'production'
+        mode: orderData.environment === 'production' ? 'production' : 'sandbox'
       })
 
       const checkoutOptions = {
@@ -408,12 +413,20 @@ function CheckoutContent() {
         returnUrl: `${window.location.origin}/payment-success?gateway=cashfree&orderId=${orderData.orderId || ''}`
       }
 
+      console.log('🚀 Initiating Cashfree checkout with options:', checkoutOptions)
+
       // Initialize Cashfree checkout - redirects immediately to payment gateway
       // Note: With redirectTarget '_self', the page redirects immediately.
       // Payment completion is handled via returnUrl and webhook, not promise result.
       cashfree.checkout(checkoutOptions).catch((error: Error) => {
         console.error('Cashfree checkout initialization error:', error)
-        setError(error.message || 'Failed to initialize payment. Please try again.')
+
+        // Check if it's an authentication error
+        if (error.message?.toLowerCase().includes('authentication')) {
+          setError(`Payment gateway authentication failed. This may be due to incorrect credentials in ${orderData.environment} mode. Please contact support or try Razorpay payment method.`)
+        } else {
+          setError(error.message || 'Failed to initialize payment. Please try again.')
+        }
         setLoading(false)
       })
 

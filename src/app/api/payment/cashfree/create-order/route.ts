@@ -26,12 +26,19 @@ export async function POST(req: NextRequest) {
       return handleConfigurationError('Cashfree credentials')
     }
 
-    // ✅ Choose environment
-    const environment = appId.includes('prod') ? 'production' : 'sandbox'
+    // ✅ Choose environment based on App ID prefix
+    // Cashfree App IDs: TEST* = sandbox, production IDs start with numbers
+    const environment = appId.toUpperCase().startsWith('TEST') ? 'sandbox' : 'production'
     const baseUrl =
       environment === 'production'
         ? 'https://api.cashfree.com/pg'
         : 'https://sandbox.cashfree.com/pg'
+
+    console.log('🔧 Cashfree Environment Detection:', {
+      appId: appId.substring(0, 10) + '...', // Log partial for security
+      detectedEnvironment: environment,
+      baseUrl
+    })
 
     const session = await getServerSession(authOptions)
     const body = await req.json()
