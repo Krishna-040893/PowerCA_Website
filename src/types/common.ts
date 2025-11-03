@@ -32,6 +32,29 @@ export interface RazorpayErrorResponse {
   };
 }
 
+// Cashfree payment types
+export interface CashfreeConfig {
+  mode: 'sandbox' | 'production';
+}
+
+export interface CashfreeCheckoutOptions {
+  paymentSessionId: string;
+  redirectTarget?: '_self' | '_blank' | '_parent' | '_top';
+  returnUrl?: string;
+}
+
+export interface CashfreePaymentResponse {
+  error?: {
+    message: string;
+    code: string;
+  };
+  redirect?: boolean;
+  paymentDetails?: {
+    orderId: string;
+    paymentSessionId: string;
+  };
+}
+
 // Customer details for payment processing
 export interface CustomerDetails {
   name: string;

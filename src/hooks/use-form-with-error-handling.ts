@@ -1,29 +1,130 @@
+/**
+ * @fileoverview Custom React hook for form handling with validation, error management, and persistence
+ * @module hooks/use-form-with-error-handling
+ */
+
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
 
+/**
+ * Form field error structure
+ * @internal
+ */
 interface _FormFieldError {
   field: string
   message: string
 }
 
+/**
+ * Form state containing data, errors, and submission status
+ *
+ * @template T - The shape of the form data
+ */
 interface FormState<T> {
+  /** Current form field values */
   data: T
+  /** Field-level validation errors */
   errors: Partial<Record<keyof T, string>>
+  /** Fields that have been touched/blurred */
   touched: Partial<Record<keyof T, boolean>>
+  /** Whether form is currently submitting */
   isSubmitting: boolean
+  /** Top-level submission error message */
   submitError: string | null
+  /** Whether form has no validation errors */
   isValid: boolean
 }
 
+/**
+ * Configuration options for the form hook
+ *
+ * @template T - The shape of the form data
+ */
 interface FormOptions<T> {
+  /** Initial values for form fields */
   initialData: T
+  /** Optional validation function that returns field errors */
   validate?: (data: T) => Partial<Record<keyof T, string>> | Promise<Partial<Record<keyof T, string>>>
+  /** Submission handler that receives validated form data */
   onSubmit: (data: T) => Promise<void>
-  persistKey?: string // Key for sessionStorage persistence
+  /** Optional key for persisting form data to sessionStorage */
+  persistKey?: string
+  /** Whether to reset form after successful submission (default: true) */
   resetOnSuccess?: boolean
 }
 
+/**
+ * Custom hook for advanced form handling with validation and error management
+ *
+ * Provides:
+ * - Real-time validation
+ * - Field-level error tracking
+ * - Touch tracking for showing errors only after blur
+ * - Automatic form persistence to sessionStorage
+ * - Loading state management
+ * - Toast notifications for success/error
+ *
+ * @template T - The shape of the form data
+ * @param options - Form configuration options
+ * @returns Form state and handlers
+ *
+ * @example
+ * ```typescript
+ * interface ContactFormData {
+ *   name: string
+ *   email: string
+ *   message: string
+ * }
+ *
+ * const {
+ *   data,
+ *   errors,
+ *   touched,
+ *   isSubmitting,
+ *   isValid,
+ *   getFieldProps,
+ *   handleSubmit,
+ *   reset,
+ * } = useFormWithErrorHandling<ContactFormData>({
+ *   initialData: {
+ *     name: '',
+ *     email: '',
+ *     message: '',
+ *   },
+ *   validate: async (data) => {
+ *     const errors: Partial<Record<keyof ContactFormData, string>> = {}
+ *     if (!data.name) errors.name = 'Name is required'
+ *     if (!data.email) errors.email = 'Email is required'
+ *     return errors
+ *   },
+ *   onSubmit: async (data) => {
+ *     await fetch('/api/contact', {
+ *       method: 'POST',
+ *       body: JSON.stringify(data),
+ *     })
+ *   },
+ *   persistKey: 'contact_form', // Auto-save to sessionStorage
+ * })
+ *
+ * return (
+ *   <form onSubmit={handleSubmit}>
+ *     <input {...getFieldProps('name')} />
+ *     {touched.name && errors.name && <span>{errors.name}</span>}
+ *
+ *     <input {...getFieldProps('email')} />
+ *     {touched.email && errors.email && <span>{errors.email}</span>}
+ *
+ *     <button type="submit" disabled={!isValid || isSubmitting}>
+ *       {isSubmitting ? 'Submitting...' : 'Submit'}
+ *     </button>
+ *   </form>
+ * )
+ * ```
+ *
+ * @see {@link FormState} for returned state shape
+ * @see {@link FormOptions} for configuration options
+ */
 export function useFormWithErrorHandling<T extends Record<string, unknown>>({
   initialData,
   validate,

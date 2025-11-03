@@ -8,6 +8,10 @@ import TestimonialsSection from '@/components/testimonials-section'
 import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
 import './testimonial-scroll.css'
 
+// Enable static generation for homepage
+export const dynamic = 'force-static'
+export const revalidate = 3600 // Revalidate every hour
+
 export const metadata: Metadata = {
   title: 'PowerCA - Practice Management Software for CAs in India | Save 10+ Hours Weekly',
   description: 'Transform your CA practice with PowerCA. Complete practice management software for Chartered Accountants. Job card management, billing, compliance tracking. Free demo available.',
@@ -266,6 +270,8 @@ export default function Home() {
                 height={800}
                 className="w-full h-auto object-contain"
                 priority
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px"
+                quality={85}
               />
             </div>
           </div>
@@ -448,6 +454,7 @@ export default function Home() {
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                       loading="lazy"
+                      sizes="56px"
                     />
                   </div>
                   <div className="col-span-10 sm:col-span-11 md:col-span-3">
@@ -478,6 +485,7 @@ export default function Home() {
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                       loading="lazy"
+                      sizes="56px"
                     />
                   </div>
                   <div className="col-span-10 sm:col-span-11 md:col-span-3">
@@ -508,6 +516,7 @@ export default function Home() {
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                       loading="lazy"
+                      sizes="56px"
                     />
                   </div>
                   <div className="col-span-10 sm:col-span-11 md:col-span-3">
@@ -538,6 +547,7 @@ export default function Home() {
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                       loading="lazy"
+                      sizes="56px"
                     />
                   </div>
                   <div className="col-span-10 sm:col-span-11 md:col-span-3">
@@ -568,6 +578,7 @@ export default function Home() {
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                       loading="lazy"
+                      sizes="56px"
                     />
                   </div>
                   <div className="col-span-10 sm:col-span-11 md:col-span-3">
@@ -594,6 +605,7 @@ export default function Home() {
                     className="w-full h-auto shadow-lg rounded-2xl"
                     loading="lazy"
                     quality={85}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
                   />
                 </div>
               </div>
@@ -705,6 +717,7 @@ export default function Home() {
                         height={40}
                         className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                         loading="lazy"
+                        sizes="40px"
                       />
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">Regulatory compliance</h3>
@@ -723,6 +736,7 @@ export default function Home() {
                         height={40}
                         className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                         loading="lazy"
+                        sizes="40px"
                       />
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">Real Time Analysis</h3>
@@ -741,6 +755,7 @@ export default function Home() {
                         height={40}
                         className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                         loading="lazy"
+                        sizes="40px"
                       />
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">Data Security</h3>
@@ -759,6 +774,7 @@ export default function Home() {
                         height={40}
                         className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                         loading="lazy"
+                        sizes="40px"
                       />
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">24/7 Dedicated Support</h3>
@@ -777,6 +793,7 @@ export default function Home() {
                     className="w-full h-auto rounded-2xl"
                     loading="lazy"
                     quality={85}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                   />
                 </div>
               </div>

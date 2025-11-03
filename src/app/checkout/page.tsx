@@ -25,6 +25,7 @@ interface FormErrors {
   state?: string
   postcode?: string
   terms?: string
+  paymentGateway?: string
 }
 
 interface ReferralInfo {
@@ -140,6 +141,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
+  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
   const [formData, setFormData] = useState({
     firstName: '',
     firmName: '',
@@ -327,6 +329,7 @@ export default function CheckoutPage() {
     if (!formData.city.trim()) newErrors.city = 'Town/City is required'
     if (!formData.state.trim()) newErrors.state = 'State is required'
     if (!formData.postcode.trim()) newErrors.postcode = 'Postcode is required'
+    if (!paymentGateway) newErrors.paymentGateway = 'Please select a payment gateway'
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
     setErrors(newErrors)
@@ -342,7 +345,90 @@ export default function CheckoutPage() {
     })
   }
 
+  const handleCashfreePayment = async () => {
+    if (!validateForm()) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      // Create order on backend for Cashfree
+      const orderResponse = await fetch('/api/payment/cashfree/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          productId: product.productId,
+          planType: 'implementation',
+          ...formData,
+          country: formData.country,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          postcode: formData.postcode,
+          gstNo: formData.gstNo,
+          gstAmount: gstAmount,
+          gstPercentage: gstRate * 100, // Convert 0.18 to 18
+          customerDetails: {
+            name: formData.firstName,
+            email: formData.email,
+            phone: formData.phone,
+            company: formData.company,
+            firmName: formData.firmName,
+            gst: formData.gstNo,
+            address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
+          },
+          referralInfo: referralInfo ? {
+            referralCode: referralInfo.ref,
+            customerId: referralInfo.cus,
+            validated: referralInfo.validated
+          } : undefined
+        })
+      })
+
+      const orderData = await orderResponse.json()
+
+      if (!orderData.success || !orderData.paymentSessionId) {
+        const errorMessage = typeof orderData.error === 'object'
+          ? orderData.error?.message || JSON.stringify(orderData.error)
+          : orderData.error || 'Failed to create Cashfree order'
+        throw new Error(errorMessage)
+      }
+
+      // Initialize Cashfree SDK
+      const cashfree = await window.Cashfree({
+        mode: orderData.environment || 'production'
+      })
+
+      const checkoutOptions = {
+        paymentSessionId: orderData.paymentSessionId,
+        redirectTarget: '_self' as const,
+        returnUrl: `${window.location.origin}/payment-success?gateway=cashfree&orderId=${orderData.orderId || ''}`
+      }
+
+      // Initialize Cashfree checkout - redirects immediately to payment gateway
+      // Note: With redirectTarget '_self', the page redirects immediately.
+      // Payment completion is handled via returnUrl and webhook, not promise result.
+      cashfree.checkout(checkoutOptions).catch((error: Error) => {
+        console.error('Cashfree checkout initialization error:', error)
+        setError(error.message || 'Failed to initialize payment. Please try again.')
+        setLoading(false)
+      })
+
+    } catch (err: unknown) {
+      console.error('Cashfree payment error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+      setError(errorMessage)
+      setLoading(false)
+    }
+  }
+
   const handlePayment = async () => {
+    if (paymentGateway === 'cashfree') {
+      return handleCashfreePayment()
+    }
+
+    // Original Razorpay payment flow
     if (!validateForm()) return
 
     setLoading(true)
@@ -508,6 +594,10 @@ export default function CheckoutPage() {
       `}</style>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
+      />
+      <Script
+        src="https://sdk.cashfree.com/js/v3/cashfree.js"
         strategy="lazyOnload"
       />
 
@@ -890,71 +980,119 @@ export default function CheckoutPage() {
 
               {/* Payment Method */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                <div className="flex items-start gap-3 mb-3 sm:mb-4">
-                  <input
-                    type="radio"
-                    id="razorpay"
-                    name="payment"
-                    checked
-                    readOnly
-                    className="w-4 h-4 mt-0.5 flex-shrink-0"
-                  />
-                  <Label htmlFor="razorpay" className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 cursor-pointer flex-1">
-                    <span className="font-medium text-sm sm:text-base">Credit Card/Debit Card/NetBanking/UPI</span>
-                    <span className="text-[10px] sm:text-xs text-gray-500">Powered by Razorpay</span>
-                  </Label>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-600 pl-7 leading-relaxed">
-                  Pay securely by Credit or Debit card or Internet Banking through Razorpay.
-                </p>
-              </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
+                  Select Payment Gateway
+                </h3>
 
-              {/* Privacy & Terms */}
-              <div className="bg-gradient-to-br from-gray-50 to-blue-50 border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                {/* Privacy Policy Text */}
-                {/* <div className="mb-4 sm:mb-5">
-                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-                    Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our{' '}
-                    <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
-                      privacy policy
-                    </Link>.
-                  </p>
-                </div> */}
-
-                {/* Terms and Conditions Checkbox */}
-                <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="terms"
-                      checked={agreeToTerms}
-                      onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                      className={`mt-0.5 flex-shrink-0 ${errors.terms ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <Label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer leading-relaxed text-gray-700 block">
-                        I have read and agree to the website{' '}
-                        <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
-                          terms and conditions
-                        </Link> and <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
-                      privacy policy
-                    </Link>.
-                        <span className="text-red-500 font-bold"> *</span>
+                {/* Payment Gateway Radio Buttons - Two Columns */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Razorpay Option */}
+                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                    paymentGateway === 'razorpay'
+                      ? 'border-purple-500 bg-purple-50'
+                      : errors.paymentGateway
+                      ? 'border-red-500'
+                      : 'border-gray-300 hover:border-purple-300'
+                  }`}
+                  onClick={() => setPaymentGateway('razorpay')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        id="razorpay"
+                        name="payment"
+                        checked={paymentGateway === 'razorpay'}
+                        onChange={() => setPaymentGateway('razorpay')}
+                        className="w-4 h-4 cursor-pointer text-purple-600 flex-shrink-0"
+                      />
+                      <Label htmlFor="razorpay" className="cursor-pointer flex-1">
+                        <div className="flex items-center justify-center h-8">
+                          <Image
+                            src="https://razorpay.com/assets/razorpay-logo.svg"
+                            alt="Razorpay"
+                            width={100}
+                            height={32}
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
                       </Label>
-                      {errors.terms && (
-                        <p className="text-red-600 text-[10px] sm:text-xs mt-2 font-medium flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                          {errors.terms}
-                        </p>
-                      )}
+                    </div>
+                  </div>
+
+                  {/* Cashfree Option */}
+                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                    paymentGateway === 'cashfree'
+                      ? 'border-teal-500 bg-teal-50'
+                      : errors.paymentGateway
+                      ? 'border-red-500'
+                      : 'border-gray-300 hover:border-teal-300'
+                  }`}
+                  onClick={() => setPaymentGateway('cashfree')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        id="cashfree"
+                        name="payment"
+                        checked={paymentGateway === 'cashfree'}
+                        onChange={() => setPaymentGateway('cashfree')}
+                        className="w-4 h-4 cursor-pointer text-teal-600 flex-shrink-0"
+                      />
+                      <Label htmlFor="cashfree" className="cursor-pointer flex-1">
+                        <div className="flex items-center justify-center h-8">
+                          <img
+                            src="https://merchant.cashfree.com/auth/99bf3bd232800f0f1c4e.svg"
+                            alt="Cashfree"
+                            className="h-8 w-auto object-contain"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const textFallback = document.createElement('span');
+                              textFallback.className = 'text-teal-600 font-bold text-base';
+                              textFallback.textContent = 'Cashfree';
+                              target.parentElement?.appendChild(textFallback);
+                            }}
+                          />
+                        </div>
+                      </Label>
                     </div>
                   </div>
                 </div>
 
-                {/* Additional Information Note */}
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-                  <p className="text-[10px] sm:text-xs text-gray-500 text-center leading-relaxed">
-                    By proceeding with the payment, you acknowledge that you have read, understood, and agreed to our terms and conditions. All transactions are secure and protected.
+                {/* Error Message */}
+                {errors.paymentGateway && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.paymentGateway}
                   </p>
+                )}
+              </div>
+
+              {/* Terms and Conditions Checkbox */}
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="terms"
+                  checked={agreeToTerms}
+                  onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                  className={`mt-0.5 flex-shrink-0 ${errors.terms ? 'border-red-500' : 'border-gray-300'}`}
+                />
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer leading-relaxed text-gray-700 block">
+                    I have read and agree to the website{' '}
+                    <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
+                      terms and conditions
+                    </Link> and <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors">
+                      privacy policy
+                    </Link>.
+                    <span className="text-red-500 font-bold"> *</span>
+                  </Label>
+                  {errors.terms && (
+                    <p className="text-red-600 text-[10px] sm:text-xs mt-2 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                      {errors.terms}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -985,7 +1123,7 @@ export default function CheckoutPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
                 <p className="text-xs sm:text-sm text-gray-700 font-medium flex items-center justify-center gap-2">
                   <span className="text-green-600 text-base">🔒</span>
-                  Secure payment powered by Razorpay
+                  Secure payment powered by {paymentGateway === 'razorpay' ? 'Razorpay' : 'Cashfree'}
                 </p>
               </div>
             </div>

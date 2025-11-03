@@ -47,6 +47,7 @@ export interface PaymentData {
   email: string
   phone?: string
   company?: string
+  firm_name?: string
   address?: string
   gstNumber?: string
   orderId: string
@@ -561,7 +562,7 @@ export function createInvoiceData(payment: PaymentData): InvoiceData {
     customerName: payment.name || 'Customer',
     customerEmail: payment.email,
     customerPhone: payment.phone,
-    customerCompany: payment.company,
+    customerCompany: payment.firm_name || payment.company,
     customerAddress: payment.address,
     customerGSTN: payment.gstNumber,
 

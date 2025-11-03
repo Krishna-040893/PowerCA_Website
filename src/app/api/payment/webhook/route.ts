@@ -121,6 +121,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
       gst_number: orderData?.gst_number,
       firm_name: orderData?.firm_name,
       address: orderData?.address,
+      payment_provider: 'razorpay',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, {
@@ -213,6 +214,7 @@ async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseC
       email: email || 'unknown@powerca.in',
       phone: contact,
       name: 'Customer',
+      payment_provider: 'razorpay',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, {

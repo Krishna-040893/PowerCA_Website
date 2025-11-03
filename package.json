@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3009",
     "build": "next build",
     "start": "next start",
+    "analyze": "ANALYZE=true npm run build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:clean": "node scripts/clean-eslint-warnings.js",
@@ -47,6 +48,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
+    "@sentry/nextjs": "^10.22.0",
     "@sparticuz/chromium": "^141.0.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
@@ -97,6 +99,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@next/bundle-analyzer": "^16.0.1",
     "@next/eslint-plugin-next": "^15.5.4",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
