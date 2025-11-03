@@ -144,7 +144,13 @@ function PaymentSuccessContent() {
             }
           } else {
             // Handle different payment statuses
-            const errorMsg = data.error || 'Payment processing failed'
+            // Extract error message properly (could be string or object from createErrorResponse)
+            const errorData = data.error
+            const errorMsg = typeof errorData === 'object' && errorData?.message
+              ? errorData.message
+              : typeof errorData === 'string'
+              ? errorData
+              : 'Payment processing failed'
             const status = data.status || 'UNKNOWN'
 
             // Determine payment status based on error
