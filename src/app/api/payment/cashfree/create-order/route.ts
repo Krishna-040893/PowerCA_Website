@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // ✅ Choose environment based on App ID prefix
     // Cashfree App IDs: TEST* = sandbox, production IDs start with numbers
     const environment = appId.toUpperCase().startsWith('TEST') ? 'sandbox' : 'production'
-    const baseUrl =
+    const cashfreeApiUrl =
       environment === 'production'
         ? 'https://api.cashfree.com/pg'
         : 'https://sandbox.cashfree.com/pg'
@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
     console.log('🔧 Cashfree Environment Detection:', {
       appId: appId.substring(0, 10) + '...', // Log partial for security
       detectedEnvironment: environment,
-      baseUrl,
+      appBaseUrl: baseUrl,
+      cashfreeApiUrl,
       returnUrl: `${baseUrl}/payment-success?provider=cashfree&order_id={order_id}`,
       notifyUrl: `${baseUrl}/api/payment/cashfree/webhook`
     })
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
     console.log('📦 Cashfree Order Payload:', cashfreeOrderPayload)
 
     // ✅ API Call
-    const cashfreeResponse = await fetch(`${baseUrl}/orders`, {
+    const cashfreeResponse = await fetch(`${cashfreeApiUrl}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
