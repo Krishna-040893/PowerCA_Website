@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState  } from 'react'
+import {useState, Suspense  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -14,7 +14,7 @@ import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
 import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, FileText, Download, GraduationCap  } from 'lucide-react'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -538,5 +538,13 @@ export default function RegisterPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
   )
 }

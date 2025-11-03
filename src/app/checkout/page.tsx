@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState, useEffect  } from 'react'
+import {useState, useEffect, Suspense  } from 'react'
 import {useRouter, useSearchParams  } from 'next/navigation'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
@@ -132,7 +132,7 @@ const countryStates: Record<string, string[]> = {
   ]
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
@@ -1133,5 +1133,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   )
 }
