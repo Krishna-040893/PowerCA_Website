@@ -6,7 +6,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, ArrowLeft, Download, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, ArrowLeft, Download, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import confetti from 'canvas-confetti'
@@ -74,25 +74,20 @@ function PaymentSuccessContent() {
 
     // Handle Cashfree payments - process payment and generate invoice
     if (gateway === 'cashfree' && orderId) {
-      console.log('Processing Cashfree payment:', orderId)
-
       // First try to fetch existing invoice if invoiceNumber is provided
       if (invoiceNumber) {
         fetch(`/api/invoice/${invoiceNumber}`)
           .then(res => res.json())
           .then(data => {
             if (data.success) {
-              console.log('Invoice found:', data.data)
               setInvoiceData(data.data)
               setIsLoading(false)
             } else {
               // Invoice not found, process payment
-              console.log('Invoice not found, processing payment...')
               return processPayment(orderId)
             }
           })
-          .catch(err => {
-            console.error('Failed to fetch invoice, processing payment:', err)
+          .catch(_err => {
             processPayment(orderId)
           })
       } else {
@@ -110,8 +105,7 @@ function PaymentSuccessContent() {
           }
           setIsLoading(false)
         })
-        .catch(err => {
-          console.error('Failed to fetch invoice:', err)
+        .catch(_err => {
           setIsLoading(false)
         })
     } else {
@@ -127,7 +121,6 @@ function PaymentSuccessContent() {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            console.log('Payment processed:', data)
             setPaymentStatus('success')
             // Fetch the generated invoice
             if (data.invoiceNumber) {
@@ -155,23 +148,19 @@ function PaymentSuccessContent() {
 
             // Determine payment status based on error
             if (errorMsg === 'Payment not completed' || status === 'CREATED' || status === 'ACTIVE') {
-              console.log('Payment cancelled by user:', { orderId, status })
               setPaymentStatus('cancelled')
               setErrorMessage('Payment was not completed. You may have cancelled the payment or closed the payment window.')
             } else if (status === 'PENDING') {
-              console.log('Payment is pending verification:', { orderId, status })
               setPaymentStatus('pending')
               setErrorMessage('Your payment is being processed. Please wait or check back in a few minutes.')
             } else {
-              console.error('Payment failed:', errorMsg, 'Status:', status)
               setPaymentStatus('failed')
               setErrorMessage(errorMsg)
             }
             setIsLoading(false)
           }
         })
-        .catch(err => {
-          console.error('Failed to process Cashfree payment:', err)
+        .catch(_err => {
           setPaymentStatus('failed')
           setErrorMessage('Unable to verify payment status. Please contact support if amount was deducted.')
           setIsLoading(false)
@@ -211,8 +200,7 @@ function PaymentSuccessContent() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-    } catch (error) {
-      console.error('Failed to download invoice:', error)
+    } catch {
       alert('Failed to download invoice. Please try again or contact support.')
     } finally {
       setIsDownloading(false)

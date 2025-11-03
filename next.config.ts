@@ -77,9 +77,6 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
-  // Output as standalone for better Vercel deployment
-  output: 'standalone',
-
   // Enable compression
   compress: true,
 
@@ -151,6 +148,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'cashfreelogo.cashfree.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'merchant.cashfree.com',
       },
     ],
     // Configure allowed quality values for Next.js 16+ compatibility

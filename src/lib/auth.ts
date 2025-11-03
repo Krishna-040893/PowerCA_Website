@@ -252,7 +252,7 @@ export const authOptions: NextAuthOptions = {
   },
   useSecureCookies: process.env.NODE_ENV === 'production',
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user: _user }) {
       // Allow all sign-ins (role check is done in the login page)
       return true
     },

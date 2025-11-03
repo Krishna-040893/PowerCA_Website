@@ -8,7 +8,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {Loader2, AlertCircle, Minus, Plus, CheckCircle  } from 'lucide-react'
+import {Loader2, AlertCircle, CheckCircle  } from 'lucide-react'
 import {useSession  } from 'next-auth/react'
 import {featuresConfig  } from '@/config/features'
 import Script from 'next/script'
@@ -135,12 +135,13 @@ const countryStates: Record<string, string[]> = {
 function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const [quantity, setQuantity] = useState(1)
-  const [couponCode, setCouponCode] = useState('')
+  const [couponCode, _setCouponCode] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
   const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
@@ -172,13 +173,30 @@ function CheckoutContent() {
   const gstAmount = subtotal * gstRate
   const total = subtotal + gstAmount
 
+  // Enforce authentication - redirect to login if not authenticated
+  useEffect(() => {
+    if (sessionStatus === 'loading') {
+      setCheckingAuth(true)
+      return
+    }
+
+    if (sessionStatus === 'unauthenticated' || !session) {
+      // User is not logged in, redirect to login with return URL
+      const currentPath = window.location.pathname + window.location.search
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+      return
+    }
+
+    // User is authenticated
+    setCheckingAuth(false)
+  }, [session, sessionStatus, router])
+
   // Detect and validate referral parameters
   useEffect(() => {
     const ref = searchParams.get('ref')
     const cus = searchParams.get('cus')
 
     if (ref || cus) {
-      console.log('🔗 Referral detected on checkout:', { ref, cus })
       setReferralInfo({ ref: ref || undefined, cus: cus || undefined })
 
       // Validate referral in background
@@ -194,13 +212,12 @@ function CheckoutContent() {
                 affiliateName: data.affiliateName,
                 firmName: data.firmName
               }))
-              console.log('✅ Referral validated:', data)
             } else {
               setError('Invalid referral link. Please contact your affiliate partner.')
             }
           })
-          .catch(err => {
-            console.error('Failed to validate referral:', err)
+          .catch(_err => {
+            // Failed to validate referral
           })
           .finally(() => {
             setValidatingReferral(false)
@@ -212,7 +229,6 @@ function CheckoutContent() {
       if (stored) {
         try {
           const parsed = JSON.parse(stored)
-          console.log('🔗 Referral loaded from storage:', parsed)
 
           // Validate the stored referral before displaying
           if (parsed.ref && parsed.cus) {
@@ -227,15 +243,12 @@ function CheckoutContent() {
                     affiliateName: data.affiliateName,
                     firmName: data.firmName
                   })
-                  console.log('✅ Stored referral validated:', data)
                 } else {
-                  console.log('⚠️ Stored referral is invalid, clearing...')
                   localStorage.removeItem('affiliate_referral')
                   setReferralInfo(null)
                 }
               })
-              .catch(err => {
-                console.error('Failed to validate stored referral:', err)
+              .catch(_err => {
                 localStorage.removeItem('affiliate_referral')
                 setReferralInfo(null)
               })
@@ -244,11 +257,9 @@ function CheckoutContent() {
               })
           } else {
             // Missing ref or cus, clear invalid data
-            console.log('⚠️ Incomplete referral data, clearing...')
             localStorage.removeItem('affiliate_referral')
           }
-        } catch (e) {
-          console.error('Failed to parse stored referral:', e)
+        } catch {
           localStorage.removeItem('affiliate_referral')
         }
       }
@@ -273,7 +284,6 @@ function CheckoutContent() {
           const result = await response.json()
 
           if (result.hasOrder && result.orderData) {
-            console.log('🔄 Auto-filling form from last incomplete order')
             setFormData(prev => ({
               ...prev,
               // Only fill fields that are not already populated or are empty
@@ -290,8 +300,7 @@ function CheckoutContent() {
               company: result.orderData.company || prev.company,
             }))
           }
-        } catch (error) {
-          console.error('Error fetching last order:', error)
+        } catch {
           // Continue without auto-fill if there's an error
         }
       }
@@ -400,8 +409,6 @@ function CheckoutContent() {
       // Initialize Cashfree SDK
       // IMPORTANT: Use 'sandbox' mode for TEST credentials to avoid authentication errors
       // The environment returned from backend determines the correct mode
-      console.log('🔧 Cashfree environment:', orderData.environment)
-      console.log('🔑 Payment Session ID:', orderData.paymentSessionId)
 
       const cashfree = await window.Cashfree({
         mode: orderData.environment === 'production' ? 'production' : 'sandbox'
@@ -413,14 +420,10 @@ function CheckoutContent() {
         returnUrl: `${window.location.origin}/payment-success?gateway=cashfree&orderId=${orderData.orderId || ''}`
       }
 
-      console.log('🚀 Initiating Cashfree checkout with options:', checkoutOptions)
-
       // Initialize Cashfree checkout - redirects immediately to payment gateway
       // Note: With redirectTarget '_self', the page redirects immediately.
       // Payment completion is handled via returnUrl and webhook, not promise result.
       cashfree.checkout(checkoutOptions).catch((error: Error) => {
-        console.error('Cashfree checkout initialization error:', error)
-
         // Check if it's an authentication error
         if (error.message?.toLowerCase().includes('authentication')) {
           setError(`Payment gateway authentication failed. This may be due to incorrect credentials in ${orderData.environment} mode. Please contact support or try Razorpay payment method.`)
@@ -431,7 +434,6 @@ function CheckoutContent() {
       })
 
     } catch (err: unknown) {
-      console.error('Cashfree payment error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
       setError(errorMessage)
       setLoading(false)
@@ -571,20 +573,28 @@ function CheckoutContent() {
       const razorpay = new window.Razorpay(options)
       razorpay.open()
     } catch (err: unknown) {
-      console.error('Payment error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
       setError(errorMessage)
       setLoading(false)
     }
   }
 
-  const handleApplyCoupon = () => {
+  const _handleApplyCoupon = () => {
     // TODO: Implement coupon validation
-    console.log('Applying coupon:', couponCode)
   }
 
-  const incrementQuantity = () => setQuantity(prev => prev + 1)
-  const decrementQuantity = () => setQuantity(prev => Math.max(1, prev - 1))
+  const _incrementQuantity = () => setQuantity(prev => prev + 1)
+  const _decrementQuantity = () => setQuantity(prev => Math.max(1, prev - 1))
+
+  // Show loading screen while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
+        <p className="text-gray-600 text-lg">Checking authentication...</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -1056,18 +1066,12 @@ function CheckoutContent() {
                       />
                       <Label htmlFor="cashfree" className="cursor-pointer flex-1">
                         <div className="flex items-center justify-center h-8">
-                          <img
+                          <Image
                             src="https://merchant.cashfree.com/auth/99bf3bd232800f0f1c4e.svg"
                             alt="Cashfree"
+                            width={120}
+                            height={32}
                             className="h-8 w-auto object-contain"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const textFallback = document.createElement('span');
-                              textFallback.className = 'text-teal-600 font-bold text-base';
-                              textFallback.textContent = 'Cashfree';
-                              target.parentElement?.appendChild(textFallback);
-                            }}
                           />
                         </div>
                       </Label>

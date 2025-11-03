@@ -27,7 +27,6 @@ function PricingContent() {
       const referralData = { ref: ref || undefined, cus: cus || undefined }
       localStorage.setItem('affiliate_referral', JSON.stringify(referralData))
       setReferralInfo(referralData)
-      console.log('🔗 Affiliate referral detected:', referralData)
     } else {
       // Check if referral info exists in localStorage
       const stored = localStorage.getItem('affiliate_referral')
@@ -35,9 +34,8 @@ function PricingContent() {
         try {
           const parsed = JSON.parse(stored)
           setReferralInfo(parsed)
-          console.log('🔗 Affiliate referral loaded from storage:', parsed)
-        } catch (e) {
-          console.error('Failed to parse stored referral:', e)
+        } catch {
+          // Failed to parse stored referral - ignore and continue
         }
       }
     }
@@ -62,18 +60,10 @@ function PricingContent() {
           const matchesCus = data.referralInfo.customerId === referralInfo.cus
 
           setIsValidReferral(matchesRef && matchesCus)
-
-          if (matchesRef && matchesCus) {
-            console.log('✅ Referral verified: User matches the referral parameters')
-          } else {
-            console.log('❌ Referral mismatch: URL parameters do not match user\'s actual referral')
-          }
         } else {
           setIsValidReferral(false)
-          console.log('ℹ️ No referral found for this user')
         }
-      } catch (error) {
-        console.error('Error verifying referral:', error)
+      } catch {
         setIsValidReferral(false)
       }
     }

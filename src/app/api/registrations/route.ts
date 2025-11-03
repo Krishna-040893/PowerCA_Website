@@ -26,7 +26,7 @@ const normalizePhone = (value: unknown) => {
   return cleaned.slice(0, 20)
 }
 
-const normalizeUsername = (value: unknown, fallback: string) => {
+const _normalizeUsername = (value: unknown, fallback: string) => {
   const base =
     typeof value === 'string' && value.trim().length > 0
       ? value.trim()
@@ -188,11 +188,8 @@ export async function POST(request: NextRequest) {
 
     // Check if email exists in affiliate_referrals table (regardless of referral link usage)
     try {
-      console.log('🔍 Checking if email exists in affiliate referrals:', email)
-
       // First, check if this is a direct referral link signup
       if (referralCode && customerId) {
-        console.log('🔗 Linking referral via URL params:', { referralCode, customerId, userId: newUser.id })
 
         const { data: referralRecord, error: referralFindError } = await supabase
           .from('affiliate_referrals')
@@ -214,14 +211,9 @@ export async function POST(request: NextRequest) {
               updated_at: new Date().toISOString()
             })
             .eq('id', referralRecord.id)
-
-          if (!referralUpdateError) {
-            console.log('✅ Referral record updated via URL params')
-          }
         }
       } else {
         // No referral link was used, but check if email was referred by an affiliate
-        console.log('📧 No referral link used, checking email in affiliate_referrals table...')
 
         const { data: emailReferral, error: emailCheckError } = await supabase
           .from('affiliate_referrals')
@@ -231,10 +223,8 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (!emailCheckError && emailReferral) {
-          console.log('✅ Found existing referral for this email:', emailReferral)
-
           // Update the referral record with the newly registered user
-          const { error: updateError } = await supabase
+          const { error: _updateError } = await supabase
             .from('affiliate_referrals')
             .update({
               referred_user_id: newUser.id,
@@ -245,13 +235,9 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', emailReferral.id)
 
-          if (!updateError) {
-            console.log('✅ Linked registration to existing affiliate referral via email match')
-          } else {
+          if (updateError) {
             console.error('❌ Error linking to affiliate referral:', updateError)
           }
-        } else {
-          console.log('ℹ️ No matching affiliate referral found for email:', email)
         }
       }
     } catch (referralError) {
@@ -465,7 +451,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = createAdminClient()
 

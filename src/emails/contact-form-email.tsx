@@ -7,7 +7,6 @@ import {
   Section,
   Text,
   Link,
-  Img,
   Preview,
   Font,
 } from '@react-email/components'
@@ -27,7 +26,7 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
   phone,
   company,
   message,
-  subject = 'New Contact Form Submission',
+  subject: _subject = 'New Contact Form Submission',
 }) => {
   const preview = `New contact from ${name}${company ? ` - ${company}` : ''}`
   const timestamp = new Date().toLocaleString('en-IN', {
@@ -154,7 +153,7 @@ const heroContent: React.CSSProperties = {
   textAlign: 'center' as const,
 }
 
-const iconContainer: React.CSSProperties = {
+const _iconContainer: React.CSSProperties = {
   fontSize: '48px',
   marginBottom: '16px',
 }

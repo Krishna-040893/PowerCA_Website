@@ -1,7 +1,7 @@
 'use client'
 
 import {useEffect, useState, useCallback  } from 'react'
-import {Loader2, RefreshCw, Users, Mail, DollarSign, UserCheck, FileText, TrendingUp, BarChart3, PieChart as PieChartIcon, Activity  } from 'lucide-react'
+import {Loader2, RefreshCw, Users, DollarSign, UserCheck, FileText, TrendingUp, BarChart3, PieChart as PieChartIcon, Activity  } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
@@ -16,7 +16,7 @@ import {
 
 export default function AdminPage() {
   const { isAuthenticated, isLoading, adminUser, getAuthHeaders } = useAdminAuth()
-  const [stats, setStats] = useState({
+  const [_stats, setStats] = useState({
     total: 0,
     pending: 0,
     confirmed: 0,
@@ -96,26 +96,13 @@ export default function AdminPage() {
       const payments = paymentsData.payments || []
       const totalRevenue = payments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0)
 
-      // Debug logging for registrations
-      console.log('📊 Dashboard Data Debug:')
-      console.log('Total registrations:', registrations.length)
-      console.log('Sample registration:', registrations[0])
-      console.log('All roles:', registrations.map((r: { role: string }) => r.role))
-
       const professionals = registrations.filter((r: { role: string }) => r.role === 'professional' || r.role === 'Professional').length
       const students = registrations.filter((r: { role: string }) => r.role === 'student' || r.role === 'Student').length
-
-      console.log('Professionals count:', professionals)
-      console.log('Students count:', students)
 
       // Calculate monthly data for the last 6 months
       const now = new Date()
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
       const monthlyStats: Array<{ month: string; registrations: number; payments: number }> = []
-
-      console.log('📅 Calculating monthly data...')
-      console.log('Total registrations to process:', registrations.length)
-      console.log('Total payments to process:', payments.length)
 
       for (let i = 5; i >= 0; i--) {
         const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
@@ -132,17 +119,13 @@ export default function AdminPage() {
           return createdAt >= monthStart && createdAt <= monthEnd
         }).length
 
-        const monthData = {
+        monthlyStats.push({
           month: monthNames[targetDate.getMonth()],
           registrations: monthRegistrations,
           payments: monthPayments
-        }
-
-        console.log(`Month ${monthNames[targetDate.getMonth()]}:`, monthData)
-        monthlyStats.push(monthData)
+        })
       }
 
-      console.log('✅ Monthly stats calculated:', monthlyStats)
       setMonthlyData(monthlyStats)
 
       setAllStats({
@@ -157,8 +140,8 @@ export default function AdminPage() {
         blogPosts: blogData.posts?.length || 0,
         affiliateReferrals: referralsData.data?.reduce((sum: number, d: { referrals: unknown[] }) => sum + (d.referrals?.length || 0), 0) || 0
       })
-    } catch (error) {
-      console.error('Error fetching stats:', error)
+    } catch {
+      // Error fetching stats - silent fail
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -193,10 +176,6 @@ export default function AdminPage() {
     { name: 'Professionals', value: allStats.professionals, color: '#3b82f6' },
     { name: 'Students', value: allStats.students, color: '#8b5cf6' }
   ]
-
-  // Debug logging for pie chart
-  console.log('🥧 Pie Chart Data:', pieChartData)
-  console.log('📊 All Stats:', allStats)
 
   const barChartData = [
     { name: 'Registrations', value: allStats.registrations, color: '#3b82f6' },

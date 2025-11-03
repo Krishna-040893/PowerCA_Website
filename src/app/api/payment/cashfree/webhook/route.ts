@@ -70,24 +70,12 @@ export async function POST(req: NextRequest) {
       const orderTags = (order?.order_tags as Record<string, string>) || {}
       const fullAddress = orderData.customer_address || orderTags.address || null
 
-      // Validate user_id exists in auth.users to avoid foreign key constraint violation
-      let validatedUserId = null
-      if (orderData.user_id) {
-        const { data: userExists } = await supabase.auth.admin.getUserById(orderData.user_id)
-        if (userExists?.user) {
-          validatedUserId = orderData.user_id
-        } else {
-          logger.warn('User ID from order does not exist in auth.users (webhook), setting to null', {
-            orderId: order.order_id,
-            user_id: orderData.user_id
-          })
-        }
-      }
-
+      // Use user_id from order data (already validated during order creation)
+      // No FK constraint validation needed since we use NextAuth custom tables
       const { data: paymentRecord, error: paymentError } = await supabase
         .from('payments')
         .insert({
-          user_id: validatedUserId,
+          user_id: orderData.user_id,
           order_id: order.order_id,
           payment_id: payment.cf_payment_id,
           amount: totalAmount,
@@ -110,17 +98,17 @@ export async function POST(req: NextRequest) {
       }
 
       // Create or update subscription for the user
-      if (paymentRecord && validatedUserId) {
+      if (paymentRecord && orderData.user_id) {
         try {
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
             .select('*')
-            .eq('user_id', validatedUserId)
+            .eq('user_id', orderData.user_id)
             .single()
 
           if (!existingSubscription) {
             const subscriptionData = {
-              user_id: validatedUserId,
+              user_id: orderData.user_id,
               plan: 'launch_offer',
               status: 'ACTIVE',
               current_period_start: new Date().toISOString(),
@@ -138,7 +126,7 @@ export async function POST(req: NextRequest) {
             } else {
               logger.info('✅ Subscription created', {
                 subscriptionId: newSubscription.id,
-                userId: validatedUserId,
+                userId: orderData.user_id,
                 plan: 'launch_offer'
               })
             }

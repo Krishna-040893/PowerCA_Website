@@ -39,16 +39,24 @@ export async function POST(req: NextRequest) {
         ? 'https://api.cashfree.com/pg'
         : 'https://sandbox.cashfree.com/pg'
 
-    console.log('🔧 Cashfree Environment Detection:', {
-      appId: appId.substring(0, 10) + '...', // Log partial for security
-      detectedEnvironment: environment,
-      appBaseUrl: baseUrl,
-      cashfreeApiUrl,
-      returnUrl: `${baseUrl}/payment-success?gateway=cashfree&orderId={order_id}`,
-      notifyUrl: `${baseUrl}/api/payment/cashfree/webhook`
-    })
-
     const session = await getServerSession(authOptions)
+
+    // ✅ Enforce authentication - no guest checkout allowed
+    if (!session || !session.user || !session.user.id) {
+      logger.warn('Unauthenticated payment attempt blocked')
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Authentication required',
+            code: 'AUTH_REQUIRED',
+            details: 'You must be logged in to make a payment. Please log in and try again.'
+          }
+        },
+        { status: 401 }
+      )
+    }
+
     const body = await req.json()
 
     const {
@@ -56,7 +64,7 @@ export async function POST(req: NextRequest) {
       productId = 'powerca_implementation',
       planType = 'implementation',
       planId,
-      affiliateCode,
+      _affiliateCode,
       customerDetails,
       referralInfo,
       country,
@@ -85,9 +93,8 @@ export async function POST(req: NextRequest) {
 
     const customerEmail =
       customerDetails?.email ||
-      session?.user?.email ||
-      body.email ||
-      'guest@powerca.in'
+      session.user.email ||
+      body.email
 
     const customerId = customerEmail.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()
 
@@ -98,11 +105,8 @@ export async function POST(req: NextRequest) {
       gstNumber.length === 15 &&
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber)
 
-    const gstNumeric = isValidGst
-      ? gstNumber.substring(0, 2) + gstNumber.substring(5, 9)
-      : '000000'
-
     // ✅ Build payload
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cashfreeOrderPayload: any = {
       order_id: orderId,
       order_amount: amount,
@@ -111,9 +115,8 @@ export async function POST(req: NextRequest) {
         customer_id: customerId,
         customer_name:
           customerDetails?.name ||
-          session?.user?.name ||
-          body.name ||
-          'Guest User',
+          session.user.name ||
+          body.name,
         customer_email: customerEmail,
         customer_phone: customerDetails?.phone || body.phone || '9999999999',
       },
@@ -166,9 +169,6 @@ export async function POST(req: NextRequest) {
       cashfreeOrderPayload.order_tags.gst_amount = String(gstAmount)
     }
 
-    // ✅ Debug Log
-    console.log('📦 Cashfree Order Payload:', cashfreeOrderPayload)
-
     // ✅ API Call
     const cashfreeResponse = await fetch(`${cashfreeApiUrl}/orders`, {
       method: 'POST',
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
         status: 'created',
         customer_email: customerEmail,
         customer_name:
-          customerDetails?.name || session?.user?.name || body.name,
+          customerDetails?.name || session.user.name || body.name,
         customer_phone: customerDetails?.phone || body.phone,
         company: customerDetails?.company || body.company,
         firm_name: customerDetails?.firmName || body.firmName,
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
         referral_code: referralInfo?.referralCode || null,
         customer_id: referralInfo?.customerId || null,
         is_affiliate_purchase: !!referralInfo?.referralCode,
-        user_id: session?.user?.id || null,
+        user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
         customer_address: fullAddress,
         customer_country: country || null,
         customer_city: city || null,

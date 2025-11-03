@@ -47,13 +47,6 @@ export async function POST(req: NextRequest) {
       },
     }
 
-    console.log('🧪 Testing Cashfree Order Creation:', {
-      environment,
-      baseUrl,
-      orderId,
-      amount
-    })
-
     // Make API call
     const response = await fetch(`${baseUrl}/orders`, {
       method: 'POST',
@@ -84,8 +77,6 @@ export async function POST(req: NextRequest) {
         }
       }, { status: response.status })
     }
-
-    console.log('✅ Cashfree Order Created Successfully')
 
     return NextResponse.json({
       success: true,

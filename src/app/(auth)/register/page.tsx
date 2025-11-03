@@ -12,7 +12,7 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, FileText, Download, GraduationCap  } from 'lucide-react'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, GraduationCap  } from 'lucide-react'
 
 function RegisterContent() {
   const [formData, setFormData] = useState({

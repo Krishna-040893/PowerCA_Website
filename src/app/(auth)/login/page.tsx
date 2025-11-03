@@ -65,7 +65,6 @@ function LoginContent() {
             // User has a pending referral, redirect to pricing with referral parameters
             const { referralCode, customerId } = referralData.referralInfo
             const redirectUrl = `/pricing?ref=${referralCode}&cus=${customerId}`
-            console.log('🔗 Redirecting to pricing with referral:', redirectUrl)
             window.location.href = redirectUrl
             return
           }

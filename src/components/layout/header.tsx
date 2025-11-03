@@ -11,7 +11,6 @@ import {useSession, signOut  } from 'next-auth/react'
 import {DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,

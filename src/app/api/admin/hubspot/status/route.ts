@@ -7,7 +7,7 @@ import {createErrorResponse, ErrorType  } from '@/lib/error-handler'
 export const runtime = 'nodejs'
 
 // Get HubSpot configuration status (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await requireAdminAuth()

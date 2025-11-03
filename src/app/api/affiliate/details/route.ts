@@ -6,7 +6,7 @@ import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 import {sendReferralLinkEmail  } from '@/lib/resend'
 
 // GET - Fetch affiliate details
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -201,9 +201,7 @@ export async function POST(request: NextRequest) {
           firmName: body.firmName
         })
 
-        if (emailResult.success) {
-          console.log('✅ Referral link email sent successfully to:', body.contactEmail)
-        } else {
+        if (!emailResult.success) {
           console.error('❌ Failed to send referral link email:', emailResult.error)
           // Don't fail the operation if email fails
         }

@@ -62,7 +62,7 @@ export async function GET() {
           })
         })
 
-        const data = await testResponse.json()
+        const _data = await testResponse.json()
 
         // We expect a validation error, not an auth error
         if (testResponse.status === 400 || testResponse.status === 422) {

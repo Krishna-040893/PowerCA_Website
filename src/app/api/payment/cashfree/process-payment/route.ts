@@ -159,6 +159,7 @@ export async function POST(req: NextRequest) {
       const affiliateFlag =
         (orderTags.isAffiliatePurchase ?? '').toString().toLowerCase()
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fallbackOrder: any = {
         order_id: orderId,
         amount: totalAmount,
@@ -243,22 +244,10 @@ export async function POST(req: NextRequest) {
       // Construct address from order data or order tags as fallback
       const fullAddress = orderData.customer_address || orderTags.address || orderTags.customerAddress || null
 
-      // Validate user_id exists in auth.users to avoid foreign key constraint violation
-      let validatedUserId = null
-      if (orderData.user_id) {
-        const { data: userExists } = await supabase.auth.admin.getUserById(orderData.user_id)
-        if (userExists?.user) {
-          validatedUserId = orderData.user_id
-        } else {
-          logger.warn('User ID from order does not exist in auth.users, setting to null', {
-            orderId,
-            user_id: orderData.user_id
-          })
-        }
-      }
-
+      // Use user_id from order data (already validated during order creation)
+      // No FK constraint validation needed since we use NextAuth custom tables
       const paymentInsertData = {
-        user_id: validatedUserId,
+        user_id: orderData.user_id,
         order_id: orderId,
         payment_id: payment.cf_payment_id,
         amount: totalAmount,
@@ -311,25 +300,25 @@ export async function POST(req: NextRequest) {
     }
 
     // Create subscription if needed
-    if (paymentRecord && validatedUserId) {
+    if (paymentRecord && orderData.user_id) {
       const { data: existingSubscription } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', validatedUserId)
+        .eq('user_id', orderData.user_id)
         .single()
 
       if (!existingSubscription) {
         await supabase
           .from('subscriptions')
           .insert({
-            user_id: validatedUserId,
+            user_id: orderData.user_id,
             plan: 'launch_offer',
             status: 'ACTIVE',
             current_period_start: new Date().toISOString(),
             current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
           })
 
-        logger.info('Subscription created', { userId: validatedUserId })
+        logger.info('Subscription created', { userId: orderData.user_id })
       }
     }
 

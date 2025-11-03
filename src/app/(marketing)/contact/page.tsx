@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { siteConfig } from '@/config/site'
-import { Linkedin, Twitter, Instagram } from 'lucide-react'
 
 // SVG paths for icons - imported from Contact page folder design
 const svgPaths = {
@@ -92,19 +90,6 @@ function PhoneIcon() {
           </svg>
         </div>
       </div>
-    </div>
-  )
-}
-
-function SocialIcon({ path }: { path: string }) {
-  return (
-    <div className="relative shrink-0 size-[44px]">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 44 44">
-        <g>
-          <path d={svgPaths.p18693300} fill="#306BEA" stroke="#306BEA" strokeWidth="1.5" />
-          <path clipRule="evenodd" d={path} fill="white" fillRule="evenodd" />
-        </g>
-      </svg>
     </div>
   )
 }

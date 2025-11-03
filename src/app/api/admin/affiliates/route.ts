@@ -5,7 +5,7 @@ import {sendAffiliateApprovalEmail  } from '@/lib/resend'
 import {logger  } from '@/lib/logger'
 
 // Get all affiliate applications (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await requireAdminAuth()
     if (!session) {

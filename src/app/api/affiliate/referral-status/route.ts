@@ -42,9 +42,6 @@ export async function GET(_req: NextRequest) {
       .eq('affiliate_profile_id', affiliateProfile.id)
       .order('created_at', { ascending: false })
 
-    console.log('🔍 [Referral Status] Profile ID:', affiliateProfile.id)
-    console.log('🔍 [Referral Status] Referrals found:', referrals?.length, referrals)
-
     if (referralError) {
       console.error('Error fetching referrals:', referralError)
       return NextResponse.json({
@@ -105,13 +102,6 @@ export async function GET(_req: NextRequest) {
         ? `You have ${referralCount} total referrals (${pendingCount} pending, ${completedCount} completed)`
         : 'You can refer multiple customers to PowerCA'
     }
-
-    console.log('📤 [Referral Status] Returning:', {
-      referralCount,
-      pendingCount,
-      completedCount,
-      hasReferred
-    })
 
     return NextResponse.json(response)
 

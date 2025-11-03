@@ -7,6 +7,7 @@ import {validatePassword  } from '@/lib/password-validator'
 import {sanitizeInput, sanitizeEmail, sanitizePhone  } from '@/lib/sanitizer'
 import {logger  } from '@/lib/logger'
 import {syncMiddleware  } from '@/middleware/hubspot-sync'
+import { withRateLimit, RateLimits } from '@/lib/middleware'
 
 interface FileUserData {
   id: string
@@ -34,7 +35,7 @@ interface FileUserData {
   created_at?: string
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Check if Supabase is configured
     const isSupabaseConfigured = isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY') &&
@@ -125,7 +126,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function handleRegister(request: NextRequest) {
   try {
     const body = await request.json()
     const { name, email, username, password, phone, role, professionalType, membershipNo, registrationNo, instituteName, membershipNumber } = body
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest) {
         const supabase = createAdminClient()
 
         // Check if user already exists in registrations table
-        const { data: existingUser, error: _checkError } = await supabase
+        const { data: existingUser } = await supabase
           .from(REGISTRATION_FORMS_TABLE)
           .select('id')
           .or(`email.eq.${sanitizedEmail}${finalUsername ? `,username.eq.${finalUsername}` : ''}`)
@@ -434,3 +435,6 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+// Apply rate limiting middleware (5 requests per minute for registration)
+export const POST = withRateLimit(handleRegister, RateLimits.AUTH)

@@ -32,7 +32,7 @@ const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: React
 )
 
 export default function AffiliateRegisterPage() {
-  const router = useRouter()
+  const _router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -196,10 +196,8 @@ export default function AffiliateRegisterPage() {
       let affiliateResult
       try {
         const responseText = await affiliateResponse.text()
-        console.log('Raw API Response:', responseText)
         affiliateResult = responseText ? JSON.parse(responseText) : {}
-      } catch (parseError) {
-        console.error('Failed to parse API response:', parseError)
+      } catch {
         affiliateResult = { error: 'Invalid server response' }
       }
 
@@ -209,8 +207,6 @@ export default function AffiliateRegisterPage() {
           window.location.href = '/affiliate-login'
         }, 1500)
       } else {
-        console.error('API Error Response:', affiliateResult)
-        console.error('Response status:', affiliateResponse.status)
 
         const errorMessage = affiliateResult.details
           ? `${affiliateResult.error}: ${affiliateResult.details}`

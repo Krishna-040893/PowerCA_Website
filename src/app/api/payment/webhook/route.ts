@@ -4,6 +4,8 @@ import {createClient  } from '@/lib/supabase/server'
 import {sendEmail  } from '@/lib/send-emails'
 import {createInvoiceData, generateInvoiceHTML  } from '@/lib/invoice-generator'
 import {SupabaseClient  } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
+import { createErrorResponse, ErrorType } from '@/lib/error-handler'
 
 interface RazorpayPayment {
   order_id: string
@@ -23,10 +25,13 @@ interface RazorpayOrder {
 
 export async function POST(req: NextRequest) {
   try {
+    logger.info('Razorpay webhook received')
+
     const body = await req.text()
     const signature = req.headers.get('x-razorpay-signature')
 
     if (!signature || !process.env.RAZORPAY_WEBHOOK_SECRET) {
+      logger.security('Razorpay webhook - missing signature or secret')
       return NextResponse.json(
         { error: 'Invalid webhook configuration' },
         { status: 400 }
@@ -40,6 +45,7 @@ export async function POST(req: NextRequest) {
       .digest('hex')
 
     if (signature !== expectedSignature) {
+      logger.security('Razorpay webhook - invalid signature')
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
@@ -48,6 +54,11 @@ export async function POST(req: NextRequest) {
 
     const event = JSON.parse(body)
     const supabase = await createClient()
+
+    logger.info('Processing Razorpay webhook event', {
+      eventType: event.event,
+      orderId: event.payload?.order?.id || event.payload?.payment?.entity?.order_id
+    })
 
     // Handle different webhook events
     switch (event.event) {
@@ -64,20 +75,23 @@ export async function POST(req: NextRequest) {
         break
 
       default:
-        // Unhandled webhook event
+        logger.warn('Unhandled Razorpay webhook event', { eventType: event.event })
     }
 
+    logger.info('Razorpay webhook processed successfully')
     return NextResponse.json({ status: 'ok' })
-  } catch {
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
+  } catch (error) {
+    logger.error('Razorpay webhook processing failed', error)
+    return createErrorResponse(
+      ErrorType.PAYMENT,
+      error as Error,
+      { logError: true }
     )
   }
 }
 
 async function handlePaymentCaptured(payment: RazorpayPayment, supabase: SupabaseClient) {
-  const { order_id, id: payment_id, amount, email, contact, notes } = payment
+  const { order_id, id: payment_id, amount, email, contact } = payment
 
   // Check if payment already exists
   const { data: existingPayment } = await supabase
@@ -87,7 +101,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
     .single()
 
   if (existingPayment) {
-    console.log('Payment already exists:', payment_id)
+    logger.info('Payment already exists', { paymentId: payment_id })
     return
   }
 
@@ -101,7 +115,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
   // Calculate amounts
   const totalAmount = amount / 100 // Convert paise to rupees
   const paymentAmount = parseFloat((totalAmount / 1.18).toFixed(2))
-  const gstAmount = parseFloat((totalAmount - paymentAmount).toFixed(2))
+  const _gstAmount = parseFloat((totalAmount - paymentAmount).toFixed(2))
 
   // Insert or update payment record
   const { data: paymentRecord, error: updateError } = await supabase
@@ -132,7 +146,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
     .single()
 
   if (updateError) {
-    console.error('Failed to upsert payment:', updateError)
+    logger.error('Failed to upsert payment', updateError, { orderId: order_id, paymentId: payment_id })
     return
   }
 
@@ -152,7 +166,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
   const invoiceHTML = generateInvoiceHTML(invoiceData)
 
   // Save invoice to database
-  const { data: _invoice, error: invoiceError } = await supabase
+  const { error: invoiceError } = await supabase
     .from('invoices')
     .insert({
       invoice_number: invoiceData.invoiceNumber,
@@ -166,7 +180,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
     .single()
 
   if (invoiceError) {
-    console.error('Failed to create invoice:', invoiceError)
+    logger.error('Failed to create invoice', invoiceError, { invoiceNumber: invoiceData.invoiceNumber })
   }
 
   // Send confirmation email with invoice
@@ -193,13 +207,28 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
         content: invoiceHTML,
       }],
     })
+    logger.info('Payment confirmation email sent', {
+      paymentId: payment_id,
+      email: paymentRecord.email,
+      invoiceNumber: invoiceData.invoiceNumber
+    })
   } catch (emailError) {
-    console.error('Failed to send confirmation email:', emailError)
+    logger.error('Failed to send confirmation email', emailError, {
+      paymentId: payment_id,
+      email: paymentRecord.email
+    })
   }
 }
 
 async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseClient) {
   const { order_id, id: payment_id, amount, email, contact } = payment
+
+  logger.warn('Payment failed', {
+    orderId: order_id,
+    paymentId: payment_id,
+    amount: amount / 100,
+    email
+  })
 
   // Insert or update failed payment record
   const { error } = await supabase
@@ -223,7 +252,10 @@ async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseC
     })
 
   if (error) {
-    console.error('Failed to upsert failed payment:', error)
+    logger.error('Failed to upsert failed payment', error, {
+      orderId: order_id,
+      paymentId: payment_id
+    })
   }
 }
 

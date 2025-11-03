@@ -3,11 +3,10 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useRouter  } from 'next/navigation'
 import {useSession, signOut  } from 'next-auth/react'
-import {Building2, Globe, Link, User, Save, AlertCircle, Clock, XCircle, LogOut, Copy, ChevronLeft, ChevronRight  } from 'lucide-react'
+import {Building2, User, Save, AlertCircle, Clock, XCircle, LogOut, ChevronLeft, ChevronRight  } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
 import {toast  } from 'sonner'
 import {Button  } from '@/components/ui/button'
-import ProfilePhotoUpload from '@/components/profile-photo-upload'
 
 export default function AffiliateAccountPage() {
   const router = useRouter()
@@ -38,7 +37,6 @@ export default function AffiliateAccountPage() {
     affiliateId: string
     referralCode: string
   } | null>(null)
-  const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 5
 
@@ -68,19 +66,11 @@ export default function AffiliateAccountPage() {
   }, [])
 
   const fetchAffiliateDetails = useCallback(async () => {
-    console.log('🔍 [Client] Current session:', {
-      userName: session?.user?.name,
-      userEmail: session?.user?.email,
-      userRole: session?.user?.role
-    })
-
     try {
       // First, check affiliate approval status
       const approvalResponse = await fetch('/api/affiliate/approval-status')
       if (approvalResponse.ok) {
         const approvalData = await approvalResponse.json()
-
-        console.log('🔍 [Client] Approval data received:', approvalData)
 
         // Check if user has applied as affiliate
         if (!approvalData.hasApplied) {
@@ -172,7 +162,7 @@ export default function AffiliateAccountPage() {
     } catch {
       setError('Failed to load affiliate information. Please try again.')
     }
-  }, [session])
+  }, [])
 
   // Fetch referral details when affiliate is approved
   useEffect(() => {
@@ -208,14 +198,6 @@ export default function AffiliateAccountPage() {
     } catch (error) {
       console.error('Error fetching profile photo:', error)
     }
-  }
-
-  const handleProfilePhotoUpdate = (newUrl: string) => {
-    setCurrentProfilePhotoUrl(newUrl)
-  }
-
-  const handleProfilePhotoDelete = () => {
-    setCurrentProfilePhotoUrl(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -836,7 +818,6 @@ export default function AffiliateAccountPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
                     {(() => {
-                      const totalPages = Math.ceil(referralDetails.length / ITEMS_PER_PAGE)
                       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
                       const endIndex = startIndex + ITEMS_PER_PAGE
                       const paginatedReferrals = referralDetails.slice(startIndex, endIndex)

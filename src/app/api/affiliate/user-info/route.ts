@@ -4,7 +4,7 @@ import {authOptions  } from '@/lib/auth'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -17,20 +17,12 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    console.log('🔍 [User Info API] Checking affiliate for email:', session.user.email)
-
     // Check if user has an approved affiliate registration using email
     const { data: affiliateReg, error: regError } = await supabase
       .from('affiliate_registrations')
       .select('*')
       .eq('email', session.user.email)
       .single()
-
-    console.log('🔍 [User Info API] Affiliate registration query result:', {
-      found: !!affiliateReg,
-      status: affiliateReg?.status,
-      error: regError?.message
-    })
 
     if (regError || !affiliateReg) {
       console.error('❌ [User Info API] No affiliate registration found:', regError)
@@ -42,24 +34,21 @@ export async function GET(request: NextRequest) {
 
     // Check if affiliate is approved
     if (affiliateReg.status !== 'approved') {
-      console.log('❌ [User Info API] Affiliate not approved. Status:', affiliateReg.status)
       return NextResponse.json(
         { error: `Affiliate application is ${affiliateReg.status}. Please wait for approval.` },
         { status: 403 }
       )
     }
 
-    console.log('✅ [User Info API] Affiliate approved, fetching additional data')
-
     // Get user data from registrations
-    const { data: userData, error: userError } = await supabase
+    const { data: userData } = await supabase
       .from(REGISTRATION_FORMS_TABLE)
       .select('id, email, name, role')
       .eq('email', session.user.email)
       .maybeSingle()
 
     // Get affiliate profile if exists
-    const { data: affiliateProfile, error: _profileError } = await supabase
+    const { data: affiliateProfile } = await supabase
       .from('affiliate_profiles')
       .select('*')
       .eq('user_id', userData?.id || affiliateReg.user_id)

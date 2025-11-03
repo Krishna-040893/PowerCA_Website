@@ -19,9 +19,6 @@ export async function POST(req: NextRequest) {
     const keyId = process.env.RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET
 
-    console.log('🔑 Razorpay Key Mode:', keyId?.startsWith('rzp_live') ? 'LIVE MODE' : 'TEST MODE')
-    console.log('🔑 Key ID:', keyId?.substring(0, 15) + '...')
-
     if (!keyId || !keySecret) {
       return handleConfigurationError('Razorpay credentials')
     }
@@ -31,8 +28,24 @@ export async function POST(req: NextRequest) {
       key_secret: keySecret,
     })
 
-    // Get user session (optional - can allow guest checkout)
+    // Get user session - REQUIRED (no guest checkout)
     const session = await getServerSession(authOptions)
+
+    // ✅ Enforce authentication - no guest checkout allowed
+    if (!session || !session.user || !session.user.id) {
+      logger.warn('Unauthenticated Razorpay payment attempt blocked')
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Authentication required',
+            code: 'AUTH_REQUIRED',
+            details: 'You must be logged in to make a payment. Please log in and try again.'
+          }
+        },
+        { status: 401 }
+      )
+    }
 
     const body = await req.json()
     // Don't log sensitive payment details
@@ -81,8 +94,8 @@ export async function POST(req: NextRequest) {
         productId,
         planType: planType || 'PowerCA Implementation',
         description: 'One-time implementation fee with first year free',
-        customerName: customerDetails?.name || session?.user?.name || body.name || 'Guest User',
-        customerEmail: customerDetails?.email || session?.user?.email || body.email || 'guest',
+        customerName: customerDetails?.name || session.user.name || body.name,
+        customerEmail: customerDetails?.email || session.user.email || body.email,
         customerPhone: customerDetails?.phone || body.phone || '',
         company: customerDetails?.company || body.company || '',
         gst: customerDetails?.gst || '',
@@ -96,44 +109,43 @@ export async function POST(req: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const order = await razorpay.orders.create(options as any)
 
-    // Store order details in database for tracking (optional)
+    // Store order details in database for tracking
     try {
-      const customerEmail = customerDetails?.email || session?.user?.email || body.email
-      if (customerEmail) {
-        const supabase = createAdminClient()
+      const customerEmail = customerDetails?.email || session.user.email || body.email
+      const supabase = createAdminClient()
 
-        // Store pending order
-        const { error } = await supabase
-          .from('payment_orders')
-          .insert({
-            order_id: order.id,
-            amount: amount / 100, // Convert to rupees for storage
-            currency: 'INR',
-            status: 'created',
-            customer_email: customerEmail,
-            customer_name: customerDetails?.name || session?.user?.name || body.name,
-            customer_phone: customerDetails?.phone || body.phone,
-            company: customerDetails?.company || body.company,
-            firm_name: customerDetails?.firmName || body.firmName,
-            gst_number: customerDetails?.gst,
-            product_id: productId || planId,
-            // Add referral tracking
-            referral_code: referralInfo?.referralCode || null,
-            customer_id: referralInfo?.customerId || null,
-            is_affiliate_purchase: !!referralInfo?.referralCode,
-            // Add address fields
-            customer_address: address || body.address,
-            customer_city: city || body.city,
-            customer_state: state || body.state,
-            customer_postcode: postcode || body.postcode,
-            customer_country: country || body.country,
-            customer_gst_no: gstNo || body.gstNo || customerDetails?.gst
-          })
+      // Store pending order
+      const { error } = await supabase
+        .from('payment_orders')
+        .insert({
+          order_id: order.id,
+          amount: amount / 100, // Convert to rupees for storage
+          currency: 'INR',
+          status: 'created',
+          customer_email: customerEmail,
+          customer_name: customerDetails?.name || session.user.name || body.name,
+          customer_phone: customerDetails?.phone || body.phone,
+          company: customerDetails?.company || body.company,
+          firm_name: customerDetails?.firmName || body.firmName,
+          gst_number: customerDetails?.gst,
+          product_id: productId || planId,
+          user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
+          // Add referral tracking
+          referral_code: referralInfo?.referralCode || null,
+          customer_id: referralInfo?.customerId || null,
+          is_affiliate_purchase: !!referralInfo?.referralCode,
+          // Add address fields
+          customer_address: address || body.address,
+          customer_city: city || body.city,
+          customer_state: state || body.state,
+          customer_postcode: postcode || body.postcode,
+          customer_country: country || body.country,
+          customer_gst_no: gstNo || body.gstNo || customerDetails?.gst
+        })
 
-        if (error) {
-          logger.error('Error storing order (non-critical)', error)
-          // Continue even if DB save fails - this is not critical
-        }
+      if (error) {
+        logger.error('Error storing order (non-critical)', error)
+        // Continue even if DB save fails - this is not critical
       }
     } catch (dbError) {
       logger.debug('Database storage skipped', { error: dbError })

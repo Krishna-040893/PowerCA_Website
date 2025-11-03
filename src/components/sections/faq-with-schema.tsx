@@ -39,7 +39,6 @@ export function FAQWithSchema({
   }
 
   const toggleAccordion = (index: number) => {
-    console.log('Clicked FAQ index:', index, 'Current open:', openIndex)
     // If clicking the same item, close it. Otherwise, open the new one
     setOpenIndex(openIndex === index ? null : index)
   }

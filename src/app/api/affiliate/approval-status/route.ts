@@ -3,16 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createClient } from '@supabase/supabase-js'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-
-    console.log('🔍 [Approval Status API] Session data:', {
-      hasSession: !!session,
-      userName: session?.user?.name,
-      userEmail: session?.user?.email,
-      userRole: session?.user?.role
-    })
 
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -33,8 +26,6 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log('🔍 [Approval Status API] Querying database with email:', session.user.email)
-
     // Get user's affiliate application status
     const { data: affiliateApp, error } = await supabase
       .from('affiliate_registrations')
@@ -44,14 +35,7 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .single()
 
-    console.log('🔍 [Approval Status API] Database query result:', {
-      found: !!affiliateApp,
-      error: error?.message,
-      data: affiliateApp
-    })
-
     if (error) {
-      console.log('❌ [Approval Status API] No application found for email:', session.user.email)
       // No application found
       return NextResponse.json({
         status: null,
@@ -59,12 +43,6 @@ export async function GET(request: NextRequest) {
         message: 'No affiliate application found'
       })
     }
-
-    console.log('✅ [Approval Status API] Found application:', {
-      email: affiliateApp.email,
-      status: affiliateApp.status,
-      createdAt: affiliateApp.created_at
-    })
 
     return NextResponse.json({
       status: affiliateApp.status,

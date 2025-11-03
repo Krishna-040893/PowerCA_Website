@@ -62,17 +62,12 @@ export default function AdminBookingsPage() {
         const data = await response.json()
         setBookings(data.bookings || [])
       } else {
-        console.error('Failed to fetch bookings:', response.status, response.statusText)
         setBookings([])
       }
     } catch (error) {
       clearTimeout(timeoutId)
       // Only show error if it's not an abort error (which happens on component unmount)
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request was aborted')
-        // Don't set error state for abort errors
-      } else {
-        console.error('Error fetching bookings:', error)
+      if (error instanceof Error && error.name !== 'AbortError') {
         setBookings([])
       }
     } finally {
@@ -101,12 +96,8 @@ export default function AdminBookingsPage() {
   }, [bookings, searchTerm])
 
   useEffect(() => {
-    console.log('🔐 Auth state changed:', { isAuthenticated, authLoading })
     if (isAuthenticated) {
-      console.log('✅ User is authenticated, fetching bookings...')
       fetchBookings()
-    } else if (!authLoading) {
-      console.log('❌ User not authenticated')
     }
   }, [isAuthenticated, fetchBookings, authLoading])
 
@@ -114,10 +105,7 @@ export default function AdminBookingsPage() {
     filterBookings()
   }, [filterBookings])
 
-  console.log('🎨 Render state:', { authLoading, isAuthenticated, hasAdminUser: !!adminUser })
-
   if (authLoading) {
-    console.log('⏳ Auth is loading...')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -126,7 +114,6 @@ export default function AdminBookingsPage() {
   }
 
   if (!isAuthenticated || !adminUser) {
-    console.log('❌ Not authenticated or no admin user, returning null')
     return null
   }
 

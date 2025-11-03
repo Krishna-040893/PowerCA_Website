@@ -3,10 +3,6 @@ import { resend } from '@/lib/resend'
 
 export async function GET() {
   try {
-    console.log('🧪 Testing Resend email configuration...')
-    console.log('📧 RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Configured ✅' : 'Missing ❌')
-    console.log('📧 EMAIL_FROM:', process.env.EMAIL_FROM || 'Not set')
-
     // Try to send a test email
     const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev'
 
@@ -20,8 +16,6 @@ export async function GET() {
         <p>If you receive this, your email system is working! ✅</p>
       `
     })
-
-    console.log('✅ Test email sent successfully:', result)
 
     return NextResponse.json({
       success: true,

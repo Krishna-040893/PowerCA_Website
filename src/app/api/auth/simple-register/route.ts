@@ -16,9 +16,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, email, phone, password, firmName } = body
-
-    console.log('Simple register called with:', { name, email, phone, firmName })
+    const { name, email, phone, password, firmName: _firmName } = body
 
     // Validate required fields
     if (!name || !email || !phone || !password) {
@@ -52,14 +50,13 @@ export async function POST(request: NextRequest) {
     const supabase = createAdminClient()
 
     // Check if user already exists
-    const { data: existingUser, error: checkError } = await supabase
+    const { data: existingUser } = await supabase
       .from(REGISTRATION_FORMS_TABLE)
       .select('id, email, name, username')
       .eq('email', email)
       .maybeSingle()
 
     if (existingUser) {
-      console.log('User already exists, returning existing user:', existingUser.id)
       // Return existing user for affiliate registration
       return NextResponse.json(
         {

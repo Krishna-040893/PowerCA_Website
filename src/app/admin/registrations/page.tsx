@@ -123,11 +123,7 @@ export default function AdminRegistrationsPage() {
     } catch (err) {
       clearTimeout(timeoutId)
       // Only show error if it's not an abort error (which happens on component unmount)
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('Request was aborted')
-        // Don't set error state for abort errors - they're expected during unmount
-      } else {
-        console.error('Error fetching registrations:', err)
+      if (err instanceof Error && err.name !== 'AbortError') {
         setError(err instanceof Error ? err.message : 'An error occurred')
       }
     } finally {

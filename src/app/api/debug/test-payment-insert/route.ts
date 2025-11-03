@@ -27,8 +27,6 @@ export async function GET() {
       address: 'Test Address'
     }
 
-    console.log('Attempting to insert test payment:', testPaymentData)
-
     const { data, error } = await supabase
       .from('payments')
       .insert(testPaymentData)

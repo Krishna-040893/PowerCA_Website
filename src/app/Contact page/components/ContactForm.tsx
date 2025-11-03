@@ -212,7 +212,7 @@ function ContactForm() {
         setSubmitStatus('error');
         setErrorMessage(data.error || 'Failed to send message. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
       setErrorMessage('An unexpected error occurred. Please try again.');
     } finally {

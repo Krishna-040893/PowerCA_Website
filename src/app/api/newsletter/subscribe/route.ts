@@ -1,19 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-// Create Supabase client with service role key for bypassing RLS
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+import { withRateLimit, RateLimits } from '@/lib/middleware'
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Function to send notification email to admin
-async function sendAdminNotification(subscriberEmail: string) {
+async function sendAdminNotification(subscriberEmail: string, resend: Resend) {
   try {
     await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
@@ -62,35 +64,54 @@ async function sendAdminNotification(subscriberEmail: string) {
         </html>
       `
     })
-    console.log('✅ Admin notification email sent for new subscriber:', subscriberEmail)
+    logger.info('Admin notification email sent for newsletter subscription', { subscriberEmail })
   } catch (error) {
-    console.error('❌ Failed to send admin notification email:', error)
+    logger.error('Failed to send admin notification email', error, { subscriberEmail })
     // Don't throw error - we still want to save the subscription even if email fails
   }
 }
 
-export async function POST(request: Request) {
+async function handleNewsletterSubscribe(request: NextRequest) {
   try {
+    // Check if services are configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
+    // Initialize services inside the route handler (not at module level)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // Initialize Resend if configured
+    const resendApiKey = process.env.RESEND_API_KEY
+    const resend = resendApiKey ? new Resend(resendApiKey) : null
+
     const body = await request.json()
     const { email } = body
 
     // Validate email
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Email is required',
+        { statusCode: 400 }
       )
     }
 
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Please enter a valid email address',
+        { statusCode: 400 }
       )
     }
 
     // Normalize email (lowercase and trim)
     const normalizedEmail = email.toLowerCase().trim()
+
+    logger.info('Newsletter subscription attempt', { email: normalizedEmail })
 
     // Check if email already exists
     const { data: existingSubscriber, error: checkError } = await supabase
@@ -101,16 +122,16 @@ export async function POST(request: Request) {
 
     if (checkError && checkError.code !== 'PGRST116') {
       // PGRST116 is "no rows returned" which is expected for new subscribers
-      console.error('Error checking existing subscriber:', checkError)
-      return NextResponse.json(
-        { error: 'An error occurred while processing your subscription' },
-        { status: 500 }
-      )
+      logger.error('Error checking existing subscriber', checkError, { email: normalizedEmail })
+      return handleDatabaseError(checkError)
     }
 
     // If subscriber exists
     if (existingSubscriber) {
       if (existingSubscriber.is_active) {
+        logger.info('Newsletter subscription attempt for already subscribed email', {
+          email: normalizedEmail
+        })
         return NextResponse.json(
           { error: 'This email is already subscribed to our newsletter' },
           { status: 409 }
@@ -127,12 +148,13 @@ export async function POST(request: Request) {
           .eq('email', normalizedEmail)
 
         if (updateError) {
-          console.error('Error reactivating subscription:', updateError)
-          return NextResponse.json(
-            { error: 'An error occurred while reactivating your subscription' },
-            { status: 500 }
-          )
+          logger.error('Error reactivating subscription', updateError, {
+            email: normalizedEmail
+          })
+          return handleDatabaseError(updateError)
         }
+
+        logger.info('Newsletter subscription reactivated', { email: normalizedEmail })
 
         return NextResponse.json(
           {
@@ -145,7 +167,7 @@ export async function POST(request: Request) {
     }
 
     // Create new subscription
-    const { data, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('newsletter_subscribers')
       .insert([
         {
@@ -159,17 +181,20 @@ export async function POST(request: Request) {
       .single()
 
     if (insertError) {
-      console.error('Error creating subscription:', insertError)
-      return NextResponse.json(
-        { error: 'An error occurred while subscribing. Please try again later' },
-        { status: 500 }
-      )
+      logger.error('Error creating subscription', insertError, { email: normalizedEmail })
+      return handleDatabaseError(insertError)
     }
 
+    logger.info('New newsletter subscription created', { email: normalizedEmail })
+
     // Send notification email to admin (async, don't wait for it)
-    sendAdminNotification(normalizedEmail).catch(err =>
-      console.error('Error sending admin notification:', err)
-    )
+    if (resend) {
+      sendAdminNotification(normalizedEmail, resend).catch(err =>
+        logger.error('Error sending admin notification', err, { email: normalizedEmail })
+      )
+    } else {
+      logger.warn('Resend API key not configured; skipping admin notification email')
+    }
 
     return NextResponse.json(
       {
@@ -180,10 +205,14 @@ export async function POST(request: Request) {
     )
 
   } catch (error) {
-    console.error('Unexpected error in newsletter subscription:', error)
-    return NextResponse.json(
-      { error: 'An unexpected error occurred. Please try again later' },
-      { status: 500 }
+    logger.error('Unexpected error in newsletter subscription', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }
+
+// Apply strict rate limiting (3 requests per minute for newsletter subscription)
+export const POST = withRateLimit(handleNewsletterSubscribe, RateLimits.STRICT)

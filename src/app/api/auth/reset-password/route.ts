@@ -1,35 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
+import { withRateLimit, RateLimits } from '@/lib/middleware'
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-export async function POST(request: NextRequest) {
+const handleResetPassword = async (request: NextRequest) => {
   try {
+    // Check if Supabase is configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
+    // Initialize Supabase inside the route handler (not at module level)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const { token, password, userType } = await request.json()
 
+    // Validate required fields
     if (!token || !password) {
-      return NextResponse.json(
-        { error: 'Token and password are required' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Token and password are required',
+        { statusCode: 400 }
       )
     }
 
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Password must be at least 8 characters long',
+        { statusCode: 400 }
       )
     }
 
     const tableName = userType === 'affiliate' ? 'affiliate_registrations' : 'registration_forms'
+
+    logger.info('Password reset attempt', { userType, tableName })
 
     // Find user with valid reset token
     const { data: user, error: userError } = await supabase
@@ -39,18 +55,22 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
-        { status: 400 }
+      logger.warn('Invalid reset token provided', { userType })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Invalid or expired reset token',
+        { statusCode: 400 }
       )
     }
 
     // Check if token is expired
     const tokenExpiry = new Date(user.reset_token_expiry)
     if (tokenExpiry < new Date()) {
-      return NextResponse.json(
-        { error: 'Reset token has expired. Please request a new one.' },
-        { status: 400 }
+      logger.warn('Expired reset token used', { userId: user.id, email: user.email })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Reset token has expired. Please request a new one.',
+        { statusCode: 400 }
       )
     }
 
@@ -68,14 +88,14 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
 
     if (updateError) {
-      console.error('Error updating password:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to reset password' },
-        { status: 500 }
-      )
+      logger.error('Error updating password', updateError, {
+        userId: user.id,
+        email: user.email
+      })
+      return handleDatabaseError(updateError)
     }
 
-    console.log('✅ Password reset successful for:', user.email)
+    logger.info('Password reset successful', { userId: user.id, email: user.email })
 
     return NextResponse.json({
       success: true,
@@ -83,10 +103,14 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Reset password error:', error)
-    return NextResponse.json(
-      { error: 'Failed to reset password' },
-      { status: 500 }
+    logger.error('Reset password error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }
+
+// Apply rate limiting middleware (3 requests per minute - strict for password reset)
+export const POST = withRateLimit(handleResetPassword, RateLimits.STRICT)

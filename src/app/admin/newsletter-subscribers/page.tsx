@@ -61,10 +61,7 @@ export default function NewsletterSubscribersPage() {
       setSubscribers(data.subscribers || [])
     } catch (err) {
       clearTimeout(timeoutId)
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('Request was aborted')
-      } else {
-        console.error('Error fetching subscribers:', err)
+      if (err instanceof Error && err.name !== 'AbortError') {
         setError(err instanceof Error ? err.message : 'An error occurred')
       }
     } finally {

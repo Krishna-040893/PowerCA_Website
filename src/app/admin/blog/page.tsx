@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2, RefreshCw, Plus, Edit, Trash2, FileText, Eye, Upload, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -32,6 +33,10 @@ interface BlogPost {
   published_at: string | null
   created_at: string
   updated_at: string
+  subtitle?: string
+  documents?: Array<{title: string, url: string}>
+  key_dates?: Array<{label: string, date: string}>
+  sidebar_summary?: {items: Array<{label: string, value: string}>}
 }
 
 export default function AdminBlogPage() {
@@ -164,7 +169,7 @@ export default function AdminBlogPage() {
       setUploadingImage(true)
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('blog-images')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -215,7 +220,7 @@ export default function AdminBlogPage() {
       setDocuments(newDocs)
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('blog-documents')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -287,7 +292,7 @@ export default function AdminBlogPage() {
       setEditingPost(post)
       setFormData({
         title: post.title,
-        subtitle: (post as any).subtitle || '',
+        subtitle: post.subtitle || '',
         excerpt: post.excerpt,
         content: post.content,
         author: post.author,
@@ -300,14 +305,9 @@ export default function AdminBlogPage() {
       setImagePreview(post.image_url)
       setImageFile(null)
       // Load rich content
-      console.log('Loading post data:', {
-        documents: (post as any).documents,
-        key_dates: (post as any).key_dates,
-        sidebar_summary: (post as any).sidebar_summary
-      })
-      setDocuments((post as any).documents || [])
-      setKeyDates((post as any).key_dates || [])
-      setSidebarItems((post as any).sidebar_summary?.items || [{label: 'Previous Deadline', value: ''}, {label: 'New Deadline', value: ''}])
+      setDocuments(post.documents || [])
+      setKeyDates(post.key_dates || [])
+      setSidebarItems(post.sidebar_summary?.items || [{label: 'Previous Deadline', value: ''}, {label: 'New Deadline', value: ''}])
     } else {
       setEditingPost(null)
       setFormData({
@@ -372,14 +372,6 @@ export default function AdminBlogPage() {
             keyDates: JSON.stringify(keyDates),
             sidebarSummary: JSON.stringify({items: sidebarItems.filter(item => item.label || item.value)})
           }
-
-      console.log('Saving blog post with data:', {
-        documents,
-        keyDates,
-        sidebarItems,
-        documentsString: JSON.stringify(documents),
-        keyDatesString: JSON.stringify(keyDates)
-      })
 
       const response = await fetch(url, {
         method,
@@ -764,10 +756,11 @@ export default function AdminBlogPage() {
 
               {imagePreview ? (
                 <div className="relative w-full h-48 border-2 border-gray-300 rounded-lg overflow-hidden">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <button
                     type="button"
