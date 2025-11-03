@@ -39,7 +39,7 @@ if (SENTRY_DSN) {
 
       // Filter out sensitive environment variables
       if (event.contexts?.runtime?.env) {
-        const env = event.contexts.runtime.env
+        const env = event.contexts.runtime.env as Record<string, string>
         Object.keys(env).forEach(key => {
           const lowerKey = key.toLowerCase()
           if (

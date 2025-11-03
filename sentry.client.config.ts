@@ -19,27 +19,11 @@ if (SENTRY_DSN) {
     // 0.1 = 10% of transactions are sent to Sentry
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-    // Session replay sampling
-    // 0.1 = 10% of sessions will be recorded
-    replaysSessionSampleRate: 0.1,
-
-    // 100% of sessions with errors will be recorded
-    replaysOnErrorSampleRate: 1.0,
-
-    // Integrate session replay
-    integrations: [
-      new Sentry.Replay({
-        maskAllText: true, // Mask all text for privacy
-        blockAllMedia: true, // Block all media for privacy
-      }),
-      new Sentry.BrowserTracing({
-        // Set sampling rate for performance monitoring
-        tracePropagationTargets: [
-          'localhost',
-          /^https:\/\/[^/]*\.vercel\.app/,
-          /^https:\/\/powerca\.in/,
-        ],
-      }),
+    // Tracing options
+    tracePropagationTargets: [
+      'localhost',
+      /^https:\/\/[^/]*\.vercel\.app/,
+      /^https:\/\/powerca\.in/,
     ],
 
     // Filter out sensitive data before sending to Sentry
@@ -61,10 +45,9 @@ if (SENTRY_DSN) {
       }
 
       // Filter out sensitive query params
-      if (event.request?.query_string) {
-        const queryString = event.request.query_string
+      if (event.request?.query_string && typeof event.request.query_string === 'string') {
         // Remove tokens, keys, secrets from query string
-        event.request.query_string = queryString
+        event.request.query_string = event.request.query_string
           .replace(/([?&])(token|key|secret|password)=[^&]*/gi, '$1$2=***')
       }
 

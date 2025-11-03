@@ -4,10 +4,10 @@ import { Check, Calendar, Clock } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useSubscription } from '@/hooks/useSubscription'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function PricingPage() {
+function PricingContent() {
   const { data: session } = useSession()
   const subscriptionStatus = useSubscription()
   const searchParams = useSearchParams()
@@ -423,5 +423,13 @@ export default function PricingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PricingContent />
+    </Suspense>
   )
 }

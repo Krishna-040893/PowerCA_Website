@@ -77,6 +77,9 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Output as standalone for better Vercel deployment
+  output: 'standalone',
+
   // Enable compression
   compress: true,
 

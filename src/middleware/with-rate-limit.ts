@@ -173,7 +173,12 @@ export function withRateLimit(
           )
         }
 
-        return response
+        // Convert Response to NextResponse
+        const body = await response.json()
+        return NextResponse.json(body, {
+          status: response.status,
+          headers: response.headers,
+        })
       }
 
       // Add rate limit headers to response
