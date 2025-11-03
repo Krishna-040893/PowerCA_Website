@@ -241,31 +241,55 @@ export async function POST(req: NextRequest) {
       // Construct address from order data or order tags as fallback
       const fullAddress = orderData.customer_address || orderTags.address || orderTags.customerAddress || null
 
+      const paymentInsertData = {
+        user_id: orderData.user_id || null,
+        order_id: orderId,
+        payment_id: payment.cf_payment_id,
+        amount: totalAmount,
+        currency: 'INR',
+        status: 'captured',
+        plan: orderData.product_id || 'PowerCA Implementation',
+        email: orderData.customer_email,
+        phone: orderData.customer_phone,
+        name: orderData.customer_name,
+        firm_name: orderData.firm_name,
+        company: orderData.company,
+        gst_number: orderData.gst_number,
+        address: fullAddress
+      }
+
+      logger.info('Attempting to insert payment record', {
+        orderId,
+        cf_payment_id: payment.cf_payment_id,
+        user_id: orderData.user_id,
+        amount: totalAmount
+      })
+
       const { data, error: paymentError } = await supabase
         .from('payments')
-        .insert({
-          user_id: orderData.user_id || null,
-          order_id: orderId,
-          payment_id: payment.cf_payment_id,
-          amount: totalAmount,
-          currency: 'INR',
-          status: 'captured',
-          plan: orderData.product_id || 'PowerCA Implementation',
-          email: orderData.customer_email,
-          phone: orderData.customer_phone,
-          name: orderData.customer_name,
-          firm_name: orderData.firm_name,
-          company: orderData.company,
-          gst_number: orderData.gst_number,
-          address: fullAddress
-        })
+        .insert(paymentInsertData)
         .select()
         .single()
 
       if (paymentError) {
-        logger.error('Failed to save payment', paymentError)
-        throw paymentError
+        logger.error('Failed to save payment to database', {
+          orderId,
+          cf_payment_id: payment.cf_payment_id,
+          error: paymentError,
+          errorCode: paymentError.code,
+          errorMessage: paymentError.message,
+          errorDetails: paymentError.details,
+          errorHint: paymentError.hint,
+          insertData: paymentInsertData
+        })
+        throw new Error(`Database error: ${paymentError.message} (Code: ${paymentError.code})`)
       }
+
+      logger.info('Payment record saved successfully', {
+        orderId,
+        paymentId: data?.id,
+        cf_payment_id: payment.cf_payment_id
+      })
 
       paymentRecord = data
     }
