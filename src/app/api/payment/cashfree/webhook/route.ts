@@ -181,28 +181,53 @@ export async function POST(req: NextRequest) {
 
       // Generate and upload invoice
       let invoicePDF = null
-      let storageUrl = null
+      let _storageUrl = null
       try {
         invoicePDF = await generateInvoicePDF(invoiceData)
         if (invoicePDF) {
-          storageUrl = await uploadInvoiceToStorage(invoiceNumber, invoicePDF)
+          _storageUrl = await uploadInvoiceToStorage(invoiceNumber, invoicePDF)
         }
       } catch (pdfError) {
         logger.error('Failed to generate PDF invoice', pdfError)
       }
 
-      // Save invoice to database
+      // Save invoice to database (check for existing invoice first to handle idempotency)
       if (paymentRecord) {
-        await supabase
+        const { data: existingInvoice } = await supabase
           .from('invoices')
-          .insert({
-            invoice_number: invoiceNumber,
-            payment_id: paymentRecord.id,
-            amount: subtotal,
-            gst: gst.totalTax,
-            total: totalAmount,
-            status: 'paid',
+          .select('*')
+          .eq('payment_id', paymentRecord.id)
+          .single()
+
+        if (!existingInvoice) {
+          const { error: invoiceError } = await supabase
+            .from('invoices')
+            .insert({
+              invoice_number: invoiceNumber,
+              payment_id: paymentRecord.id,
+              amount: subtotal,
+              gst: gst.totalTax,
+              total: totalAmount,
+              status: 'paid',
+            })
+
+          if (invoiceError) {
+            logger.error('Failed to save invoice to database (webhook)', {
+              orderId: order.order_id,
+              invoiceNumber,
+              paymentId: paymentRecord.id,
+              error: invoiceError
+            })
+            // Don't throw - invoice is not critical, payment already succeeded
+          } else {
+            logger.info('Invoice saved to database (webhook)', { invoiceNumber, paymentId: paymentRecord.id })
+          }
+        } else {
+          logger.info('Invoice already exists for payment (webhook)', {
+            invoiceId: existingInvoice.id,
+            invoiceNumber: existingInvoice.invoice_number
           })
+        }
       }
 
       // Send confirmation email
