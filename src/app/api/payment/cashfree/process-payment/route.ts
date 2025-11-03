@@ -84,7 +84,9 @@ export async function POST(req: NextRequest) {
       throw new Error('Cashfree credentials not configured')
     }
 
-    const environment = appId.includes('prod') ? 'production' : 'sandbox'
+    // ✅ Choose environment based on App ID prefix (same logic as create-order)
+    // Cashfree App IDs: TEST* = sandbox, production IDs start with numbers
+    const environment = appId.toUpperCase().startsWith('TEST') ? 'sandbox' : 'production'
     const baseUrl =
       environment === 'production'
         ? 'https://api.cashfree.com/pg'

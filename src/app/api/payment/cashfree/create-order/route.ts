@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       detectedEnvironment: environment,
       appBaseUrl: baseUrl,
       cashfreeApiUrl,
-      returnUrl: `${baseUrl}/payment-success?provider=cashfree&order_id={order_id}`,
+      returnUrl: `${baseUrl}/payment-success?gateway=cashfree&orderId={order_id}`,
       notifyUrl: `${baseUrl}/api/payment/cashfree/webhook`
     })
 
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
         customer_phone: customerDetails?.phone || body.phone || '9999999999',
       },
       order_meta: {
-        return_url: `${baseUrl}/payment-success?provider=cashfree&order_id={order_id}`,
+        return_url: `${baseUrl}/payment-success?gateway=cashfree&orderId={order_id}`,
         notify_url: `${baseUrl}/api/payment/cashfree/webhook`,
       },
       order_note: `PowerCA ${planType} - ${productId}`,
