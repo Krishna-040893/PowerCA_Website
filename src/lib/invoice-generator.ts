@@ -496,7 +496,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
   try {
     const headerLogoBuffer = fs.readFileSync(headerLogoPath)
     headerLogoBase64 = `data:image/png;base64,${headerLogoBuffer.toString('base64')}`
-  } catch (error) {
+  } catch {
     console.warn('Header logo file not found, using placeholder')
   }
 
@@ -507,7 +507,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
   try {
     const productLogoBuffer = fs.readFileSync(productLogoPath)
     productLogoBase64 = `data:image/png;base64,${productLogoBuffer.toString('base64')}`
-  } catch (error) {
+  } catch {
     console.warn('Product logo file not found, using placeholder')
   }
 

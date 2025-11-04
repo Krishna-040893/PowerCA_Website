@@ -141,7 +141,7 @@ function CheckoutContent() {
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [quantity, setQuantity] = useState(1)
-  const [couponCode, _setCouponCode] = useState('')
+  const [_couponCode, _setCouponCode] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
   const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')

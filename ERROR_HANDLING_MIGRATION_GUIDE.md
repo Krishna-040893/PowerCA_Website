@@ -226,7 +226,7 @@ Apply to:
 - [x] `src/app/api/contact/route.ts` - ✅ Completed (Fixed module-level crash)
 - [x] `src/app/api/newsletter/subscribe/route.ts` - ✅ Completed (Fixed module-level crash)
 - [x] `src/app/api/bookings/route.ts` - ✅ Completed (Added rate limiting to both POST and GET)
-- [ ] `src/app/api/registrations/route.ts`
+- [x] `src/app/api/registrations/route.ts` - ✅ Completed (Fixed module-level crash, TypeScript error, comprehensive logging)
 
 **Payment Endpoints** (Add RateLimits.STANDARD):
 
