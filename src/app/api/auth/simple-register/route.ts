@@ -74,6 +74,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if email is already registered as an affiliate
+    const { data: existingAffiliate } = await supabase
+      .from('affiliate_registrations')
+      .select('id, email, status')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingAffiliate) {
+      logger.warn('Email already registered as affiliate, cannot use for client', { email })
+      return NextResponse.json(
+        { error: 'This email is already registered. Please use a different email address.' },
+        { status: 400 }
+      )
+    }
+
     // Generate username from email
     const username = email.split('@')[0].toLowerCase() + Date.now()
 

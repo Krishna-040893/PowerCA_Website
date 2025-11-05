@@ -71,12 +71,27 @@ export async function POST(request: NextRequest) {
       ])
     }
 
+    // Check if email is already registered as a client
+    const { data: existingClient } = await supabase
+      .from('registration_forms')
+      .select('id, email')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingClient) {
+      logger.warn('Email already registered as client, cannot use for affiliate', { email })
+      return NextResponse.json(
+        { error: 'This email is already registered. Please use a different email address.' },
+        { status: 400 }
+      )
+    }
+
     // Check if email already registered as affiliate
     const { data: existingRegistration } = await supabase
       .from('affiliate_registrations')
       .select('id, status')
       .eq('email', email)
-      .single()
+      .maybeSingle()
 
     if (existingRegistration) {
       return NextResponse.json(

@@ -13,7 +13,7 @@ export function ConditionalLayoutWrapper({ children }: ConditionalLayoutWrapperP
   const pathname = usePathname()
 
   // Routes that should exclude header and footer
-  const excludeHeaderFooter = ['/login', '/register', '/register/student', '/forgot-password', '/reset-password', '/admin-login', '/admin', '/affiliate-login', '/affiliate-program/register', '/book-demo']
+  const excludeHeaderFooter = ['/login', '/register', '/register/student', '/forgot-password', '/reset-password', '/admin-login', '/admin', '/affiliate-login', '/affiliate-register', '/book-demo']
   const shouldExcludeLayout = excludeHeaderFooter.includes(pathname) || pathname.startsWith('/admin/')
 
   if (shouldExcludeLayout) {

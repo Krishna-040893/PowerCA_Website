@@ -284,7 +284,7 @@ function AffiliateLoginContent() {
                 className="w-full h-12 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white rounded-full font-medium transition-all duration-200"
                 asChild
               >
-                <Link href="/affiliate-program/register" className="flex items-center justify-center gap-2">
+                <Link href="/affiliate-register" className="flex items-center justify-center gap-2">
                   <UserPlus className="w-5 h-5" />
                   Register as Affiliate Partner
                 </Link>

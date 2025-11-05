@@ -224,6 +224,21 @@ async function handleRegister(request: NextRequest) {
           )
         }
 
+        // Check if email is already registered as an affiliate
+        const { data: existingAffiliate } = await supabase
+          .from('affiliate_registrations')
+          .select('id, email, status')
+          .eq('email', sanitizedEmail)
+          .maybeSingle()
+
+        if (existingAffiliate) {
+          logger.warn('Email already registered as affiliate, cannot use for client', { email: sanitizedEmail })
+          return createErrorResponse(
+            ErrorType.VALIDATION,
+            'This email is already registered. Please use a different email address.'
+          )
+        }
+
         // Insert into registrations table with correct column names
         const { data: newUser, error: insertError } = await supabase
           .from(REGISTRATION_FORMS_TABLE)

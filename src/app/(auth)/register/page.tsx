@@ -193,7 +193,9 @@ function RegisterContent() {
       const result = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        setErrorMessage(result?.error || 'Registration failed. Please try again.')
+        // Handle error response format from createErrorResponse
+        const errorMsg = result?.error?.message || result?.error || result?.message || 'Registration failed. Please try again.'
+        setErrorMessage(errorMsg)
         return
       }
 

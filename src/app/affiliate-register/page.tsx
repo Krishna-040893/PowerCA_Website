@@ -207,13 +207,14 @@ export default function AffiliateRegisterPage() {
           window.location.href = '/affiliate-login'
         }, 1500)
       } else {
-
+        // Handle error response gracefully without throwing
         const errorMessage = affiliateResult.details
           ? `${affiliateResult.error}: ${affiliateResult.details}`
           : affiliateResult.error || 'Affiliate application failed'
-        throw new Error(errorMessage)
+        toast.error(errorMessage)
       }
     } catch (error) {
+      // Only catch network/parsing errors
       console.error('Registration error:', error)
       const errorMsg = error instanceof Error ? error.message : 'Registration failed. Please try again.'
       toast.error(errorMsg)

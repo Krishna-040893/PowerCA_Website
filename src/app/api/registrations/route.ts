@@ -141,6 +141,38 @@ async function handleRegistration(request: NextRequest) {
       )
     }
 
+    // Check if email is already registered as a client
+    const { data: existingClient } = await supabase
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, email')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingClient) {
+      logger.warn('Email already registered as client', { email })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'This email is already registered. Please use a different email address or login to your existing account.',
+        { statusCode: 400 }
+      )
+    }
+
+    // Check if email is already registered as an affiliate
+    const { data: existingAffiliate } = await supabase
+      .from('affiliate_registrations')
+      .select('id, email, status')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingAffiliate) {
+      logger.warn('Email already registered as affiliate, cannot use for client', { email })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'This email is already registered. Please use a different email address.',
+        { statusCode: 400 }
+      )
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const registrationData = {

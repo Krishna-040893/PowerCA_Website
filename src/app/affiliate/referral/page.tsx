@@ -344,7 +344,7 @@ export default function AffiliateAccountPage() {
           </Alert>
           <div className="text-center">
             <Button
-              onClick={() => router.push('/affiliate-program/register')}
+              onClick={() => router.push('/affiliate-register')}
               className="bg-blue-600 hover:bg-blue-700"
             >
               Apply as Affiliate
