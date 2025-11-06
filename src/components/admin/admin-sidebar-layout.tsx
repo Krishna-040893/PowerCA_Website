@@ -5,9 +5,8 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import {cn  } from '@/lib/utils'
-import { Users, Settings, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, Search, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, Shield, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, Star, UsersRound, CreditCard, ShoppingCart, Globe, Mail } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
-import {Input  } from '@/components/ui/input'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
   DropdownMenuContent,
@@ -77,12 +76,6 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Star, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
   },
-  {
-    title: 'System',
-    items: [
-      { title: 'Settings', href: '/admin/settings', icon: Settings },
-    ]
-  }
 ]
 
 export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
@@ -182,26 +175,30 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Full width on mobile */}
       <aside
         className={cn(
           'fixed lg:relative inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 h-screen',
-          collapsed ? 'w-20' : 'w-64',
+          'w-72 lg:w-64', // Full width on mobile, standard on desktop
+          collapsed && 'lg:w-20', // Only collapse on desktop
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Logo Section - Matches header height */}
-        <div className="flex items-center justify-between h-[65px] px-4 bg-white">
-          {!collapsed && (
+        {/* Logo Section - Mobile optimized */}
+        <div className="flex items-center justify-between h-[60px] sm:h-[65px] px-4 bg-white border-b border-gray-100">
+          {(!collapsed || sidebarOpen) && (
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-md">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="font-semibold text-lg">PowerCA Admin</span>
+              <div className="flex flex-col">
+                <span className="font-bold text-base sm:text-lg text-gray-900">PowerCA</span>
+                <span className="text-xs text-gray-500 -mt-1">Admin Panel</span>
+              </div>
             </div>
           )}
-          {collapsed && (
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center mx-auto">
+          {collapsed && !sidebarOpen && (
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center mx-auto shadow-md">
               <Shield className="w-5 h-5 text-white" />
             </div>
           )}
@@ -209,7 +206,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="hidden lg:flex"
+            className="hidden lg:flex hover:bg-gray-100"
           >
             <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
           </Button>
@@ -217,20 +214,20 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden"
+            className="lg:hidden hover:bg-gray-100"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Removed User Info Section - Going directly to navigation */}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6 border-t border-gray-200">
+        {/* Navigation - Mobile optimized */}
+        <nav className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
           {navigation.map((section, sectionIdx) => (
             <div key={sectionIdx}>
-              {!collapsed && (
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              {(!collapsed || sidebarOpen) && (
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">
                   {section.title}
                 </h3>
               )}
@@ -241,29 +238,33 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setSidebarOpen(false)} // Close mobile menu on click
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative',
+                        'flex items-center gap-3 px-3 py-2.5 sm:py-2 rounded-lg transition-all duration-200 group relative',
                         isActive
-                          ? 'bg-primary-50 text-primary-700'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          ? 'bg-primary-50 text-primary-700 shadow-sm border border-primary-100'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
                       )}
                     >
                       <item.icon className={cn(
                         'h-5 w-5 flex-shrink-0',
                         isActive ? 'text-primary-700' : 'text-gray-400 group-hover:text-gray-600'
                       )} />
-                      {!collapsed && (
+                      {(!collapsed || sidebarOpen) && (
                         <>
-                          <span className="flex-1">{item.title}</span>
+                          <span className="flex-1 text-sm font-medium">{item.title}</span>
                           {item.badge !== undefined && (
-                            <Badge variant={item.badgeVariant || 'default'} className="ml-auto">
+                            <Badge
+                              variant={item.badgeVariant || 'default'}
+                              className="ml-auto text-xs px-2 py-0.5"
+                            >
                               {item.badge}
                             </Badge>
                           )}
                         </>
                       )}
-                      {collapsed && item.badge !== undefined && (
-                        <div className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full" />
+                      {collapsed && !sidebarOpen && item.badge !== undefined && (
+                        <div className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full shadow-sm" />
                       )}
                     </Link>
                   )
@@ -273,78 +274,65 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t border-gray-200">
+        {/* Logout Button - Mobile optimized */}
+        <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50">
           <Button
             variant="ghost"
             className={cn(
-              'w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50',
-              collapsed && 'justify-center'
+              'w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 py-2.5 sm:py-2 font-medium',
+              collapsed && !sidebarOpen && 'justify-center'
             )}
             onClick={handleLogout}
           >
             <LogOut className="h-5 w-5" />
-            {!collapsed && <span className="ml-3">Logout</span>}
+            {(!collapsed || sidebarOpen) && <span className="ml-3">Logout</span>}
           </Button>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header - Increased height to match sidebar logo section */}
-        <header className="bg-white border-b border-gray-200 px-6 h-[65px] flex items-center">
+        {/* Top Header - Mobile optimized */}
+        <header className="bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 h-[60px] sm:h-[65px] flex items-center shadow-sm">
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden"
+                className="lg:hidden hover:bg-gray-100 -ml-2"
               >
                 <Menu className="h-5 w-5" />
               </Button>
 
-              {/* Search Bar */}
-              <div className="relative w-96 hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="pl-10 bg-gray-50 h-9"
-                />
-              </div>
             </div>
 
-            {/* Right Section */}
-            <div className="flex items-center space-x-4">
+            {/* Right Section - Mobile optimized */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary-100 text-primary-700 text-sm">
+                  <Button variant="ghost" className="flex items-center space-x-1 sm:space-x-2 hover:bg-gray-100 -mr-2 sm:mr-0">
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                      <AvatarFallback className="bg-primary-100 text-primary-700 text-xs sm:text-sm font-medium">
                         {adminUser.username?.[0]?.toUpperCase() || 'A'}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden md:block text-sm">{adminUser.username || 'Admin'}</span>
-                    <ChevronDown className="h-4 w-4" />
+                    <span className="hidden md:block text-sm font-medium">{adminUser.username || 'Admin'}</span>
+                    <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-white">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-48 sm:w-56 bg-white shadow-lg">
+                  <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
                     <Users className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    <span className="text-sm">Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    <span className="text-sm">Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -352,8 +340,8 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        {/* Page Content - Mobile optimized */}
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-3 sm:p-4 lg:p-6">
           {children}
         </main>
       </div>

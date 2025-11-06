@@ -2,33 +2,46 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { withRateLimit, RateLimits } from '@/lib/middleware'
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-const resendApiKey = process.env.RESEND_API_KEY
-if (!resendApiKey) {
-  throw new Error('Missing Resend API key')
-}
-
-const resend = new Resend(resendApiKey)
-
-export async function POST(request: NextRequest) {
+const handleForgotPassword = async (request: NextRequest) => {
   try {
+    // Check if services are configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
+    if (!isServiceConfigured('RESEND_API_KEY')) {
+      return handleConfigurationError('Email service')
+    }
+
+    // Initialize services inside the route handler (not at module level)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const resend = new Resend(process.env.RESEND_API_KEY!)
+
     const { email } = await request.json()
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Email is required',
+        { statusCode: 400 }
       )
     }
+
+    logger.info('Password reset requested', { email })
 
     // Check if user exists in registration_forms table
     const { data: user } = await supabase
@@ -49,6 +62,7 @@ export async function POST(request: NextRequest) {
 
     if (!foundUser) {
       // Don't reveal if email exists for security
+      logger.info('Password reset requested for non-existent email', { email })
       return NextResponse.json({
         success: true,
         message: 'If an account exists with this email, a password reset link has been sent.'
@@ -70,11 +84,8 @@ export async function POST(request: NextRequest) {
       .eq('email', email)
 
     if (updateError) {
-      console.error('Error storing reset token:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to process password reset request' },
-        { status: 500 }
-      )
+      logger.error('Error storing reset token', updateError, { email })
+      return handleDatabaseError(updateError)
     }
 
     // Create reset password link
@@ -138,12 +149,13 @@ export async function POST(request: NextRequest) {
         subject: 'Reset Your PowerCA Password',
         html: emailHtml,
       })
-      console.log('✅ Password reset email sent to:', email)
+      logger.info('Password reset email sent', { email })
     } catch (emailError) {
-      console.error('❌ Failed to send password reset email:', emailError)
-      return NextResponse.json(
-        { error: 'Failed to send password reset email' },
-        { status: 500 }
+      logger.error('Failed to send password reset email', emailError, { email })
+      return createErrorResponse(
+        ErrorType.EXTERNAL_SERVICE,
+        'Failed to send password reset email',
+        { statusCode: 500 }
       )
     }
 
@@ -153,10 +165,14 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Forgot password error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process password reset request' },
-      { status: 500 }
+    logger.error('Forgot password error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }
+
+// Apply rate limiting middleware (3 requests per minute - strict for password reset)
+export const POST = withRateLimit(handleForgotPassword, RateLimits.STRICT)

@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
     const ref = searchParams.get('ref')
     const cus = searchParams.get('cus')
 
-    console.log('🔍 [Get Customer Data API] Request params:', { ref, cus })
-
     if (!ref) {
       return NextResponse.json({
         success: false,
@@ -44,13 +42,6 @@ export async function GET(request: NextRequest) {
 
     const { data: referrals, error: referralError } = await query
 
-    console.log('📦 [Get Customer Data API] Query result:', {
-      found: referrals && referrals.length > 0,
-      count: referrals?.length,
-      error: referralError?.message,
-      data: referrals?.[0]
-    })
-
     if (referralError) {
       console.error('❌ [Get Customer Data API] Database error:', referralError)
       return NextResponse.json({
@@ -60,7 +51,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!referrals || referrals.length === 0) {
-      console.log('⚠️ [Get Customer Data API] No pending referral found')
       return NextResponse.json({
         success: false,
         error: 'Referral not found or already used'
@@ -73,13 +63,6 @@ export async function GET(request: NextRequest) {
     const customerName = referral.referred_name || ''
     const customerEmail = referral.referred_email || ''
     const customerPhone = referral.referred_phone || ''
-
-    console.log('✅ [Get Customer Data API] Returning customer data:', {
-      name: customerName,
-      email: customerEmail,
-      phone: customerPhone,
-      source: 'affiliate_referrals table'
-    })
 
     return NextResponse.json({
       success: true,

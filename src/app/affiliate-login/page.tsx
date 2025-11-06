@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -12,7 +14,7 @@ import { signIn, signOut } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, UserPlus } from 'lucide-react'
 
-export default function AffiliateLoginPage() {
+function AffiliateLoginContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -36,7 +38,6 @@ export default function AffiliateLoginPage() {
       })
 
       if (result?.ok) {
-        console.log('✅ Affiliate login successful, verifying session...')
 
         // Wait for session to be established (important for Vercel)
         // Increased delay for Vercel edge network
@@ -69,11 +70,8 @@ export default function AffiliateLoginPage() {
           }
         }
 
-        console.log('📋 Session data:', { role: session?.user?.role, status: session?.user?.status })
-
         // Block non-affiliates from affiliate login
         if (!session?.user || session?.user?.role?.toLowerCase() !== 'affiliate') {
-          console.log('⛔ User is not an affiliate, signing out')
           // Sign out immediately to prevent login
           await signOut({ redirect: false })
 
@@ -87,17 +85,13 @@ export default function AffiliateLoginPage() {
           return
         }
 
-        console.log('✅ Affiliate verified, redirecting to:', callbackUrl)
-
         // Use window.location.href for full page reload to ensure session is established
         // Critical for Vercel deployments
         window.location.href = callbackUrl
       } else {
-        console.error('❌ Login failed:', result?.error)
         setError(result?.error || 'Invalid email or password. Please try again.')
       }
-    } catch (error) {
-      console.error('Login error:', error)
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       // Don't set loading to false if redirect is happening
@@ -124,7 +118,7 @@ export default function AffiliateLoginPage() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 }}
-        className="absolute left-6 top-6 z-20"
+        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
       >
         <Link href="/" className="block">
           <Image
@@ -132,7 +126,7 @@ export default function AffiliateLoginPage() {
             alt="PowerCA"
             width={200}
             height={60}
-            className="h-12 w-auto filter brightness-0 invert"
+            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
             priority
           />
         </Link>
@@ -143,40 +137,35 @@ export default function AffiliateLoginPage() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="absolute right-6 top-6 z-20"
+        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-medium text-sm tracking-wide">
+          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
             Back to Home
           </span>
         </Link>
       </motion.div>
 
       {/* Login Form */}
-      <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 pt-20 sm:pt-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-lg bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-purple-100"
+          className="w-full max-w-lg bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border-2 border-purple-100"
         >
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mb-4">
-              <span className="inline-flex items-center px-4 py-2 bg-purple-50 border border-purple-200 text-purple-700 rounded-full text-sm font-medium">
-                Affiliate Partner Login
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               Welcome Back, Partner!
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Sign in to access your affiliate dashboard
             </p>
           </div>
@@ -286,7 +275,7 @@ export default function AffiliateLoginPage() {
               <div className="text-center mb-4">
                 <h3 className="font-semibold text-gray-900 mb-2">Not an Affiliate Partner yet?</h3>
                 <p className="text-sm text-gray-600">
-                  Join our affiliate program and earn 10% commission on every referral!
+                  Join our affiliate partner and earn 10% commission on every referral!
                 </p>
               </div>
               <Button
@@ -295,7 +284,7 @@ export default function AffiliateLoginPage() {
                 className="w-full h-12 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white rounded-full font-medium transition-all duration-200"
                 asChild
               >
-                <Link href="/affiliate-program/register" className="flex items-center justify-center gap-2">
+                <Link href="/affiliate-register" className="flex items-center justify-center gap-2">
                   <UserPlus className="w-5 h-5" />
                   Register as Affiliate Partner
                 </Link>
@@ -318,5 +307,13 @@ export default function AffiliateLoginPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function AffiliateLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <AffiliateLoginContent />
+    </Suspense>
   )
 }

@@ -10,7 +10,12 @@
       "Bash(npx tsc:*)",
       "Bash(node:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.cashfree.com)",
+      "WebFetch(domain:docs.cashfree.com)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

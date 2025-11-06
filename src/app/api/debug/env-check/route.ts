@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { createErrorResponse, ErrorType } from '@/lib/error-handler'
 
 // IMPORTANT: Only enable this in development or when debugging
 // DELETE THIS FILE after debugging is complete for security
 
 export async function GET() {
-  // Only allow in development or when explicitly enabled
-  const isDev = process.env.NODE_ENV === 'development'
-  const allowDebug = process.env.ALLOW_ENV_DEBUG === 'true'
+  try {
+    // Only allow in development or when explicitly enabled
+    const isDev = process.env.NODE_ENV === 'development'
+    const allowDebug = process.env.ALLOW_ENV_DEBUG === 'true'
 
-  if (!isDev && !allowDebug) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+    if (!isDev && !allowDebug) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
   // Check critical environment variables (don't expose actual values)
   const envCheck = {
@@ -81,9 +84,16 @@ export async function GET() {
     envCheck.recommendations.push('✅ All critical environment variables appear to be set correctly')
   }
 
-  return NextResponse.json(envCheck, {
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-    },
-  })
+    return NextResponse.json(envCheck, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    })
+  } catch (error) {
+    logger.error('Environment check endpoint error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error instanceof Error ? error : 'Failed to check environment variables'
+    )
+  }
 }

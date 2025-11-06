@@ -1,10 +1,12 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, ArrowLeft, Download, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, ArrowLeft, Download, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import confetti from 'canvas-confetti'
@@ -39,12 +41,16 @@ function PaymentSuccessContent() {
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState<'success' | 'pending' | 'cancelled' | 'failed' | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string>('')
 
   useEffect(() => {
     // Check if it's a test payment
     const testParam = searchParams.get('test')
     const invoiceNumber = searchParams.get('invoiceNumber') || searchParams.get('invoiceId')
     const amount = parseFloat(searchParams.get('amount') || '0')
+    const gateway = searchParams.get('gateway')
+    const orderId = searchParams.get('orderId')
 
     if (testParam === 'true') {
       setIsTestMode(true)
@@ -66,8 +72,31 @@ function PaymentSuccessContent() {
       })
     }
 
-    // Fetch invoice data if invoice number is provided
-    if (invoiceNumber) {
+    // Handle Cashfree payments - process payment and generate invoice
+    if (gateway === 'cashfree' && orderId) {
+      // First try to fetch existing invoice if invoiceNumber is provided
+      if (invoiceNumber) {
+        fetch(`/api/invoice/${invoiceNumber}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              setInvoiceData(data.data)
+              setIsLoading(false)
+            } else {
+              // Invoice not found, process payment
+              return processPayment(orderId)
+            }
+          })
+          .catch(_err => {
+            processPayment(orderId)
+          })
+      } else {
+        // No invoice number, process payment directly
+        processPayment(orderId)
+      }
+    }
+    // Fetch invoice data if invoice number is provided (Razorpay flow)
+    else if (invoiceNumber) {
       fetch(`/api/invoice/${invoiceNumber}`)
         .then(res => res.json())
         .then(data => {
@@ -76,21 +105,77 @@ function PaymentSuccessContent() {
           }
           setIsLoading(false)
         })
-        .catch(err => {
-          console.error('Failed to fetch invoice:', err)
+        .catch(_err => {
           setIsLoading(false)
         })
     } else {
       setIsLoading(false)
     }
 
-    // Trigger confetti animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    })
-  }, [searchParams])
+    function processPayment(orderId: string) {
+      fetch('/api/payment/cashfree/process-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setPaymentStatus('success')
+            // Fetch the generated invoice
+            if (data.invoiceNumber) {
+              return fetch(`/api/invoice/${data.invoiceNumber}`)
+                .then(res => res.json())
+                .then(invoiceData => {
+                  if (invoiceData.success) {
+                    setInvoiceData(invoiceData.data)
+                  }
+                  setIsLoading(false)
+                })
+            } else {
+              setIsLoading(false)
+            }
+          } else {
+            // Handle different payment statuses
+            // Extract error message properly (could be string or object from createErrorResponse)
+            const errorData = data.error
+            const errorMsg = typeof errorData === 'object' && errorData?.message
+              ? errorData.message
+              : typeof errorData === 'string'
+              ? errorData
+              : 'Payment processing failed'
+            const status = data.status || 'UNKNOWN'
+
+            // Determine payment status based on error
+            if (errorMsg === 'Payment not completed' || status === 'CREATED' || status === 'ACTIVE') {
+              setPaymentStatus('cancelled')
+              setErrorMessage('Payment was not completed. You may have cancelled the payment or closed the payment window.')
+            } else if (status === 'PENDING') {
+              setPaymentStatus('pending')
+              setErrorMessage('Your payment is being processed. Please wait or check back in a few minutes.')
+            } else {
+              setPaymentStatus('failed')
+              setErrorMessage(errorMsg)
+            }
+            setIsLoading(false)
+          }
+        })
+        .catch(_err => {
+          setPaymentStatus('failed')
+          setErrorMessage('Unable to verify payment status. Please contact support if amount was deducted.')
+          setIsLoading(false)
+        })
+    }
+
+    // Trigger confetti animation only on success
+    if (paymentStatus === 'success' || invoiceData) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      })
+    }
+  }, [searchParams, paymentStatus, invoiceData])
 
   const handleDownloadInvoice = async () => {
     if (!invoiceData?.invoice_number) {
@@ -115,8 +200,7 @@ function PaymentSuccessContent() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-    } catch (error) {
-      console.error('Failed to download invoice:', error)
+    } catch {
       alert('Failed to download invoice. Please try again or contact support.')
     } finally {
       setIsDownloading(false)
@@ -175,33 +259,119 @@ function PaymentSuccessContent() {
         )}
 
         <Card className="shadow-2xl border-0 overflow-hidden">
-          <CardHeader className="text-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-b border-green-100 pb-8">
-            <div className="mx-auto mb-4 relative">
-              <div className="absolute inset-0 bg-green-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-              <CheckCircle className="w-16 h-16 text-green-600 mx-auto relative drop-shadow-lg" strokeWidth={2} />
-            </div>
-            <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
-              Payment Successful!
-            </CardTitle>
-            <CardDescription className="text-xl text-gray-600 font-medium">
-              Welcome to the PowerCA Family
-            </CardDescription>
-            <div className="flex justify-center mt-6">
-              <Image
-                src="/images/Group 12.png"
-                alt="PowerCA Logo"
-                width={220}
-                height={220}
-                className="object-contain drop-shadow-md"
-              />
-            </div>
-          </CardHeader>
+          {/* Show different headers based on payment status */}
+          {paymentStatus === 'cancelled' || paymentStatus === 'failed' || paymentStatus === 'pending' ? (
+            <CardHeader className={`text-center border-b pb-8 ${
+              paymentStatus === 'cancelled' ? 'bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50 border-orange-100' :
+              paymentStatus === 'failed' ? 'bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 border-red-100' :
+              'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-100'
+            }`}>
+              <div className="mx-auto mb-4 relative">
+                <div className={`absolute inset-0 rounded-full blur-2xl opacity-20 ${
+                  paymentStatus === 'cancelled' ? 'bg-orange-400' :
+                  paymentStatus === 'failed' ? 'bg-red-400' :
+                  'bg-blue-400'
+                }`}></div>
+                {paymentStatus === 'cancelled' && (
+                  <AlertCircle className="w-16 h-16 text-orange-600 mx-auto relative drop-shadow-lg" strokeWidth={2} />
+                )}
+                {paymentStatus === 'failed' && (
+                  <AlertCircle className="w-16 h-16 text-red-600 mx-auto relative drop-shadow-lg" strokeWidth={2} />
+                )}
+                {paymentStatus === 'pending' && (
+                  <Loader2 className="w-16 h-16 text-blue-600 mx-auto relative drop-shadow-lg animate-spin" strokeWidth={2} />
+                )}
+              </div>
+              <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
+                {paymentStatus === 'cancelled' && 'Payment Cancelled'}
+                {paymentStatus === 'failed' && 'Payment Failed'}
+                {paymentStatus === 'pending' && 'Payment Pending'}
+              </CardTitle>
+              <CardDescription className="text-xl text-gray-600 font-medium">
+                {paymentStatus === 'cancelled' && 'Your payment was not completed'}
+                {paymentStatus === 'failed' && 'We could not process your payment'}
+                {paymentStatus === 'pending' && 'Your payment is being verified'}
+              </CardDescription>
+            </CardHeader>
+          ) : (
+            <CardHeader className="text-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-b border-green-100 pb-8">
+              <div className="mx-auto mb-4 relative">
+                <div className="absolute inset-0 bg-green-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                <CheckCircle className="w-16 h-16 text-green-600 mx-auto relative drop-shadow-lg" strokeWidth={2} />
+              </div>
+              <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
+                Payment Successful!
+              </CardTitle>
+              <CardDescription className="text-xl text-gray-600 font-medium">
+                Welcome to the PowerCA Family
+              </CardDescription>
+              <div className="flex justify-center mt-6">
+                <Image
+                  src="/images/Group 12.png"
+                  alt="PowerCA Logo"
+                  width={220}
+                  height={220}
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+            </CardHeader>
+          )}
 
           <CardContent className="space-y-6 pt-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
                 <span className="ml-3 text-gray-600">Loading invoice details...</span>
+              </div>
+            ) : paymentStatus === 'cancelled' || paymentStatus === 'failed' || paymentStatus === 'pending' ? (
+              <div className={`rounded-lg p-6 ${
+                paymentStatus === 'cancelled' ? 'bg-orange-50 border border-orange-200' :
+                paymentStatus === 'failed' ? 'bg-red-50 border border-red-200' :
+                'bg-blue-50 border border-blue-200'
+              }`}>
+                <h3 className="font-semibold text-lg mb-3">
+                  {paymentStatus === 'cancelled' && 'What happened?'}
+                  {paymentStatus === 'failed' && 'What went wrong?'}
+                  {paymentStatus === 'pending' && 'What\'s next?'}
+                </h3>
+                <p className="text-gray-600 mb-4">{errorMessage}</p>
+
+                {paymentStatus === 'cancelled' && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-700">
+                      <strong>No charges were made to your account.</strong>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      You can try again by clicking the button below to return to the checkout page.
+                    </p>
+                  </div>
+                )}
+
+                {paymentStatus === 'failed' && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-700">
+                      <strong>If money was deducted from your account:</strong>
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                      <li>It will be automatically refunded within 5-7 business days</li>
+                      <li>Contact your bank if you don't receive the refund</li>
+                      <li>Contact our support team with your order ID</li>
+                    </ul>
+                  </div>
+                )}
+
+                {paymentStatus === 'pending' && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Your payment is being processed by the bank. This usually takes a few minutes.
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                      <li>Check your email for payment confirmation</li>
+                      <li>Refresh this page in 2-3 minutes</li>
+                      <li>Contact support if status doesn't update in 30 minutes</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : invoiceData ? (
               <>
@@ -311,33 +481,86 @@ function PaymentSuccessContent() {
           </CardContent>
 
           <CardFooter className="flex flex-col sm:flex-row gap-4 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-100 pt-6">
-            <Button
-              className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-              onClick={handleDownloadInvoice}
-              disabled={isDownloading}
-            >
-              {isDownloading ? (
-                <>
+            {paymentStatus === 'cancelled' || paymentStatus === 'failed' ? (
+              <>
+                <Button
+                  className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/checkout">
+                    Try Again
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/contact">
+                    Contact Support
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/">
+                    <ArrowLeft className="mr-2 w-4 h-4" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </>
+            ) : paymentStatus === 'pending' ? (
+              <>
+                <Button
+                  className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                  onClick={() => window.location.reload()}
+                >
                   <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  Downloading...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 w-4 h-4" />
-                  Download Invoice
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
-              asChild
-            >
-              <Link href="/">
-                <ArrowLeft className="mr-2 w-4 h-4" />
-                Back to Home
-              </Link>
-            </Button>
+                  Refresh Status
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/contact">
+                    Contact Support
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                  onClick={handleDownloadInvoice}
+                  disabled={isDownloading || !invoiceData}
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 w-4 h-4" />
+                      Download Invoice
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/">
+                    <ArrowLeft className="mr-2 w-4 h-4" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </>
+            )}
           </CardFooter>
         </Card>
       </div>

@@ -16,8 +16,8 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
-// Force dynamic rendering for all pages due to session usage
-export const dynamic = 'force-dynamic'
+// Removed force-dynamic to enable static generation and ISR
+// Session handling is done client-side via SessionProvider
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   description: 'Simplify your practice, amplify your growth. The all-in-one practice management software designed for Chartered Accountants. Save 10+ hours weekly, ensure 100% compliance.',
   keywords: 'CA practice management, chartered accountant software, tax compliance software, accounting software India, CA firm management',
   verification: {
-    google: 'your-google-search-console-verification-code', // Replace with actual code
+    google: 'tN7Iw132S-eBmg1pimE4zlB6IFSZmTrI0Gl8D2GOwyg',
   },
   icons: {
     icon: [

@@ -114,13 +114,12 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
 
   // Send confirmation email to the user
   try {
-    const _emailResult = await resend.emails.send({
+    await resend.emails.send({
       from: `PowerCA <${fromEmail}>`,
       to: email,
       subject: `Demo Booking Confirmed - ${date} at ${time}`,
       html: emailHtml,
     })
-    console.log('✅ Booking confirmation email sent to:', email)
   } catch (error) {
     throw error
   }
@@ -138,7 +137,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
   `
 
   try {
-    const _teamEmailResult = await resend.emails.send({
+    await resend.emails.send({
       from: `PowerCA Bookings <${fromEmail}>`,
       to: 'contact@powerca.in',
       subject: `New Demo Booking - ${name} - ${date} at ${time}`,
@@ -262,8 +261,6 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
   try {
     const fromEmail = process.env.EMAIL_FROM || 'noreply@powerca.in'
 
-    console.log('📧 Sending referral email from:', fromEmail, 'to:', customerEmail)
-
     const emailResult = await resend.emails.send({
       from: `PowerCA Referrals <${fromEmail}>`,
       to: customerEmail,
@@ -271,7 +268,6 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
       html: emailHtml,
     })
 
-    console.log('✅ Email sent successfully:', emailResult)
     return { success: true, data: emailResult }
   } catch (error) {
     console.error('❌ Failed to send referral link email:', error)
@@ -391,7 +387,6 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
       html: emailHtml,
     })
 
-    console.log('✅ Affiliate approval email sent to:', email)
     return { success: true, data: emailResult }
   } catch (error) {
     console.error('❌ Failed to send affiliate approval email:', error)

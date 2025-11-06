@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import {useState  } from 'react'
+import {useState, Suspense  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -12,9 +12,9 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield  } from 'lucide-react'
+import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, GraduationCap  } from 'lucide-react'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -193,7 +193,9 @@ export default function RegisterPage() {
       const result = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        setErrorMessage(result?.error || 'Registration failed. Please try again.')
+        // Handle error response format from createErrorResponse
+        const errorMsg = result?.error?.message || result?.error || result?.message || 'Registration failed. Please try again.'
+        setErrorMessage(errorMsg)
         return
       }
 
@@ -225,7 +227,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 }}
-        className="absolute left-6 top-6 z-20"
+        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
       >
         <Link href="/" className="block">
           <Image
@@ -233,7 +235,7 @@ export default function RegisterPage() {
             alt="PowerCA"
             width={200}
             height={58}
-            className="h-12 w-auto filter brightness-0 invert"
+            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
             priority
           />
         </Link>
@@ -244,57 +246,58 @@ export default function RegisterPage() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="absolute right-6 top-6 z-20"
+        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-6 py-3 backdrop-blur-md border border-white/20 rounded-full transition-all duration-300"
+          className="group flex items-center gap-3 px-3 sm:px-6 py-3 backdrop-blur-md border border-white/20 rounded-full transition-all duration-300"
         >
           <div className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-medium text-sm tracking-wide">
+          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
             Back to Home
           </span>
         </Link>
       </motion.div>
 
       {/* Register Form */}
-      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 relative z-10">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 pt-20 sm:pt-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 border-2 border-blue-100"
+          className="w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border-2 border-blue-100"
         >
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               Welcome to Power CA
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Please enter your details to sign Up your new account
             </p>
           </div>
 
           {/* User Type Selection */}
-          <div className="mb-8 flex justify-center">
-            <div className="bg-blue-50 border border-blue-200 rounded-full p-2 inline-flex">
+          <div className="mb-6 sm:mb-8 flex justify-center">
+            <div className="bg-blue-50 border border-blue-200 rounded-full p-1 sm:p-2 inline-flex">
               <button
                 onClick={() => setUserType('professional')}
-                className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
+                className={`px-3 sm:px-6 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 flex items-center ${
                   userType === 'professional'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-blue-600 hover:bg-blue-100'
                 }`}
               >
-                <Shield className="w-4 h-4 inline mr-2" />
+                <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Professional
               </button>
               <Link
                 href={callbackUrl ? `/register/student?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register/student'}
-                className="px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 text-gray-500 hover:bg-gray-100"
+                className="px-3 sm:px-6 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 text-gray-500 hover:bg-gray-100 flex items-center"
               >
+                <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Student
               </Link>
             </div>
@@ -308,7 +311,7 @@ export default function RegisterPage() {
                 {/* Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-900 font-medium">
-                    Name
+                    Name <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -333,7 +336,7 @@ export default function RegisterPage() {
                 {/* Mobile Field */}
                 <div className="space-y-2">
                   <Label htmlFor="mobile" className="text-gray-900 font-medium">
-                    Mobile Number
+                    Mobile Number <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -358,7 +361,7 @@ export default function RegisterPage() {
                 {/* Professional Type */}
                 {userType === 'professional' && (
                   <div className="space-y-3">
-                    <Label className="text-gray-900 font-medium">Professional</Label>
+                    <Label className="text-gray-900 font-medium">Professional <span className="text-red-500">*</span></Label>
                     <RadioGroup
                       value={formData.professionalType}
                       onValueChange={(value) => handleInputChange('professionalType', value)}
@@ -390,7 +393,7 @@ export default function RegisterPage() {
                 {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-gray-900 font-medium">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -416,7 +419,7 @@ export default function RegisterPage() {
                 {userType === 'professional' && (
                   <div className="space-y-2">
                     <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
-                      Membership No
+                      Membership No <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -441,7 +444,7 @@ export default function RegisterPage() {
                 {/* Password Field */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-gray-900 font-medium">
-                    Password
+                    Password <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -488,7 +491,7 @@ export default function RegisterPage() {
                 onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
                 className="mt-1"
               />
-              <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
+              <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
                 By creating an Account Means you agree to the{' '}
                 <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
                   Terms and Conditions
@@ -497,7 +500,7 @@ export default function RegisterPage() {
                 <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
                   Privacy Policy
                 </Link>
-              </Label>
+              </label>
             </div>
 
             {errorMessage && (
@@ -537,5 +540,13 @@ export default function RegisterPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
   )
 }

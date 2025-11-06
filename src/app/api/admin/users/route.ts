@@ -4,7 +4,7 @@ import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-s
 import bcrypt from 'bcryptjs'
 
 // GET all users for admin
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const auth = await requireAdminAuth()
     if (!auth) {

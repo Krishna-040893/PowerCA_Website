@@ -5,7 +5,7 @@ import {logger  } from '@/lib/logger'
 import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured  } from '@/lib/error-handler'
 
 // Get all bookings (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify admin authentication using NextAuth session
     const session = await requireAdminAuth()

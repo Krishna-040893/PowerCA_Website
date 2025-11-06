@@ -1,12 +1,18 @@
-import {NextRequest, NextResponse  } from 'next/server'
-import {Resend  } from 'resend'
-import {createAdminClient  } from '@/lib/supabase/admin'
-import {escapeHtml  } from '@/lib/sanitizer'
-import {REGISTRATION_FORMS_TABLE, PROFESSIONAL_REGISTRATIONS_TABLE, STUDENT_REGISTRATIONS_TABLE  } from '@/lib/constants/tables'
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { escapeHtml } from '@/lib/sanitizer'
+import { REGISTRATION_FORMS_TABLE, PROFESSIONAL_REGISTRATIONS_TABLE, STUDENT_REGISTRATIONS_TABLE } from '@/lib/constants/tables'
 import bcrypt from 'bcryptjs'
-
-const resendApiKey = process.env.RESEND_API_KEY
-const resend = resendApiKey ? new Resend(resendApiKey) : null
+import { withRateLimit, RateLimits } from '@/lib/middleware'
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 const normalizeString = (value: unknown, maxLength: number) => {
   if (typeof value !== 'string') return ''
@@ -26,18 +32,6 @@ const normalizePhone = (value: unknown) => {
   return cleaned.slice(0, 20)
 }
 
-const normalizeUsername = (value: unknown, fallback: string) => {
-  const base =
-    typeof value === 'string' && value.trim().length > 0
-      ? value.trim()
-      : fallback
-  const sanitized = base.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 50)
-  if (sanitized) {
-    return sanitized.toLowerCase()
-  }
-  return `user${Math.random().toString(36).slice(-8)}`
-}
-
 const normalizeBoolean = (value: unknown) => {
   if (typeof value === 'boolean') return value
   if (typeof value === 'string') {
@@ -50,8 +44,13 @@ const normalizeBoolean = (value: unknown) => {
   return false
 }
 
-export async function POST(request: NextRequest) {
+async function handleRegistration(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
     const body = await request.json()
     const supabase = createAdminClient()
 
@@ -68,11 +67,6 @@ export async function POST(request: NextRequest) {
     const phone = normalizePhone(body.phone ?? body.mobile)
     const password =
       typeof body.password === 'string' ? body.password.trim() : ''
-
-    const emailUsernameFallback = email.split('@')[0] || ''
-    const nameFallback = name.replace(/\s+/g, '')
-    const usernameFallback = emailUsernameFallback || nameFallback || 'user'
-    const username = normalizeUsername(body.username, usernameFallback)
 
     const professionalType =
       role === 'professional'
@@ -99,52 +93,83 @@ export async function POST(request: NextRequest) {
             50
           )
         : ''
-  const instituteName =
-    role === 'student'
-      ? normalizeString(body.instituteName ?? body.institute_name, 255)
-      : ''
-  const agreedToTerms = normalizeBoolean(
-    body.agreedToTerms ?? body.agreed_to_terms ?? body.terms
-  )
+    const instituteName =
+      role === 'student'
+        ? normalizeString(body.instituteName ?? body.institute_name, 255)
+        : ''
+    const agreedToTerms = normalizeBoolean(
+      body.agreedToTerms ?? body.agreed_to_terms ?? body.terms
+    )
 
     let finalMembershipNumber = membershipNumber
     if (role === 'professional' && !finalMembershipNumber && professionalType === 'NA') {
       finalMembershipNumber = 'NA'
     }
 
-    if (!name || !email || !username || !phone || !password) {
-      return NextResponse.json(
-        { error: 'Name, email, phone, username, and password are required.' },
-        { status: 400 }
+    logger.info('Registration attempt', { email, name, role })
+
+    // Validate required fields
+    if (!name || !email || !phone || !password) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Name, email, phone, and password are required.',
+        { statusCode: 400 }
       )
     }
 
     if (role === 'professional' && (!professionalType || !finalMembershipNumber)) {
-      return NextResponse.json(
-        {
-          error:
-            'Professional type and membership number are required for professional registrations.'
-        },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Professional type and membership number are required for professional registrations.',
+        { statusCode: 400 }
       )
     }
 
     if (role === 'student' && (!registrationNumber || !instituteName)) {
-      return NextResponse.json(
-        {
-          error:
-            'Registration number and institute name are required for student registrations.'
-        },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Registration number and institute name are required for student registrations.',
+        { statusCode: 400 }
       )
     }
 
     if (!agreedToTerms) {
-      return NextResponse.json(
-        {
-          error: 'You must accept the terms and conditions to register.'
-        },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'You must accept the terms and conditions to register.',
+        { statusCode: 400 }
+      )
+    }
+
+    // Check if email is already registered as a client
+    const { data: existingClient } = await supabase
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, email')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingClient) {
+      logger.warn('Email already registered as client', { email })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'This email is already registered. Please use a different email address or login to your existing account.',
+        { statusCode: 400 }
+      )
+    }
+
+    // Check if email is already registered as an affiliate
+    const { data: existingAffiliate } = await supabase
+      .from('affiliate_registrations')
+      .select('id, email, status')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingAffiliate) {
+      logger.warn('Email already registered as affiliate, cannot use for client', { email })
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'This email is already registered. Please use a different email address.',
+        { statusCode: 400 }
       )
     }
 
@@ -153,7 +178,6 @@ export async function POST(request: NextRequest) {
     const registrationData = {
       name,
       email,
-      username,
       phone,
       password_hash: hashedPassword,
       role,
@@ -175,35 +199,27 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (supabaseError) {
-      console.error('Supabase registration insert error:', supabaseError)
+      logger.error('Supabase registration insert error', supabaseError, { email, name })
 
       if (supabaseError.code === '23505') {
         if (supabaseError.message.includes('email')) {
-          return NextResponse.json(
-            { error: 'Email already registered.' },
-            { status: 400 }
-          )
-        }
-        if (supabaseError.message.includes('username')) {
-          return NextResponse.json(
-            { error: 'Username already taken. Please try again.' },
-            { status: 400 }
+          return createErrorResponse(
+            ErrorType.VALIDATION,
+            'Email already registered.',
+            { statusCode: 400 }
           )
         }
       }
 
-      return NextResponse.json(
-        { error: 'Registration failed. Please try again.' },
-        { status: 500 }
-      )
+      return handleDatabaseError(supabaseError)
     }
 
-    // If this is a referral signup, update the affiliate_referrals table
-    if (referralCode && customerId && newUser?.id) {
-      console.log('🔗 Linking referral:', { referralCode, customerId, userId: newUser.id })
+    logger.info('User registration successful', { userId: newUser.id, email, role })
 
-      try {
-        // Find and update the referral record
+    // Check if email exists in affiliate_referrals table (regardless of referral link usage)
+    try {
+      // First, check if this is a direct referral link signup
+      if (referralCode && customerId) {
         const { data: referralRecord, error: referralFindError } = await supabase
           .from('affiliate_referrals')
           .select('*')
@@ -212,9 +228,7 @@ export async function POST(request: NextRequest) {
           .eq('referred_email', email)
           .single()
 
-        if (referralFindError) {
-          console.error('❌ Error finding referral record:', referralFindError)
-        } else if (referralRecord) {
+        if (!referralFindError && referralRecord) {
           // Update the referral record with user details
           const { error: referralUpdateError } = await supabase
             .from('affiliate_referrals')
@@ -222,30 +236,63 @@ export async function POST(request: NextRequest) {
               referred_user_id: newUser.id,
               referred_name: name,
               referred_phone: phone,
+              status: 'pending', // Keep as pending until payment
               updated_at: new Date().toISOString()
             })
             .eq('id', referralRecord.id)
 
           if (referralUpdateError) {
-            console.error('❌ Error updating referral record:', referralUpdateError)
+            logger.error('Error updating affiliate referral', referralUpdateError, {
+              referralId: referralRecord.id,
+              userId: newUser.id
+            })
           } else {
-            console.log('✅ Referral record updated successfully')
+            logger.info('Affiliate referral linked', { referralId: referralRecord.id, userId: newUser.id })
           }
-        } else {
-          console.log('⚠️ No matching referral record found')
         }
-      } catch (referralError) {
-        console.error('❌ Error processing referral:', referralError)
-        // Don't fail the registration if referral update fails
+      } else {
+        // No referral link was used, but check if email was referred by an affiliate
+        const { data: emailReferral, error: emailCheckError } = await supabase
+          .from('affiliate_referrals')
+          .select('*')
+          .eq('referred_email', email)
+          .eq('status', 'pending')
+          .single()
+
+        if (!emailCheckError && emailReferral) {
+          // Update the referral record with the newly registered user
+          const { error: emailReferralUpdateError } = await supabase
+            .from('affiliate_referrals')
+            .update({
+              referred_user_id: newUser.id,
+              referred_name: name,
+              referred_phone: phone,
+              status: 'pending', // Keep as pending until payment
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', emailReferral.id)
+
+          if (emailReferralUpdateError) {
+            logger.error('Error linking to affiliate referral', emailReferralUpdateError, {
+              referralId: emailReferral.id,
+              userId: newUser.id
+            })
+          } else {
+            logger.info('Email-based affiliate referral linked', { referralId: emailReferral.id, userId: newUser.id })
+          }
+        }
       }
+    } catch (referralError) {
+      logger.error('Error processing affiliate referral', referralError, { userId: newUser.id, email })
+      // Don't fail the registration if referral update fails
     }
 
+    // Insert into role-specific table
     if (role === 'professional') {
       const professionalData = {
         name,
         email,
         phone,
-        username,
         password_hash: hashedPassword,
         professional_type: professionalType,
         membership_number: finalMembershipNumber,
@@ -257,26 +304,29 @@ export async function POST(request: NextRequest) {
         .insert([professionalData])
 
       if (professionalError) {
-        console.error('Professional registration insert error:', professionalError)
+        logger.error('Professional registration insert error', professionalError, { email, userId: newUser.id })
+
+        // Rollback main registration
         await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
+
         if (professionalError.code === '23505') {
           const duplicateField = professionalError.message?.includes('email') ? 'Email' : 'Membership number'
-          return NextResponse.json(
-            { error: `${duplicateField} already registered.` },
-            { status: 400 }
+          return createErrorResponse(
+            ErrorType.VALIDATION,
+            `${duplicateField} already registered.`,
+            { statusCode: 400 }
           )
         }
-        return NextResponse.json(
-          { error: professionalError.message || 'Registration failed. Please try again.' },
-          { status: 500 }
-        )
+
+        return handleDatabaseError(professionalError)
       }
+
+      logger.info('Professional registration completed', { userId: newUser.id, professionalType })
     } else {
       const studentData = {
         name,
         email,
         phone,
-        username,
         password_hash: hashedPassword,
         institute_name: instituteName,
         registration_number: registrationNumber,
@@ -288,43 +338,84 @@ export async function POST(request: NextRequest) {
         .insert([studentData])
 
       if (studentError) {
-        console.error('Student registration insert error:', studentError)
+        logger.error('Student registration insert error', studentError, { email, userId: newUser.id })
+
+        // Rollback main registration
         await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
+
         if (studentError.code === '23505') {
           const duplicateField = studentError.message?.includes('email') ? 'Email' : 'Registration number'
-          return NextResponse.json(
-            { error: `${duplicateField} already registered.` },
-            { status: 400 }
+          return createErrorResponse(
+            ErrorType.VALIDATION,
+            `${duplicateField} already registered.`,
+            { statusCode: 400 }
           )
         }
-        return NextResponse.json(
-          { error: studentError.message || 'Registration failed. Please try again.' },
-          { status: 500 }
-        )
+
+        return handleDatabaseError(studentError)
       }
+
+      logger.info('Student registration completed', { userId: newUser.id, instituteName })
     }
+
+    // Send confirmation email
+    await sendConfirmationEmail(email, name, role, {
+      professionalType: role === 'professional' ? professionalType : null,
+      membershipNumber: role === 'professional' ? finalMembershipNumber : null,
+      registrationNumber: role === 'student' ? registrationNumber : null,
+      instituteName: role === 'student' ? instituteName : null,
+      phone
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Registration successful!',
+      id: newUser?.id,
+      user: {
+        name,
+        email
+      }
+    })
+
+  } catch (error) {
+    logger.error('Registration error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
+    )
+  }
+}
+
+async function sendConfirmationEmail(
+  email: string,
+  name: string,
+  role: string,
+  details: {
+    professionalType: string | null
+    membershipNumber: string | null
+    registrationNumber: string | null
+    instituteName: string | null
+    phone: string
+  }
+) {
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      logger.warn('Resend API key not configured, skipping confirmation email')
+      return
+    }
+
+    // Initialize Resend inside handler (not at module level)
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     const displayRole = role === 'professional' ? 'Professional' : 'Student'
     const htmlName = escapeHtml(name)
     const htmlEmail = escapeHtml(email)
-    const htmlUsername = escapeHtml(username)
-    const htmlPhone = escapeHtml(phone)
-    const htmlProfessionalType =
-      role === 'professional' && professionalType
-        ? escapeHtml(professionalType)
-        : null
-    const htmlMembershipNumber =
-      role === 'professional' && finalMembershipNumber
-        ? escapeHtml(finalMembershipNumber)
-        : null
-    const htmlRegistrationNumber =
-      role === 'student' && registrationNumber
-        ? escapeHtml(registrationNumber)
-        : null
-    const htmlInstituteName =
-      role === 'student' && instituteName
-        ? escapeHtml(instituteName)
-        : null
+    const htmlPhone = escapeHtml(details.phone)
+    const htmlProfessionalType = details.professionalType ? escapeHtml(details.professionalType) : null
+    const htmlMembershipNumber = details.membershipNumber ? escapeHtml(details.membershipNumber) : null
+    const htmlRegistrationNumber = details.registrationNumber ? escapeHtml(details.registrationNumber) : null
+    const htmlInstituteName = details.instituteName ? escapeHtml(details.instituteName) : null
 
     const userEmailHtml = `
       <!DOCTYPE html>
@@ -355,9 +446,6 @@ export async function POST(request: NextRequest) {
               </div>
               <div class="info-row">
                 <span class="label">Email:</span> ${htmlEmail}
-              </div>
-              <div class="info-row">
-                <span class="label">Username:</span> ${htmlUsername}
               </div>
               <div class="info-row">
                 <span class="label">Phone:</span> ${htmlPhone}
@@ -400,61 +488,46 @@ export async function POST(request: NextRequest) {
     `
 
     try {
-      // Send confirmation email to the user only (no admin email)
-      if (!resend) {
-        console.warn('Resend not configured, skipping confirmation email')
-      } else {
-        const _emailResult = await resend.emails.send({
+      await resend.emails.send({
         from: 'PowerCA <contact@powerca.in>',
         to: email,
         subject: 'Welcome to PowerCA - Registration Successful',
         html: userEmailHtml,
       })
-      }
-      // Email sent successfully
+      logger.info('Registration confirmation email sent', { email })
     } catch (emailError) {
       // If email fails due to test mode restrictions, try sending to verified address
       const emailErrorStatus = emailError && typeof emailError === 'object' && 'statusCode' in emailError ? (emailError as { statusCode: number }).statusCode : null
       if (emailErrorStatus === 403) {
         try {
-          if (resend) {
-            const _testEmailResult = await resend.emails.send({
+          await resend.emails.send({
             from: 'PowerCA <contact@powerca.in>',
             to: 'contact@powerca.in',
             subject: `Welcome to PowerCA - Registration for ${email}`,
             html: userEmailHtml.replace('Dear ' + htmlName, `Dear ${htmlName} (Email intended for: ${htmlEmail})`),
             replyTo: email,
           })
-          }
-          // Test mode: Email sent to contact@powerca.in instead
-        } catch {
-          // Test email also failed
+          logger.info('Test mode: Registration confirmation sent to contact email', { intendedRecipient: email })
+        } catch (testEmailError) {
+          logger.error('Failed to send test mode email', testEmailError, { email })
         }
+      } else {
+        logger.error('Failed to send registration confirmation email', emailError, { email })
       }
     }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Registration successful!',
-      id: newUser?.id,
-      user: {
-        name,
-        email,
-        username
-      }
-    })
-
   } catch (error) {
-    console.error('Registration error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process registration' },
-      { status: 500 }
-    )
+    logger.error('Error in sendConfirmationEmail', error, { email })
+    // Don't throw - email failure shouldn't fail the registration
   }
 }
 
-export async function GET(request: NextRequest) {
+async function handleGetRegistrations(_request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
     const supabase = createAdminClient()
 
     // Fetch all registrations from Supabase registrations table
@@ -464,19 +537,25 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching registrations:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch registrations from database' },
-        { status: 500 }
-      )
+      logger.error('Error fetching registrations', error)
+      return handleDatabaseError(error)
     }
+
+    logger.info('Registrations fetched', { count: data?.length || 0 })
 
     return NextResponse.json(data || [])
   } catch (error) {
-    console.error('Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch registrations' },
-      { status: 500 }
+    logger.error('Get registrations error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }
+
+// Apply strict rate limiting (3 requests per minute for registration)
+export const POST = withRateLimit(handleRegistration, RateLimits.STRICT)
+
+// Apply relaxed rate limiting (30 requests per minute for fetching registrations)
+export const GET = withRateLimit(handleGetRegistrations, RateLimits.RELAXED)

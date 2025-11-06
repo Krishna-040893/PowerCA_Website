@@ -130,7 +130,6 @@ export async function POST(request: NextRequest) {
         }
 
         emailsSent++
-        console.log(`✅ Renewal notification sent to ${user.email}`)
       } catch (emailError) {
         console.error(`❌ Failed to send email to ${user.email}:`, emailError)
         errors.push(`Failed to send to ${user.email}`)

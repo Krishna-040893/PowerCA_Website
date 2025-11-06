@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { AdminSidebarLayout } from '@/components/admin/admin-sidebar-layout'
+import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, Clock, XCircle, User, Mail } from 'lucide-react'
 
 interface PaymentOrder {
   id: string
@@ -59,7 +59,7 @@ export default function PaymentOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<PaymentOrder | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const itemsPerPage = 10
 
   useEffect(() => {
     fetchOrders()
@@ -183,81 +183,107 @@ export default function PaymentOrdersPage() {
   }
 
   return (
-    <AdminSidebarLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div>
-        <h1 className="text-3xl font-bold text-gray-900">Payment Orders</h1>
-        <p className="text-gray-600 mt-2">Manage and track all Razorpay payment orders</p>
+    <AdminPageWrapper
+      title="Payment Orders"
+      description="Manage and track all Razorpay payment orders"
+    >
+      {/* Stats Cards - 2 Columns on Mobile, 5 on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Orders</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">All time</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <ShoppingCart className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Paid</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
+                <p className="text-xs text-gray-500 mt-1">Completed</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Created</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.created}</p>
+                <p className="text-xs text-gray-500 mt-1">Pending</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Attempted</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.attempted}</p>
+                <p className="text-xs text-gray-500 mt-1">In progress</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50">
+                <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
+                <p className="text-xs text-gray-500 mt-1">Earned</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Paid</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Created</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.created}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Attempted</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.attempted}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-700">{formatCurrency(stats.totalAmount)}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Orders</CardTitle>
-          <CardDescription>Search and filter payment orders</CardDescription>
+      {/* Filters - Enhanced */}
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg sm:text-xl font-bold">Filter Orders</CardTitle>
+          <CardDescription className="text-xs sm:text-sm mt-1">Search and filter payment orders</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search by order ID, name, email, phone, or firm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] bg-white">
+              <SelectTrigger className="w-full sm:w-[200px] h-10 border-gray-200 bg-white">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent className="bg-white">
@@ -271,31 +297,34 @@ export default function PaymentOrdersPage() {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      {/* Orders Table - Enhanced */}
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <ShoppingCart className="h-5 w-5" />
             Payment Orders ({filteredOrders.length})
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm mt-1">
             All payment orders from Razorpay
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading payment orders...</p>
             </div>
           ) : filteredOrders.length === 0 ? (
-            <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No payment orders found</p>
+            <div className="text-center py-16">
+              <ShoppingCart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Payment Orders Found</h3>
+              <p className="text-gray-500">No payment orders match your search criteria</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
@@ -359,6 +388,84 @@ export default function PaymentOrdersPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
+
+              {/* Mobile Card View - Professional Design */}
+              <div className="md:hidden space-y-3">
+                {currentOrders.map((order) => (
+                  <Card key={order.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Header: Customer Name, Amount, Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <User className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-sm text-gray-900 truncate">{order.customer_name || 'N/A'}</p>
+                                {order.firm_name && (
+                                  <p className="text-xs text-gray-500 truncate">{order.firm_name}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <p className="font-bold text-base whitespace-nowrap flex items-center">
+                              <IndianRupee className="h-3 w-3" />
+                              {order.amount.toFixed(2)}
+                            </p>
+                            {getStatusBadge(order.status)}
+                          </div>
+                        </div>
+
+                        {/* Order ID */}
+                        <div className="bg-gray-50 rounded-lg p-2.5">
+                          <div className="flex items-center gap-2">
+                            <ShoppingCart className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs text-gray-500">Order ID</p>
+                              <p className="text-xs font-mono text-gray-900 truncate">{order.order_id}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Customer Email */}
+                        {order.customer_email && (
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                            <span className="text-xs text-gray-700 truncate">{order.customer_email}</span>
+                          </div>
+                        )}
+
+                        {/* Date and Affiliate */}
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <span className="text-xs text-gray-500">
+                            {formatDate(order.created_at)}
+                          </span>
+                          {order.is_affiliate_purchase && (
+                            <Badge variant="outline" className="text-xs text-green-600 border-green-600">
+                              Affiliate
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Action Button - Enhanced */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(order)}
+                          className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Full Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -413,17 +520,17 @@ export default function PaymentOrdersPage() {
                   </Pagination>
                 </div>
               )}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* View Details Dialog */}
+      {/* View Details Dialog - Enhanced */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>Complete information about this payment order</DialogDescription>
+        <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto bg-white rounded-xl">
+          <DialogHeader className="border-b pb-3">
+            <DialogTitle className="text-lg font-bold">Order Details</DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">Complete information about this payment order</DialogDescription>
           </DialogHeader>
 
           {selectedOrder && (
@@ -516,7 +623,6 @@ export default function PaymentOrdersPage() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
-    </AdminSidebarLayout>
+    </AdminPageWrapper>
   )
 }

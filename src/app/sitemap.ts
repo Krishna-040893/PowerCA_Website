@@ -60,16 +60,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Affiliate program
     {
-      url: `${baseUrl}/affiliate-program`,
+      url: `${baseUrl}/affiliate-register`,
       lastModified,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/affiliate-program/register`,
-      lastModified,
-      changeFrequency: 'monthly' as const,
-      priority: 0.6,
     },
 
     // Authentication pages - Lower priority

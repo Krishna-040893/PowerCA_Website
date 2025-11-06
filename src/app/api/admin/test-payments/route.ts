@@ -3,7 +3,7 @@ import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-s
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {isTestMode  } from '@/lib/payment-config'
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const auth = await requireAdminAuth()
     if (!auth) {
