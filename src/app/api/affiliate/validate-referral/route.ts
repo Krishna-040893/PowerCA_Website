@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (referralError || !referral) {
-      console.log('❌ Referral validation failed:', { ref, cus, error: referralError?.message })
       return NextResponse.json({
         success: false,
         valid: false,
@@ -66,12 +65,6 @@ export async function GET(request: NextRequest) {
     const affiliateName = (registrationForm && typeof registrationForm === 'object' && 'name' in registrationForm)
       ? registrationForm.name
       : 'Affiliate Partner'
-
-    console.log('✅ Referral validated successfully:', {
-      referralCode: ref,
-      customerId: cus,
-      firmName: affiliateProfile?.firm_name
-    })
 
     return NextResponse.json({
       success: true,

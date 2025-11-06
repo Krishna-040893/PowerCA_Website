@@ -15,12 +15,24 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+    // Get limit parameter from query string (default: all posts)
+    const searchParams = request.nextUrl.searchParams
+    const limit = searchParams.get('limit')
+    const limitNumber = limit ? parseInt(limit, 10) : undefined
+
     // Fetch published blog posts
-    const { data: posts, error } = await supabase
+    let query = supabase
       .from('blog_posts')
       .select('*')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
+
+    // Apply limit if specified
+    if (limitNumber && limitNumber > 0) {
+      query = query.limit(limitNumber)
+    }
+
+    const { data: posts, error } = await query
 
     if (error) {
       console.error('Error fetching blog posts:', error)

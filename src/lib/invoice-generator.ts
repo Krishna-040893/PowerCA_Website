@@ -47,6 +47,7 @@ export interface PaymentData {
   email: string
   phone?: string
   company?: string
+  firm_name?: string
   address?: string
   gstNumber?: string
   orderId: string
@@ -495,7 +496,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
   try {
     const headerLogoBuffer = fs.readFileSync(headerLogoPath)
     headerLogoBase64 = `data:image/png;base64,${headerLogoBuffer.toString('base64')}`
-  } catch (error) {
+  } catch {
     console.warn('Header logo file not found, using placeholder')
   }
 
@@ -506,7 +507,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
   try {
     const productLogoBuffer = fs.readFileSync(productLogoPath)
     productLogoBase64 = `data:image/png;base64,${productLogoBuffer.toString('base64')}`
-  } catch (error) {
+  } catch {
     console.warn('Product logo file not found, using placeholder')
   }
 
@@ -561,7 +562,7 @@ export function createInvoiceData(payment: PaymentData): InvoiceData {
     customerName: payment.name || 'Customer',
     customerEmail: payment.email,
     customerPhone: payment.phone,
-    customerCompany: payment.company,
+    customerCompany: payment.firm_name || payment.company,
     customerAddress: payment.address,
     customerGSTN: payment.gstNumber,
 

@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 // GET - Fetch the next available customer ID for preview
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -23,8 +23,6 @@ export async function GET(request: NextRequest) {
       .select('customer_id')
       .not('customer_id', 'is', null)
       .order('customer_id', { ascending: false })
-
-    console.log('🔍 [Next Customer ID] All referrals from DB:', allReferrals)
 
     if (fetchError) {
       console.error('❌ [Next Customer ID] Error fetching customer IDs:', fetchError)
@@ -46,19 +44,12 @@ export async function GET(request: NextRequest) {
         })
         .filter(num => num > 0)
 
-      console.log('🔢 [Next Customer ID] Extracted numbers:', customerNumbers)
-
       if (customerNumbers.length > 0) {
         const maxNumber = Math.max(...customerNumbers)
         const nextNumber = maxNumber + 1
         nextCustomerId = 'CUS' + nextNumber.toString().padStart(3, '0')
-        console.log('✅ [Next Customer ID] Max number:', maxNumber, '→ Next ID:', nextCustomerId)
       }
-    } else {
-      console.log('⚠️ [Next Customer ID] No referrals found, using CUS001')
     }
-
-    console.log('📤 [Next Customer ID] Returning:', nextCustomerId)
 
     return NextResponse.json({
       success: true,

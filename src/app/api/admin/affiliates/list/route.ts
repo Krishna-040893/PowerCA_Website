@@ -4,7 +4,7 @@ import {createAdminClient  } from '@/lib/supabase/admin'
 import {createErrorResponse, ErrorType, handleDatabaseError  } from '@/lib/error-handler'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await requireAdminAuth()
     if (!session) {

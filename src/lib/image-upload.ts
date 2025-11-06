@@ -108,7 +108,7 @@ export async function compressImage(file: File, maxWidth: number = 800): Promise
 export async function uploadProfilePhoto(
   userId: string,
   file: File,
-  compress: boolean = false  // Disabled by default on server
+  _compress: boolean = false  // Disabled by default on server
 ): Promise<UploadResult> {
   try {
     // Validate file
@@ -129,7 +129,7 @@ export async function uploadProfilePhoto(
     const fileName = `${userId}/profile-${Date.now()}.${fileExt}`
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(fileName, uploadFile, {
         cacheControl: '3600',

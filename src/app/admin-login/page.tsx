@@ -15,7 +15,7 @@ import {toast  } from 'sonner'
 
 export default function AdminLoginPage() {
   const router = useRouter()
-  const { data: session, update: updateSession } = useSession()
+  const { update: updateSession } = useSession()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,24 +23,10 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // eslint-disable-next-line no-console
-  console.log('🔐 Admin Login Page loaded', { currentSession: session })
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-
-    console.log('🔐 Admin login attempt:', {
-      username,
-      usernameValue: username,
-      usernameType: typeof username,
-      hasPassword: !!password,
-      passwordLength: password?.length || 0,
-      timestamp: new Date().toISOString(),
-      env: process.env.NODE_ENV,
-      nextAuthUrl: process.env.NEXTAUTH_URL || window.location.origin
-    })
 
     try {
       // IMPORTANT: Admin uses username field (not email)
@@ -49,12 +35,6 @@ export default function AdminLoginPage() {
         username: username.trim(), // Admin uses username (trim whitespace)
         password: password,
       }
-
-      console.log('📤 Sending credentials to NextAuth:', {
-        hasUsername: !!credentials.username,
-        usernameValue: credentials.username,
-        hasEmail: 'email' in credentials
-      })
 
       // Show loading toast
       toast.loading('Authenticating...', { id: 'auth-toast' })
@@ -66,18 +46,10 @@ export default function AdminLoginPage() {
         callbackUrl: '/admin', // Specify callback URL for proper redirect
       })
 
-      console.log('📦 NextAuth signIn result:', {
-        ok: result?.ok,
-        status: result?.status,
-        error: result?.error,
-        url: result?.url
-      })
-
       // Dismiss loading toast
       toast.dismiss('auth-toast')
 
       if (result?.error) {
-        console.error('❌ Login failed:', result.error)
         const errorMessage = result.error || 'Invalid credentials'
         setError(errorMessage)
         toast.error(errorMessage, {
@@ -88,21 +60,16 @@ export default function AdminLoginPage() {
       }
 
       if (result?.ok) {
-        console.log('✅ Admin login successful - Updating session...')
-
         toast.success('Login successful!', { id: 'auth-success' })
 
         // Force session update to get fresh session data
         await updateSession()
-
-        console.log('🔄 Session updated, navigating to /admin...')
 
         // Use router.push for client-side navigation
         router.push('/admin')
 
         // Also set a backup redirect in case router.push fails
         setTimeout(() => {
-          console.log('⚠️ Backup redirect triggered')
           window.location.href = '/admin'
         }, 3000)
       } else {
@@ -111,7 +78,6 @@ export default function AdminLoginPage() {
         toast.error(errorMsg)
       }
     } catch (err) {
-      console.error('❌ Login error:', err)
       const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
       setError(errorMsg)
       toast.error('Login Error', {

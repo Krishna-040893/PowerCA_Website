@@ -153,34 +153,17 @@ export async function POST(request: NextRequest) {
     // Try multiple lookup methods to avoid duplicate key errors
     let existingProfile = null
 
-    console.log('🔍 Looking up affiliate profile for:', {
-      affiliate_id: affiliateReg.affiliate_id,
-      referral_code: affiliateReg.referral_code,
-      isAffiliate
-    })
-
     // Method 1: Lookup by affiliate_id (most reliable if affiliate_id exists)
     if (affiliateReg.affiliate_id) {
-      console.log('🔍 Method 1: Searching by affiliate_id:', affiliateReg.affiliate_id)
-
-      const { data: profileByAffiliateId, error: lookupError } = await supabase
+      const { data: profileByAffiliateId } = await supabase
         .from('affiliate_profiles')
         .select('*')
         .eq('affiliate_id', affiliateReg.affiliate_id)
         .maybeSingle()
 
-      if (lookupError) {
-        console.error('❌ Error looking up by affiliate_id:', lookupError)
-      }
-
       if (profileByAffiliateId) {
         existingProfile = profileByAffiliateId
-        console.log('✅ Found existing profile by affiliate_id:', affiliateReg.affiliate_id)
-      } else {
-        console.log('⚠️ No profile found by affiliate_id:', affiliateReg.affiliate_id)
       }
-    } else {
-      console.log('⚠️ No affiliate_id available for lookup')
     }
 
     // Method 2: Lookup by referral_code or user_id (fallback)
@@ -205,7 +188,6 @@ export async function POST(request: NextRequest) {
 
     if (existingProfile) {
       // Profile exists - just use it, DON'T overwrite with customer data
-      console.log('✅ Using existing affiliate profile:', existingProfile.id)
       profileData = existingProfile
     } else {
       // Create new affiliate profile ONCE with affiliate's basic info
@@ -218,12 +200,6 @@ export async function POST(request: NextRequest) {
         website_url: 'https://powerca.in',
         status: 'active'
       }
-
-      console.log('✅ Creating new affiliate profile:', {
-        isNewAffiliate: isAffiliate,
-        referralCode: referralCode,
-        userId: insertData.user_id
-      })
 
       const { data: newProfile, error: createError } = await supabase
         .from('affiliate_profiles')
@@ -275,27 +251,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('✅ Referral record created:', {
-      customer_id: referralData.customer_id,
-      referral_code: profileData.referral_code
-    })
-
     // Send email to customer if email is provided
     if (body.contactEmail && referralData?.customer_id) {
-      console.log('📧 Attempting to send referral link email to:', body.contactEmail)
-      console.log('📧 RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY)
-      console.log('📧 EMAIL_FROM configured:', process.env.EMAIL_FROM)
-
       try {
         // Create referral link with both referral code and customer ID
         const referralLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${profileData.referral_code}&cus=${referralData.customer_id}`
-
-        console.log('📧 Sending email with details:', {
-          customerEmail: body.contactEmail,
-          referralCode: profileData.referral_code,
-          customerId: referralData.customer_id,
-          referralLink
-        })
 
         const emailResult = await sendReferralLinkEmail({
           customerName: body.contactPerson || body.firmName || 'Customer',
@@ -307,24 +267,13 @@ export async function POST(request: NextRequest) {
           customerId: referralData.customer_id
         })
 
-        console.log('📧 Email result:', emailResult)
-
-        if (emailResult.success) {
-          console.log('✅ Referral link email sent successfully to:', body.contactEmail)
-        } else {
+        if (!emailResult.success) {
           console.error('❌ Failed to send referral link email:', emailResult.error)
           // Don't fail the operation if email fails
         }
       } catch (emailError) {
         console.error('❌ Error sending referral link email:', emailError)
         // Don't fail the operation if email fails
-      }
-    } else {
-      if (!body.contactEmail) {
-        console.log('⚠️ No email provided - skipping email send')
-      }
-      if (!referralData?.customer_id) {
-        console.log('⚠️ No customer ID - skipping email send')
       }
     }
 

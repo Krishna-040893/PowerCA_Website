@@ -11,22 +11,22 @@ interface ModuleCardProps {
 
 function ModuleCard({ iconSrc, title, description }: ModuleCardProps) {
   return (
-    <div className="bg-white border-2 rounded-2xl p-6 h-full" style={{ borderColor: '#b6c9f3' }}>
-      <div className="bg-white border-2 rounded-[10px] p-2 w-fit mb-5" style={{ borderColor: '#b6c9f3' }}>
+    <div className="bg-white border-2 rounded-2xl p-4 sm:p-5 md:p-6 h-full" style={{ borderColor: '#b6c9f3' }}>
+      <div className="bg-white border-2 rounded-[10px] p-1.5 sm:p-2 w-fit mb-3 sm:mb-4 md:mb-5" style={{ borderColor: '#b6c9f3' }}>
         <Image
           src={iconSrc}
           alt={`${title} icon`}
           width={32}
           height={32}
-          className="w-8 h-8"
+          className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8"
         />
       </div>
 
-      <h3 className="text-[24px] font-medium text-[#001525] leading-[36px] mb-5 font-inter">
+      <h3 className="text-lg sm:text-xl md:text-[24px] font-medium text-[#001525] leading-tight sm:leading-[36px] mb-3 sm:mb-4 md:mb-5 font-inter">
         {title}
       </h3>
 
-      <p className="text-base text-[#666d80] leading-[30px] text-justify font-inter">
+      <p className="text-sm sm:text-base text-[#666d80] leading-relaxed sm:leading-[30px] text-justify font-inter">
         {description}
       </p>
     </div>
@@ -120,9 +120,9 @@ export default function ModulesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-[60px] flex items-center justify-center overflow-hidden bg-white">
-        {/* Background image with 48px padding */}
-        <div className="absolute inset-0 px-12">
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+        {/* Background image with responsive padding */}
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -134,26 +134,26 @@ export default function ModulesPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-6xl mx-auto text-center">
             {/* Badge */}
-            <div className="mb-8">
-              <span className="inline-flex items-center px-6 py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-sm font-medium font-inter">
-                <Network className="w-4 h-4 mr-2" />
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
+                <Network className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Tailored Modules for Total Control
               </span>
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-8 font-inter">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 font-inter px-2">
               Elevate Your Practice with
               <br />
               <span className="text-blue-600">Power CA Modules</span>
             </h1>
 
             {/* Description */}
-            <div className="mb-12 max-w-5xl mx-auto">
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-4 font-inter">
+            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed font-inter">
                 Optimize your practice with powerful management tools that streamline operations and enhance client services.
               </p>
             </div>
@@ -162,26 +162,26 @@ export default function ModulesPage() {
       </section>
 
       {/* Modules Section */}
-      <section className="pt-20 pb-8 bg-white">
-        <div className="container mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-4 gap-12 items-start mb-16">
+      <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-start mb-8 sm:mb-10 md:mb-12 lg:mb-16">
             {/* Left Content - Title */}
             <div className="lg:col-span-2">
-              <h2 className="font-semibold leading-normal text-4xl md:text-[42px] text-gray-900 font-inter">
+              <h2 className="font-semibold leading-normal text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-gray-900 font-inter">
                 Explore Power CA Modules
               </h2>
             </div>
 
             {/* Center Content - Description */}
             <div className="lg:col-span-2">
-              <p className="text-lg text-gray-600 leading-relaxed font-inter">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed font-inter">
                 Discover the full potential of Power CA through its modules, designed to streamline operations, increase productivity, and enhance your practice with comprehensive tools.
               </p>
             </div>
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {modules.map((module, index) => (
               <ModuleCard
                 key={index}

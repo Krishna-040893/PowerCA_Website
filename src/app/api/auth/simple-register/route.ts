@@ -3,13 +3,20 @@ import bcrypt from 'bcryptjs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { REGISTRATION_FORMS_TABLE } from '@/lib/constants/tables'
 import { logger } from '@/lib/logger'
+import { strictLimiter, getClientIp, createRateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Apply strict rate limiting: 3 registration attempts per minute per IP
+  const ip = getClientIp(request)
+  const rateLimitResult = await strictLimiter.check(3, ip)
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   try {
     const body = await request.json()
-    const { name, email, phone, password, firmName } = body
-
-    console.log('Simple register called with:', { name, email, phone, firmName })
+    const { name, email, phone, password, firmName: _firmName } = body
 
     // Validate required fields
     if (!name || !email || !phone || !password) {
@@ -43,14 +50,13 @@ export async function POST(request: NextRequest) {
     const supabase = createAdminClient()
 
     // Check if user already exists
-    const { data: existingUser, error: checkError } = await supabase
+    const { data: existingUser } = await supabase
       .from(REGISTRATION_FORMS_TABLE)
       .select('id, email, name, username')
       .eq('email', email)
       .maybeSingle()
 
     if (existingUser) {
-      console.log('User already exists, returning existing user:', existingUser.id)
       // Return existing user for affiliate registration
       return NextResponse.json(
         {
@@ -65,6 +71,21 @@ export async function POST(request: NextRequest) {
           existingUser: true
         },
         { status: 200 }
+      )
+    }
+
+    // Check if email is already registered as an affiliate
+    const { data: existingAffiliate } = await supabase
+      .from('affiliate_registrations')
+      .select('id, email, status')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingAffiliate) {
+      logger.warn('Email already registered as affiliate, cannot use for client', { email })
+      return NextResponse.json(
+        { error: 'This email is already registered. Please use a different email address.' },
+        { status: 400 }
       )
     }
 

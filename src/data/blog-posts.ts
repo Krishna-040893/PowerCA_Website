@@ -1,5 +1,5 @@
 export type BlogPost = {
-  id: number
+  id: string
   title: string
   excerpt: string
   author: string
@@ -13,7 +13,7 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
-    id: 1,
+    id: '1',
     title: 'BREAKING: Tax Audit Report Due Date Extended to October 31, 2025',
     excerpt:
       'CBDT extends tax audit report filing deadline from September 30 to October 31, 2025 for AY 2025-26. Get complete details of the notification.',
@@ -26,7 +26,7 @@ export const blogPosts: BlogPost[] = [
     isBreaking: true,
   },
   {
-    id: 2,
+    id: '2',
     title: 'TDS Compliance Checklist 2025-26: Complete Guide for CAs',
     excerpt:
       'Comprehensive TDS compliance checklist for FY 2025-26. Due dates, rates, forms, penalties, and best practices for error-free TDS compliance.',
@@ -38,7 +38,7 @@ export const blogPosts: BlogPost[] = [
     link: '/blog/tds-compliance-checklist-complete-guide',
   },
   {
-    id: 3,
+    id: '3',
     title: 'Why Every CA Firm Needs Practice Management Software in 2025',
     excerpt:
       'Discover how practice management software transforms CA firms. Increase efficiency by 40%, reduce errors, automate compliance, and scale your practice.',
@@ -50,7 +50,7 @@ export const blogPosts: BlogPost[] = [
     link: '/blog/why-cas-need-practice-management-software',
   },
   {
-    id: 4,
+    id: '4',
     title: 'New vs Old Tax Regime: Which is Better for You in 2025-26?',
     excerpt:
       'Detailed comparison of New vs Old tax regime for FY 2025-26. Calculate which regime saves more tax based on your income and deductions.',
@@ -62,7 +62,7 @@ export const blogPosts: BlogPost[] = [
     link: '/blog/new-vs-old-tax-regime-which-is-better',
   },
   {
-    id: 5,
+    id: '5',
     title: 'How to File GST Returns in 2025: Complete Guide for CAs',
     excerpt:
       'Step-by-step guide on filing GST returns in 2025. Learn about GSTR-1, GSTR-3B, deadlines, late fees, and common mistakes to avoid.',

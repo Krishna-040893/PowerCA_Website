@@ -1,29 +1,39 @@
-import {NextRequest, NextResponse  } from 'next/server'
-import {createAdminClient  } from '@/lib/supabase/admin'
-import {Resend  } from 'resend'
+import { NextRequest, NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { Resend } from 'resend'
 import type { Booking } from '@/types/booking'
+import { withRateLimit, RateLimits } from '@/lib/middleware'
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-
-export async function POST(request: NextRequest) {
+async function handleCreateBooking(request: NextRequest) {
   try {
     const body = await request.json()
     const { name, email, phone, firmName, date, time, message } = body
 
-
     // Validate required fields
     if (!name || !email || !phone || !date || !time) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Missing required fields: name, email, phone, date, and time are required',
+        { statusCode: 400 }
       )
     }
+
+    logger.info('Booking attempt', { email, name, date, time })
 
     // Initialize Supabase admin client
     const supabase = createAdminClient()
 
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
+      logger.warn('Supabase not configured, using demo mode for booking')
 
       // Fallback to simple storage if Supabase is not configured
       const booking = {
@@ -41,6 +51,8 @@ export async function POST(request: NextRequest) {
 
       // Send email and return success
       await sendConfirmationEmail(booking as Booking)
+
+      logger.info('Booking created in demo mode', { bookingId: booking.id, email })
 
       return NextResponse.json({
         success: true,
@@ -72,6 +84,11 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (error) {
+        logger.error('Database error creating booking, falling back to demo mode', error, {
+          email,
+          name
+        })
+
         // Fall back to simple storage if Supabase fails
         booking = {
           id: `BK${Date.now()}`,
@@ -87,8 +104,14 @@ export async function POST(request: NextRequest) {
         }
       } else {
         booking = data
+        logger.info('Booking created successfully', { bookingId: data.id, email })
       }
-    } catch {
+    } catch (dbError) {
+      logger.error('Network error creating booking, falling back to demo mode', dbError, {
+        email,
+        name
+      })
+
       // Fall back to simple storage if network fails
       booking = {
         id: `BK${Date.now()}`,
@@ -104,7 +127,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-
     // Send confirmation email
     await sendConfirmationEmail(booking)
 
@@ -118,28 +140,33 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-    return NextResponse.json(
-      { success: false, error: 'Failed to process booking', details: errorMessage },
-      { status: 500 }
+    logger.error('Failed to process booking', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }
 
-export async function GET(request: NextRequest) {
+async function handleGetBookedSlots(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
 
     if (!date) {
-      return NextResponse.json(
-        { error: 'Date parameter is required' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Date parameter is required',
+        { statusCode: 400 }
       )
     }
 
+    logger.info('Fetching booked slots', { date })
+
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-supabase-project-url') {
+      logger.warn('Supabase not configured, returning empty slots')
       // Return empty array if Supabase is not configured
       return NextResponse.json({ bookedSlots: [] })
     }
@@ -155,18 +182,23 @@ export async function GET(request: NextRequest) {
         .in('status', ['CONFIRMED', 'PENDING'])
 
       if (error) {
+        logger.error('Error fetching booked slots', error, { date })
         // Return empty array instead of error to allow booking to continue
         return NextResponse.json({ bookedSlots: [] })
       }
 
       const bookedSlots = bookings?.map(booking => booking.time) || []
 
+      logger.info('Booked slots retrieved', { date, count: bookedSlots.length })
+
       return NextResponse.json({ bookedSlots })
-    } catch {
+    } catch (dbError) {
+      logger.error('Network error fetching booked slots', dbError, { date })
       // Return empty array when network fails
       return NextResponse.json({ bookedSlots: [] })
     }
-  } catch {
+  } catch (error) {
+    logger.error('Error in get booked slots', error)
     // Return empty array instead of error
     return NextResponse.json({ bookedSlots: [] })
   }
@@ -174,15 +206,13 @@ export async function GET(request: NextRequest) {
 
 async function sendConfirmationEmail(booking: Booking) {
   try {
-
     if (!process.env.RESEND_API_KEY) {
+      logger.warn('Resend API key not configured, skipping confirmation email')
       return
     }
 
-    if (!resend) {
-      return
-    }
-
+    // Initialize Resend inside handler (not at module level)
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     const bookingDate = new Date(booking.date || '').toLocaleDateString('en-US', {
       weekday: 'long',
@@ -207,14 +237,14 @@ async function sendConfirmationEmail(booking: Booking) {
                 <h1 style="color: white; margin: 0; font-size: 28px;">PowerCA</h1>
                 <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Demo Booking Confirmed</p>
               </div>
-              
+
               <div style="padding: 30px;">
                 <h2 style="color: #333; margin-bottom: 20px;">Hello ${booking.name},</h2>
-                
+
                 <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
                   Your demo booking has been confirmed! We're excited to show you how PowerCA can transform your practice management.
                 </p>
-                
+
                 <div style="background: #f8f9fa; border-left: 4px solid #1D91EB; padding: 20px; margin: 25px 0; border-radius: 4px;">
                   <h3 style="color: #333; margin: 0 0 15px 0;">Booking Details:</h3>
                   <p style="margin: 8px 0; color: #666;"><strong>Date:</strong> ${bookingDate}</p>
@@ -222,23 +252,23 @@ async function sendConfirmationEmail(booking: Booking) {
                   ${booking.firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${booking.firmName}</p>` : ''}
                   ${booking.message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${booking.message}</p>` : ''}
                 </div>
-                
+
                 <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
                   Our team will connect with you at the scheduled time to demonstrate PowerCA's features and answer any questions you may have.
                 </p>
-                
+
                 <div style="text-align: center; margin: 30px 0;">
                   <a href="https://powerca.in" style="display: inline-block; padding: 12px 30px; background: #1D91EB; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Visit PowerCA</a>
                 </div>
-                
+
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                
+
                 <p style="color: #999; font-size: 14px; text-align: center;">
                   If you need to reschedule, please contact us at contact@powerca.in
                 </p>
               </div>
             </div>
-            
+
             <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
               © 2024 PowerCA. All rights reserved.
             </p>
@@ -248,7 +278,7 @@ async function sendConfirmationEmail(booking: Booking) {
     `
 
     // Send confirmation email to customer with CC to team
-    const _customerEmailResult = await resend.emails.send({
+    await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: booking.email,
       cc: 'contact@powerca.in', // CC to your team
@@ -256,6 +286,7 @@ async function sendConfirmationEmail(booking: Booking) {
       html: customerEmailHtml,
     })
 
+    logger.info('Customer confirmation email sent', { bookingId: booking.id, email: booking.email })
 
     // Team notification email
     const teamEmailHtml = `
@@ -285,14 +316,23 @@ async function sendConfirmationEmail(booking: Booking) {
     `
 
     // Send separate notification to team
-    const _teamEmailResult = await resend.emails.send({
+    await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: 'contact@powerca.in',
       subject: `[TEAM] New Demo Booking - ${booking.name} - ${booking.firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 
-  } catch {
+    logger.info('Team notification email sent', { bookingId: booking.id })
+
+  } catch (emailError) {
+    logger.error('Failed to send confirmation email', emailError, { bookingId: booking.id })
     // Don't throw - email failure shouldn't fail the booking
   }
 }
+
+// Apply strict rate limiting (3 requests per minute for bookings)
+export const POST = withRateLimit(handleCreateBooking, RateLimits.STRICT)
+
+// Apply relaxed rate limiting (30 requests per minute for checking available slots)
+export const GET = withRateLimit(handleGetBookedSlots, RateLimits.RELAXED)

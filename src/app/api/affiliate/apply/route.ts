@@ -1,25 +1,33 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createClient  } from '@supabase/supabase-js'
 import {Resend  } from 'resend'
-import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-const supabase = createClient(
-  supabaseUrl,
-  supabaseServiceKey
-)
-
-const resendApiKey = process.env.RESEND_API_KEY
-const resend = resendApiKey ? new Resend(resendApiKey) : null
+import {
+  createErrorResponse,
+  handleConfigurationError,
+  handleDatabaseError,
+  handleValidationError,
+  isServiceConfigured,
+  ErrorType
+} from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
+    // Initialize Supabase inside the route handler (not at module level)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // Initialize Resend if configured
+    const resendApiKey = process.env.RESEND_API_KEY
+    const resend = resendApiKey ? new Resend(resendApiKey) : null
+
     const body = await request.json()
     const {
       fullName,
@@ -43,8 +51,9 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Detailed validation logging
-    console.log('📝 Affiliate registration attempt:', { email, fullName, city, state })
+    logger.info('Affiliate registration attempt', { email, fullName, city, state })
 
+    // Validate required fields
     if (!fullName || !email || !phone || !password || !city || !state || !promotionMethod || !targetAudience) {
       const missingFields = []
       if (!fullName) missingFields.push('fullName')
@@ -56,13 +65,23 @@ export async function POST(request: NextRequest) {
       if (!promotionMethod) missingFields.push('promotionMethod')
       if (!targetAudience) missingFields.push('targetAudience')
 
-      console.error('❌ Missing required fields:', missingFields)
+      logger.warn('Missing required fields in affiliate registration', { missingFields })
+      return handleValidationError([
+        `Missing required fields: ${missingFields.join(', ')}`
+      ])
+    }
+
+    // Check if email is already registered as a client
+    const { data: existingClient } = await supabase
+      .from('registration_forms')
+      .select('id, email')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingClient) {
+      logger.warn('Email already registered as client, cannot use for affiliate', { email })
       return NextResponse.json(
-        {
-          error: 'All required fields must be provided',
-          missingFields,
-          hint: `Please provide: ${missingFields.join(', ')}`
-        },
+        { error: 'This email is already registered. Please use a different email address.' },
         { status: 400 }
       )
     }
@@ -72,7 +91,7 @@ export async function POST(request: NextRequest) {
       .from('affiliate_registrations')
       .select('id, status')
       .eq('email', email)
-      .single()
+      .maybeSingle()
 
     if (existingRegistration) {
       return NextResponse.json(
@@ -128,17 +147,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (registrationError) {
-      console.error('Error creating affiliate registration:', registrationError)
-      console.error('Full error details:', JSON.stringify(registrationError, null, 2))
-      return NextResponse.json(
-        {
-          error: 'Failed to submit affiliate registration',
-          details: registrationError.message || registrationError.toString(),
-          code: registrationError.code,
-          hint: registrationError.hint
-        },
-        { status: 500 }
-      )
+      logger.error('Error creating affiliate registration', registrationError, {
+        email,
+        fullName
+      })
+      return handleDatabaseError(registrationError)
     }
 
     // Send notification email to admin
@@ -205,13 +218,15 @@ export async function POST(request: NextRequest) {
           subject: 'New Affiliate Registration - PowerCA',
           html: adminEmailHtml,
         })
-        console.log('✅ Admin email sent successfully:', adminEmailResult)
+        logger.info('Admin email sent successfully', {
+          resultId: adminEmailResult.data?.id || 'sent'
+        })
       } catch (emailError) {
-        console.error('❌ Admin email sending error:', emailError)
+        logger.error('Admin email sending error', emailError)
         // Don't fail the registration if email fails
       }
     } else {
-      console.warn('Resend API key not configured; skipping admin notification email')
+      logger.warn('Resend API key not configured; skipping admin notification email')
     }
 
     // Send confirmation email to affiliate
@@ -280,16 +295,18 @@ export async function POST(request: NextRequest) {
           subject: 'Welcome to PowerCA Affiliate Program - Application Received',
           html: affiliateEmailHtml,
         })
-        console.log('✅ Affiliate confirmation email sent successfully:', affiliateEmailResult)
+        logger.info('Affiliate confirmation email sent successfully', {
+          resultId: affiliateEmailResult.data?.id || 'sent'
+        })
       } catch (emailError) {
-        console.error('❌ Affiliate email sending error:', emailError)
+        logger.error('Affiliate email sending error', emailError)
         // Don't fail the registration if email fails
       }
     } else {
-      console.warn('Resend API key not configured; skipping affiliate confirmation email')
+      logger.warn('Resend API key not configured; skipping affiliate confirmation email')
     }
 
-    console.log('✅ Affiliate registration successful:', registration.id)
+    logger.info('Affiliate registration successful', { registrationId: registration.id, email })
 
     return NextResponse.json({
       success: true,
@@ -298,14 +315,11 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ Fatal error submitting affiliate application:', error)
-    console.error('Error details:', error instanceof Error ? error.message : String(error))
-    return NextResponse.json(
-      {
-        error: 'Failed to submit affiliate application',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+    logger.error('Fatal error submitting affiliate application', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }

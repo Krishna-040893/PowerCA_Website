@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, RefreshCw, Download, Mail, UserCheck, TrendingUp, Search } from 'lucide-react'
 import { format } from 'date-fns'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface NewsletterSubscriber {
   id: string
@@ -29,6 +30,8 @@ export default function NewsletterSubscribersPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchSubscribers = useCallback(async () => {
     if (!isAuthenticated) {
@@ -58,10 +61,7 @@ export default function NewsletterSubscribersPage() {
       setSubscribers(data.subscribers || [])
     } catch (err) {
       clearTimeout(timeoutId)
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('Request was aborted')
-      } else {
-        console.error('Error fetching subscribers:', err)
+      if (err instanceof Error && err.name !== 'AbortError') {
         setError(err instanceof Error ? err.message : 'An error occurred')
       }
     } finally {
@@ -163,58 +163,67 @@ export default function NewsletterSubscribersPage() {
         </div>
       }
     >
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-6">
+      {/* Statistics Cards - 2 Columns on Mobile, 3 on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Subscribers</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Subscribers</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">All time</p>
               </div>
-              <Mail className="h-8 w-8 text-blue-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
+                <Mail className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Active</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.active}</p>
+                <p className="text-xs text-gray-500 mt-1">Subscribed</p>
               </div>
-              <UserCheck className="h-8 w-8 text-green-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
+                <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
+        <Card className="border border-gray-100 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Today's Subscriptions</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.today}</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Today's Subscriptions</p>
+                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.today}</p>
+                <p className="text-xs text-gray-500 mt-1">New today</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-600" />
+              <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
+                <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      {/* Main Content Card - Enhanced */}
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle>Subscriber List</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">Subscriber List</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1">
                 View and manage newsletter subscribers
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search and Filter Controls */}
-          <div className="flex gap-4 mb-6">
+          {/* Search and Filter Controls - Enhanced Mobile */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -222,11 +231,11 @@ export default function NewsletterSubscribersPage() {
                 placeholder="Search by email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent className="bg-white">
@@ -253,52 +262,109 @@ export default function NewsletterSubscribersPage() {
               No subscribers found
             </div>
           ) : filteredSubscribers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No subscribers match your search criteria
+            <div className="text-center py-16">
+              <Mail className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Subscribers Found</h3>
+              <p className="text-gray-500">No subscribers match your search criteria</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>EMAIL</TableHead>
-                    <TableHead>SOURCE</TableHead>
-                    <TableHead>STATUS</TableHead>
-                    <TableHead>SUBSCRIBED DATE</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubscribers.map((subscriber) => (
-                    <TableRow key={subscriber.id}>
-                      <TableCell className="font-medium">{subscriber.email}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{subscriber.source || 'website'}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {subscriber.is_active ? (
-                          <Badge className="bg-green-500 hover:bg-green-600 text-white">
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Unsubscribed</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {subscriber.subscribed_at
-                          ? format(new Date(subscriber.subscribed_at), 'dd MMM yyyy HH:mm')
-                          : '-'}
-                      </TableCell>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>EMAIL</TableHead>
+                      <TableHead>SOURCE</TableHead>
+                      <TableHead>STATUS</TableHead>
+                      <TableHead>SUBSCRIBED DATE</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubscribers
+                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                      .map((subscriber) => (
+                      <TableRow key={subscriber.id}>
+                        <TableCell className="font-medium">{subscriber.email}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{subscriber.source || 'website'}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {subscriber.is_active ? (
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">Unsubscribed</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {subscriber.subscribed_at
+                            ? format(new Date(subscriber.subscribed_at), 'dd MMM yyyy HH:mm')
+                            : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
-          {subscribers.length > 0 && (
-            <div className="mt-4 text-sm text-gray-600">
-              Showing {filteredSubscribers.length} of {subscribers.length} total subscribers
-            </div>
+              {/* Mobile Card View - Professional Design */}
+              <div className="md:hidden space-y-3">
+                {filteredSubscribers
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((subscriber) => (
+                  <Card key={subscriber.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Email and Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <Mail className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-sm text-gray-900 truncate">{subscriber.email}</p>
+                                <p className="text-xs text-gray-500">
+                                  {subscriber.subscribed_at
+                                    ? format(new Date(subscriber.subscribed_at), 'dd MMM yyyy')
+                                    : '-'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          {subscriber.is_active ? (
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white text-xs flex-shrink-0">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">Unsubscribed</Badge>
+                          )}
+                        </div>
+
+                        {/* Source */}
+                        <div className="bg-gray-50 rounded-lg p-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500">Source</span>
+                            <Badge variant="outline" className="text-xs">{subscriber.source || 'website'}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredSubscribers.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="subscribers"
+              />
+            </>
           )}
         </CardContent>
       </Card>

@@ -13,7 +13,7 @@ function generateSlug(title: string): string {
 }
 
 // GET - Fetch all blog posts (including drafts for admin)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await requireAdminAuth()
     if (!session) {
@@ -191,7 +191,7 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     if (title !== undefined) {
       updateData.title = title
       // Regenerate slug if title changed
