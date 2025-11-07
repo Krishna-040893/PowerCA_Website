@@ -83,7 +83,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 2. Open browser DevTools (F12) → Console tab
 3. Enter credentials:
    - Username: `superadmin`
-   - Password: `Admin@123`
+   - Password: `Powerca@25`
 4. Click "Admin Sign In"
 5. **Expected behavior:**
    - Console shows: `✅ Admin authentication successful`

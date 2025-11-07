@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -434,7 +434,7 @@ export default function AdminBlogPage() {
 
   return (
     <AdminPageWrapper
-      title="Blog Management"
+      title="Blog Posts"
       description="Create and manage blog posts"
       actions={
         <div className="flex gap-2">
@@ -495,10 +495,7 @@ export default function AdminBlogPage() {
 
       {/* Blog Posts Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg sm:text-xl font-bold">All Blog Posts</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
               {error}
@@ -523,11 +520,11 @@ export default function AdminBlogPage() {
                 <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>TITLE</TableHead>
-                    <TableHead>CATEGORY</TableHead>
-                    <TableHead>STATUS</TableHead>
-                    <TableHead>PUBLISHED</TableHead>
-                    <TableHead>ACTIONS</TableHead>
+                    <TableHead className="text-base font-bold">Title</TableHead>
+                    <TableHead className="text-base font-bold">Category</TableHead>
+                    <TableHead className="text-base font-bold">Status</TableHead>
+                    <TableHead className="text-base font-bold">Published</TableHead>
+                    <TableHead className="text-base font-bold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -547,12 +544,12 @@ export default function AdminBlogPage() {
                       <TableCell>
                         <div className="flex gap-2">
                           {post.is_published ? (
-                            <Badge className="bg-green-500">Published</Badge>
+                            <Badge className="bg-green-500 text-white">Published</Badge>
                           ) : (
                             <Badge variant="secondary">Draft</Badge>
                           )}
                           {post.is_breaking && (
-                            <Badge className="bg-red-500">Breaking</Badge>
+                            <Badge className="bg-red-500 text-white">Breaking</Badge>
                           )}
                         </div>
                       </TableCell>
@@ -608,12 +605,12 @@ export default function AdminBlogPage() {
                           </div>
                           <div className="flex flex-col gap-1 flex-shrink-0">
                             {post.is_published ? (
-                              <Badge className="bg-green-500 text-xs">Published</Badge>
+                              <Badge className="bg-green-500 text-white text-xs">Published</Badge>
                             ) : (
                               <Badge variant="secondary" className="text-xs">Draft</Badge>
                             )}
                             {post.is_breaking && (
-                              <Badge className="bg-red-500 text-xs">Breaking</Badge>
+                              <Badge className="bg-red-500 text-white text-xs">Breaking</Badge>
                             )}
                           </div>
                         </div>
@@ -677,8 +674,8 @@ export default function AdminBlogPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-[90vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-white">
-          <DialogHeader>
+        <DialogContent className="max-w-[90vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-white p-10 sm:p-10">
+          <DialogHeader className="mb-4">
             <DialogTitle>
               {editingPost ? 'Edit Blog Post' : 'Create New Blog Post'}
             </DialogTitle>

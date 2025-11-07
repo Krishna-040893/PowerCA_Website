@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, CreditCard, Search, Eye, RefreshCw, IndianRupee, CheckCircle, XCircle, Clock, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -49,7 +48,6 @@ export default function AdminPaymentsPage() {
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [syncingPayment, setSyncingPayment] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -120,11 +118,6 @@ export default function AdminPaymentsPage() {
   const filterPayments = useCallback(() => {
     let filtered = [...payments]
 
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(payment => payment.status.toLowerCase() === statusFilter)
-    }
-
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(payment =>
@@ -138,7 +131,7 @@ export default function AdminPaymentsPage() {
 
     setFilteredPayments(filtered)
     setCurrentPage(1) // Reset to first page when filters change
-  }, [payments, statusFilter, searchTerm])
+  }, [payments, searchTerm])
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredPayments.length / itemsPerPage)
@@ -253,7 +246,7 @@ export default function AdminPaymentsPage() {
 
   return (
     <AdminPageWrapper
-      title="Payments Management"
+      title="Payments"
       description="View and manage all payment transactions"
       actions={
         <Button onClick={fetchPayments} variant="outline" size="sm">
@@ -327,18 +320,10 @@ export default function AdminPaymentsPage() {
 
       {/* Payments Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="text-lg sm:text-xl font-bold">All Payments</CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-1">View and manage payment transactions</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filters - Enhanced Mobile */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
-            <div className="flex-1 relative">
+        <CardContent className="pt-6">
+          {/* Search Filter - Enhanced Mobile */}
+          <div className="mb-5">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search by name, email, order ID..."
@@ -347,19 +332,6 @@ export default function AdminPaymentsPage() {
                 className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48 h-10 border-gray-200">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="captured">Captured</SelectItem>
-                <SelectItem value="authorized">Authorized</SelectItem>
-                <SelectItem value="created">Created</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Table / Cards */}
@@ -379,12 +351,12 @@ export default function AdminPaymentsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-base font-bold">Order ID</TableHead>
+                      <TableHead className="text-base font-bold">Customer</TableHead>
+                      <TableHead className="text-base font-bold">Amount</TableHead>
+                      <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Date</TableHead>
+                      <TableHead className="text-base font-bold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -431,12 +403,12 @@ export default function AdminPaymentsPage() {
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
-                                  variant="outline"
                                   size="sm"
                                   onClick={() => setSelectedPayment(payment)}
-                                  className="bg-white hover:bg-gray-50"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-[90vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -566,13 +538,12 @@ export default function AdminPaymentsPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedPayment(payment)}
-                                className="flex-1 bg-white hover:bg-gray-50"
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                               >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Details
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">

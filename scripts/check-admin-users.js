@@ -61,7 +61,7 @@ async function checkAdminUsers() {
     if (superadmin) {
       console.log('✅ Default superadmin account exists')
       console.log('   Username: superadmin')
-      console.log('   Password: Admin@123 (if not changed)')
+      console.log('   Password: Powerca@25 (if not changed)')
 
       if (!superadmin.is_active) {
         console.log('   ⚠️  WARNING: Superadmin is not active!')

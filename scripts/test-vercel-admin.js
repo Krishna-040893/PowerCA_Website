@@ -43,7 +43,7 @@ async function testAdminLogin() {
       },
       body: JSON.stringify({
         username: 'superadmin',
-        password: 'Admin@123'
+        password: 'Powerca@25'
       })
     })
 

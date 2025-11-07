@@ -36,8 +36,10 @@ export default function ForgotPasswordPage() {
         setSuccess(true)
         toast.success('Password reset link sent! Check your email.')
       } else {
-        setError(result.error || 'Failed to send reset link. Please try again.')
-        toast.error(result.error || 'Failed to send reset link.')
+        // Extract error message from response object
+        const errorMessage = result.error?.message || result.message || result.error || 'Failed to send reset link. Please try again.'
+        setError(errorMessage)
+        toast.error(errorMessage)
       }
     } catch (error) {
       console.error('Forgot password error:', error)

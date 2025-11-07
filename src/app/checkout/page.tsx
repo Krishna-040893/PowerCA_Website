@@ -716,7 +716,53 @@ function CheckoutContent() {
                     />
                   </div>
 
-                  {/* Country */}
+                  {/* Street Address */}
+                  <div>
+                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                      Street address <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Street address"
+                      className={`mt-1 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
+                    />
+                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                  </div>
+
+                  {/* Town/City */}
+                  <div>
+                    <Label htmlFor="city" className="text-sm font-medium text-gray-700">
+                      Town / City <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className={`mt-1 ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
+                    />
+                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+                  </div>
+
+                   {/* Postcode/ZIP */}
+                  <div>
+                    <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">
+                      Postcode / ZIP <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="postcode"
+                      name="postcode"
+                      value={formData.postcode}
+                      onChange={handleInputChange}
+                      className={`mt-1 ${errors.postcode ? 'border-red-500' : 'border-gray-300'}`}
+                    />
+                    {errors.postcode && <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>}
+                  </div>
+
+                    {/* Country */}
                   <div>
                     <Label htmlFor="country" className="text-sm font-medium text-gray-700">
                       Country <span className="text-red-500">*</span>
@@ -780,37 +826,6 @@ function CheckoutContent() {
                     {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
                   </div>
 
-                  {/* Street Address */}
-                  <div>
-                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                      Street address <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="Street address"
-                      className={`mt-1 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-                  </div>
-
-                  {/* Town/City */}
-                  <div>
-                    <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                      Town / City <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-                  </div>
-
                   {/* State */}
                   <div>
                     <Label htmlFor="state" className="text-sm font-medium text-gray-700">
@@ -844,21 +859,6 @@ function CheckoutContent() {
                       />
                     )}
                     {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                  </div>
-
-                  {/* Postcode/ZIP */}
-                  <div>
-                    <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">
-                      Postcode / ZIP <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="postcode"
-                      name="postcode"
-                      value={formData.postcode}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.postcode ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.postcode && <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>}
                   </div>
 
                   {/* Phone */}

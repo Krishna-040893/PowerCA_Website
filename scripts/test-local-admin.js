@@ -19,7 +19,7 @@ async function testLocalAdminLogin() {
       },
       body: JSON.stringify({
         username: 'PCAadmin',
-        password: 'Admin@123'
+        password: 'Powerca@25'
       })
     })
 

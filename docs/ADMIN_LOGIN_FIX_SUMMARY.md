@@ -108,7 +108,7 @@ document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax
 
 ## How It Works Now
 
-1. ✅ User enters credentials: `PCAadmin` / `Admin@123`
+1. ✅ User enters credentials: `PCAadmin` / `Powerca@25`
 2. ✅ Login API validates and returns JWT token
 3. ✅ Client saves token to localStorage
 4. ✅ **Client manually sets cookie via `document.cookie`**
@@ -133,7 +133,7 @@ document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax
 ### Credentials:
 
 - **Username:** `PCAadmin`
-- **Password:** `Admin@123`
+- **Password:** `Powerca@25`
 
 ### URL:
 

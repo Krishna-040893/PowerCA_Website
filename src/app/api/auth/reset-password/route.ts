@@ -77,14 +77,19 @@ const handleResetPassword = async (request: NextRequest) => {
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Determine correct password column name based on table
+    const passwordColumn = tableName === 'registration_forms' ? 'password_hash' : 'password'
+
     // Update password and clear reset token
+    const updateData: Record<string, string | null> = {
+      reset_token: null,
+      reset_token_expiry: null
+    }
+    updateData[passwordColumn] = hashedPassword
+
     const { error: updateError } = await supabase
       .from(tableName)
-      .update({
-        password: hashedPassword,
-        reset_token: null,
-        reset_token_expiry: null
-      })
+      .update(updateData)
       .eq('id', user.id)
 
     if (updateError) {

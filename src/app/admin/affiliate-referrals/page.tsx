@@ -304,7 +304,7 @@ export default function AffiliateReferralsPage() {
         {/* Main Content */}
         <Card className="shadow-sm border border-gray-100">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-bold">Referral Details by Affiliate</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-bold">Affiliate Referrals</CardTitle>
             <CardDescription className="text-xs sm:text-sm mt-1">
               Click on an affiliate to view their referral customers
             </CardDescription>
@@ -390,14 +390,14 @@ export default function AffiliateReferralsPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Customer ID</TableHead>
-                              <TableHead>Customer Name</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead>Phone</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Payment</TableHead>
-                              <TableHead>Created</TableHead>
-                              <TableHead>Actions</TableHead>
+                              <TableHead className="text-base font-bold">Customer ID</TableHead>
+                              <TableHead className="text-base font-bold">Customer Name</TableHead>
+                              <TableHead className="text-base font-bold">Email</TableHead>
+                              <TableHead className="text-base font-bold">Phone</TableHead>
+                              <TableHead className="text-base font-bold">Status</TableHead>
+                              <TableHead className="text-base font-bold">Payment</TableHead>
+                              <TableHead className="text-base font-bold">Created</TableHead>
+                              <TableHead className="text-base font-bold">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>

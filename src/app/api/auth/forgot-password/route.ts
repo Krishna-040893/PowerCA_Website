@@ -46,7 +46,7 @@ const handleForgotPassword = async (request: NextRequest) => {
     // Check if user exists in registration_forms table
     const { data: user } = await supabase
       .from('registration_forms')
-      .select('id, email, full_name')
+      .select('id, email, name')
       .eq('email', email)
       .single()
 
@@ -112,7 +112,7 @@ const handleForgotPassword = async (request: NextRequest) => {
               <h1 style="margin: 0;">Reset Your Password</h1>
             </div>
             <div class="content">
-              <p>Dear ${foundUser.full_name},</p>
+              <p>Dear ${'full_name' in foundUser ? foundUser.full_name : foundUser.name},</p>
 
               <p>We received a request to reset your password for your PowerCA ${userType === 'affiliate' ? 'Affiliate' : 'Client'} account.</p>
 

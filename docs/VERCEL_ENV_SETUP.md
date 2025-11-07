@@ -91,14 +91,14 @@ URL: https://power-ca-website-git-feature-branch-1-krishna-fitschool.vercel.app/
 
 Credentials:
 Username: PCAadmin
-Password: Admin@123
+Password: Powerca@25
 ```
 
 OR
 
 ```
 Username: superadmin
-Password: Admin@123
+Password: Powerca@25
 ```
 
 ### Test 2: Environment Check (Optional)
@@ -225,7 +225,7 @@ When adding a variable in Vercel, it should look like this:
 After setting all variables and redeploying:
 
 1. Visit admin login page
-2. Enter: `PCAadmin` / `Admin@123`
+2. Enter: `PCAadmin` / `Powerca@25`
 3. Click "Admin Sign In"
 4. **You should be redirected to `/admin` dashboard**
 5. You should see the admin dashboard with sidebar
