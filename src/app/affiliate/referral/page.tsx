@@ -438,7 +438,7 @@ export default function AffiliateAccountPage() {
               </ul>
             </div>
             <div className="mt-6 text-center text-sm text-gray-500">
-              <p>If you have any questions, contact us at <a href="mailto:affiliates@powerca.in" className="text-blue-600 hover:underline">contact@powerca.in</a></p>
+              <p>If you have any questions, contact us at <a href="mailto:contact@powerca.in" className="text-blue-600 hover:underline">contact@powerca.in</a></p>
             </div>
             </div>
           </div>
@@ -502,10 +502,10 @@ export default function AffiliateAccountPage() {
             </div>
             <div className="bg-blue-50 p-4 rounded-lg text-left">
               <h3 className="font-semibold text-blue-900 mb-2">What can you do?</h3>
-              <ul className="text-sm text-blue-800 space-y-2">
+              <ul className="text-sm text-gray-500 space-y-2">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  Contact our team at <a href="mailto:contact@powerca.in" className="text-blue-600 hover:underline"> contact@powerca.in</a> for feedback
+                  <span>Contact our team at <a href="mailto:contact@powerca.in" className="text-blue-600 hover:underline">contact@powerca.in</a> for feedback</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
