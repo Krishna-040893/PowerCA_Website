@@ -62,11 +62,18 @@ export function ClientLogos() {
         }
 
         .animate-scroll {
-          animation: scroll 25s linear infinite;
+          animation: scroll 18s linear infinite;
         }
 
         .animate-scroll:hover {
           animation-play-state: paused;
+        }
+
+        /* Faster scroll on mobile */
+        @media (max-width: 768px) {
+          .animate-scroll {
+            animation: scroll 8s linear infinite;
+          }
         }
       `}</style>
     </section>

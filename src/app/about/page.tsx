@@ -58,8 +58,8 @@ export default function AboutPage() {
     ? allTeamMembers
     : allTeamMembers.filter(member => member.category === selectedFilter)
 
-  // Desktop: 4 members per slide
-  const membersPerSlide = 4
+  // Desktop: 5 members per slide
+  const membersPerSlide = 5
   const totalSlides = Math.max(1, filteredMembers.length - membersPerSlide + 1)
 
   // Mobile: 2 members per slide
@@ -268,26 +268,30 @@ export default function AboutPage() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12 lg:mb-16">
+          {/* Header - Responsive Layout */}
+          <div className="mb-8 sm:mb-12 lg:mb-16">
+            {/* Title and Description - Stacked until xl breakpoint */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
               {/* Left - Title */}
-              <div className="lg:col-span-5">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 leading-normal">
+              <div className="pl-4 sm:pl-8 lg:pl-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 leading-tight">
                   Our Team Members
                 </h2>
               </div>
 
-              {/* Center - Description */}
-              <div className="lg:col-span-4">
+              {/* Right - Description */}
+              <div className="xl:flex xl:items-start pl-4 sm:pl-0">
                 <p className="text-sm sm:text-base md:text-lg text-gray-500 leading-relaxed">
                   Efficient Communication, Centralized Data Management, and Seamless Interaction.
                 </p>
               </div>
+            </div>
 
-              {/* Right - Filter Button */}
-              <div className="lg:col-span-3 flex justify-start lg:justify-end relative" ref={filterRef}>
-                <button
+            {/* Filter Button - Right-aligned with spacing */}
+            <div className="flex justify-end relative pr-4 sm:pr-8 lg:pr-12" ref={filterRef}>
+              <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto"
+                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
                 >
                   {filterCategories.find(cat => cat.value === selectedFilter)?.label || 'Filter'}
                   <svg
@@ -302,7 +306,7 @@ export default function AboutPage() {
 
                 {/* Filter Dropdown */}
                 {isFilterOpen && (
-                  <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                  <div className="absolute top-full right-0 mt-2 w-full sm:w-56 lg:w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20 max-h-80 overflow-y-auto">
                     {filterCategories.map((category) => (
                       <button
                         key={category.value}
@@ -364,7 +368,7 @@ export default function AboutPage() {
 
           {/* Team Members Carousel - Desktop View (Hidden on mobile) */}
           <div className="hidden sm:block relative overflow-hidden mb-6 sm:mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {getVisibleMembers().map((member, index) => {
                 const gradients = [
                   'from-purple-100 to-pink-100',
@@ -375,12 +379,12 @@ export default function AboutPage() {
                 return (
                   <div
                     key={`desktop-${currentSlide}-${index}`}
-                    className="bg-white rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
+                    className="bg-white rounded-2xl p-2 sm:p-3 md:p-4 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
                     style={{
                       animation: 'slideInFromRight 0.5s ease-out'
                     }}
                   >
-                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
+                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-2 sm:mb-3 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
                       {member.image ? (
                         <Image
                           src={member.image}
@@ -395,8 +399,8 @@ export default function AboutPage() {
                         </div>
                       )}
                     </div>
-                    <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1">{member.name}</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">{member.role}</p>
+                    <h4 className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 mb-1">{member.name}</h4>
+                    <p className="text-gray-500 text-xs">{member.role}</p>
                   </div>
                 )
               })}
@@ -479,7 +483,7 @@ export default function AboutPage() {
               ))}
             </div>
 
-            <div className="flex items-center justify-end gap-2 sm:gap-3">
+            <div className="flex items-center justify-end gap-2 sm:gap-3 pr-4 sm:pr-8 lg:pr-12">
               <button
                 onClick={prevSlide}
                 disabled={currentSlide === 0}

@@ -177,19 +177,19 @@ export function Footer() {
 
             {/* Newsletter Signup */}
             <div className="mb-6 sm:mb-8">
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2">
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
-                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-full text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-full text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-white rounded-full transition-colors hover:opacity-90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-white rounded-full transition-colors hover:opacity-90 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   style={{ backgroundColor: '#144fed' }}
                 >
                   {isSubmitting ? 'Subscribing...' : 'Subscribe'}

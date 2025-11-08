@@ -301,10 +301,10 @@ export default function Home() {
             </div>
 
             {/* Right Content - Button */}
-            <div className="lg:col-span-1 flex items-center justify-start lg:justify-end">
+            <div className="lg:col-span-1 flex items-start justify-start lg:justify-end">
               <Link
                 href="/modules"
-                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer text-sm sm:text-base w-full sm:w-auto justify-center"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer text-sm sm:text-base w-full sm:w-auto"
               >
                 All Modules
                 <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
