@@ -33,24 +33,24 @@ export const featuresConfig = {
   ],
   pricingPlans: [
     {
-      name: 'PowerCA Implementation',
-      price: '₹22,000',
-      originalPrice: '₹22,000',
-      period: 'one-time',
-      description: 'Complete setup and first year free',
+      name: 'PowerCA Launch Offer',
+      price: '₹50,000',
+      originalPrice: '₹1,00,000',
+      period: 'first-year',
+      description: 'Special 50% discount for CAs only – Till 31st Oct 2025',
       features: [
-        'Full software implementation',
-        'First year subscription FREE',
+        'Installation and Demo',
+        'Required training',
+        'Ongoing Support & Update',
+        'First year subscription included',
         'Unlimited clients',
         'All premium features included',
         'Complete data migration',
-        'Personalized training sessions',
         '24/7 dedicated support',
-        'Regular updates & maintenance',
       ],
       popular: true,
       productId: 'powerca_implementation',
-      amount: 2200000, // Amount in paise (₹22,000 = 2,200,000 paise) for Razorpay
+      amount: 5000000, // Amount in paise (₹50,000 = 5,000,000 paise) for Razorpay
     },
   ],
 }

@@ -50,7 +50,7 @@ export default function DelhiPage() {
         <section className="pt-20 pb-16">
           <div className="container mx-auto px-6 lg:px-8">
             <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                 Professional CA Software for <span className="text-blue-600">Delhi NCR</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
@@ -91,7 +91,7 @@ export default function DelhiPage() {
         {/* Local Features Section */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Designed for Delhi NCR's CA Community
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -164,7 +164,7 @@ export default function DelhiPage() {
         {/* Success Stories */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Expected Benefits for Delhi NCR CAs
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -213,7 +213,7 @@ export default function DelhiPage() {
         {/* CTA Section */}
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
+            <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
               Transform Your Delhi NCR Practice Today
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">

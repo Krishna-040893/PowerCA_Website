@@ -72,7 +72,7 @@ export default function GSTReturnsGuidePage() {
               </p>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Understanding GST Return Types in 2025</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Understanding GST Return Types in 2025</h2>
 
             <p>
               The GST return filing landscape has evolved significantly in 2025. As a CA, understanding each return type
@@ -119,7 +119,7 @@ export default function GSTReturnsGuidePage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Step-by-Step GST Return Filing Process</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Step-by-Step GST Return Filing Process</h2>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Step 1: Prepare Your Data</h3>
 
@@ -183,7 +183,7 @@ export default function GSTReturnsGuidePage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">GST Return Deadlines for 2024</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">GST Return Deadlines for 2024</h2>
 
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-200">
@@ -224,7 +224,7 @@ export default function GSTReturnsGuidePage() {
               </table>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Common Mistakes to Avoid</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Common Mistakes to Avoid</h2>
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
@@ -260,7 +260,7 @@ export default function GSTReturnsGuidePage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Best Practices for CAs</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Best Practices for CAs</h2>
 
             <ol className="space-y-3">
               <li>
@@ -294,7 +294,7 @@ export default function GSTReturnsGuidePage() {
               </ul>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">New Features in GST Portal 2024</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">New Features in GST Portal 2024</h2>
 
             <ul className="space-y-3">
               <li>
@@ -314,7 +314,7 @@ export default function GSTReturnsGuidePage() {
               </li>
             </ul>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>
+            <h2 className="text-2xl font-semibold mt-8 mb-4 leading-normal">Conclusion</h2>
 
             <p>
               Filing GST returns accurately and on time is crucial for maintaining compliance and avoiding penalties.

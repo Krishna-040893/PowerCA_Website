@@ -120,7 +120,7 @@ https://powerca.in/tools/tds-calculator`
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Calculator Input */}
           <Card className="p-6">
-            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 leading-normal">
               <Calculator className="h-6 w-6 text-blue-600" />
               TDS Calculator
             </h2>
@@ -216,7 +216,7 @@ https://powerca.in/tools/tds-calculator`
 
           {/* Results */}
           <Card className="p-6">
-            <h2 className="text-2xl font-semibold mb-6">Calculation Results</h2>
+            <h2 className="text-2xl font-semibold mb-6 leading-normal">Calculation Results</h2>
 
             <div className="space-y-4">
               <div className="flex justify-between py-3 border-b">

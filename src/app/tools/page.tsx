@@ -8,7 +8,7 @@ import {
   FileText,
   Home,
   Award,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Shield,
   ArrowRight,
@@ -41,7 +41,7 @@ const calculators = [
   {
     title: 'Income Tax Calculator',
     description: 'Calculate income tax for FY 2024-25. Compare old vs new tax regime.',
-    icon: DollarSign,
+    icon: IndianRupee,
     href: '/tools/income-tax-calculator',
     color: 'bg-green-500',
     popular: true,
@@ -113,7 +113,7 @@ const calculators = [
 ]
 
 const upcomingCalculators = [
-  { name: 'PPF Calculator', icon: DollarSign },
+  { name: 'PPF Calculator', icon: IndianRupee },
   { name: 'SIP Calculator', icon: TrendingUp },
   { name: 'FD Calculator', icon: Calculator },
   { name: 'Retirement Calculator', icon: Shield },
@@ -128,7 +128,7 @@ export default function ToolsPage() {
       <section className="py-16">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Free Tax & Financial Calculators
             </h1>
             <p className="text-xl text-gray-600 mb-8">
@@ -204,7 +204,7 @@ export default function ToolsPage() {
       {/* Coming Soon Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Coming Soon</h2>
+          <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">Coming Soon</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {upcomingCalculators.map((calc) => {
               const Icon = calc.icon
@@ -225,7 +225,7 @@ export default function ToolsPage() {
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Use PowerCA Calculators?</h2>
+          <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">Why Use PowerCA Calculators?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
@@ -273,7 +273,7 @@ export default function ToolsPage() {
       {/* CTA Section */}
       <section className="py-16 bg-blue-600">
         <div className="container mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
             Need More Than Just Calculators?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
@@ -298,7 +298,7 @@ export default function ToolsPage() {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="max-w-4xl mx-auto prose prose-gray">
-            <h2 className="text-2xl font-bold mb-4">About Our Tax Calculators</h2>
+            <h2 className="text-2xl font-semibold mb-4 leading-normal">About Our Tax Calculators</h2>
             <p className="text-gray-600 mb-4">
               PowerCA's suite of tax and financial calculators are designed specifically for Chartered Accountants and tax professionals in India.
               Each calculator is meticulously updated to reflect the latest changes in Indian tax laws, including GST rates, income tax slabs for FY 2024-25,

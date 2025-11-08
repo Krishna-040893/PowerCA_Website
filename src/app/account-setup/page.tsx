@@ -107,14 +107,6 @@ export default function AccountSetupPage() {
 
       if (profileError) throw profileError
 
-      // Update user's profile_completed status
-      const { error: updateError } = await supabase
-        .from('registrations')
-        .update({ profile_completed: true })
-        .eq('id', user.id)
-
-      if (updateError) throw updateError
-
       toast.success('Account setup completed successfully!')
       router.push('/dashboard')
     } catch (error: unknown) {

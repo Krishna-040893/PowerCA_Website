@@ -1,6 +1,6 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Glassmorphism effects with fallbacks */
 @layer utilities {
@@ -212,6 +212,17 @@
       /* Edge-specific styles if needed */
     }
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
 @theme inline {
@@ -358,13 +369,10 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-gray-200;
   }
   body {
-    @apply bg-background text-foreground font-sans;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    @apply font-inter;
   }
   code, pre {
     @apply font-mono;
@@ -407,3 +415,29 @@
 .animate-slide-in-left { animation: slide-in-left 0.5s ease-out; }
 .animate-slide-in-right { animation: slide-in-right 0.5s ease-out; }
 .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+/* Custom Scrollbar for Admin Panel */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(51, 65, 85, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) rgba(51, 65, 85, 0.3);
+}

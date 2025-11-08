@@ -69,7 +69,7 @@ export function AdminStats({ stats, isLoading }: StatsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
       {statCards.map((stat, index) => (
         <motion.div
           key={stat.title}
@@ -77,29 +77,29 @@ export function AdminStats({ stats, isLoading }: StatsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
         >
-          <Card className="relative overflow-hidden">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 sm:p-5 lg:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 truncate">
                     {stat.title}
                   </p>
-                  <div className="text-3xl font-bold text-gray-900">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {isLoading ? (
-                      <div className="h-8 w-12 bg-gray-200 animate-pulse rounded" />
+                      <div className="h-7 sm:h-8 w-10 sm:w-12 bg-gray-200 animate-pulse rounded" />
                     ) : (
                       stat.value
                     )}
                   </div>
                 </div>
-                <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                  <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                <div className={`p-2 sm:p-3 rounded-full ${stat.bgColor} flex-shrink-0`}>
+                  <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.iconColor}`} />
                 </div>
               </div>
 
               {/* Background gradient */}
               <div
-                className={`absolute top-0 right-0 w-32 h-32 opacity-10 transform translate-x-16 -translate-y-8 rotate-12 bg-gradient-to-br ${stat.color} rounded-lg`}
+                className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 opacity-10 transform translate-x-12 sm:translate-x-16 -translate-y-6 sm:-translate-y-8 rotate-12 bg-gradient-to-br ${stat.color} rounded-lg`}
               />
             </CardContent>
           </Card>

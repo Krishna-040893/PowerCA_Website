@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 // Generate unique affiliate ID
 function generateAffiliateId(): string {
@@ -14,9 +15,9 @@ function generateAffiliateId(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // First, fetch the current user data to get all their information
     const { data: userData, error: fetchError } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*')
       .eq('id', userId)
       .single()
@@ -48,14 +49,11 @@ export async function POST(request: NextRequest) {
     // Generate unique affiliate ID
     const affiliateId = generateAffiliateId()
 
-    // Update the registrations table with affiliate ID
+    // Update the registration entry with new role
     const { data: registrationData, error: registrationError } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .update({
-        role: 'Affiliate',  // Use capital A to match existing constraint
-        is_affiliate: true,
-        affiliate_status: 'approved',
-        affiliate_id: affiliateId
+        role: 'Affiliate'
       })
       .eq('id', userId)
       .select()
@@ -79,10 +77,11 @@ export async function POST(request: NextRequest) {
 
       if (!existingProfile) {
         // Create new affiliate profile - let triggers generate IDs
-        const { data: affiliateProfile, error: profileError } = await supabase
+        const { data: _affiliateProfile, error: profileError } = await supabase
           .from('affiliate_profiles')
           .insert({
             user_id: userId,
+            affiliate_id: affiliateId,
             firm_name: userData.name || userData.firm_name || 'To be updated',
             firm_address: userData.address || 'To be updated',
             contact_person: userData.name,
@@ -100,16 +99,7 @@ export async function POST(request: NextRequest) {
           // Profile creation failed, continue without it
         } else {
 
-          // Update registrations table with the generated affiliate_id
-          if (affiliateProfile?.affiliate_id) {
-            await supabase
-              .from('registrations')
-              .update({
-                affiliate_id: affiliateProfile.affiliate_id,
-                affiliate_details_completed: false
-              })
-              .eq('id', userId)
-          }
+          // No additional registration updates required
         }
       } else {
         // Update existing profile to active

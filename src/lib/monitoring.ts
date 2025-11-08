@@ -1,8 +1,9 @@
-import { logger } from './logger'
+﻿import { logger } from './logger'
 import { toISOStringSafely } from './browser-compat'
 
 // Types for monitoring
 interface ErrorEvent {
+  type: 'error'
   message: string
   stack?: string
   url: string
@@ -10,21 +11,34 @@ interface ErrorEvent {
   column?: number
   userAgent: string
   timestamp: string
+  context?: Record<string, unknown>
   userId?: string
   sessionId: string
 }
 
 interface PerformanceEvent {
+  type: 'performance'
   metric: string
   value: number
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   timestamp: string
+  sessionId: string
+  userId?: string
+}
+
+interface UserActionEvent {
+  type: 'user_action'
+  action: string
+  context?: Record<string, unknown>
+  timestamp: string
+  sessionId: string
+  userId?: string
 }
 
 class MonitoringService {
   private sessionId: string
   private userId?: string
-  private queue: any[] = []
+  private queue: Array<ErrorEvent | PerformanceEvent | UserActionEvent> = []
   private flushInterval = 30000 // 30 seconds
   private maxQueueSize = 50
 
@@ -53,6 +67,7 @@ class MonitoringService {
     // Catch unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
       this.captureError({
+        type: 'error',
         message: `Unhandled Promise Rejection: ${event.reason}`,
         stack: event.reason?.stack,
         url: window.location.href,
@@ -66,6 +81,7 @@ class MonitoringService {
     // Catch JavaScript errors
     window.addEventListener('error', (event) => {
       this.captureError({
+        type: 'error',
         message: event.message,
         stack: event.error?.stack,
         url: window.location.href,
@@ -94,9 +110,12 @@ class MonitoringService {
         const lcpObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             this.capturePerformance({
+              type: 'performance',
               metric: 'LCP',
               value: entry.startTime,
               timestamp: toISOStringSafely(new Date()),
+              sessionId: this.sessionId,
+              userId: this.userId,
             })
           }
         })
@@ -110,9 +129,12 @@ class MonitoringService {
         const fidObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             this.capturePerformance({
+              type: 'performance',
               metric: 'FID',
-              value: (entry as any).processingStart - entry.startTime,
+              value: ((entry as PerformanceEntry & { processingStart?: number }).processingStart ?? 0) - entry.startTime,
               timestamp: toISOStringSafely(new Date()),
+              sessionId: this.sessionId,
+              userId: this.userId,
             })
           }
         })
@@ -127,6 +149,7 @@ class MonitoringService {
           for (const entry of list.getEntries()) {
             if (entry.duration > 50) { // Tasks longer than 50ms
               this.capturePerformance({
+                type: 'performance',
                 metric: 'LongTask',
                 value: entry.duration,
                 context: {
@@ -134,6 +157,8 @@ class MonitoringService {
                   startTime: entry.startTime,
                 },
                 timestamp: toISOStringSafely(new Date()),
+                sessionId: this.sessionId,
+                userId: this.userId,
               })
             }
           }
@@ -151,6 +176,7 @@ class MonitoringService {
 
         if (navigation) {
           this.capturePerformance({
+            type: 'performance',
             metric: 'PageLoad',
             value: navigation.loadEventEnd - navigation.fetchStart,
             context: {
@@ -158,6 +184,8 @@ class MonitoringService {
               firstPaint: this.getFirstPaint(),
             },
             timestamp: toISOStringSafely(new Date()),
+            sessionId: this.sessionId,
+            userId: this.userId,
           })
         }
       }, 100)
@@ -185,26 +213,23 @@ class MonitoringService {
   public captureError(error: ErrorEvent) {
     logger.error('Monitoring captured error', error)
 
-    this.queue.push({
-      type: 'error',
-      ...error,
-    })
+    this.queue.push(error)
 
     this.checkQueueSize()
   }
 
   public capturePerformance(event: PerformanceEvent) {
-    logger.info('Performance event', event)
+    // Only log in development, skip in production to reduce noise
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info('Performance metric', { metric: event.metric, value: event.value, context: event.context })
+    }
 
-    this.queue.push({
-      type: 'performance',
-      ...event,
-    })
+    this.queue.push(event)
 
     this.checkQueueSize()
   }
 
-  public captureUserAction(action: string, context?: Record<string, any>) {
+  public captureUserAction(action: string, context?: Record<string, unknown>) {
     this.queue.push({
       type: 'user_action',
       action,
@@ -226,6 +251,13 @@ class MonitoringService {
   private async flush() {
     if (this.queue.length === 0) return
 
+    // Skip flushing in development mode to avoid unnecessary errors
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('Monitoring: Skipping flush in development mode')
+      this.queue = []
+      return
+    }
+
     const events = [...this.queue]
     this.queue = []
 
@@ -246,9 +278,11 @@ class MonitoringService {
         }),
       })
     } catch (error) {
-      // If sending fails, put events back in queue
-      this.queue.unshift(...events)
-      logger.error('Failed to send monitoring events', error)
+      // If sending fails, put events back in queue (but limit queue size)
+      if (this.queue.length < this.maxQueueSize) {
+        this.queue.unshift(...events.slice(0, this.maxQueueSize - this.queue.length))
+      }
+      logger.debug('Failed to send monitoring events (non-critical)', error)
     }
   }
 
@@ -279,13 +313,14 @@ export function initMonitoring() {
 }
 
 // Helper functions for common use cases
-export function trackError(error: Error | string, context?: Record<string, any>) {
+export function trackError(error: Error | string, context?: Record<string, unknown>) {
   if (typeof window === 'undefined') return
 
   const monitoring = getMonitoring()
   const errorObj = error instanceof Error ? error : new Error(error)
 
   monitoring.captureError({
+    type: 'error',
     message: errorObj.message,
     stack: errorObj.stack,
     url: window.location.href,
@@ -293,23 +328,26 @@ export function trackError(error: Error | string, context?: Record<string, any>)
     timestamp: new Date().toISOString(),
     sessionId: monitoring['sessionId'],
     userId: monitoring['userId'],
-    ...context,
+    context,
   })
 }
 
-export function trackPerformance(metric: string, value: number, context?: Record<string, any>) {
+export function trackPerformance(metric: string, value: number, context?: Record<string, unknown>) {
   if (typeof window === 'undefined') return
 
   const monitoring = getMonitoring()
   monitoring.capturePerformance({
+    type: 'performance',
     metric,
     value,
     context,
     timestamp: new Date().toISOString(),
+    sessionId: monitoring['sessionId'],
+    userId: monitoring['userId'],
   })
 }
 
-export function trackUserAction(action: string, context?: Record<string, any>) {
+export function trackUserAction(action: string, context?: Record<string, unknown>) {
   if (typeof window === 'undefined') return
 
   const monitoring = getMonitoring()

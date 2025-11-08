@@ -4,7 +4,8 @@ import {createAdminClient  } from '@/lib/supabase/admin'
 import {getServerSession  } from 'next-auth'
 import {authOptions  } from '@/lib/auth'
 import {Resend  } from 'resend'
-import {generateInvoiceNumber, calculateGST, generateInvoicePDF  } from '@/lib/invoice-generator'
+import {generateInvoiceNumber, generateInvoicePDF  } from '@/lib/invoice-generator'
+import {uploadInvoiceToStorage  } from '@/lib/invoice-storage'
 import {logger  } from '@/lib/logger'
 import {createErrorResponse, ErrorType, handleConfigurationError, isServiceConfigured  } from '@/lib/error-handler'
 
@@ -84,25 +85,52 @@ export async function POST(req: NextRequest) {
     const userInfo = userData ? JSON.parse(userData) : {}
 
     // Prepare payment data
-    const paymentAmount = productDetails?.amount || 22000 // Amount in rupees
+    // Amount received is TOTAL (including GST)
+    const totalAmount = productDetails?.amount || 22000 // Total amount in rupees (including 18% GST)
+
+    // Calculate base amount (excluding GST): base = total / 1.18
+    const paymentAmount = parseFloat((totalAmount / 1.18).toFixed(2))
+
+    // Calculate GST amount: 18% of base amount
+    const gstAmount = parseFloat((totalAmount - paymentAmount).toFixed(2))
+
     const customerEmail = customerDetails?.email || session?.user?.email || userInfo.email || 'guest@powerca.in'
     const customerName = customerDetails?.name || session?.user?.name || userInfo.name || 'Customer'
+
+    // Check if user exists before saving payment
+    let validUserId = null
+    if (session?.user?.id) {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', session.user.id)
+        .single()
+
+      if (existingUser) {
+        validUserId = session.user.id
+      } else {
+        logger.warn('Session user ID does not exist in users table, saving payment without user_id', {
+          sessionUserId: session.user.id
+        })
+      }
+    }
 
     // Save payment to database
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
-        user_id: session?.user?.id || null,
+        user_id: validUserId,
         order_id: normalizedOrderId,
         payment_id: normalizedPaymentId,
         signature: normalizedSignature,
-        amount: paymentAmount,
+        amount: totalAmount, // Store total amount (including GST) for payments table
         currency: 'INR',
-        status: 'success',
+        status: 'captured', // Use actual Razorpay payment status
         plan: productDetails?.name || 'PowerCA Implementation',
         email: customerEmail,
         phone: customerDetails?.phone || userInfo.phone,
         name: customerName,
+        firm_name: customerDetails?.firmName || userInfo.firmName,
         company: customerDetails?.company || userInfo.company,
         gst_number: customerDetails?.gst || userInfo.gstNumber,
         address: customerDetails?.address || userInfo.address
@@ -115,11 +143,66 @@ export async function POST(req: NextRequest) {
       // Continue even if DB save fails - we can retry via webhook
     }
 
+    // Create or update subscription for the user
+    if (payment && session?.user?.id) {
+      try {
+        // Check if user already has a subscription
+        const { data: existingSubscription } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (!existingSubscription) {
+          // Create new subscription (first purchase - launch offer)
+          const subscriptionData = {
+            user_id: session.user.id,
+            plan: 'launch_offer',
+            status: 'ACTIVE',
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() // 1 year from now
+          }
+
+          const { data: newSubscription, error: subError } = await supabase
+            .from('subscriptions')
+            .insert(subscriptionData)
+            .select()
+            .single()
+
+          if (subError) {
+            logger.error('Failed to create subscription', subError)
+          } else {
+            logger.info('✅ Subscription created', {
+              subscriptionId: newSubscription.id,
+              userId: session.user.id,
+              plan: 'launch_offer',
+              validUntil: subscriptionData.current_period_end
+            })
+          }
+        } else {
+          logger.info('User already has active subscription', {
+            subscriptionId: existingSubscription.id,
+            plan: existingSubscription.plan
+          })
+        }
+      } catch (subscriptionError) {
+        logger.error('Error handling subscription', subscriptionError)
+        // Don't fail payment if subscription creation fails
+      }
+    }
+
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
-    const subtotal = paymentAmount
-    const gst = calculateGST(subtotal, false)
-    const grandTotal = subtotal + gst.totalTax
+    // Use already calculated values (no need to recalculate GST)
+    const subtotal = paymentAmount // Base amount (excluding GST)
+    const gst = {
+      cgstRate: 9,
+      cgstAmount: gstAmount / 2,
+      sgstRate: 9,
+      sgstAmount: gstAmount / 2,
+      totalTax: gstAmount
+    }
+    const grandTotal = totalAmount // Total amount (including GST)
 
     const invoiceData = {
       invoiceNumber,
@@ -127,7 +210,7 @@ export async function POST(req: NextRequest) {
       customerName: customerName,
       customerEmail: customerEmail,
       customerPhone: customerDetails?.phone || userInfo.phone,
-      customerCompany: customerDetails?.company || userInfo.company,
+      customerCompany: customerDetails?.firmName || userInfo.firmName || customerDetails?.company || userInfo.company,
       customerAddress: customerDetails?.address || userInfo.address,
       customerGSTN: customerDetails?.gst || userInfo.gstNumber,
       orderId: normalizedOrderId,
@@ -145,10 +228,24 @@ export async function POST(req: NextRequest) {
       isTestMode: isTestPayment
     }
 
-    // Generate PDF invoice
+    // Generate PDF invoice and upload to storage
     let invoicePDF = null
+    let storageUrl = null
     try {
+      logger.info('Generating PDF invoice', { invoiceNumber })
       invoicePDF = await generateInvoicePDF(invoiceData)
+      logger.info('PDF invoice generated successfully', {
+        invoiceNumber,
+        pdfSize: invoicePDF ? invoicePDF.length : 0
+      })
+
+      // Upload to Supabase Storage for future access
+      if (invoicePDF) {
+        storageUrl = await uploadInvoiceToStorage(invoiceNumber, invoicePDF)
+        if (storageUrl) {
+          logger.info('Invoice uploaded to storage', { invoiceNumber, storageUrl })
+        }
+      }
     } catch (pdfError) {
       logger.error('Failed to generate PDF invoice', pdfError)
       // Continue without PDF if generation fails
@@ -179,6 +276,11 @@ export async function POST(req: NextRequest) {
           console.warn('Resend not configured, skipping confirmation email')
           return
         }
+        logger.info('Sending payment confirmation email', {
+          to: customerEmail,
+          invoiceNumber,
+          hasAttachment: !!invoicePDF
+        })
         await resend.emails.send({
           from: 'PowerCA <contact@powerca.in>',
           to: customerEmail,
@@ -263,8 +365,13 @@ export async function POST(req: NextRequest) {
           `,
           attachments: invoicePDF ? [{
             filename: `PowerCA-Invoice-${invoiceNumber}.pdf`,
-            content: invoicePDF,
+            content: Buffer.from(invoicePDF).toString('base64'),
           }] : [],
+        })
+        logger.info('Payment confirmation email sent successfully', {
+          to: customerEmail,
+          invoiceNumber,
+          attachmentIncluded: !!invoicePDF
         })
       } catch (emailError) {
         logger.error('Failed to send confirmation email', emailError)
@@ -353,6 +460,9 @@ export async function POST(req: NextRequest) {
           }
 
           // Track payment referral for commission calculation
+          // Commission is 10% of base amount (excluding GST)
+          const commissionAmount = parseFloat((paymentAmount * 0.10).toFixed(2))
+
           const paymentReferralData = {
             payment_id: normalizedPaymentId,
             affiliate_profile_id: affiliateProfile.id,
@@ -360,7 +470,7 @@ export async function POST(req: NextRequest) {
             customer_name: customerName,
             plan_id: body.planId || 'powerca-implementation',
             payment_amount: paymentAmount,
-            commission_amount: 0 // Set commission rules as needed
+            commission_amount: commissionAmount
           }
 
           logger.info('Creating payment referral record', { paymentId: normalizedPaymentId, affiliateId: affiliateProfile.id })
@@ -394,14 +504,154 @@ export async function POST(req: NextRequest) {
       logger.debug('No affiliate code provided - regular payment without referral')
     }
 
-    // Update order status
+    // Update order status and handle new affiliate referral system
     try {
+      // Get order with referral information
+      const { data: orderData, error: orderError } = await supabase
+        .from('payment_orders')
+        .select('*')
+        .eq('order_id', normalizedOrderId)
+        .single()
+
+      logger.info('📦 Payment order data retrieved', {
+        orderId: normalizedOrderId,
+        hasOrder: !!orderData,
+        isAffiliatePurchase: orderData?.is_affiliate_purchase,
+        referralCode: orderData?.referral_code,
+        customerId: orderData?.customer_id,
+        firmName: orderData?.firm_name,
+        error: orderError?.message
+      })
+
+      // Update order status to paid
       await supabase
         .from('payment_orders')
         .update({ status: 'paid' })
         .eq('order_id', normalizedOrderId)
+
+      // Handle new affiliate referral system (with customer_id)
+      if (orderData?.is_affiliate_purchase && orderData.referral_code && orderData.customer_id) {
+        logger.info('Processing affiliate referral purchase', {
+          referralCode: orderData.referral_code,
+          customerId: orderData.customer_id
+        })
+
+        // Find and update the affiliate_referrals record
+        const { data: referralRecord, error: findReferralError } = await supabase
+          .from('affiliate_referrals')
+          .select('*')
+          .eq('referral_code', orderData.referral_code)
+          .eq('customer_id', orderData.customer_id)
+          .eq('status', 'pending')
+          .single()
+
+        if (referralRecord && !findReferralError) {
+          // Update referral status to completed
+          const { error: updateError } = await supabase
+            .from('affiliate_referrals')
+            .update({
+              status: 'completed',
+              converted_at: new Date().toISOString(),
+              payment_amount: paymentAmount, // Store base amount (excluding GST)
+              order_id: normalizedOrderId,
+              payment_id: normalizedPaymentId
+            })
+            .eq('id', referralRecord.id)
+
+          if (updateError) {
+            logger.error('Failed to update affiliate referral status', updateError)
+          } else {
+            logger.info('✅ Affiliate referral completed successfully', {
+              referralId: referralRecord.id,
+              customerId: orderData.customer_id,
+              affiliateId: referralRecord.affiliate_id,
+              amount: paymentAmount
+            })
+
+            // Create record in affiliate_referral_payments table
+            try {
+              const commissionRate = 10.00 // 10% commission
+              // Commission is calculated on BASE amount (excluding GST)
+              const commissionAmount = parseFloat((paymentAmount * (commissionRate / 100)).toFixed(2))
+
+              const { data: affiliatePaymentRecord, error: paymentRecordError } = await supabase
+                .from('affiliate_referral_payments')
+                .insert({
+                  referral_id: referralRecord.id,
+                  referral_code: orderData.referral_code,
+                  customer_id: orderData.customer_id,
+                  affiliate_id: referralRecord.affiliate_id,
+
+                  // Payment details
+                  order_id: normalizedOrderId,
+                  payment_id: normalizedPaymentId,
+                  razorpay_signature: normalizedSignature,
+
+                  // Customer information
+                  customer_name: customerName,
+                  customer_email: customerEmail,
+                  customer_phone: customerDetails?.phone || orderData.customer_phone,
+                  customer_firm_name: customerDetails?.firmName || orderData.firm_name,
+                  customer_company: customerDetails?.company || orderData.company,
+                  customer_gst: customerDetails?.gst || orderData.gst_number,
+                  customer_address: customerDetails?.address,
+                  customer_city: body.city,
+                  customer_state: body.state,
+                  customer_postcode: body.postcode,
+
+                  // Amount details (properly structured)
+                  payment_amount: paymentAmount,    // Base amount (e.g., 1.00)
+                  currency: 'INR',
+                  gst_amount: gstAmount,            // 18% GST (e.g., 0.18)
+                  total_amount: totalAmount,        // Total with GST (e.g., 1.18)
+
+                  // Product details
+                  product_id: orderData.product_id || productDetails?.name,
+                  plan_type: productDetails?.name || 'PowerCA Implementation',
+
+                  // Commission (10% of BASE amount)
+                  commission_amount: commissionAmount,  // e.g., 0.10 (10% of 1.00)
+                  commission_rate: commissionRate,
+                  commission_paid: false,
+
+                  // Status
+                  payment_status: 'completed',
+                  payment_completed_at: new Date().toISOString(),
+
+                  // Additional data
+                  notes: {
+                    invoice_number: invoiceNumber,
+                    payment_date: new Date().toISOString(),
+                    referral_source: 'affiliate_program'
+                  }
+                })
+                .select()
+                .single()
+
+              if (paymentRecordError) {
+                logger.error('❌ Failed to create affiliate_referral_payments record', paymentRecordError)
+              } else {
+                logger.info('✅ Affiliate referral payment record created', {
+                  paymentRecordId: affiliatePaymentRecord.id,
+                  affiliateId: referralRecord.affiliate_id,
+                  commissionAmount: commissionAmount,
+                  paymentAmount: paymentAmount
+                })
+              }
+            } catch (paymentRecordError) {
+              logger.error('Exception creating affiliate referral payment record', paymentRecordError)
+            }
+          }
+        } else {
+          logger.warn('Affiliate referral record not found or already processed', {
+            referralCode: orderData.referral_code,
+            customerId: orderData.customer_id,
+            error: findReferralError?.message
+          })
+        }
+      }
     } catch (orderUpdateError) {
-      logger.error('Failed to update order status', orderUpdateError)
+      logger.error('Failed to update order status or process referral', orderUpdateError)
     }
 
     return NextResponse.json({

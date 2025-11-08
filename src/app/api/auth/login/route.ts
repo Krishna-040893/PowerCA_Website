@@ -2,41 +2,59 @@ import {NextRequest, NextResponse  } from 'next/server'
 import bcrypt from 'bcryptjs'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {logger  } from '@/lib/logger'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import {authLimiter, getClientIp, createRateLimitResponse  } from '@/lib/rate-limit'
+import { createErrorResponse, handleDatabaseError as _handleDatabaseError, ErrorType } from '@/lib/error-handler'
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting: 5 login attempts per minute per IP
+  const ip = getClientIp(request)
+  const rateLimitResult = await authLimiter.check(5, ip)
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   try {
     const body = await request.json()
     const { email, password } = body
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Email and password are required',
+        { statusCode: 400 }
       )
     }
+
+    logger.info('Login attempt', { email })
 
     const supabase = createAdminClient()
 
     // Fetch user from registrations table
     const { data: user, error } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*')
       .or(`email.eq.${email},username.eq.${email}`)
       .single()
 
     if (error || !user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
+      logger.warn('Login failed - user not found', { email })
+      return createErrorResponse(
+        ErrorType.AUTHENTICATION,
+        'Invalid credentials',
+        { statusCode: 401 }
       )
     }
 
     // Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password_hash)
     if (!passwordMatch) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
+      logger.warn('Login failed - invalid password', { email })
+      return createErrorResponse(
+        ErrorType.AUTHENTICATION,
+        'Invalid credentials',
+        { statusCode: 401 }
       )
     }
 
@@ -57,18 +75,19 @@ export async function POST(request: NextRequest) {
       role: user.role || 'subscriber', // Default role for new registrations
       professional_type: user.professional_type,
       profile_completed: profile ? true : false,
-      is_affiliate: user.is_affiliate || false,
-      affiliate_status: user.affiliate_status
+      is_affiliate: false,
+      affiliate_status: 'none'
     }
 
-    // Update last login
     await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .update({
         last_login: new Date().toISOString(),
         login_count: (user.login_count || 0) + 1
       })
       .eq('id', user.id)
+
+    logger.info('Login successful', { userId: user.id, email })
 
     return NextResponse.json({
       success: true,
@@ -78,9 +97,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     logger.error('Login error', error)
-    return NextResponse.json(
-      { error: 'Failed to login' },
-      { status: 500 }
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
     )
   }
 }

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import {Toaster  } from '@/components/ui/sonner'
 import {SessionProvider  } from '@/components/providers/session-provider'
@@ -9,8 +10,14 @@ import { GlobalErrorBoundary } from '@/components/error-boundary'
 import { MonitoringProvider } from '@/components/monitoring-provider'
 import { BrowserCheck } from '@/components/browser-check'
 
-// Force dynamic rendering for all pages due to session usage
-export const dynamic = 'force-dynamic'
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
+
+// Removed force-dynamic to enable static generation and ISR
+// Session handling is done client-side via SessionProvider
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -27,7 +34,7 @@ export const metadata: Metadata = {
   description: 'Simplify your practice, amplify your growth. The all-in-one practice management software designed for Chartered Accountants. Save 10+ hours weekly, ensure 100% compliance.',
   keywords: 'CA practice management, chartered accountant software, tax compliance software, accounting software India, CA firm management',
   verification: {
-    google: 'your-google-search-console-verification-code', // Replace with actual code
+    google: 'tN7Iw132S-eBmg1pimE4zlB6IFSZmTrI0Gl8D2GOwyg',
   },
   icons: {
     icon: [
@@ -70,22 +77,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head />
       <body
-        className="font-sans antialiased"
+        className={`${inter.variable} font-inter antialiased`}
       >
         <GlobalErrorBoundary>
-          <MonitoringProvider>
-            <BrowserCheck />
-            <GoogleTagManager />
-            <GoogleTagManagerNoscript />
-            <GoogleAnalytics />
-            <SessionProvider>
+          <BrowserCheck />
+          <GoogleTagManager />
+          <GoogleTagManagerNoscript />
+          <GoogleAnalytics />
+          <SessionProvider>
+            <MonitoringProvider>
               <ConditionalLayoutWrapper>
                 {children}
               </ConditionalLayoutWrapper>
               <Toaster />
-            </SessionProvider>
-          </MonitoringProvider>
+            </MonitoringProvider>
+          </SessionProvider>
         </GlobalErrorBoundary>
       </body>
     </html>

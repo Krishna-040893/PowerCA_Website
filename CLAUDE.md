@@ -5,6 +5,7 @@
 PowerCA is a comprehensive SaaS platform designed for Chartered Accountants to manage their practice efficiently. Built with Next.js 15, TypeScript, Tailwind CSS, and Supabase.
 
 ### Key Features
+
 - **Client Management** - Centralized client profiles with history tracking
 - **Tax Compliance** - Automated deadline tracking and reminders
 - **Document Management** - Secure cloud storage with collaboration
@@ -14,13 +15,15 @@ PowerCA is a comprehensive SaaS platform designed for Chartered Accountants to m
 - **Admin Portal** - Modern dashboard with sidebar navigation and dual authentication
 
 ### Tech Stack
-- **Frontend**: Next.js 15.5, React 19, TypeScript 5, Tailwind CSS 4, Framer Motion, shadcn/ui
-- **Backend**: Supabase (PostgreSQL), Prisma ORM, NextAuth.js
+
+- **Frontend**: Next.js 15.5, React 19, TypeScript 5, Tailwind CSS 3.4, Framer Motion, shadcn/ui
+- **Backend**: Supabase (PostgreSQL), NextAuth.js
 - **Payments**: Razorpay (Indian payment gateway)
 - **Email**: Resend with React Email templates
 - **Authentication**: Dual system - Supabase for users, JWT for admin
 
 ### Project Structure
+
 - `src/app/` - Next.js App Router pages
 - `src/app/admin/` - Admin portal with management pages
 - `src/components/admin/` - Admin-specific components
@@ -37,9 +40,11 @@ This project uses the BMad Method framework with specialized AI agents. When the
 ### Available Slash Commands
 
 #### Core Agent
+
 - `/bmad` - Activate BMad Master agent from `.bmad-core/agents/bmad-master.md`
 
 #### Specialized Agents
+
 - `/bmad-dev` - Activate Developer agent from `.bmad-core/agents/dev.md`
 - `/bmad-po` - Activate Product Owner agent from `.bmad-core/agents/po.md`
 - `/bmad-pm` - Activate Project Manager agent from `.bmad-core/agents/pm.md`
@@ -51,6 +56,7 @@ This project uses the BMad Method framework with specialized AI agents. When the
 - `/bmad-orchestrator` - Activate Orchestrator agent from `.bmad-core/agents/bmad-orchestrator.md`
 
 ### Workflow Commands
+
 - `/bmad-story` - Create a new user story using `.bmad-core/tasks/create-next-story.md`
 - `/bmad-epic` - Create a new epic using `.bmad-core/tasks/brownfield-create-epic.md`
 - `/bmad-prd` - Generate PRD using `.bmad-core/templates/prd-tmpl.yaml`
@@ -70,6 +76,7 @@ When a user types a BMad slash command:
 ### Example Response Pattern
 
 When user types `/bmad-dev`:
+
 ```
 I'm now acting as the BMad Developer agent. I'll help you with coding, implementation, and technical tasks.
 
@@ -85,7 +92,8 @@ What development task would you like to work on?
 
 ### Agent Command Syntax
 
-Once an agent is activated, users can use asterisk (*) prefixed commands:
+Once an agent is activated, users can use asterisk (\*) prefixed commands:
+
 - `*help` - Show agent-specific commands
 - `*list-tasks` - Show available tasks for this agent
 - `*list-templates` - Show available templates
@@ -95,7 +103,8 @@ Once an agent is activated, users can use asterisk (*) prefixed commands:
 
 ### CRITICAL: Code Quality Guidelines
 
-**⚠️ IMPORTANT: DO NOT USE AUTOMATED FIX SCRIPTS**
+**IMPORTANT: DO NOT USE AUTOMATED FIX SCRIPTS**
+
 - Never run scripts from `scripts/` folder that perform automated fixes (e.g., `fix-*.js`)
 - These scripts often remove imports and variables without understanding context
 - Always fix errors manually by understanding the root cause
@@ -106,18 +115,21 @@ Once an agent is activated, users can use asterisk (*) prefixed commands:
   4. Test that the fix doesn't break functionality
 
 ### Testing Commands
+
 - Run tests: `npm test` (when implemented)
 - Lint code: `npm run lint` (check for issues, don't auto-fix)
 - Type check: `npm run typecheck` or `npx tsc --noEmit`
 - **AVOID**: `npm run lint:fix` - can cause more issues than it solves
 
 ### Development Server
+
 - Start dev server: `npm run dev`
 - Build project: `npm run build`
 - Start production: `npm start`
 - Default port: 3000
 
 ### Environment Variables Required
+
 ```env
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL
@@ -139,14 +151,26 @@ EMAIL_FROM
 ```
 
 ### Database Tables
+
 - `bookings` - Demo booking requests
 - `registrations` - User registrations
 - `affiliate_applications` - Affiliate partner requests
 - `admin_users` - Admin authentication
 
 ### Admin Credentials (Development)
+
+**Superadmin Account:**
+
 - Username: `superadmin`
-- Password: `Admin@123`
+- Password: `Powerca@25`
+- Email: `superadmin@powerca.in`
+
+**Primary Admin Account:**
+
+- Username: `PCAadmin`
+- Password: `Powerca@25`
+- Email: `admin@powerca.in`
+
 - Login at: `/admin-login`
 
 ## Important Notes

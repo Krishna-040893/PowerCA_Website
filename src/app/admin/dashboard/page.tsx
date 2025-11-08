@@ -1,7 +1,6 @@
 'use client'
 
-import {useState, useEffect, useCallback  } from 'react'
-import {useRouter  } from 'next/navigation'
+import {useState, useEffect  } from 'react'
 import Link from 'next/link'
 import { BarChart3, Activity, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import {AdminLayout  } from '@/components/admin/admin-layout'
@@ -32,7 +31,6 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     pendingBookings: 0,
@@ -46,17 +44,10 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = useCallback(() => {
-    const token = localStorage.getItem('adminToken')
-    if (!token) {
-      router.push('/admin/login')
-    }
-  }, [router])
-
   useEffect(() => {
-    checkAuth()
     fetchDashboardData()
-  }, [checkAuth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchDashboardData = async () => {
     try {
@@ -238,10 +229,10 @@ export default function AdminDashboard() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500">Customer</th>
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500">Date</th>
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500">Time</th>
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">

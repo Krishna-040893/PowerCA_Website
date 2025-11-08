@@ -1,201 +1,274 @@
 'use client'
 
-import {useState  } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {Search, Calendar, User, ArrowRight, AlertCircle } from 'lucide-react'
+import {Search, Calendar, User, ArrowRight, AlertCircle, SlidersHorizontal, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
+import { blogPosts as staticBlogPosts } from '@/data/blog-posts'
 
-const categories = [
-  { id: 'all', name: 'All Categories', active: true },
-  { id: 'breaking-news', name: 'Breaking News', active: false },
-  { id: 'compliance', name: 'Compliance', active: false },
-  { id: 'tax-planning', name: 'Tax Planning', active: false },
-  { id: 'technology', name: 'Technology', active: false },
-  { id: 'best-practices', name: 'Best Practices', active: false },
-  { id: 'tips', name: 'Tips & Tricks', active: false },
-]
+const POSTS_PER_PAGE = 8
 
-const blogPosts = [
-  {
-    id: 1,
-    title: 'BREAKING: Tax Audit Report Due Date Extended to October 31, 2025',
-    excerpt: 'CBDT extends tax audit report filing deadline from September 30 to October 31, 2025 for AY 2025-26. Get complete details of the notification.',
-    author: 'PowerCA Team',
-    date: 'September 25, 2025',
-    category: 'breaking-news',
-    readTime: '5 min read',
-    image: '/images/hero-background.png',
-    isBreaking: true,
-    link: '/blog/tax-audit-deadline-extended-october-31-2025'
-  },
-  {
-    id: 2,
-    title: 'TDS Compliance Checklist 2025-26: Complete Guide for CAs',
-    excerpt: 'Comprehensive TDS compliance checklist for FY 2025-26. Due dates, rates, forms, penalties, and best practices for error-free TDS compliance.',
-    author: 'PowerCA Team',
-    date: 'September 24, 2025',
-    category: 'compliance',
-    readTime: '15 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/tds-compliance-checklist-complete-guide'
-  },
-  {
-    id: 3,
-    title: 'Why Every CA Firm Needs Practice Management Software in 2025',
-    excerpt: 'Discover how practice management software transforms CA firms. Increase efficiency by 40%, reduce errors, automate compliance, and scale your practice.',
-    author: 'PowerCA Team',
-    date: 'September 23, 2025',
-    category: 'technology',
-    readTime: '12 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/why-cas-need-practice-management-software'
-  },
-  {
-    id: 4,
-    title: 'New vs Old Tax Regime: Which is Better for You in 2025-26?',
-    excerpt: 'Detailed comparison of New vs Old tax regime for FY 2025-26. Calculate which regime saves more tax based on your income and deductions.',
-    author: 'PowerCA Team',
-    date: 'September 22, 2025',
-    category: 'tax-planning',
-    readTime: '10 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/new-vs-old-tax-regime-which-is-better'
-  },
-  {
-    id: 5,
-    title: 'How to File GST Returns in 2025: Complete Guide for CAs',
-    excerpt: 'Step-by-step guide on filing GST returns in 2025. Learn about GSTR-1, GSTR-3B, deadlines, late fees, and common mistakes to avoid.',
-    author: 'PowerCA Team',
-    date: 'September 20, 2025',
-    category: 'compliance',
-    readTime: '12 min read',
-    image: '/images/hero-background.png',
-    link: '/blog/how-to-file-gst-returns-2025'
-  },
-  {
-    id: 6,
-    title: 'Essential Audit Practices for CA Firms in 2025',
-    excerpt: 'Discover the latest audit methodologies and compliance requirements that every CA firm should implement to stay competitive.',
-    author: 'Priya Sharma',
-    date: 'September 15, 2025',
-    category: 'best-practices',
-    readTime: '5 min read',
-    image: '/images/hero-background.png'
-  },
-  {
-    id: 7,
-    title: 'Digital Transformation in Accounting: A Complete Guide',
-    excerpt: 'Learn how to modernize your accounting practice with digital tools and automated workflows for improved efficiency.',
-    author: 'Rajesh Kumar',
-    date: 'September 12, 2025',
-    category: 'technology',
-    readTime: '8 min read',
-    image: '/images/hero-background.png'
-  },
-  {
-    id: 8,
-    title: 'Time Management Strategies for Busy CA Practices',
-    excerpt: 'Proven techniques to optimize your time, increase productivity, and maintain work-life balance in your CA practice.',
-    author: 'Vikram Singh',
-    date: 'September 8, 2025',
-    category: 'tips',
-    readTime: '4 min read',
-    image: '/images/hero-background.png'
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+const formatCategoryName = (category: string) =>
+  category
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+
+const formatMonthYear = (dateString: string) => {
+  const date = new Date(dateString)
+
+  if (Number.isNaN(date.getTime())) {
+    return dateString
   }
-]
 
-const authors = [
-  { id: 'all', name: 'All Authors' },
-  { id: 'priya-sharma', name: 'Priya Sharma' },
-  { id: 'rajesh-kumar', name: 'Rajesh Kumar' },
-  { id: 'anita-patel', name: 'Anita Patel' },
-  { id: 'vikram-singh', name: 'Vikram Singh' },
-  { id: 'meera-reddy', name: 'Meera Reddy' },
-  { id: 'amit-gupta', name: 'Amit Gupta' },
-]
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
 
-const dateFilters = [
-  { id: 'all', name: 'All Dates' },
-  { id: 'march-2024', name: 'March 2024' },
-  { id: 'february-2024', name: 'February 2024' },
-  { id: 'january-2024', name: 'January 2024' },
-]
+interface BlogPost {
+  id: string
+  title: string
+  subtitle?: string
+  excerpt: string
+  date: string
+  author: string
+  category: string
+  readTime: string
+  image?: string
+  link?: string
+  isBreaking?: boolean
+}
 
 export default function BlogPageClient() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [selectedAuthor, setSelectedAuthor] = useState('all')
   const [selectedDate, setSelectedDate] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const categoryScrollRef = useRef<HTMLDivElement>(null)
+  const [showLeftArrow, setShowLeftArrow] = useState(false)
+  const [showRightArrow, setShowRightArrow] = useState(false)
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch blog posts from database and merge with static posts
+  useEffect(() => {
+    async function fetchBlogPosts() {
+      try {
+        const response = await fetch('/api/blog/posts')
+        const data = await response.json()
+
+        // Merge database posts with static posts
+        // Database posts come first (newest), then static posts
+        const databasePosts = data.posts || []
+        const allPosts = [...databasePosts, ...staticBlogPosts]
+
+        setBlogPosts(allPosts)
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+        // Fallback to static posts on error
+        setBlogPosts(staticBlogPosts)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogPosts()
+  }, [])
+
+  // Check scroll position and update arrow visibility
+  const checkScrollPosition = () => {
+    if (categoryScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current
+      setShowLeftArrow(scrollLeft > 0)
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+  }
+
+  // Scroll categories left or right
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 300
+      const newScrollLeft = categoryScrollRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount)
+      categoryScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  // Check scroll position on mount and when categories change
+  useEffect(() => {
+    checkScrollPosition()
+    window.addEventListener('resize', checkScrollPosition)
+    return () => window.removeEventListener('resize', checkScrollPosition)
+  }, [blogPosts])
+
+  const postsWithMeta = blogPosts.map((post) => {
+    const monthYear = formatMonthYear(post.date)
+
+    return {
+      ...post,
+      authorSlug: slugify(post.author),
+      monthYear,
+    }
+  })
+
+  const categoryOptions = [
+    { id: 'all', name: 'All Categories' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.category))).map((category) => ({
+      id: category,
+      name: formatCategoryName(category),
+    })),
+  ]
+
+  const authorOptions = [
+    { id: 'all', name: 'All Authors' },
+    ...(Array.from(
+      postsWithMeta.reduce(
+        (map, post) => map.set(post.authorSlug, post.author),
+        new Map<string, string>()
+      )
+    ) as [string, string][]).map(([id, name]) => ({ id, name })),
+  ]
+
+  const dateOptions = [
+    { id: 'all', name: 'All Dates' },
+    ...Array.from(new Set(postsWithMeta.map((post) => post.monthYear))).map((value) => ({
+      id: value,
+      name: value,
+    })),
+  ]
+
+  const categoryNameLookup = new Map<string, string>(
+    categoryOptions
+      .filter((option) => option.id !== 'all')
+      .map((option) => [option.id, option.name])
+  )
+
+  const filteredPosts = postsWithMeta.filter((post) => {
+    const normalizedSearch = searchTerm.trim().toLowerCase()
+    const matchesSearch =
+      post.title.toLowerCase().includes(normalizedSearch) ||
+      post.excerpt.toLowerCase().includes(normalizedSearch)
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory
-    const matchesAuthor = selectedAuthor === 'all' || post.author.toLowerCase().replace(' ', '-') === selectedAuthor
-    const matchesDate = selectedDate === 'all' || post.date.toLowerCase().includes(selectedDate.replace('-2024', '').replace('-', ' '))
+    const matchesAuthor = selectedAuthor === 'all' || post.authorSlug === selectedAuthor
+    const matchesDate = selectedDate === 'all' || post.monthYear === selectedDate
+
     return matchesSearch && matchesCategory && matchesAuthor && matchesDate
   })
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, activeCategory, selectedAuthor, selectedDate])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE
+  const endIndex = startIndex + POSTS_PER_PAGE
+  const currentPosts = filteredPosts.slice(startIndex, endIndex)
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i)
+        }
+        pages.push('...')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('...')
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i)
+        }
+      } else {
+        pages.push(1)
+        pages.push('...')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i)
+        }
+        pages.push('...')
+        pages.push(totalPages)
+      }
+    }
+    return pages
+  }
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mx-12">
+      <section className="relative overflow-hidden mx-2 sm:mx-4 md:mx-6 lg:mx-12">
         <div
-          className="relative bg-cover bg-center bg-no-repeat rounded-2xl px-12 py-16"
+          className="relative bg-cover bg-center bg-no-repeat rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12 lg:py-16"
           style={{
             backgroundImage: `url('/images/blog-bg.jpg')`
           }}
         >
-          <div className="container mx-auto px-4 max-w-6xl relative">
-          <div className="text-center mb-12">
+          <div className="container mx-auto px-1 sm:px-4 max-w-6xl relative">
+          <div className="text-center mb-6 sm:mb-10 md:mb-12">
             {/* Badge */}
-            <div className="inline-flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-full px-6 py-3 mb-8">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center gap-1.5 sm:gap-3 bg-blue-50 border border-blue-200 rounded-full px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 mb-4 sm:mb-8">
+              <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <span className="text-blue-700 text-sm font-medium">News, Guides & Best Practices</span>
+              <span className="text-blue-700 text-xs sm:text-sm font-medium">News, Guides & Best Practices</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-900 mb-6">
-              The Power CA Blog
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 mb-3 sm:mb-6 px-1">
+              The Power CA
+              <br />
+              <span className="text-blue-600">Blog</span>
+
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto mb-12">
+            <p className="text-xs sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto mb-6 sm:mb-10 md:mb-12 px-1 leading-relaxed">
               Your go-to space for best practices, productivity ideas, and the latest updates in audit and practice management.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-4 max-w-2xl mx-auto">
+          <div className="flex gap-1.5 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
             <div className="relative flex-1">
+              <Search className="absolute left-2.5 sm:left-4 md:left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Search you want"
+                placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-6 pr-12 py-4 text-gray-700 bg-white border-2 border-gray-200 rounded-full h-16 text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
+                className="w-full h-10 sm:h-14 md:h-16 rounded-lg sm:rounded-2xl bg-white/90 border border-gray-300 shadow-sm pl-8 sm:pl-12 md:pl-14 pr-2 sm:pr-4 md:pr-6 text-xs sm:text-base md:text-lg text-gray-800 placeholder:text-xs sm:placeholder:text-base md:placeholder:text-lg placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
-              <Search className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
             </div>
-            <div className="relative">
-              <Button
-                size="lg"
+            <div className="relative flex items-center">
+              <button
+                type="button"
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-16 min-w-16"
+                className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-[0_8px_20px_rgba(20,79,237,0.35)] sm:shadow-[0_12px_28px_rgba(20,79,237,0.35)] hover:shadow-[0_16px_32px_rgba(20,79,237,0.45)] hover:scale-105 active:scale-95 transition-all duration-200"
+                aria-label="Toggle filters"
               >
-                <Image
-                  src="/images/filter-icon.png"
-                  alt="Filter"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                />
-              </Button>
+                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              </button>
 
               {showFilterDropdown && (
                 <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
@@ -221,7 +294,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setActiveCategory(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {categories.map((category) => (
+                        {categoryOptions.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
                           </option>
@@ -237,7 +310,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedAuthor(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {authors.map((author) => (
+                        {authorOptions.map((author) => (
                           <option key={author.id} value={author.id}>
                             {author.name}
                           </option>
@@ -253,7 +326,7 @@ export default function BlogPageClient() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {dateFilters.map((dateFilter) => (
+                        {dateOptions.map((dateFilter) => (
                           <option key={dateFilter.id} value={dateFilter.id}>
                             {dateFilter.name}
                           </option>
@@ -286,89 +359,149 @@ export default function BlogPageClient() {
 
       {/* Content Section */}
       <section className="py-0">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
           {/* Categories */}
-          <div className="mb-12 pt-20 pb-5">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          <div className="mb-8 sm:mb-12 pt-12 sm:pt-20 pb-4 sm:pb-5">
+            <h2 className="text-xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-8 text-center leading-normal px-2">
               Explore Trending Topics
             </h2>
-            <div className="flex flex-wrap gap-3 justify-center">
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={activeCategory === category.id ? 'default' : 'outline'}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`rounded-full px-6 py-2 transition-all ${
-                    activeCategory === category.id
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {category.name}
-                </Button>
-              ))}
+            <div className="relative flex items-center justify-center px-4 sm:px-8">
+              {/* Left Arrow */}
+              <button
+                onClick={() => scrollCategories('left')}
+                className={`absolute left-0 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-gray-300 shadow-lg flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all ${
+                  showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+              </button>
+
+              {/* Scrollable Categories */}
+              <div
+                ref={categoryScrollRef}
+                onScroll={checkScrollPosition}
+                className="overflow-x-auto scrollbar-hide scroll-smooth flex-1 mx-8 sm:mx-12"
+              >
+                <div className="flex gap-2 sm:gap-3 justify-start min-w-max px-2">
+                  {categoryOptions.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={activeCategory === category.id ? 'default' : 'outline'}
+                      onClick={() => setActiveCategory(category.id)}
+                      className={`rounded-full px-3 py-1.5 sm:px-6 sm:py-2 text-xs sm:text-sm transition-all whitespace-nowrap ${
+                        activeCategory === category.id
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => scrollCategories('right')}
+                className={`absolute right-0 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-gray-300 shadow-lg flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all ${
+                  showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+              </button>
             </div>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-center">
+                <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600 text-lg">Loading articles...</p>
+              </div>
+            </div>
+          )}
+
           {/* Blog Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
-            {filteredPosts.map((post) => {
+          {!loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-6 sm:pb-8">
+              {currentPosts.map((post) => {
               const postContent = (
                 <>
                   <div className={`aspect-video relative overflow-hidden ${
                     post.isBreaking
                       ? 'bg-gradient-to-br from-red-500 to-orange-600'
                       : 'bg-gradient-to-br from-blue-500 to-blue-600'
-                  }`}>
+                  }`} style={{ borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}>
+                    {post.image && (
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     {post.isBreaking && (
-                      <div className="absolute top-4 right-4 bg-yellow-400 text-red-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
-                        <AlertCircle className="w-3 h-3" />
-                        BREAKING
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-yellow-400 text-red-900 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
+                        <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">BREAKING</span>
+                        <span className="sm:hidden">NEW</span>
                       </div>
                     )}
-                    <div className="absolute bottom-4 left-4">
+                    <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
                       <span className={`${
                         post.isBreaking ? 'bg-red-600/90' : 'bg-blue-600/90'
-                      } text-white text-xs font-medium px-3 py-1 rounded-full`}>
-                        {categories.find(cat => cat.id === post.category)?.name || 'General'}
+                      } text-white text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-3 sm:py-1 rounded-full`}>
+                        {categoryNameLookup.get(post.category) || formatCategoryName(post.category)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <div className="p-3 sm:p-6 md:flex md:flex-col md:flex-1">
+                    <h3 className="text-sm sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+                    {post.subtitle && (
+                      <p className="text-gray-700 mb-1.5 sm:mb-3 text-xs sm:text-base font-medium line-clamp-1">
+                        {post.subtitle}
+                      </p>
+                    )}
+                    <p className="text-gray-600 mb-2 sm:mb-4 line-clamp-2 text-[11px] sm:text-sm leading-relaxed md:flex-1">
                       {post.excerpt}
                     </p>
 
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            post.isBreaking
-                              ? 'bg-gradient-to-r from-red-400 to-orange-600'
-                              : 'bg-gradient-to-r from-blue-400 to-blue-600'
-                          }`}>
-                            <User className="w-4 h-4 text-white" />
+                    <div className="md:mt-auto">
+                      <div className="flex items-center justify-between text-[10px] sm:text-sm text-gray-500 mb-2 sm:mb-4">
+                        <div className="flex items-center gap-1.5 sm:gap-4">
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <div className={`w-5 h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
+                              post.isBreaking
+                                ? 'bg-gradient-to-r from-red-400 to-orange-600'
+                                : 'bg-gradient-to-r from-blue-400 to-blue-600'
+                            }`}>
+                              <User className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white" />
+                            </div>
+                            <span className="font-medium truncate max-w-[80px] sm:max-w-none">{post.author}</span>
                           </div>
-                          <span className="font-medium">{post.author}</span>
                         </div>
+                        <span className="text-blue-600 font-medium whitespace-nowrap text-[10px] sm:text-sm">{post.readTime}</span>
                       </div>
-                      <span className="text-blue-600 font-medium">{post.readTime}</span>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-sm">{post.date}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-500">
+                          <Calendar className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
+                          <span className="text-[10px] sm:text-sm">{post.date}</span>
+                        </div>
+                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0 text-[10px] sm:text-sm h-auto">
+                          <span className="hidden sm:inline">Read More</span>
+                          <span className="sm:hidden">Read</span>
+                          <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1" />
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                        Read More
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
                     </div>
                   </div>
                 </>
@@ -376,24 +509,95 @@ export default function BlogPageClient() {
 
               return post.link ? (
                 <Link href={post.link} key={post.id}>
-                  <article className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer ${
-                    post.isBreaking ? 'border-red-200 ring-2 ring-red-100' : 'border-gray-100'
-                  }`}>
+                  <article className={`bg-white shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer md:h-full md:flex md:flex-col ${
+                    post.isBreaking ? 'border-red-200 ring-1 sm:ring-2 ring-red-100' : 'border-gray-100'
+                  }`} style={{ borderRadius: '16px' }}>
                     {postContent}
                   </article>
                 </Link>
               ) : (
                 <article
                   key={post.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                  className="bg-white shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group md:h-full md:flex md:flex-col"
+                  style={{ borderRadius: '16px' }}
                 >
                   {postContent}
                 </article>
               )
             })}
-          </div>
+            </div>
+          )}
 
-          {filteredPosts.length === 0 && (
+          {/* Pagination */}
+          {!loading && filteredPosts.length > 0 && totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 py-6 sm:py-8 px-2 sm:px-4">
+              {/* Results Info */}
+              <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
+                Showing <span className="font-semibold text-gray-900">{startIndex + 1}</span> to{' '}
+                <span className="font-semibold text-gray-900">{Math.min(endIndex, filteredPosts.length)}</span> of{' '}
+                <span className="font-semibold text-gray-900">{filteredPosts.length}</span> articles
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-0.5 sm:gap-1 ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
+                  }`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Previous</span>
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  {getPageNumbers().map((page, index) => (
+                    page === '...' ? (
+                      <span key={`ellipsis-${index}`} className="px-1 sm:px-2 py-1.5 sm:py-2 text-gray-400 text-xs sm:text-sm">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                          currentPage === page
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ))}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-0.5 sm:gap-1 ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500'
+                  }`}
+                  aria-label="Next page"
+                >
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* No Articles Found */}
+          {!loading && filteredPosts.length === 0 && (
             <div className="text-center py-16">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-12 h-12 text-gray-400" />

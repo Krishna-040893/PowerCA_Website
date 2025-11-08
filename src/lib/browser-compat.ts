@@ -276,7 +276,7 @@ export function supportsCSSFeature(property: string, value: string): boolean {
  */
 export async function loadPolyfill(
   condition: boolean,
-  polyfillLoader: () => Promise<any>
+  polyfillLoader: () => Promise<unknown>
 ): Promise<void> {
   if (!condition) {
     await polyfillLoader();
@@ -309,11 +309,18 @@ export function isLowEndDevice(): boolean {
   const cores = navigator.hardwareConcurrency || 0;
 
   // Check device memory (if available)
-  const memory = (navigator as any).deviceMemory || 0;
+  const memory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 0;
 
   // Consider device low-end if it has 2 or fewer cores OR less than 4GB RAM
   return cores <= 2 || (memory > 0 && memory < 4);
 }
+
+type IdleCallbackHandle = number | ReturnType<typeof globalThis.setTimeout>;
+
+type WindowWithIdleCallbacks = typeof window & {
+  requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
 
 /**
  * Request idle callback with fallback
@@ -321,22 +328,27 @@ export function isLowEndDevice(): boolean {
 export function requestIdleCallbackPolyfill(
   callback: () => void,
   options?: { timeout?: number }
-): number {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    return (window as any).requestIdleCallback(callback, options);
+): IdleCallbackHandle {
+  const win = typeof window === 'undefined' ? undefined : (window as WindowWithIdleCallbacks);
+
+  if (win?.requestIdleCallback) {
+    return win.requestIdleCallback(callback, options);
   }
 
   // Fallback using setTimeout
-  return (window as any).setTimeout(callback, options?.timeout || 1);
+  return globalThis.setTimeout(callback, options?.timeout ?? 1);
 }
 
 /**
  * Cancel idle callback with fallback
  */
-export function cancelIdleCallbackPolyfill(id: number): void {
-  if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-    (window as any).cancelIdleCallback(id);
-  } else {
-    (window as any).clearTimeout(id);
+export function cancelIdleCallbackPolyfill(handle: IdleCallbackHandle): void {
+  const win = typeof window === 'undefined' ? undefined : (window as WindowWithIdleCallbacks);
+
+  if (win?.cancelIdleCallback && typeof handle === 'number') {
+    win.cancelIdleCallback(handle);
+    return;
   }
+
+  globalThis.clearTimeout(handle as ReturnType<typeof globalThis.setTimeout>);
 }

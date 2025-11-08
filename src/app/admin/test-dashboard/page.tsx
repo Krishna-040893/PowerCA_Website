@@ -256,14 +256,14 @@ export default function TestDashboardPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-2">Order ID</th>
-                    <th className="text-left py-2 px-2">Customer</th>
-                    <th className="text-left py-2 px-2">Email</th>
-                    <th className="text-left py-2 px-2">Amount</th>
-                    <th className="text-left py-2 px-2">Status</th>
-                    <th className="text-left py-2 px-2">Invoice</th>
-                    <th className="text-left py-2 px-2">Date</th>
-                    <th className="text-left py-2 px-2">Actions</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Order ID</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Customer</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Email</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Amount</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Status</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Invoice</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Date</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -328,10 +328,10 @@ export default function TestDashboardPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-2">Affiliate Code</th>
-                    <th className="text-left py-2 px-2">Referred Email</th>
-                    <th className="text-left py-2 px-2">Status</th>
-                    <th className="text-left py-2 px-2">Date</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Affiliate Code</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Referred Email</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Status</th>
+                    <th className="text-left py-2 px-2 text-base font-bold">Date</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -8,17 +8,20 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
+import {signIn, useSession  } from 'next-auth/react'
 import {useRouter  } from 'next/navigation'
 import {Eye, EyeOff, User, Lock, ArrowLeft, Shield, Loader2  } from 'lucide-react'
+import {toast  } from 'sonner'
 
 export default function AdminLoginPage() {
+  const router = useRouter()
+  const { update: updateSession } = useSession()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,33 +29,61 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/admin/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      // IMPORTANT: Admin uses username field (not email)
+      // Build credentials object without email field for admin login
+      const credentials: Record<string, string> = {
+        username: username.trim(), // Admin uses username (trim whitespace)
+        password: password,
+      }
+
+      // Show loading toast
+      toast.loading('Authenticating...', { id: 'auth-toast' })
+
+      // Use redirect: false to handle everything manually
+      const result = await signIn('credentials', {
+        ...credentials,
+        redirect: false, // Don't auto-redirect, handle manually
+        callbackUrl: '/admin', // Specify callback URL for proper redirect
       })
 
-      const data = await response.json()
+      // Dismiss loading toast
+      toast.dismiss('auth-toast')
 
-      if (!response.ok) {
-        setError(data.message || 'Invalid credentials')
+      if (result?.error) {
+        const errorMessage = result.error || 'Invalid credentials'
+        setError(errorMessage)
+        toast.error(errorMessage, {
+          description: 'Please check your username and password',
+          duration: 4000,
+        })
         return
       }
 
-      if (data.success) {
-        // Store token and user data in localStorage for admin panel
-        localStorage.setItem('adminToken', data.token)
-        localStorage.setItem('adminUser', JSON.stringify(data.user))
-        // Redirect to admin dashboard
+      if (result?.ok) {
+        toast.success('Login successful!', { id: 'auth-success' })
+
+        // Force session update to get fresh session data
+        await updateSession()
+
+        // Use router.push for client-side navigation
         router.push('/admin')
+
+        // Also set a backup redirect in case router.push fails
+        setTimeout(() => {
+          window.location.href = '/admin'
+        }, 3000)
       } else {
-        setError(data.message || 'Login failed')
+        const errorMsg = 'Login failed. Please try again.'
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
-    } catch {
-      console.error('Login error:', error)
-      setError('An error occurred. Please try again.')
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
+      setError(errorMsg)
+      toast.error('Login Error', {
+        description: errorMsg,
+        duration: 5000,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -149,7 +180,9 @@ export default function AdminLoginPage() {
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="username"
+                  name="username"
                   type="text"
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter Admin Username"
@@ -169,7 +202,9 @@ export default function AdminLoginPage() {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter Admin Password"
@@ -253,19 +288,6 @@ export default function AdminLoginPage() {
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* User Login Link */}
-            <div className="text-center pt-4 border-t border-gray-100">
-              <p className="text-gray-600">
-                Not an admin?{' '}
-                <Link
-                  href="/login"
-                  className="text-blue-600 hover:text-blue-800 font-medium underline"
-                >
-                  Go to User Login
-                </Link>
-              </p>
             </div>
           </form>
         </motion.div>

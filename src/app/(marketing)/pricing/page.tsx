@@ -1,785 +1,425 @@
 'use client'
 
-import {useRouter  } from 'next/navigation'
-import {motion  } from 'framer-motion'
-import {Button  } from '@/components/ui/button'
-import {Badge  } from '@/components/ui/badge'
-import {Rocket, Monitor, Calendar, Check, FileText, AlertCircle } from 'lucide-react'
+import { Check, Calendar, Clock } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useSubscription } from '@/hooks/useSubscription'
 import Link from 'next/link'
-import {loadScript  } from '@/lib/utils'
-import {useState, useEffect  } from 'react'
-import {useSession  } from 'next-auth/react'
-import {PAYMENT_CONFIG, isTestMode  } from '@/lib/payment-config'
-import {Input  } from '@/components/ui/input'
-import {Label  } from '@/components/ui/label'
-import {Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
- } from '@/components/ui/dialog'
-import {RazorpayPaymentResponse, CustomerDetails  } from '@/types/common'
-import {toast  } from 'sonner'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
-export default function PricingPage() {
-  const router = useRouter()
+function PricingContent() {
   const { data: session } = useSession()
-  const [loading, setLoading] = useState(false)
-  const [affiliateCode, setAffiliateCode] = useState<string | null>(null)
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false)
-  const [showTestConfirmDialog, setShowTestConfirmDialog] = useState(false)
-  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    gst: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: ''
-  })
+  const subscriptionStatus = useSubscription()
+  const searchParams = useSearchParams()
+  const [referralInfo, setReferralInfo] = useState<{ ref?: string; cus?: string } | null>(null)
+  const [isValidReferral, setIsValidReferral] = useState(false)
+
+  // Check if user is an affiliate
+  const isAffiliate = session?.user?.role === 'Affiliate' || session?.user?.role === 'affiliate'
 
   useEffect(() => {
-    // Check for affiliate code in URL or session
-    const urlParams = new URLSearchParams(window.location.search)
-    const code = urlParams.get('ref') || urlParams.get('affiliate')
-    if (code) {
-      setAffiliateCode(code)
-      // Store in session storage for later use
-      sessionStorage.setItem('affiliateCode', code)
-      checkAffiliateCanRefer(code)
+    // Detect referral parameters from URL
+    const ref = searchParams.get('ref')
+    const cus = searchParams.get('cus')
+
+    if (ref || cus) {
+      // Store referral info in localStorage to persist through login
+      const referralData = { ref: ref || undefined, cus: cus || undefined }
+      localStorage.setItem('affiliate_referral', JSON.stringify(referralData))
+      setReferralInfo(referralData)
     } else {
-      // Check session storage
-      const storedCode = sessionStorage.getItem('affiliateCode')
-      if (storedCode) {
-        setAffiliateCode(storedCode)
-        checkAffiliateCanRefer(storedCode)
+      // Check if referral info exists in localStorage
+      const stored = localStorage.getItem('affiliate_referral')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setReferralInfo(parsed)
+        } catch {
+          // Failed to parse stored referral - ignore and continue
+        }
       }
     }
-  }, [])
+  }, [searchParams])
 
-  const checkAffiliateCanRefer = async (code: string) => {
-    try {
-      const response = await fetch(`/api/affiliate/check-referral-limit?code=${code}`)
-      if (response.ok) {
+  // Verify if the logged-in user actually matches this referral
+  useEffect(() => {
+    const verifyReferral = async () => {
+      if (!session?.user?.email || !referralInfo?.ref || !referralInfo?.cus) {
+        setIsValidReferral(false)
+        return
+      }
+
+      try {
+        // Fetch user's actual referral info from database
+        const response = await fetch('/api/user/referral-info')
         const data = await response.json()
-        if (!data.canRefer) {
-          toast.warning('This affiliate has already completed their one allowed referral. Please proceed without a referral code.')
-          setAffiliateCode(null)
-          sessionStorage.removeItem('affiliateCode')
+
+        if (data.hasReferral && data.referralInfo) {
+          // Check if the URL parameters match the user's actual referral
+          const matchesRef = data.referralInfo.referralCode === referralInfo.ref
+          const matchesCus = data.referralInfo.customerId === referralInfo.cus
+
+          setIsValidReferral(matchesRef && matchesCus)
+        } else {
+          setIsValidReferral(false)
         }
+      } catch {
+        setIsValidReferral(false)
       }
-    } catch {
-      // Handle error silently, user can still proceed
     }
-  }
 
-  const handleBookNow = () => {
-    // Show customer details dialog
-    setShowDetailsDialog(true)
-    // Pre-fill with session data if available
-    if (session?.user) {
-      setCustomerDetails(prev => ({
-        ...prev,
-        name: session.user?.name || '',
-        email: session.user?.email || ''
-      }))
-    }
-  }
+    verifyReferral()
+  }, [session, referralInfo])
 
-  const handleTestConfirmation = async () => {
-    setShowTestConfirmDialog(false)
-    setLoading(true)
+  const handleLaunchOfferPurchase = () => {
+    if (!session) {
+      // Build callback URL with referral params
+      const params = new URLSearchParams()
 
-    try {
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, PAYMENT_CONFIG.TEST_PAYMENT_DELAY))
+      if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+      if (referralInfo?.cus) params.append('cus', referralInfo.cus)
 
-      // Create test order
-      const testOrderId = PAYMENT_CONFIG.generateTestOrderId()
-      const testPaymentId = PAYMENT_CONFIG.generateTestPaymentId()
+      const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
 
-      // Call verify endpoint directly with test data
-      const verifyResponse = await fetch('/api/payment/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          orderId: testOrderId,
-          paymentId: testPaymentId,
-          signature: 'test_signature',
-          planId: 'early-bird',
-          affiliateCode: affiliateCode,
-          isTestPayment: true,
-          customerDetails: {
-            name: customerDetails.name,
-            email: customerDetails.email,
-            phone: customerDetails.phone,
-            company: customerDetails.company || 'N/A',
-            gst: customerDetails.gst,
-            address: customerDetails.address,
-            city: customerDetails.city,
-            state: customerDetails.state,
-            pincode: customerDetails.pincode
-          },
-          productDetails: {
-            name: 'PowerCA Early Bird Offer',
-            amount: 1
-          }
-        })
-      })
-
-      const verifyData = await verifyResponse.json()
-
-      if (verifyResponse.ok && verifyData.success) {
-        // Track affiliate referral if applicable
-        if (affiliateCode) {
-          await fetch('/api/affiliate/track-referral', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              affiliateCode: affiliateCode,
-              planId: 'early-bird',
-              amount: 1,
-              paymentId: testPaymentId
-            })
-          })
-        }
-
-        toast.success('✅ TEST PAYMENT SUCCESSFUL! Check your email for the invoice.')
-        router.push('/payment-success?plan=early-bird&test=true')
-      } else {
-        toast.error('Test payment verification failed. Please check the console.')
-      }
-    } catch (error) {
-      console.error('Error processing test payment:', error)
-      toast.error('Failed to process test payment. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleProceedPayment = async () => {
-    // Validate required fields
-    if (!customerDetails.name || !customerDetails.email || !customerDetails.phone) {
-      toast.error('Please fill in all required fields')
+      // Redirect to login with callback URL to return to checkout
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(checkoutUrl)}`
       return
     }
 
-    setShowDetailsDialog(false)
-    setLoading(true)
+    // Build checkout URL with referral params
+    const params = new URLSearchParams()
+    if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+    if (referralInfo?.cus) params.append('cus', referralInfo.cus)
 
-    try {
-      // Check if in test mode
-      if (isTestMode()) {
-        // Show test mode confirmation dialog
-        setShowTestConfirmDialog(true)
-        setLoading(false)
-        return
-      }
+    const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
 
-      // PRODUCTION MODE - Real Razorpay payment
-      const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
-
-      if (!res) {
-        toast.error('Razorpay SDK failed to load. Please check your connection.')
-        setLoading(false)
-        return
-      }
-
-      // Create order for the early bird offer
-      const orderResponse = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          amount: 100, // ₹1 in paise (100 paise = ₹1) for testing
-          planId: 'early-bird',
-          affiliateCode: affiliateCode,
-          customerDetails: customerDetails
-        })
-      })
-
-      const orderData = await orderResponse.json()
-
-      if (!orderResponse.ok) {
-        throw new Error(orderData.error || 'Failed to create order')
-      }
-
-      // Configure Razorpay options
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'PowerCA',
-        description: 'Early Bird Offer - Special 50% Discount for CAs',
-        order_id: orderData.id,
-        handler: async function (response: RazorpayPaymentResponse) {
-          // Verify payment
-          const verifyResponse = await fetch('/api/payment/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              planId: 'early-bird',
-              affiliateCode: affiliateCode,
-              customerDetails: customerDetails,
-              productDetails: {
-                name: 'PowerCA Early Bird Offer',
-                amount: 1
-              }
-            })
-          })
-
-          const verifyData = await verifyResponse.json()
-
-          if (verifyResponse.ok && verifyData.success) {
-            // Track affiliate referral if applicable
-            if (affiliateCode) {
-              await fetch('/api/affiliate/track-referral', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  affiliateCode: affiliateCode,
-                  planId: 'early-bird',
-                  amount: 1, // ₹1 in rupees for commission calculation
-                  paymentId: response.razorpay_payment_id
-                })
-              })
-            }
-
-            // Redirect to success page
-            router.push('/payment-success?plan=early-bird')
-          } else {
-            toast.error('Payment verification failed. Please contact support.')
-            router.push('/payment-failed')
-          }
-        },
-        prefill: {
-          name: customerDetails.name,
-          email: customerDetails.email,
-          contact: customerDetails.phone
-        },
-        theme: {
-          color: '#2563eb'
-        }
-      }
-
-      // Open Razorpay checkout
-      const razorpay = new window.Razorpay(options)
-      razorpay.open()
-
-      razorpay.on('payment.failed', function (response: unknown) {
-        console.error('Payment failed:', response)
-        router.push('/payment-failed')
-      })
-
-    } catch (error) {
-      console.error('Error processing payment:', error)
-      toast.error('Failed to process payment. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    // Redirect to checkout page for payment
+    window.location.href = checkoutUrl
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50/50 via-white to-secondary-50/50">
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 relative overflow-hidden">
-        {/* Test Mode Banner */}
-        {isTestMode() && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="container mx-auto px-4 mb-8 relative z-20"
-          >
-            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-yellow-800">🧪 Test Mode Active</p>
-                <p className="text-sm text-yellow-700">
-                  Payments will be simulated without charging real money. Perfect for testing the complete flow including email, invoice generation, and referral tracking.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Background patterns */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 opacity-[0.06]">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, #1D91EB 1px, transparent 1px),
-                  linear-gradient(to bottom, #1D91EB 1px, transparent 1px)
-                `,
-                backgroundSize: '40px 40px'
-              }}
-            />
-          </div>
-          <div className="absolute inset-0 opacity-[0.04]">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(circle, #1BAF69 1.5px, transparent 1.5px)`,
-                backgroundSize: '30px 30px',
-                backgroundPosition: '0 0, 15px 15px'
-              }}
-            />
-          </div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-200/50 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary-200/50 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary-100/40 to-secondary-100/40 rounded-full blur-3xl" />
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-4xl mx-auto mb-16"
-          >
-            <Badge className="mb-4 bg-gradient-to-r from-green-500 to-green-600 text-white border-0 px-4 py-1.5">
-              LIMITED TIME OFFER
-            </Badge>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-4">
-              Launch Offer
-            </h1>
-            <p className="text-2xl sm:text-3xl text-gray-600">
-              Get PowerCA at{' '}
-              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
-                Zero Software Cost
-              </span>
-            </p>
-          </motion.div>
-
-          {/* Pricing Information Box */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-5xl mx-auto mb-12"
-          >
-            <div className="glass-light rounded-2xl p-8 shadow-xl">
-              <div className="grid md:grid-cols-2 gap-8 mb-6">
+    <div className="min-h-screen bg-white">
+      {/* Affiliate Referral Banner - Only show if user is logged in and referral is verified */}
+      {session && isValidReferral && referralInfo?.ref && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-200">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl sm:text-2xl">🎁</span>
                 <div>
-                  <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">Regular Price</p>
-                  <p className="text-3xl font-bold text-gray-400 line-through">₹1,00,000</p>
-                  <p className="text-sm text-gray-500">+ Applicable Taxes</p>
-                </div>
-                <div>
-                  <p className="text-sm uppercase tracking-wider text-green-600 mb-2">Launch Offer</p>
-                  <p className="text-3xl font-bold text-green-600">FREE Software</p>
-                  <p className="text-sm text-gray-600">Only pay for implementation</p>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 pt-6 space-y-4">
-                <h3 className="font-semibold text-gray-900">What's Included Until March 2026:</h3>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-gray-700">Server Installation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-gray-700">Client Installation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-gray-700">Complete Training</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-gray-700">Ongoing Support</span>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-600 pt-2">
-                  <span className="font-medium">Implementation & Support Cost:</span> ₹22,000 only
-                </p>
-              </div>
-
-              <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-amber-800">
-                      <span className="font-semibold">Limited Time:</span> This offer may be withdrawn at any time without prior notice.
-                    </p>
-                    <p className="text-xs text-amber-700 mt-1">
-                      After March 2026: Annual subscription at 0.25% of turnover
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* View PDF Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-center mb-16"
-          >
-            <p className="text-gray-600 mb-4">Refer Power CA Pricing Policy Document</p>
-            <Button
-              size="lg"
-              className="bg-green-500 hover:bg-green-600 text-white px-8 group"
-              asChild
-            >
-              <Link href="/pricing-policy.pdf" target="_blank">
-                <FileText className="w-5 h-5 mr-2" />
-                View PDF
-              </Link>
-            </Button>
-          </motion.div>
-
-          {/* Pricing Cards - Enhanced with Payment Integration */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Special Launch Offer */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="relative"
-            >
-              <div className="h-full rounded-2xl glass-light border-2 border-primary-200 overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <div className="p-8">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center">
-                    <Rocket className="w-10 h-10 text-primary-600" />
-                  </div>
-
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Power CA</h3>
-                  <p className="text-center text-primary-600 font-medium mb-8">(Special Launch Offer)</p>
-
-                  <div className="text-center mb-8">
-                    <p className="text-5xl font-bold text-green-600 mb-2">FREE</p>
-                  </div>
-
-                  <div className="space-y-4 mb-8">
-                    <p className="text-sm text-center text-gray-600">
-                      <span className="text-primary-600">※</span> Refer to the Note
-                    </p>
-                  </div>
-
-                  <div className="text-center">
-                    <Badge className="bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-700 border-primary-200 px-4 py-2">
-                      Be an Early Bird
-                    </Badge>
-                    <p className="text-sm text-gray-600 mt-3">to Enjoy the Offer</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Installation & Support with Payment */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="relative"
-            >
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-1.5 shadow-lg">
-                  LAUNCH OFFER
-                </Badge>
-              </div>
-              <div className="h-full rounded-2xl glass-primary border-2 border-primary-400 shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300">
-                <div className="p-8">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Monitor className="w-10 h-10 text-white" />
-                  </div>
-
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Power CA</h3>
-                  <p className="text-center text-gray-700 font-medium mb-2">Installation,</p>
-                  <p className="text-center text-gray-700 font-medium mb-8">Implementation & Support till Mar'26</p>
-
-                  <p className="text-center text-sm text-gray-500 mb-6">(Tax Applicable)</p>
-
-                  <div className="text-center mb-8">
-                    <p className="text-lg text-gray-600">₹</p>
-                    <p className="text-5xl font-bold text-primary-600">22,000</p>
-                  </div>
-
-                  <Button
-                    onClick={handleBookNow}
-                    disabled={loading}
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? 'Processing...' : 'Book Now'}
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Annual Subscription */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="relative"
-            >
-              <div className="h-full rounded-2xl glass-light border-2 border-secondary-200 overflow-hidden hover:shadow-2xl hover:border-secondary-300 transition-all duration-300">
-                <div className="p-8">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-full flex items-center justify-center">
-                    <Calendar className="w-10 h-10 text-secondary-600" />
-                  </div>
-
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Power CA</h3>
-                  <p className="text-center text-secondary-600 font-medium mb-8">Annual Subscription</p>
-
-                  <p className="text-center text-sm text-gray-500 mb-6 italic">
-                    Maximum support, minimum recurring<br />
-                    cost for your Practice Administration
+                  <p className="text-xs sm:text-sm font-semibold text-green-700">
+                    You're purchasing through an affiliate referral!
                   </p>
-
-                  <div className="space-y-4 mb-8">
-                    <div className="text-center">
-                      <p className="text-gray-700">
-                        Annual Fees is <span className="font-bold text-2xl text-secondary-600">0.25%</span>
-                      </p>
-                      <p className="text-gray-700">of your turnover</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <p className="text-sm text-gray-600">No fee for First Year</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <p className="text-sm text-gray-600">Renewal every February</p>
-                    </div>
-                  </div>
+                  <p className="text-xs text-gray-600">
+                    Referral Code: <span className="font-mono font-bold text-blue-600">{referralInfo.ref}</span>
+                    {referralInfo.cus && (
+                      <> • Customer ID: <span className="font-mono font-bold text-blue-600">{referralInfo.cus}</span></>
+                    )}
+                  </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
+        </div>
+      )}
 
-          {/* Affiliate Code Display */}
-          {affiliateCode && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="mt-8 text-center"
-            >
-              <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-lg">
-                <Check className="w-4 h-4 mr-2" />
-                Affiliate discount applied: {affiliateCode}
-              </div>
-            </motion.div>
-          )}
+      {/* Hero Section */}
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-20">
+        <div
+          className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-8"
+          style={{
+            backgroundImage: 'url("/images/pricing-hero-bg.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        ></div>
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            {/* Badge */}
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6 13L14.5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6 13H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 13C15.667 13 15.667 3 9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Simple Plans, Clear Value
+              </span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 font-inter px-2">
+              Choose Your Perfect
+              <br />
+              <span className="text-blue-600">Pricing Plan</span>
+            </h1>
+
+            {/* Description */}
+            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed font-inter">
+                Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Customer Details Dialog */}
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Customer Information</DialogTitle>
-            <DialogDescription>
-              Please provide your details to proceed with the payment
-            </DialogDescription>
-          </DialogHeader>
+      {/* Pricing Cards */}
+      <div className="relative py-8 sm:py-10 md:py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={customerDetails.name}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Your full name"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={customerDetails.email}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="your@email.com"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone *</Label>
-              <Input
-                id="phone"
-                value={customerDetails.phone}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+91 98765 43210"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="company">Company Name</Label>
-              <Input
-                id="company"
-                value={customerDetails.company}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, company: e.target.value }))}
-                placeholder="Your company name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gst">GST Number</Label>
-              <Input
-                id="gst"
-                value={customerDetails.gst}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, gst: e.target.value }))}
-                placeholder="GST Number (optional)"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={customerDetails.address}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, address: e.target.value }))}
-                placeholder="Street address"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={customerDetails.city}
-                  onChange={(e) => setCustomerDetails(prev => ({ ...prev, city: e.target.value }))}
-                  placeholder="City"
-                />
+            {/* Left Card - Launch Offer */}
+            <div className="relative bg-[#306bea] rounded-2xl md:rounded-3xl p-6 md:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10 overflow-hidden rounded-3xl">
+                <div className="absolute top-16 left-16 w-96 h-96">
+                  <div className="grid grid-cols-8 grid-rows-8 h-full gap-1">
+                    {Array.from({ length: 64 }).map((_, i) => (
+                      <div key={i} className="bg-white rounded-sm opacity-20" />
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  value={customerDetails.state}
-                  onChange={(e) => setCustomerDetails(prev => ({ ...prev, state: e.target.value }))}
-                  placeholder="State"
-                />
+              <div className="relative z-10">
+                {/* Header */}
+                <div className="text-center mb-6 md:mb-8">
+                  <h3 className="text-2xl md:text-3xl font-medium mb-3 md:mb-4">Power CA</h3>
+                  <p className="text-[#f4f7fd] text-base md:text-lg px-2">
+                    Special discount 50% for CAs only – Till 31st Oct 2025
+                  </p>
+                </div>
+
+                {/* Plan Type */}
+                <div className="flex justify-center mb-6 md:mb-8">
+                  <div className="bg-[#f4f7fd] text-[#306bea] px-3 md:px-4 py-1.5 md:py-2 rounded-full font-medium text-sm md:text-base">
+                    First Year Plan
+                  </div>
+                </div>
+
+                {/* Pricing */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-6 md:mb-8">
+                  {/* Regular Price */}
+                  <div className="text-center">
+                    <p className="text-[#f4f7fd] text-xs md:text-sm mb-1 md:mb-2">REGULAR PRICE</p>
+                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
+                      <span className="text-lg md:text-2xl">₹</span>
+                      <span className="text-2xl md:text-4xl font-semibold line-through">1,00,000</span>
+                    </div>
+                    <p className="text-[#f4f7fd] text-xs md:text-sm line-through">+ Applicable Taxes</p>
+                  </div>
+
+                  {/* Arrow Icons */}
+                  <div className="flex justify-center my-2">
+                    <svg className="w-16 h-8 md:w-20 md:h-10 lg:w-[92px] lg:h-[52px]" viewBox="0 0 92 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g opacity="0.5">
+                        <path d="M27.2997 26L17.333 16.0333L20.3663 13L33.3663 26L20.3663 39L17.333 35.9667L27.2997 26Z" fill="white"/>
+                      </g>
+                      <g opacity="0.75">
+                        <path d="M47.2997 26L37.333 16.0333L40.3663 13L53.3663 26L40.3663 39L37.333 35.9667L47.2997 26Z" fill="white"/>
+                      </g>
+                      <path d="M67.2997 26L57.333 16.0333L60.3663 13L73.3663 26L60.3663 39L57.333 35.9667L67.2997 26Z" fill="white"/>
+                    </svg>
+                  </div>
+
+                  {/* Launch Offer */}
+                  <div className="text-center">
+                    <p className="text-[#f4f7fd] text-xs md:text-sm mb-1 md:mb-2">LAUNCH OFFER</p>
+                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
+                      <span className="text-lg md:text-2xl">₹</span>
+                      <span className="text-2xl md:text-4xl font-semibold">50,000</span>
+                    </div>
+                    <p className="text-[#f4f7fd] text-xs md:text-sm">+ Applicable Taxes</p>
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="text-center mb-6 md:mb-8">
+                  <p className="text-lg md:text-2xl font-medium px-2">Be an Early Bird to Enjoy the Offer</p>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4 mb-8">
+                  {[
+                    'Installation and Demo',
+                    'Required training',
+                    'Ongoing Support & Update'
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-6">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <Check className="w-5 h-5 text-[#306bea]" />
+                      </div>
+                      <span className="text-lg font-medium">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Button */}
+                <button
+                  onClick={handleLaunchOfferPurchase}
+                  disabled={subscriptionStatus.hasLaunchOffer || isAffiliate}
+                  title={isAffiliate ? 'Affiliates cannot purchase directly' : subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
+                  className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
+                    subscriptionStatus.hasLaunchOffer || isAffiliate
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-white text-[#306bea] hover:bg-gray-50 cursor-pointer'
+                  }`}
+                >
+                  {isAffiliate ? 'Not Available for Affiliates' : subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
+                </button>
+                {isAffiliate && (
+                  <p className="text-xs text-white/80 text-center mt-2">
+                    As an affiliate, you can refer customers but cannot purchase directly
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="pincode">Pincode</Label>
-              <Input
-                id="pincode"
-                value={customerDetails.pincode}
-                onChange={(e) => setCustomerDetails(prev => ({ ...prev, pincode: e.target.value }))}
-                placeholder="Pincode"
-              />
-            </div>
+            {/* Right Card - Annual Subscription */}
+            <div className="relative bg-white rounded-2xl md:rounded-3xl p-6 md:p-12 border-2 border-[#001525]">
+              <div className="relative z-10">
+                {/* Header */}
+                <div className="text-center mb-6 md:mb-8">
+                  <h3 className="text-2xl md:text-3xl font-medium text-[#001525] mb-3 md:mb-4">Power CA</h3>
+                  <p className="text-[#666d80] text-base md:text-lg max-w-sm mx-auto px-2">
+                    Maximum support, minimum recurring cost for your Practice Administration
+                  </p>
+                </div>
 
-            {isTestMode() && (
-              <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  <strong>🧪 Test Mode:</strong> This information will be used for testing only.
-                  No real payment will be processed.
-                </p>
+                {/* Plan Type */}
+                <div className="flex justify-center mb-6 md:mb-8">
+                  <div className="bg-[rgba(48,107,234,0.1)] text-[#306bea] px-3 md:px-4 py-1.5 md:py-2 rounded-full font-medium text-sm md:text-base">
+                    Annual Subscription
+                  </div>
+                </div>
+
+                {/* Pricing */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-4 mb-6 md:mb-8">
+                  {/* Percentage */}
+                  <div className="text-center">
+                    <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Your Annual Turnover</p>
+                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
+                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">0.20%</span>
+                      <span className="text-sm md:text-lg font-medium text-[#001525]">Cost</span>
+                    </div>
+                    <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
+                  </div>
+
+                  {/* OR */}
+                  <div className="text-center px-3 md:px-6">
+                    <p className="text-xl md:text-3xl font-medium text-black">OR</p>
+                  </div>
+
+                  {/* Fixed Amount */}
+                  <div className="text-center">
+                    <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Minimum Of Cost</p>
+                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
+                      <span className="text-lg md:text-2xl text-[#001525]">₹</span>
+                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">10,000</span>
+                    </div>
+                    <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4 mb-8">
+                  {[
+                    'Easy Implementation & Training',
+                    'Ongoing Support & Update'
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-6">
+                      <div className="w-8 h-8 bg-[#001525] rounded-lg flex items-center justify-center">
+                        <Check className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-lg text-[#666d80]">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Button */}
+                <div className="space-y-3">
+                  {subscriptionStatus.isLoading ? (
+                    <button className="w-full bg-gray-200 text-gray-400 py-4 rounded-full text-lg font-medium animate-pulse">
+                      Loading...
+                    </button>
+                  ) : isAffiliate ? (
+                    <button
+                      disabled
+                      title="Affiliates cannot purchase directly"
+                      className="w-full bg-gray-300 text-gray-500 py-4 rounded-full text-lg font-medium cursor-not-allowed"
+                    >
+                      Not Available for Affiliates
+                    </button>
+                  ) : subscriptionStatus.canRenew ? (
+                    <Link href="/dashboard/subscription/renew">
+                      <button className="w-full bg-[#306bea] text-white py-4 rounded-full text-lg font-medium hover:bg-[#244b9b] transition-colors">
+                        Renewal Now
+                      </button>
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-[#f4f7fd] text-[#b6c9f3] py-4 rounded-full text-lg font-medium cursor-not-allowed"
+                    >
+                      Renewal Now
+                    </button>
+                  )}
+
+                  <div className="text-xs text-[#666d80] text-center space-y-1">
+                    {isAffiliate ? (
+                      <p>As an affiliate, you can refer customers but cannot purchase directly</p>
+                    ) : !subscriptionStatus.hasLaunchOffer ? (
+                      <p>Currently you don't have plan yet !</p>
+                    ) : subscriptionStatus.canRenew ? (
+                      <div className="flex items-center justify-center space-x-2 text-green-600">
+                        <Check className="w-4 h-4" />
+                        <p>Ready for renewal!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Clock className="w-4 h-4" />
+                          <p>Renewal available in {subscriptionStatus.daysUntilRenewal} days</p>
+                        </div>
+                        <div className="flex items-center justify-center space-x-2">
+                          <Calendar className="w-4 h-4" />
+                          <p>Launch Offer purchased on {subscriptionStatus.subscription ? new Date(subscriptionStatus.subscription.created_at).toLocaleDateString() : ''}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowDetailsDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleProceedPayment}
-              disabled={!customerDetails.name || !customerDetails.email || !customerDetails.phone}
-            >
-              Proceed to Payment
-            </Button>
+      {/* Bottom CTA */}
+      <div className="pb-8 md:pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-3 max-w-6xl mx-auto">
+            <p className="text-lg md:text-2xl font-medium text-[#001525] text-center md:text-left">
+              Refer Power CA Pricing Policy Document
+            </p>
+            <button className="bg-[#306bea] text-white px-6 md:px-9 py-3 md:py-4 rounded-full text-base md:text-lg font-medium hover:bg-[#244b9b] transition-colors whitespace-nowrap">
+              View PDF
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Test Mode Confirmation Dialog */}
-      <Dialog open={showTestConfirmDialog} onOpenChange={setShowTestConfirmDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              🧪 TEST MODE ACTIVE
-            </DialogTitle>
-            <DialogDescription>
-              This will simulate a successful payment without charging any real money.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <p className="text-sm text-gray-700 mb-4">The following will happen:</p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">•</span>
-                Order will be created
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">•</span>
-                Payment will be marked as successful
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">•</span>
-                Invoice email will be sent
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">•</span>
-                Referral will be tracked (if applicable)
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowTestConfirmDialog(false)
-                setLoading(false)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleTestConfirmation}
-              className="bg-yellow-600 hover:bg-yellow-700"
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Continue Test Payment'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PricingContent />
+    </Suspense>
   )
 }

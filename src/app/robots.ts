@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
           '/*?*gclid*',  // Block Google click IDs
           '/admin-login',
           '/affiliate/dashboard',
-          '/affiliate/account',
+          '/affiliate/referral',
           '/affiliate/apply',
           '/affiliate/profile/create',
           '/affiliate/referral-dashboard'

@@ -62,7 +62,7 @@ export default function CoimbatorePage() {
         <section className="pt-12 pb-16">
           <div className="container mx-auto px-6 lg:px-8">
             <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                 CA Software for <span className="text-blue-600">Coimbatore's</span> Manchester of South India
               </h1>
               <p className="text-xl text-gray-600 mb-8">
@@ -103,7 +103,7 @@ export default function CoimbatorePage() {
         {/* Local Features Section */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Tailored for Coimbatore's Business Landscape
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -188,7 +188,7 @@ export default function CoimbatorePage() {
         {/* Industry Focus Section */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Serving Coimbatore's Key Industries
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -230,7 +230,7 @@ export default function CoimbatorePage() {
         {/* Benefits Section */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Why Coimbatore CAs Choose PowerCA
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -279,7 +279,7 @@ export default function CoimbatorePage() {
         {/* Local Areas Coverage */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Serving All Areas of Coimbatore
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -308,7 +308,7 @@ export default function CoimbatorePage() {
         {/* CTA Section */}
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
+            <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
               Transform Your Coimbatore CA Practice Today
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">

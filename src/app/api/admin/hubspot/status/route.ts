@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {hubspotService  } from '@/lib/hubspot-service'
 import {createErrorResponse, ErrorType  } from '@/lib/error-handler'
 
@@ -7,12 +7,12 @@ import {createErrorResponse, ErrorType  } from '@/lib/error-handler'
 export const runtime = 'nodejs'
 
 // Get HubSpot configuration status (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify admin authentication
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Check environment variables

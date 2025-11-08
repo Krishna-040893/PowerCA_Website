@@ -5,7 +5,7 @@ import {useRouter, usePathname  } from 'next/navigation'
 import {useSession, signOut, signIn as _signIn } from 'next-auth/react'
 import Link from 'next/link'
 import type { AdminUser } from '@/types/admin'
-import { Users, LogOut, Menu, X, ChevronDown, Bell, Search, Shield, Command, Activity, Globe, Lock, Crown, MonitorSpeaker, ArrowRight, Key, LayoutDashboard, TrendingUp, Calendar, FileText, UserCheck, Star, BarChart3, Mail, Settings } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronDown, Bell, Search, Shield, Command, Activity, Globe, Lock, Crown, MonitorSpeaker, ArrowRight, Key, LayoutDashboard, TrendingUp, Calendar, FileText, UserCheck, Star, BarChart3, Mail, Settings, BookOpen } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
@@ -251,7 +251,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           badge: null
         },
         {
-          name: 'Affiliate Approvals',
+          name: 'Approved',
           href: '/admin/affiliates/approve',
           icon: UserCheck,
           active: pathname === '/admin/affiliates/approve',
@@ -262,6 +262,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           href: '/admin/affiliates',
           icon: Star,
           active: pathname === '/admin/affiliates',
+          badge: null
+        },
+        {
+          name: 'Blog Posts',
+          href: '/admin/blog',
+          icon: BookOpen,
+          active: pathname === '/admin/blog',
           badge: null
         }
       ]

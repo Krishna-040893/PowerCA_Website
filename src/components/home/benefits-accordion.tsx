@@ -17,7 +17,7 @@ const benefits = [
   {
     number: '3.',
     title: 'Built-In Best Practices',
-    description: 'Adopt proven methods from leading audit firms—targets, weekly reviews, wrap-up checklists, service requests, and detailed job notes—for quality service and proper documentation.'
+    description: 'Adopt proven methods from leading audit firms - targets, weekly reviews, wrap-up checklists, service requests, and detailed job notes - for quality service and proper documentation.'
   },
   {
     number: '4.',
@@ -47,7 +47,7 @@ export function BenefitsAccordion() {
             className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-start gap-4">
-              <span className="text-2xl font-bold text-[#ee8529]">{benefit.number}</span>
+              <span className="text-2xl font-bold text-[#155dfc]">{benefit.number}</span>
               <h3 className="text-lg font-semibold text-gray-900">{benefit.title}</h3>
             </div>
             <ChevronDown
