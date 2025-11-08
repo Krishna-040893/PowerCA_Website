@@ -203,38 +203,38 @@ export default function RegistrationsTable() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    EMAIL
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    USERNAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Username
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PHONE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PROFESSIONAL TYPE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Professional Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    MEMBERSHIP NO
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Membership No
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    REGISTRATION NO
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Registration No
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    INSTITUTE NAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Institute Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ROLE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    DATE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ACTIONS
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>

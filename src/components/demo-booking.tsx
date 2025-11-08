@@ -17,7 +17,7 @@ interface BookingFormData {
   name: string
   email: string
   phone: string
-  firmName?: string
+  firmName: string
   message?: string
 }
 
@@ -445,7 +445,7 @@ export function DemoBooking() {
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                        Full Name *
+                        Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('name', { required: 'Name is required' })}
@@ -460,7 +460,7 @@ export function DemoBooking() {
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         <Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                        Email Address *
+                        Email Address <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('email', {
@@ -482,7 +482,7 @@ export function DemoBooking() {
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         <Phone className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                        Phone Number *
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('phone', {
@@ -504,13 +504,16 @@ export function DemoBooking() {
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         <Building className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                        Firm Name (Optional)
+                        Firm Name <span className="text-red-500">*</span>
                       </label>
                       <input
-                        {...register('firmName')}
+                        {...register('firmName', { required: 'Firm name is required' })}
                         className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
                         placeholder="ABC & Associates"
                       />
+                      {errors.firmName && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.firmName.message}</p>
+                      )}
                     </div>
                   </div>
 

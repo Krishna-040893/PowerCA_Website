@@ -308,7 +308,7 @@ export default function AdminAffiliatesPage() {
         {/* Main Content Card */}
         <Card className="shadow-sm border border-gray-100">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-bold">Affiliate Applications</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-bold">All Affiliates</CardTitle>
             <CardDescription className="text-xs sm:text-sm mt-1">
               Review affiliate applications and approve or reject them
             </CardDescription>
@@ -336,13 +336,13 @@ export default function AdminAffiliatesPage() {
                   <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Applicant</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Referral Code</TableHead>
-                      <TableHead>Applied Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-base font-bold">Applicant</TableHead>
+                      <TableHead className="text-base font-bold">Email</TableHead>
+                      <TableHead className="text-base font-bold">Phone</TableHead>
+                      <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Referral Code</TableHead>
+                      <TableHead className="text-base font-bold">Applied Date</TableHead>
+                      <TableHead className="text-base font-bold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -379,15 +379,15 @@ export default function AdminAffiliatesPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => {
                                   setSelectedApp(application)
                                   setAdminNotes(application.admin_notes || '')
                                 }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
-                                Review
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">
@@ -624,16 +624,15 @@ export default function AdminAffiliatesPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => {
                                   setSelectedApp(application)
                                   setAdminNotes(application.admin_notes || '')
                                 }}
-                                className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Review Application
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">

@@ -203,7 +203,7 @@ PowerCA uses Razorpay for payment processing:
 - Session persistence with auto-logout
 - Default credentials (development):
   - Username: `superadmin`
-  - Password: `Admin@123`
+  - Password: `Powerca@25`
 
 ⚠️ **Important**: Change admin credentials in production!
 

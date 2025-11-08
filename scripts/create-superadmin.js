@@ -21,7 +21,7 @@ async function createSuperadmin() {
   console.log('🔐 Creating superadmin account...\n')
 
   const username = 'superadmin'
-  const password = 'Admin@123'
+  const password = 'Powerca@25'
   const email = 'superadmin@powerca.in'
 
   try {

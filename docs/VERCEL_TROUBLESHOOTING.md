@@ -179,7 +179,7 @@ This will tell us EXACTLY which variables are missing or wrong.
 ### What SHOULD Happen:
 
 1. Enter username: `PCAadmin`
-2. Enter password: `Admin@123`
+2. Enter password: `Powerca@25`
 3. Click "Admin Sign In"
 4. Page shows "Authenticating..." for 1-2 seconds
 5. **Redirects to `/admin` dashboard**
@@ -205,7 +205,7 @@ If nothing works, verify EACH of these:
 - [ ] I waited for "Ready" status
 - [ ] I'm using the correct Vercel URL
 - [ ] I'm using username `PCAadmin` (not email)
-- [ ] I'm using password `Admin@123` (case sensitive)
+- [ ] I'm using password `Powerca@25` (case sensitive)
 - [ ] I checked browser console for errors
 
 ---

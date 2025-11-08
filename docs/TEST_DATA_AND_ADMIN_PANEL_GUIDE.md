@@ -96,7 +96,7 @@ The script creates:
 2. **Login Credentials**
    ```
    Username: superadmin
-   Password: Admin@123
+   Password: Powerca@25
    ```
 
 ---

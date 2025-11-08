@@ -3,12 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, RefreshCw, Download, Mail, UserCheck, TrendingUp, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
@@ -29,7 +28,6 @@ export default function NewsletterSubscribersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
 
@@ -108,10 +106,7 @@ export default function NewsletterSubscribersPage() {
 
   const filteredSubscribers = subscribers.filter(sub => {
     const matchesSearch = sub.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' ||
-      (statusFilter === 'active' && sub.is_active) ||
-      (statusFilter === 'inactive' && !sub.is_active)
-    return matchesSearch && matchesStatus
+    return matchesSearch
   })
 
   const stats = {
@@ -211,20 +206,10 @@ export default function NewsletterSubscribersPage() {
 
       {/* Main Content Card - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="text-lg sm:text-xl font-bold">Subscriber List</CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-1">
-                View and manage newsletter subscribers
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Search and Filter Controls - Enhanced Mobile */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
-            <div className="flex-1 relative">
+        <CardContent className="pt-6">
+          {/* Search Control - Enhanced Mobile */}
+          <div className="mb-5">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
@@ -234,16 +219,6 @@ export default function NewsletterSubscribersPage() {
                 className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Unsubscribed</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {error && (
@@ -274,10 +249,10 @@ export default function NewsletterSubscribersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>EMAIL</TableHead>
-                      <TableHead>SOURCE</TableHead>
-                      <TableHead>STATUS</TableHead>
-                      <TableHead>SUBSCRIBED DATE</TableHead>
+                      <TableHead className="text-base font-bold">Email</TableHead>
+                      <TableHead className="text-base font-bold">Source</TableHead>
+                      <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Subscribed Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

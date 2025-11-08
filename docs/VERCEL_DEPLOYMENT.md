@@ -133,7 +133,7 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 ### Admin Login Test
 
 1. Go to: `https://your-vercel-url.vercel.app/admin-login`
-2. Enter admin credentials (username: `superadmin`, password: `Admin@123`)
+2. Enter admin credentials (username: `superadmin`, password: `Powerca@25`)
 3. Click "Admin Sign In"
 4. **Expected**: Immediate redirect to `/admin` dashboard
 5. **Verify**: You see the admin dashboard with sidebar

@@ -20,7 +20,7 @@ const newPassword = process.argv[3]
 
 if (!username || !newPassword) {
   console.log('Usage: node scripts/reset-admin-password.js <username> <new-password>')
-  console.log('Example: node scripts/reset-admin-password.js PCAadmin Admin@123')
+  console.log('Example: node scripts/reset-admin-password.js superadmin Powerca@25')
   process.exit(1)
 }
 

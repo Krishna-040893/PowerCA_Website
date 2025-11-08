@@ -176,7 +176,7 @@ export default function AdminRegistrationsPage() {
                          reg.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.id.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = roleFilter === 'all' || reg.role === roleFilter
+    const matchesRole = roleFilter === 'all' || reg.role?.toLowerCase() === roleFilter.toLowerCase()
 
     return matchesSearch && matchesRole
   })
@@ -195,7 +195,7 @@ export default function AdminRegistrationsPage() {
 
   return (
     <AdminPageWrapper
-      title="User Registrations"
+      title="Registrations"
       description="View detailed information about all registered users"
       actions={
         <div className="flex gap-2">
@@ -345,12 +345,12 @@ export default function AdminRegistrationsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>NAME</TableHead>
-                        <TableHead>EMAIL</TableHead>
-                        <TableHead>PHONE</TableHead>
-                        <TableHead>ROLE</TableHead>
-                        <TableHead>DATE</TableHead>
-                        <TableHead>ACTIONS</TableHead>
+                        <TableHead className="text-base font-bold">Name</TableHead>
+                        <TableHead className="text-base font-bold">Email</TableHead>
+                        <TableHead className="text-base font-bold">Phone</TableHead>
+                        <TableHead className="text-base font-bold">Role</TableHead>
+                        <TableHead className="text-base font-bold">Date</TableHead>
+                        <TableHead className="text-base font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -373,12 +373,12 @@ export default function AdminRegistrationsPage() {
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
-                                  variant="outline"
                                   size="sm"
                                   onClick={() => setSelectedRegistration(registration)}
-                                  className="bg-white hover:bg-gray-50"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-3xl rounded-xl">
@@ -402,8 +402,8 @@ export default function AdminRegistrationsPage() {
                                           <p className="text-sm font-medium text-gray-900">{selectedRegistration.name || '-'}</p>
                                         </div>
                                         <div>
-                                          <label className="text-xs font-medium text-gray-600">Username</label>
-                                          <p className="text-sm font-medium text-gray-900">{selectedRegistration.username || '-'}</p>
+                                          <label className="text-xs font-medium text-gray-600">Role</label>
+                                          <p className="text-sm font-medium text-gray-900">{selectedRegistration.role || '-'}</p>
                                         </div>
                                         <div className="col-span-2">
                                           <label className="text-xs font-medium text-gray-600">Email</label>
@@ -412,10 +412,6 @@ export default function AdminRegistrationsPage() {
                                         <div>
                                           <label className="text-xs font-medium text-gray-600">Phone</label>
                                           <p className="text-sm font-medium text-gray-900">{selectedRegistration.phone || '-'}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-600">Role</label>
-                                          <p className="text-sm font-medium text-gray-900">{selectedRegistration.role || '-'}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -537,13 +533,12 @@ export default function AdminRegistrationsPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedRegistration(registration)}
-                                className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Full Details
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-md rounded-xl">
@@ -565,10 +560,6 @@ export default function AdminRegistrationsPage() {
                                       <div>
                                         <label className="text-xs font-medium text-gray-600">Name</label>
                                         <p className="text-sm font-medium text-gray-900">{selectedRegistration.name || '-'}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-xs font-medium text-gray-600">Username</label>
-                                        <p className="text-sm font-medium text-gray-900">{selectedRegistration.username || '-'}</p>
                                       </div>
                                       <div>
                                         <label className="text-xs font-medium text-gray-600">Email</label>

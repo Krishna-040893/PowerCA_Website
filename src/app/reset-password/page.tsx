@@ -80,8 +80,10 @@ function ResetPasswordForm() {
           router.push(userType === 'affiliate' ? '/affiliate-login' : '/login')
         }, 3000)
       } else {
-        setError(result.error || 'Failed to reset password. Please try again.')
-        toast.error(result.error || 'Failed to reset password.')
+        // Extract error message from response object
+        const errorMessage = result.error?.message || result.message || result.error || 'Failed to reset password. Please try again.'
+        setError(errorMessage)
+        toast.error(errorMessage)
       }
     } catch (error) {
       console.error('Reset password error:', error)

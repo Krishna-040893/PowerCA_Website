@@ -19,7 +19,7 @@ Before starting, ensure:
 
 - [x] Migration 022 has been applied successfully
 - [x] Development server is running on port 3001
-- [x] You have admin credentials (superadmin / Admin@123)
+- [x] You have admin credentials (superadmin / Powerca@25)
 - [x] Razorpay keys are configured in .env
 
 ---
@@ -86,7 +86,7 @@ You should see output like:
 ```
 URL: http://localhost:3001/admin-login
 Username: superadmin
-Password: Admin@123
+Password: Powerca@25
 ```
 
 **Step 2.2: Check Dashboard**
@@ -540,7 +540,7 @@ Print this checklist and mark each item as you test:
 
 - [ ] Migration 022 applied successfully
 - [ ] Development server running on port 3001
-- [ ] Admin credentials working (superadmin / Admin@123)
+- [ ] Admin credentials working (superadmin / Powerca@25)
 - [ ] TEST_DATA_FINAL.sql executed without errors
 
 ### Admin Panel - Navigation

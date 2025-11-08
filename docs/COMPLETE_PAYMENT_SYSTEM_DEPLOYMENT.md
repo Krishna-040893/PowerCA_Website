@@ -233,7 +233,7 @@ LIMIT 1;
    ```
    http://localhost:3001/admin-login
    Username: superadmin
-   Password: Admin@123
+   Password: Powerca@25
    ```
 
 2. **Navigate to Affiliate Payments**

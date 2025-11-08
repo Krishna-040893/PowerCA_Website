@@ -21,7 +21,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function testAdminLogin() {
   const testUsername = 'PCAadmin'
-  const testPassword = 'Admin@123'
+  const testPassword = 'Powerca@25'
 
   console.log('🧪 Testing Admin Login Flow\n')
   console.log('Test Credentials:')

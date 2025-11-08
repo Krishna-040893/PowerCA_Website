@@ -175,27 +175,26 @@ export default function PaymentOrdersPage() {
   }
 
   const stats = {
-    total: orders.length,
+    total: filteredOrders.length,
     paid: orders.filter(o => o.status === 'paid').length,
     created: orders.filter(o => o.status === 'created').length,
-    attempted: orders.filter(o => o.status === 'attempted').length,
-    totalAmount: orders.filter(o => o.status === 'paid').reduce((sum, o) => sum + o.amount, 0),
+    totalAmount: filteredOrders.reduce((sum, o) => sum + o.amount, 0),
   }
 
   return (
     <AdminPageWrapper
       title="Payment Orders"
-      description="Manage and track all Razorpay payment orders"
+      description="Manage and track all payment orders"
     >
-      {/* Stats Cards - 2 Columns on Mobile, 5 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+      {/* Stats Cards - 2 Columns on Mobile, 4 on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <Card className="border border-gray-100 shadow-sm">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Orders</p>
                 <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">All time</p>
+                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All time' : 'Filtered'}</p>
               </div>
               <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
                 <ShoppingCart className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
@@ -238,24 +237,9 @@ export default function PaymentOrdersPage() {
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Attempted</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.attempted}</p>
-                <p className="text-xs text-gray-500 mt-1">In progress</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50">
-                <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
                 <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
-                <p className="text-xs text-gray-500 mt-1">Earned</p>
+                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All Orders' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + ' Orders'}</p>
               </div>
               <div className="p-3 sm:p-4 rounded-xl bg-green-50">
                 <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
@@ -265,14 +249,20 @@ export default function PaymentOrdersPage() {
         </Card>
       </div>
 
-      {/* Filters - Enhanced */}
+      {/* Orders Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg sm:text-xl font-bold">Filter Orders</CardTitle>
-          <CardDescription className="text-xs sm:text-sm mt-1">Search and filter payment orders</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
+            <ShoppingCart className="h-5 w-5" />
+            Payment Orders ({filteredOrders.length})
+          </CardTitle>
+          <CardDescription className="text-xs sm:text-sm mt-1">
+            All payment orders
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -290,24 +280,11 @@ export default function PaymentOrdersPage() {
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
                 <SelectItem value="created">Created</SelectItem>
-                <SelectItem value="attempted">Attempted</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Orders Table - Enhanced */}
-      <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
-            <ShoppingCart className="h-5 w-5" />
-            Payment Orders ({filteredOrders.length})
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm mt-1">
-            All payment orders from Razorpay
-          </CardDescription>
-        </CardHeader>
+        </CardContent>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-12">
@@ -327,14 +304,14 @@ export default function PaymentOrdersPage() {
                 <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Firm Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Affiliate</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Order ID</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Customer</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Firm Name</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Amount</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Status</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Affiliate</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Created</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -377,11 +354,12 @@ export default function PaymentOrdersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <Button
-                          variant="ghost"
                           size="sm"
                           onClick={() => handleViewDetails(order)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
                         </Button>
                       </td>
                     </tr>
@@ -453,13 +431,12 @@ export default function PaymentOrdersPage() {
 
                         {/* Action Button - Enhanced */}
                         <Button
-                          variant="outline"
                           size="sm"
                           onClick={() => handleViewDetails(order)}
-                          className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                         >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Full Details
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
                         </Button>
                       </div>
                     </CardContent>
@@ -593,10 +570,6 @@ export default function PaymentOrdersPage() {
                     <p className="font-medium">{selectedOrder.firm_name || 'N/A'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Company:</span>
-                    <p className="font-medium">{selectedOrder.company || 'N/A'}</p>
-                  </div>
-                  <div className="col-span-2">
                     <span className="text-gray-600">GST Number:</span>
                     <p className="font-medium font-mono">{selectedOrder.gst_number || 'N/A'}</p>
                   </div>
