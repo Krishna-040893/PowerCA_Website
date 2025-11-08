@@ -45,7 +45,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           {/* Header with Logo */}
           <Section style={header}>
             <Img
-              src="https://powerca.com/images/powerca-logo-horizontal.png"
+              src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
               alt="PowerCA"
@@ -112,7 +112,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               <Text style={ctaText}>
                 Ready to transform your business with PowerCA?
               </Text>
-              <Button href="https://powerca.com/dashboard" style={primaryButton}>
+              <Button href="https://powerca.in/dashboard" style={primaryButton}>
                 Go to Dashboard
               </Button>
               <Text style={alternativeActions}>
@@ -120,12 +120,12 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               </Text>
               <Row>
                 <Column align="center">
-                  <Link href="https://powerca.com/docs" style={secondaryLink}>
+                  <Link href="https://powerca.in/docs" style={secondaryLink}>
                     📚 Read Documentation
                   </Link>
                 </Column>
                 <Column align="center">
-                  <Link href="https://powerca.com/contact" style={secondaryLink}>
+                  <Link href="https://powerca.in/contact" style={secondaryLink}>
                     💬 Contact Support
                   </Link>
                 </Column>
@@ -140,8 +140,8 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               </Text>
               <Row>
                 <Column align="center">
-                  <Link href="mailto:support@powerca.com" style={helpLink}>
-                    📧 support@powerca.com
+                  <Link href="mailto:support@powerca.in" style={helpLink}>
+                    📧 support@powerca.in
                   </Link>
                 </Column>
                 <Column align="center">

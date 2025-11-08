@@ -21,7 +21,7 @@ function Frame2095585065() {
   return (
     <div className="h-[18px] leading-[0] relative shrink-0 text-[12px] text-center text-nowrap text-white w-[513px]">
       <div className="absolute flex flex-col font-['Poppins:Medium',_sans-serif] justify-center left-[143.5px] not-italic top-[9px] translate-x-[-50%] translate-y-[-50%]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs â€“Â Till 31st Oct 2025</p>
+        <p className="leading-[normal] text-nowrap whitespace-pre">Special discount 75% for CAs â€“Â Till 30th Nov 2025</p>
       </div>
       <div className="absolute flex flex-col font-['Poppins:Medium_Italic',_sans-serif] italic justify-center left-[400px] top-[9px] translate-x-[-50%] translate-y-[-50%]">
         <p className="leading-[normal] text-nowrap whitespace-pre">(Be an Early Bird to Enjoy the Offer)</p>

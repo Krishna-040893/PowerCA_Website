@@ -65,7 +65,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
           {/* Header */}
           <Section style={header}>
             <Img
-              src="https://powerca.com/images/powerca-logo-horizontal.png"
+              src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="200"
               height="60"
               alt="PowerCA"
@@ -210,7 +210,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
 
                 {/* CTA Section */}
                 <Section style={ctaSection}>
-                  <Button href="https://powerca.com" style={primaryButton}>
+                  <Button href="https://powerca.in" style={primaryButton}>
                     Visit PowerCA Website
                   </Button>
                   <Text style={ctaText}>
@@ -270,7 +270,7 @@ export const DemoBookingEmail: React.FC<DemoBookingEmailProps> = ({
           <Section style={footer}>
             <Row>
               <Column align="center">
-                <Link href="https://powerca.com" style={footerLink}>Website</Link>
+                <Link href="https://powerca.in" style={footerLink}>Website</Link>
                 <span style={footerSeparator}>•</span>
                 <Link href="https://linkedin.com/company/powerca" style={footerLink}>LinkedIn</Link>
                 <span style={footerSeparator}>•</span>
