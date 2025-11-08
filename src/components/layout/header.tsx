@@ -8,6 +8,7 @@ import {Button  } from '@/components/ui/button'
 import {navigationConfig  } from '@/config/navigation'
 import {Menu, X, User, LogOut, ChevronDown  } from 'lucide-react'
 import {useSession, signOut  } from 'next-auth/react'
+import {usePathname  } from 'next/navigation'
 import {DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -18,6 +19,7 @@ import {DropdownMenu,
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
+  const pathname = usePathname()
 
   return (
     <header
@@ -25,7 +27,7 @@ export function Header() {
       style={{ top: 'var(--banner-height, 48px)' }}
     >
       <div className="w-full px-4 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
+        <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20 relative">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
@@ -40,22 +42,29 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navigationConfig.mainNav.map((item, index) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  href={item.href}
-                  className="text-gray-600 hover:text-[#2563eb] font-medium transition-colors text-[15px]"
+          <nav className="hidden lg:flex items-center space-x-6 absolute left-1/2 -translate-x-1/2">
+            {navigationConfig.mainNav.map((item, index) => {
+              const isActive = pathname === item.href
+              return (
+                <motion.div
+                  key={item.href}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  {item.title}
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    href={item.href}
+                    className={`font-medium transition-colors px-2 ${
+                      isActive
+                        ? 'text-[#2563eb] font-semibold text-[17px]'
+                        : 'text-gray-600 hover:text-[#2563eb] text-[15px]'
+                    }`}
+                  >
+                    {item.title}
+                  </Link>
+                </motion.div>
+              )
+            })}
           </nav>
 
           {/* CTA Buttons - Updated */}
@@ -65,9 +74,10 @@ export function Header() {
             ) : session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 rounded-[50px] px-10 py-5 bg-[rgb(21,93,252)] text-white hover:text-white hover:bg-[rgb(21,93,252)]/90 transition-colors">
                     <User className="w-4 h-4" />
                     <span>{session?.user?.name || session?.user?.email || 'User'}</span>
+                    <ChevronDown className="w-4 h-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuPortal>
@@ -136,7 +146,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-800 hover:text-blue-600 font-medium flex items-center space-x-1 border border-gray-200 hover:border-blue-300 rounded-full px-4 py-2 bg-white hover:bg-blue-50 transition-all duration-200"
+                      className="text-gray-800 hover:text-blue-600 font-medium flex items-center space-x-1 border border-gray-200 hover:border-blue-300 rounded-full px-8 py-5 bg-white hover:bg-blue-50 transition-all duration-200"
                     >
                       <span>Sign In</span>
                       <ChevronDown className="w-4 h-4" />
@@ -168,7 +178,7 @@ export function Header() {
                 </DropdownMenu>
                 <Button
                   size="sm"
-                  className="text-white rounded-full hover:opacity-90 transition-opacity px-6 py-4 font-medium"
+                  className="text-white rounded-full hover:opacity-90 transition-opacity px-8 py-5 font-medium"
                   style={{ backgroundColor: '#155dfc' }}
                   asChild
                 >
@@ -202,16 +212,23 @@ export function Header() {
             className="lg:hidden py-4 border-t border-gray-100"
           >
             <nav className="flex flex-col space-y-4">
-              {navigationConfig.mainNav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-gray-700 hover:text-[#2563eb] font-medium"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.title}
-                </Link>
-              ))}
+              {navigationConfig.mainNav.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`font-medium transition-colors ${
+                      isActive
+                        ? 'text-[#2563eb] font-semibold text-[17px]'
+                        : 'text-gray-700 hover:text-[#2563eb] text-[15px]'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.title}
+                  </Link>
+                )
+              })}
               <div className="pt-4 space-y-2 border-t border-gray-100">
                 {status === 'loading' ? (
                   <div className="w-full h-10 bg-gray-200 animate-pulse rounded" />

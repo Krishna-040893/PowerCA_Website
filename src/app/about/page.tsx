@@ -30,15 +30,15 @@ export default function AboutPage() {
     { name: 'Arul Maniam TS', role: 'Founder', category: 'founder', image: '/images/team/arul-maniam-ca.jpg', initials: 'AM' },
     { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/team/karthikeyan-r.jpg', initials: 'KR' },
     { name: 'Thirunavukkarasu M', role: 'Manager', category: 'manager', image: '/images/team/thirunavukkarasu.jpg', initials: 'TM' },
-    { name: 'Jagatheeshwari', role: 'Admin', category: 'admin', image: null, initials: 'JW' },
+    { name: 'Jagadeeswari M', role: 'Admin', category: 'admin', image: null, initials: 'JM' },
     { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: '/images/team/mansur-ali-b.jpg', initials: 'MA' },
     { name: 'Maheshwari R', role: 'Developer', category: 'developers', image: '/images/team/maheshwari-r.jpg', initials: 'MW' },
     { name: 'Vanithamani D', role: 'Developer', category: 'developers', image: '/images/team/vanithamani-d.jpg', initials: 'VD' },
     { name: 'Karthikeyan G', role: 'Web Designer', category: 'webdesigner', image: '/images/team/karthikeyan-g.jpg', initials: 'KG' },
     { name: 'Nikila R', role: 'Web Designer', category: 'webdesigner', image: null, initials: 'NR' },
-    { name: 'Ramajayanthi', role: 'Customer Support', category: 'customersupport', image: null, initials: 'RJ' },
-    { name: 'Kaleeswari', role: 'Testing', category: 'testing', image: null, initials: 'KL' },
-    { name: 'Satheshkumar', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
+    { name: 'Ramajayanthi G', role: 'Customer Support', category: 'customersupport', image: null, initials: 'RG' },
+    { name: 'Kaleeswari K', role: 'Testing', category: 'testing', image: null, initials: 'KK' },
+    { name: 'Satheeshkumar K', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
   ]
 
   // Filter categories
