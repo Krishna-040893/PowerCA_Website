@@ -176,3 +176,15 @@ const handleForgotPassword = async (request: NextRequest) => {
 
 // Apply rate limiting middleware (3 requests per minute - strict for password reset)
 export const POST = withRateLimit(handleForgotPassword, RateLimits.STRICT)
+
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}

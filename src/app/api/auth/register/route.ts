@@ -453,3 +453,15 @@ async function handleRegister(request: NextRequest) {
 
 // Apply rate limiting middleware (5 requests per minute for registration)
 export const POST = withRateLimit(handleRegister, RateLimits.AUTH)
+
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
