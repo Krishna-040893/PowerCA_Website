@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { createClient } from '@/lib/supabase/client'
 
 export interface UserSubscription {
   id: string
@@ -37,23 +36,20 @@ export function useSubscription(): SubscriptionStatus {
       }
 
       try {
-        const supabase = createClient()
+        // Use API route instead of direct Supabase query to bypass RLS
+        const response = await fetch('/api/subscriptions/status')
 
-        // Get user's subscriptions
-        const { data: subscriptions, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('Error fetching subscriptions:', error)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Error fetching subscriptions:', errorData)
           setSubscriptionStatus(prev => ({ ...prev, isLoading: false }))
           return
         }
 
+        const { subscriptions } = await response.json()
+
         // Find Launch Offer subscription
-        const launchOfferSub = subscriptions?.find(sub =>
+        const launchOfferSub = subscriptions?.find((sub: UserSubscription) =>
           sub.plan === 'launch_offer' || sub.plan === 'first_year'
         )
 
@@ -69,16 +65,16 @@ export function useSubscription(): SubscriptionStatus {
           return
         }
 
-        // Calculate if a year has passed since the launch offer started
+        // Calculate if 11 months have passed since the launch offer started (changed from 12 months)
         const subscriptionStart = new Date(launchOfferSub.current_period_start || launchOfferSub.created_at)
-        const oneYearLater = new Date(subscriptionStart)
-        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1)
+        const elevenMonthsLater = new Date(subscriptionStart)
+        elevenMonthsLater.setMonth(elevenMonthsLater.getMonth() + 11)
 
         const now = new Date()
-        const canRenew = now >= oneYearLater
+        const canRenew = now >= elevenMonthsLater
 
         // Calculate days until renewal is possible
-        const timeDiff = oneYearLater.getTime() - now.getTime()
+        const timeDiff = elevenMonthsLater.getTime() - now.getTime()
         const daysUntilRenewal = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
         setSubscriptionStatus({

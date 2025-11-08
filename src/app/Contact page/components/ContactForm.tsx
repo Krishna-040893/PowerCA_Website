@@ -176,6 +176,9 @@ function ContactForm() {
     phone: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -185,12 +188,50 @@ function ContactForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();    // Add form submission logic here
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', phone: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+        setErrorMessage(data.error || 'Failed to send message. Please try again.');
+      }
+    } catch {
+      setSubmitStatus('error');
+      setErrorMessage('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="box-border content-stretch flex flex-col gap-[30px] items-start min-w-[320px] px-[44px] py-[50px] rounded-[16px] w-[804px]" data-name="Form Contact">
+      {submitStatus === 'success' && (
+        <div className="w-full p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-800 font-medium">Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.</p>
+        </div>
+      )}
+      {submitStatus === 'error' && (
+        <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 font-medium">{errorMessage}</p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="w-full flex flex-col gap-[30px]">
         {/* Name Field */}
         <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full" data-name="Input Field">
@@ -206,7 +247,9 @@ function ContactForm() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter your name"
-                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -228,7 +271,9 @@ function ContactForm() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
-                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -248,7 +293,9 @@ function ContactForm() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="Enter your phone number"
-                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -267,7 +314,9 @@ function ContactForm() {
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder="Place your comment"
-                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none resize-none w-full h-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-['Poppins:Regular',_sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none resize-none w-full h-full disabled:opacity-50"
                 />
                 <div className="absolute bottom-[6.02px] right-[5.02px] size-[6.627px]" data-name="Drag">
                   <div className="absolute inset-[-5.33%]">
@@ -286,10 +335,13 @@ function ContactForm() {
         <div className="content-stretch flex gap-[16px] items-start relative shrink-0">
           <button
             type="submit"
-            className="bg-[#306bea] box-border content-stretch flex gap-[10px] items-center justify-center px-[24px] py-[16px] relative rounded-[100px] shadow-[0px_0px_1px_0px_rgba(48,107,234,0.24),0px_4px_6px_1px_rgba(229,231,235,0.5)] shrink-0 w-[356px] hover:bg-[#2557d1] transition-colors"
+            disabled={isSubmitting}
+            className="bg-[#306bea] box-border content-stretch flex gap-[10px] items-center justify-center px-[24px] py-[16px] relative rounded-[100px] shadow-[0px_0px_1px_0px_rgba(48,107,234,0.24),0px_4px_6px_1px_rgba(229,231,235,0.5)] shrink-0 w-[356px] hover:bg-[#2557d1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             data-name="_Button"
           >
-            <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">Submit</p>
+            <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">
+              {isSubmitting ? 'Sending...' : 'Submit'}
+            </p>
           </button>
         </div>
       </form>

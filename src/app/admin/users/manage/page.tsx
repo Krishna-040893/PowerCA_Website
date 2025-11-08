@@ -246,7 +246,7 @@ export default function AdminUserManagementPage() {
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="Professional">Professional</SelectItem>
                   <SelectItem value="Student">Student</SelectItem>
@@ -275,14 +275,14 @@ export default function AdminUserManagementPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-base font-bold">Name</TableHead>
+                      <TableHead className="text-base font-bold">Email</TableHead>
+                      <TableHead className="text-base font-bold">Username</TableHead>
+                      <TableHead className="text-base font-bold">Role</TableHead>
+                      <TableHead className="text-base font-bold">Type</TableHead>
+                      <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Joined</TableHead>
+                      <TableHead className="text-base font-bold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -414,7 +414,7 @@ export default function AdminUserManagementPage() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="Professional">Professional</SelectItem>
                       <SelectItem value="Student">Student</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>

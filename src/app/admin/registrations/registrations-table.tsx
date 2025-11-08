@@ -4,6 +4,7 @@ import {useState, useEffect  } from 'react'
 import {createClient  } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 import {toast  } from 'sonner'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -27,7 +28,6 @@ interface Registration {
   registration_no?: string
   institute_name?: string
   role?: string
-  affiliate_id?: string
   created_at?: string
 }
 
@@ -47,7 +47,7 @@ export default function RegistrationsTable() {
 
       // Fetch data from Supabase
       const { data, error } = await supabase
-        .from('registrations')
+        .from(REGISTRATION_FORMS_TABLE)
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -63,11 +63,10 @@ export default function RegistrationsTable() {
         username: reg.username || '',
         phone: reg.phone || '',
         professional_type: reg.professional_type || '',
-        membership_no: reg.membership_no || '',
-        registration_no: reg.registration_no || '',
+        membership_no: reg.membership_no || reg.membership_number || '',
+        registration_no: reg.registration_no || reg.registration_number || '',
         institute_name: reg.institute_name || '',
         role: reg.role || '',
-        affiliate_id: reg.affiliate_id || '',
         created_at: reg.created_at || new Date().toISOString()
       }))
 
@@ -204,41 +203,38 @@ export default function RegistrationsTable() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    EMAIL
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    USERNAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Username
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PHONE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PROFESSIONAL TYPE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Professional Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    MEMBERSHIP NO
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Membership No
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    REGISTRATION NO
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Registration No
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    INSTITUTE NAME
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Institute Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ROLE
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    AFFILIATE ID
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    DATE
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ACTIONS
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -279,15 +275,6 @@ export default function RegistrationsTable() {
                       }`}>
                         {registration.role || 'User'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {registration.affiliate_id ? (
-                        <span className="font-bold text-purple-600">
-                          {registration.affiliate_id}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {registration.created_at ? formatDate(registration.created_at) : 'N/A'}

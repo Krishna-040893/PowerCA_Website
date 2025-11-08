@@ -2,18 +2,11 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {getServerSession  } from 'next-auth/next'
 import {authOptions  } from '@/lib/auth'
 import {createAdminClient  } from '@/lib/supabase/admin'
-
-// Generate a unique referral code
-function generateReferralCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let code = 'REF-'
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return code
-}
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import {sendReferralLinkEmail  } from '@/lib/resend'
 
 // POST - Create new referral profile (allows multiple)
+// Uses the admin-assigned referral code from affiliate_registrations table
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -29,34 +22,106 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Verify user is an affiliate
-    const { data: userData, error: userError } = await supabase
-      .from('registrations')
-      .select('id, role, affiliate_id')
-      .eq('id', session.user.id)
-      .single()
+    // Check if user is an affiliate based on their role in session
+    const isAffiliate = session.user.role?.toLowerCase() === 'affiliate'
 
-    if (userError || !userData) {
+    let userData
+    let affiliateReg
+
+    if (isAffiliate) {
+      // For affiliates, look them up directly in affiliate_registrations by email
+      const { data: affiliate, error: affiliateError } = await supabase
+        .from('affiliate_registrations')
+        .select('id, email, full_name, referral_code, affiliate_id, status')
+        .eq('email', session.user.email)
+        .eq('status', 'approved')
+        .single()
+
+      if (affiliateError || !affiliate) {
+        return NextResponse.json(
+          { error: 'Affiliate not found or not approved' },
+          { status: 404 }
+        )
+      }
+
+      userData = {
+        id: affiliate.id,
+        role: 'affiliate'
+      }
+
+      affiliateReg = {
+        referral_code: affiliate.referral_code,
+        affiliate_id: affiliate.affiliate_id || null, // Use the database-assigned affiliate_id
+        status: affiliate.status
+      }
+    } else {
+      // For regular users, check registration_forms table
+      const { data: user, error: userError } = await supabase
+        .from(REGISTRATION_FORMS_TABLE)
+        .select('id, role')
+        .eq('id', session.user.id)
+        .single()
+
+      if (userError || !user) {
+        return NextResponse.json(
+          { error: 'User not found in database' },
+          { status: 404 }
+        )
+      }
+
+      // Check role case-insensitively
+      if (user.role?.toLowerCase() !== 'affiliate') {
+        return NextResponse.json(
+          { error: `User is not an affiliate. Current role: ${user.role}` },
+          { status: 403 }
+        )
+      }
+
+      userData = user
+
+      // Get the admin-assigned referral code from affiliate_registrations
+      const { data: reg, error: regError } = await supabase
+        .from('affiliate_registrations')
+        .select('referral_code, affiliate_id, status')
+        .eq('user_id', userData.id)
+        .eq('status', 'approved')
+        .single()
+
+      if (regError || !reg) {
+        return NextResponse.json(
+          { error: 'Affiliate registration not found or not approved' },
+          { status: 404 }
+        )
+      }
+
+      affiliateReg = reg
+    }
+
+    // Use the admin-assigned referral code
+    const referralCode = affiliateReg.referral_code
+
+    if (!referralCode) {
       return NextResponse.json(
-        { error: 'User not found in database' },
-        { status: 404 }
+        { error: 'Referral code not assigned. Please contact admin.' },
+        { status: 400 }
       )
     }
 
-    // Check role case-insensitively
-    if (userData.role?.toLowerCase() !== 'affiliate') {
-      return NextResponse.json(
-        { error: `User is not an affiliate. Current role: ${userData.role}` },
-        { status: 403 }
-      )
-    }
-
-    // First get the affiliate profile to check for existing referrals
-    const { data: affiliateProfile } = await supabase
+    // For new affiliates (using affiliate_registrations), use email to find profile
+    // For old affiliates (using registration_forms), use user_id
+    let profileLookupQuery = supabase
       .from('affiliate_profiles')
-      .select('id')
-      .eq('user_id', userData.id)
-      .single()
+      .select('id, affiliate_id, referral_code, user_id')
+
+    if (isAffiliate) {
+      // New system: lookup by referral_code
+      profileLookupQuery = profileLookupQuery.eq('referral_code', affiliateReg.referral_code)
+    } else {
+      // Old system: lookup by user_id
+      profileLookupQuery = profileLookupQuery.eq('user_id', userData.id)
+    }
+
+    const { data: affiliateProfile } = await profileLookupQuery.maybeSingle()
 
     // If affiliate profile exists, check for duplicate referrals
     if (affiliateProfile) {
@@ -85,86 +150,56 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if a profile already exists for this user
-    const { data: existingProfile } = await supabase
-      .from('affiliate_profiles')
-      .select('*')
-      .eq('user_id', userData.id)
-      .single()
+    // Try multiple lookup methods to avoid duplicate key errors
+    let existingProfile = null
 
-
-    // Generate unique referral code
-    let referralCode = generateReferralCode()
-
-    // Ensure referral code is unique
-    let codeExists = true
-    let attempts = 0
-    while (codeExists && attempts < 10) {
-      const { data: existingCode } = await supabase
+    // Method 1: Lookup by affiliate_id (most reliable if affiliate_id exists)
+    if (affiliateReg.affiliate_id) {
+      const { data: profileByAffiliateId } = await supabase
         .from('affiliate_profiles')
-        .select('id')
-        .eq('referral_code', referralCode)
-        .single()
+        .select('*')
+        .eq('affiliate_id', affiliateReg.affiliate_id)
+        .maybeSingle()
 
-      if (!existingCode) {
-        codeExists = false
-      } else {
-        referralCode = generateReferralCode()
-        attempts++
+      if (profileByAffiliateId) {
+        existingProfile = profileByAffiliateId
       }
     }
 
-    if (attempts >= 10) {
-      return NextResponse.json(
-        { error: 'Unable to generate unique referral code. Please try again.' },
-        { status: 500 }
-      )
+    // Method 2: Lookup by referral_code or user_id (fallback)
+    if (!existingProfile) {
+      let existingProfileQuery = supabase
+        .from('affiliate_profiles')
+        .select('*')
+
+      if (isAffiliate) {
+        // New system: lookup by referral_code
+        existingProfileQuery = existingProfileQuery.eq('referral_code', affiliateReg.referral_code)
+      } else {
+        // Old system: lookup by user_id
+        existingProfileQuery = existingProfileQuery.eq('user_id', userData.id)
+      }
+
+      const { data: profileByCode } = await existingProfileQuery.maybeSingle()
+      existingProfile = profileByCode
     }
 
     let profileData
-    let operationError
 
     if (existingProfile) {
-      // Update existing profile with new referral code
-
-      const updateData = {
-        affiliate_id: userData.affiliate_id || body.affiliateId,
-        referral_code: referralCode,
-        firm_name: body.firmName,
-        firm_address: body.firmAddress,
-        contact_person: body.contactPerson || null,
-        contact_email: body.contactEmail || null,
-        contact_phone: body.contactPhone || null,
-        product_url: body.productUrl || 'https://powerca.in/demo',
-        website_url: body.websiteUrl || 'https://powerca.in',
-        updated_at: new Date().toISOString()
-      }
-
-      const { data: updatedProfile, error: updateError } = await supabase
-        .from('affiliate_profiles')
-        .update(updateData)
-        .eq('user_id', userData.id)
-        .select()
-        .single()
-
-      profileData = updatedProfile
-      operationError = updateError
+      // Profile exists - just use it, DON'T overwrite with customer data
+      profileData = existingProfile
     } else {
-      // Create new affiliate profile/referral
+      // Create new affiliate profile ONCE with affiliate's basic info
+      // This should only happen on first referral creation
       const insertData = {
-        user_id: userData.id,
-        affiliate_id: userData.affiliate_id || body.affiliateId,
-        referral_code: referralCode,
-        firm_name: body.firmName,
-        firm_address: body.firmAddress,
-        contact_person: body.contactPerson || null,
-        contact_email: body.contactEmail || null,
-        contact_phone: body.contactPhone || null,
-        product_url: body.productUrl || 'https://powerca.in/demo',
-        website_url: body.websiteUrl || 'https://powerca.in',
+        user_id: isAffiliate ? null : userData.id, // New affiliates don't have user_id
+        affiliate_id: affiliateReg.affiliate_id || null,
+        referral_code: referralCode, // Admin-assigned code
+        product_url: 'https://powerca.in/demo',
+        website_url: 'https://powerca.in',
         status: 'active'
       }
-
-      // Create new referral profile
 
       const { data: newProfile, error: createError } = await supabase
         .from('affiliate_profiles')
@@ -172,18 +207,19 @@ export async function POST(request: NextRequest) {
         .select()
         .single()
 
-      profileData = newProfile
-      operationError = createError
-    }
+      if (createError) {
+        console.error('❌ Failed to create profile:', createError)
+        return NextResponse.json(
+          { error: `Failed to create affiliate profile: ${createError.message || 'Unknown error'}` },
+          { status: 500 }
+        )
+      }
 
-    if (operationError) {
-      return NextResponse.json(
-        { error: `Failed to process referral profile: ${operationError.message || 'Unknown error'}` },
-        { status: 500 }
-      )
+      profileData = newProfile
     }
 
     // Store referral data in affiliate_referrals table with referral code
+    // customer_id will be auto-generated by database trigger (CUS001, CUS002, etc.)
     const { data: referralData, error: referralError } = await supabase
       .from('affiliate_referrals')
       .insert({
@@ -192,6 +228,7 @@ export async function POST(request: NextRequest) {
         referral_code: profileData.referral_code, // Store the referral code
         referred_email: body.contactEmail || '',
         referred_name: body.contactPerson || body.firmName,
+        referred_phone: body.contactPhone || null, // Store customer's phone
         status: 'pending',
         created_at: new Date().toISOString()
       })
@@ -199,21 +236,71 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (referralError) {
-      // Don't fail the operation, just continue
+      console.error('❌ Error creating referral record:', referralError)
+      return NextResponse.json(
+        { error: `Failed to create referral: ${referralError.message || 'Unknown error'}` },
+        { status: 500 }
+      )
     }
+
+    if (!referralData) {
+      console.error('❌ No referral data returned after insert')
+      return NextResponse.json(
+        { error: 'Failed to create referral: No data returned' },
+        { status: 500 }
+      )
+    }
+
+    // Send email to customer if email is provided
+    if (body.contactEmail && referralData?.customer_id) {
+      try {
+        // Create referral link with both referral code and customer ID
+        const referralLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${profileData.referral_code}&cus=${referralData.customer_id}`
+
+        const emailResult = await sendReferralLinkEmail({
+          customerName: body.contactPerson || body.firmName || 'Customer',
+          customerEmail: body.contactEmail,
+          affiliateName: session.user.name || 'Your Partner',
+          referralCode: profileData.referral_code,
+          referralLink: referralLink,
+          firmName: body.firmName,
+          customerId: referralData.customer_id
+        })
+
+        if (!emailResult.success) {
+          console.error('❌ Failed to send referral link email:', emailResult.error)
+          // Don't fail the operation if email fails
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending referral link email:', emailError)
+        // Don't fail the operation if email fails
+      }
+    }
+
+    // Build referral link with customer ID if available
+    const referralLink = referralData?.customer_id
+      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${profileData.referral_code}&cus=${referralData.customer_id}`
+      : `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${profileData.referral_code}`
 
     return NextResponse.json({
       success: true,
-      message: existingProfile ? 'Referral profile updated with new code' : 'New referral profile created successfully',
+      message: existingProfile ? 'New customer referral created successfully' : 'Referral profile created with customer',
+      emailSent: !!body.contactEmail,
       profile: {
         id: profileData.id,
         affiliate_id: profileData.affiliate_id,
-        referral_code: profileData.referral_code,
-        referral_link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/pricing?ref=${profileData.referral_code}`,
+        referral_code: profileData.referral_code, // Admin-assigned code (e.g., 0CDCCBF1)
+        referral_link: referralLink,
         firm_name: profileData.firm_name,
         status: profileData.status
       },
-      referralRecord: referralData || null
+      referralRecord: referralData ? {
+        id: referralData.id,
+        customer_id: referralData.customer_id, // Auto-generated (e.g., CUS001)
+        referred_name: referralData.referred_name,
+        referred_email: referralData.referred_email,
+        status: referralData.status
+      } : null
     })
 
   } catch {

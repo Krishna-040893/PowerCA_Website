@@ -82,8 +82,12 @@ const testimonialSets: Testimonial[][] = [
   ]
 ]
 
+// Flatten all testimonials for mobile view
+const allTestimonials = testimonialSets.flat()
+
 export default function TestimonialsSection() {
   const [currentSet, setCurrentSet] = useState(0)
+  const [currentMobileIndex, setCurrentMobileIndex] = useState(0)
 
   const nextSet = () => {
     setCurrentSet((prev) => (prev + 1) % testimonialSets.length)
@@ -97,71 +101,167 @@ export default function TestimonialsSection() {
     setCurrentSet(index)
   }
 
+  // Mobile navigation functions
+  const nextMobile = () => {
+    setCurrentMobileIndex((prev) => (prev + 1) % allTestimonials.length)
+  }
+
+  const prevMobile = () => {
+    setCurrentMobileIndex((prev) => (prev - 1 + allTestimonials.length) % allTestimonials.length)
+  }
+
+  const goToMobile = (index: number) => {
+    setCurrentMobileIndex(index)
+  }
+
   return (
     <div>
-      <div className="grid lg:grid-cols-12 gap-8 items-center mb-16">
+      {/* Desktop/Tablet Header - Hidden on Mobile */}
+      <div className="hidden sm:grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12 lg:mb-16">
         {/* Left Content - Title */}
         <div className="lg:col-span-5">
-          <h2 className="text-4xl md:text-[42px] font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
             What Practicing Chartered Accountants Say!
           </h2>
         </div>
 
         {/* Center Content - Description */}
         <div className="lg:col-span-5">
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
             Don't just take our word for it. Here's what our clients have to say about PowerCA.
           </p>
         </div>
 
         {/* Right Content - Navigation Buttons */}
-        <div className="lg:col-span-2 flex justify-end gap-4">
+        <div className="lg:col-span-2 flex justify-start lg:justify-end gap-3 sm:gap-4">
           <button
+            type="button"
+            aria-label="Show previous testimonial set"
+            title="Show previous testimonial set"
             onClick={prevSet}
-            className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-600 hover:text-blue-600 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-600 hover:text-blue-600 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
+            type="button"
+            aria-label="Show next testimonial set"
+            title="Show next testimonial set"
             onClick={nextSet}
-            className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* Testimonial Cards */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      {/* Mobile Header - Only on Mobile */}
+      <div className="sm:hidden mb-6">
+        <h2 className="text-2xl font-semibold font-inter leading-tight mb-3" style={{ color: '#001525' }}>
+          What Practicing Chartered Accountants Say!
+        </h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Don't just take our word for it. Here's what our clients have to say about PowerCA.
+        </p>
+      </div>
+
+      {/* Desktop/Tablet Testimonial Cards - Hidden on Mobile */}
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-10 lg:mb-12">
         {testimonialSets[currentSet].map((testimonial, index) => (
-          <div key={`${currentSet}-${index}`} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-gray-300 mr-4 flex items-center justify-center text-white font-semibold">
+          <div key={`${currentSet}-${index}`} className="bg-white rounded-2xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm">
+            <div className="flex items-center mb-4 sm:mb-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-300 mr-3 sm:mr-4 flex items-center justify-center text-white font-semibold text-sm sm:text-base">
                 {testimonial.initial}
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">{testimonial.name}</h3>
-                <p className="text-gray-500 text-sm">{testimonial.title}, {testimonial.company}</p>
+                <h3 className="font-semibold text-base sm:text-lg text-gray-900">{testimonial.name}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{testimonial.title}, {testimonial.company}</p>
               </div>
             </div>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
               {testimonial.content}
             </p>
           </div>
         ))}
       </div>
 
-      {/* Pagination Dots */}
-      <div className="flex justify-center gap-2">
+      {/* Mobile Single Testimonial Card - Only on Mobile */}
+      <div className="sm:hidden mb-6">
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center text-white font-semibold text-sm">
+              {allTestimonials[currentMobileIndex].initial}
+            </div>
+            <div>
+              <h3 className="font-semibold text-base text-gray-900">{allTestimonials[currentMobileIndex].name}</h3>
+              <p className="text-gray-500 text-xs">{allTestimonials[currentMobileIndex].title}, {allTestimonials[currentMobileIndex].company}</p>
+            </div>
+          </div>
+          <p className="text-gray-600 leading-relaxed text-sm">
+            {allTestimonials[currentMobileIndex].content}
+          </p>
+        </div>
+      </div>
+
+      {/* Mobile Navigation - Pagination Left, Arrows Right */}
+      <div className="sm:hidden flex justify-between items-center">
+        {/* Pagination Dots - Left */}
+        <div className="flex gap-1.5" role="tablist" aria-label="Testimonial navigation">
+          {allTestimonials.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => goToMobile(index)}
+              aria-label={`Show testimonial ${index + 1}`}
+              aria-pressed={index === currentMobileIndex}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === currentMobileIndex ? 'bg-gray-900' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Buttons - Right */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            aria-label="Show previous testimonial"
+            title="Show previous testimonial"
+            onClick={prevMobile}
+            className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-600 hover:text-blue-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Show next testimonial"
+            title="Show next testimonial"
+            onClick={nextMobile}
+            className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop/Tablet Pagination Dots - Centered */}
+      <div className="hidden sm:flex justify-center gap-2" role="tablist" aria-label="Testimonial groups">
         {testimonialSets.map((_, index) => (
           <button
             key={index}
+            type="button"
             onClick={() => goToSet(index)}
-            className={`w-3 h-3 rounded-full transition-colors ${
+            aria-label={`Show testimonial set ${index + 1}`}
+            aria-pressed={index === currentSet}
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors ${
               index === currentSet ? 'bg-gray-900' : 'bg-gray-300 hover:bg-gray-400'
             }`}
           />

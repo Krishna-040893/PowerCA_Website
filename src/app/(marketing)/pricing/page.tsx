@@ -4,50 +4,129 @@ import { Check, Calendar, Clock } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useSubscription } from '@/hooks/useSubscription'
 import Link from 'next/link'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
-export default function PricingPage() {
+function PricingContent() {
   const { data: session } = useSession()
   const subscriptionStatus = useSubscription()
+  const searchParams = useSearchParams()
+  const [referralInfo, setReferralInfo] = useState<{ ref?: string; cus?: string } | null>(null)
+  const [isValidReferral, setIsValidReferral] = useState(false)
 
-  const handleLaunchOfferPurchase = async () => {
+  // Check if user is an affiliate
+  const isAffiliate = session?.user?.role === 'Affiliate' || session?.user?.role === 'affiliate'
+
+  useEffect(() => {
+    // Detect referral parameters from URL
+    const ref = searchParams.get('ref')
+    const cus = searchParams.get('cus')
+
+    if (ref || cus) {
+      // Store referral info in localStorage to persist through login
+      const referralData = { ref: ref || undefined, cus: cus || undefined }
+      localStorage.setItem('affiliate_referral', JSON.stringify(referralData))
+      setReferralInfo(referralData)
+    } else {
+      // Check if referral info exists in localStorage
+      const stored = localStorage.getItem('affiliate_referral')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setReferralInfo(parsed)
+        } catch {
+          // Failed to parse stored referral - ignore and continue
+        }
+      }
+    }
+  }, [searchParams])
+
+  // Verify if the logged-in user actually matches this referral
+  useEffect(() => {
+    const verifyReferral = async () => {
+      if (!session?.user?.email || !referralInfo?.ref || !referralInfo?.cus) {
+        setIsValidReferral(false)
+        return
+      }
+
+      try {
+        // Fetch user's actual referral info from database
+        const response = await fetch('/api/user/referral-info')
+        const data = await response.json()
+
+        if (data.hasReferral && data.referralInfo) {
+          // Check if the URL parameters match the user's actual referral
+          const matchesRef = data.referralInfo.referralCode === referralInfo.ref
+          const matchesCus = data.referralInfo.customerId === referralInfo.cus
+
+          setIsValidReferral(matchesRef && matchesCus)
+        } else {
+          setIsValidReferral(false)
+        }
+      } catch {
+        setIsValidReferral(false)
+      }
+    }
+
+    verifyReferral()
+  }, [session, referralInfo])
+
+  const handleLaunchOfferPurchase = () => {
     if (!session) {
-      // Redirect to login
-      window.location.href = '/login'
+      // Build callback URL with referral params
+      const params = new URLSearchParams()
+
+      if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+      if (referralInfo?.cus) params.append('cus', referralInfo.cus)
+
+      const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
+
+      // Redirect to login with callback URL to return to checkout
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(checkoutUrl)}`
       return
     }
 
-    try {
-      // Create subscription record
-      const response = await fetch('/api/subscription/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan: 'launch_offer'
-        }),
-      })
+    // Build checkout URL with referral params
+    const params = new URLSearchParams()
+    if (referralInfo?.ref) params.append('ref', referralInfo.ref)
+    if (referralInfo?.cus) params.append('cus', referralInfo.cus)
 
-      if (response.ok) {
-        // Redirect to payment or dashboard
-        window.location.href = '/dashboard'
-      } else {
-        const error = await response.json()
-        console.error('Failed to create subscription:', error)
-        alert('Failed to process subscription. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error creating subscription:', error)
-      alert('An error occurred. Please try again.')
-    }
+    const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
+
+    // Redirect to checkout page for payment
+    window.location.href = checkoutUrl
   }
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Affiliate Referral Banner - Only show if user is logged in and referral is verified */}
+      {session && isValidReferral && referralInfo?.ref && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-200">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl sm:text-2xl">🎁</span>
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold text-green-700">
+                    You're purchasing through an affiliate referral!
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Referral Code: <span className="font-mono font-bold text-blue-600">{referralInfo.ref}</span>
+                    {referralInfo.cus && (
+                      <> • Customer ID: <span className="font-mono font-bold text-blue-600">{referralInfo.cus}</span></>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-20">
         <div
-          className="absolute inset-0 rounded-2xl mx-6 lg:mx-8"
+          className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-8"
           style={{
             backgroundImage: 'url("/images/pricing-hero-bg.jpg")',
             backgroundSize: 'cover',
@@ -55,12 +134,12 @@ export default function PricingPage() {
             backgroundRepeat: 'no-repeat'
           }}
         ></div>
-        <div className="relative z-10 container mx-auto px-6 lg:px-8">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             {/* Badge */}
-            <div className="mb-8">
-              <span className="inline-flex items-center px-6 py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-sm font-medium font-inter">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" viewBox="0 0 24 24">
                   <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M6 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M6 13L14.5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -72,15 +151,15 @@ export default function PricingPage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-8 font-inter">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 font-inter px-2">
               Choose Your Perfect
               <br />
               <span className="text-blue-600">Pricing Plan</span>
             </h1>
 
             {/* Description */}
-            <div className="mb-12 max-w-5xl mx-auto">
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-4 font-inter">
+            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed font-inter">
                 Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.
               </p>
             </div>
@@ -89,9 +168,9 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <div className="relative py-12 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+      <div className="relative py-8 sm:py-10 md:py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
 
             {/* Left Card - Launch Offer */}
             <div className="relative bg-[#306bea] rounded-2xl md:rounded-3xl p-6 md:p-12 text-white shadow-2xl">
@@ -182,15 +261,21 @@ export default function PricingPage() {
                 {/* Button */}
                 <button
                   onClick={handleLaunchOfferPurchase}
-                  disabled={subscriptionStatus.hasLaunchOffer}
+                  disabled={subscriptionStatus.hasLaunchOffer || isAffiliate}
+                  title={isAffiliate ? 'Affiliates cannot purchase directly' : subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
                   className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
-                    subscriptionStatus.hasLaunchOffer
+                    subscriptionStatus.hasLaunchOffer || isAffiliate
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-white text-[#306bea] hover:bg-gray-50'
+                      : 'bg-white text-[#306bea] hover:bg-gray-50 cursor-pointer'
                   }`}
                 >
-                  {subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
+                  {isAffiliate ? 'Not Available for Affiliates' : subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
                 </button>
+                {isAffiliate && (
+                  <p className="text-xs text-white/80 text-center mt-2">
+                    As an affiliate, you can refer customers but cannot purchase directly
+                  </p>
+                )}
               </div>
             </div>
 
@@ -261,6 +346,14 @@ export default function PricingPage() {
                     <button className="w-full bg-gray-200 text-gray-400 py-4 rounded-full text-lg font-medium animate-pulse">
                       Loading...
                     </button>
+                  ) : isAffiliate ? (
+                    <button
+                      disabled
+                      title="Affiliates cannot purchase directly"
+                      className="w-full bg-gray-300 text-gray-500 py-4 rounded-full text-lg font-medium cursor-not-allowed"
+                    >
+                      Not Available for Affiliates
+                    </button>
                   ) : subscriptionStatus.canRenew ? (
                     <Link href="/dashboard/subscription/renew">
                       <button className="w-full bg-[#306bea] text-white py-4 rounded-full text-lg font-medium hover:bg-[#244b9b] transition-colors">
@@ -277,7 +370,9 @@ export default function PricingPage() {
                   )}
 
                   <div className="text-xs text-[#666d80] text-center space-y-1">
-                    {!subscriptionStatus.hasLaunchOffer ? (
+                    {isAffiliate ? (
+                      <p>As an affiliate, you can refer customers but cannot purchase directly</p>
+                    ) : !subscriptionStatus.hasLaunchOffer ? (
                       <p>Currently you don't have plan yet !</p>
                     ) : subscriptionStatus.canRenew ? (
                       <div className="flex items-center justify-center space-x-2 text-green-600">
@@ -305,9 +400,9 @@ export default function PricingPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="pb-12 md:pb-24">
+      <div className="pb-8 md:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 max-w-6xl mx-auto">
+          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-3 max-w-6xl mx-auto">
             <p className="text-lg md:text-2xl font-medium text-[#001525] text-center md:text-left">
               Refer Power CA Pricing Policy Document
             </p>
@@ -318,5 +413,13 @@ export default function PricingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PricingContent />
+    </Suspense>
   )
 }

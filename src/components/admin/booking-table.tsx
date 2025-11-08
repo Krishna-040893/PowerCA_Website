@@ -150,12 +150,12 @@ export function BookingTable({ bookings, isLoading, onStatusUpdate }: BookingTab
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Button
-                      variant="ghost"
                       size="sm"
                       onClick={() => handleViewDetails(booking)}
-                      className="h-8 w-8 p-0"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
                     </Button>
 
                     {booking.status === 'PENDING' && (

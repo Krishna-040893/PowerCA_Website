@@ -22,9 +22,9 @@ function HeroSection() {
   return (
     <div className="max-w-6xl mx-auto text-center">
       {/* Badge - about page style */}
-      <div className="mb-8">
-        <span className="inline-flex items-center px-6 py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="mb-6 sm:mb-8">
+        <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           Connect With Us Today
@@ -32,15 +32,15 @@ function HeroSection() {
       </div>
 
       {/* Main Heading - about page style */}
-      <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-8">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 px-2">
         Get in Touch
         <br />
               <span className="text-blue-600">With Us</span>
       </h1>
 
       {/* Description - about page style */}
-      <div className="mb-12 max-w-5xl mx-auto">
-        <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-4">
+      <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">
           We're always here to chat! Reach out to us with any questions or concerns you may have, and we'll be happy to help.
         </p>
       </div>
@@ -94,70 +94,73 @@ function PhoneIcon() {
   )
 }
 
-function SocialIcon({ path }: { path: string }) {
-  return (
-    <div className="relative shrink-0 size-[44px]">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 44 44">
-        <g>
-          <path d={svgPaths.p18693300} fill="#306BEA" stroke="#306BEA" strokeWidth="1.5" />
-          <path clipRule="evenodd" d={path} fill="white" fillRule="evenodd" />
-        </g>
-      </svg>
-    </div>
-  )
-}
-
 function ContactInfo() {
   return (
-    <div className="content-stretch flex flex-col gap-[60px] items-start w-full max-w-[690px]">
+    <div className="content-stretch flex flex-col gap-8 sm:gap-10 md:gap-12 lg:gap-[60px] items-start w-full max-w-[690px]">
       {/* Location */}
-      <div className="content-stretch flex gap-[24px] items-start relative shrink-0 w-full">
-        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
+      <div className="content-stretch flex gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[6px] sm:p-[7px] md:p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
           <LocationIcon />
         </div>
-        <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0">
-          <p className="font-medium leading-[42px] min-w-full relative shrink-0 text-[#001525] text-[24px]">
+        <div className="content-stretch flex flex-col gap-2 sm:gap-[12px] items-start relative flex-1">
+          <p className="font-medium leading-tight sm:leading-[42px] w-full text-[#001525] text-lg sm:text-xl md:text-[24px]">
             Our Location :
           </p>
-          <p className="font-normal leading-[normal] relative shrink-0 text-[#666d80] text-[18px] max-w-[602px]">No. 130, II Floor, Muneer Complex, Palani Road, Udumalpet.</p>
+          <p className="font-normal leading-relaxed sm:leading-[normal] text-[#666d80] text-sm sm:text-base md:text-[18px] max-w-[602px] break-words">No. 130, II Floor, Muneer Complex, Palani Road, Udumalpet.</p>
         </div>
       </div>
 
       {/* Email */}
-      <div className="content-stretch flex gap-[24px] items-start relative shrink-0 w-full">
-        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
+      <div className="content-stretch flex gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[6px] sm:p-[7px] md:p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
           <EmailIcon />
         </div>
-        <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0">
-          <p className="font-medium leading-[42px] min-w-full relative shrink-0 text-[#001525] text-[24px]">
+        <div className="content-stretch flex flex-col gap-2 sm:gap-[12px] items-start relative flex-1">
+          <p className="font-medium leading-tight sm:leading-[42px] w-full text-[#001525] text-lg sm:text-xl md:text-[24px]">
             Email Us :
           </p>
-          <p className="font-normal leading-[normal] relative shrink-0 text-[#666d80] text-[18px] max-w-[602px]">contact@powerca.in | support@powerca.in</p>
+          <p className="font-normal leading-relaxed sm:leading-[normal] text-[#666d80] text-sm sm:text-base md:text-[18px] max-w-[602px] break-words">contact@powerca.in | support@powerca.in</p>
         </div>
       </div>
 
       {/* Phone */}
-      <div className="content-stretch flex gap-[24px] items-start relative shrink-0 w-full">
-        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
+      <div className="content-stretch flex gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+        <div className="bg-white box-border content-stretch flex gap-[10px] items-center p-[6px] sm:p-[7px] md:p-[8px] relative rounded-[8px] shrink-0 border-2 border-[#b6c9f3]">
           <PhoneIcon />
         </div>
-        <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0">
-          <p className="font-medium leading-[42px] min-w-full relative shrink-0 text-[#001525] text-[24px]">
+        <div className="content-stretch flex flex-col gap-2 sm:gap-[12px] items-start relative flex-1">
+          <p className="font-medium leading-tight sm:leading-[42px] w-full text-[#001525] text-lg sm:text-xl md:text-[24px]">
             Phone Number :
           </p>
-          <p className="font-normal leading-[normal] relative shrink-0 text-[#666d80] text-[18px] max-w-[602px]">+91 9842224635 | +91 9629514635</p>
+          <p className="font-normal leading-relaxed sm:leading-[normal] text-[#666d80] text-sm sm:text-base md:text-[18px] max-w-[602px] break-words">+91 9842224635 | +91 9629514635</p>
         </div>
       </div>
 
       {/* Social Media */}
-      <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0">
-        <p className="font-medium leading-[42px] relative shrink-0 text-[#001525] text-[24px] text-nowrap whitespace-pre">Follow our social media :</p>
-        <div className="content-stretch flex gap-[24px] items-center overflow-clip relative shrink-0">
-          <SocialIcon path={svgPaths.p1a40ca00} />
-          <SocialIcon path={svgPaths.p3dcb280} />
-          <SocialIcon path={svgPaths.p31398c00} />
-          <SocialIcon path={svgPaths.p33a52180} />
-        </div>
+      <div className="content-stretch flex flex-col gap-4 sm:gap-[24px] items-start relative shrink-0">
+        <p className="font-medium leading-tight sm:leading-[42px] relative shrink-0 text-[#001525] text-lg sm:text-xl md:text-[24px]">Follow our social media :</p>
+        <div className="flex space-x-3 sm:space-x-4 mt-2 sm:mt-6">
+              <a href="https://www.instagram.com/powerca24/" className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors text-white">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/in/power-ca-tbs25100" className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors text-white">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+              <a href="https://x.com/Powerca_24" className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors text-white">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+              <a href="https://www.youtube.com/@powerCA-24" className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors text-white">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+            </div>
       </div>
     </div>
   )
@@ -170,6 +173,9 @@ function ContactForm() {
     phone: '',
     message: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -179,28 +185,68 @@ function ContactForm() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()    // Add form submission logic here
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        setFormData({ name: '', email: '', phone: '', message: '' })
+      } else {
+        setSubmitStatus('error')
+        setErrorMessage(data.error || 'Failed to send message. Please try again.')
+      }
+    } catch {
+      setSubmitStatus('error')
+      setErrorMessage('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="box-border content-stretch flex flex-col gap-[30px] items-start min-w-[320px] px-[44px] py-[50px] rounded-[16px] w-full max-w-[804px]">
-      <form onSubmit={handleSubmit} className="w-full flex flex-col gap-[30px]">
+    <div className="box-border content-stretch flex flex-col gap-5 sm:gap-6 md:gap-[30px] items-start w-full px-4 sm:px-6 md:px-8 lg:px-[44px] py-6 sm:py-8 md:py-10 lg:py-[50px] rounded-[16px] max-w-[804px]">
+      {submitStatus === 'success' && (
+        <div className="w-full p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-800 font-medium text-sm sm:text-base">Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.</p>
+        </div>
+      )}
+      {submitStatus === 'error' && (
+        <div className="w-full p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 font-medium text-sm sm:text-base">{errorMessage}</p>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5 sm:gap-6 md:gap-[30px]">
         {/* Name Field */}
-        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
-          <p className="font-medium leading-[normal] min-w-full relative shrink-0 text-[#001525] text-[18px]">
+        <div className="content-stretch flex flex-col gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+          <p className="font-medium leading-[normal] w-full text-[#001525] text-sm sm:text-base md:text-[18px]">
             Name
           </p>
-          <div className="bg-white min-w-[240px] relative shrink-0 w-full">
-            <div className="flex flex-row items-center min-w-inherit overflow-clip relative size-full">
-              <div className="box-border content-stretch flex items-center min-w-inherit p-[16px] relative w-full">
+          <div className="bg-white relative shrink-0 w-full">
+            <div className="flex flex-row items-center overflow-clip relative size-full">
+              <div className="box-border content-stretch flex items-center p-3 sm:p-4 md:p-[16px] relative w-full">
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter your name"
-                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-sm sm:text-base md:text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -209,20 +255,22 @@ function ContactForm() {
         </div>
 
         {/* Email Field */}
-        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
-          <p className="font-medium leading-[normal] min-w-full relative shrink-0 text-[#001525] text-[18px]">
+        <div className="content-stretch flex flex-col gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+          <p className="font-medium leading-[normal] w-full text-[#001525] text-sm sm:text-base md:text-[18px]">
             Email
           </p>
-          <div className="bg-white min-w-[240px] relative shrink-0 w-full">
-            <div className="flex flex-row items-center min-w-inherit overflow-clip relative size-full">
-              <div className="box-border content-stretch flex items-center min-w-inherit p-[16px] relative w-full">
+          <div className="bg-white relative shrink-0 w-full">
+            <div className="flex flex-row items-center overflow-clip relative size-full">
+              <div className="box-border content-stretch flex items-center p-3 sm:p-4 md:p-[16px] relative w-full">
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
-                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-sm sm:text-base md:text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -231,18 +279,20 @@ function ContactForm() {
         </div>
 
         {/* Phone Field */}
-        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
-          <p className="font-medium leading-[normal] min-w-full relative shrink-0 text-[#001525] text-[18px]">Phone</p>
-          <div className="bg-white min-w-[240px] relative shrink-0 w-full">
-            <div className="flex flex-row items-center min-w-inherit overflow-clip relative size-full">
-              <div className="box-border content-stretch flex items-center min-w-inherit p-[16px] relative w-full">
+        <div className="content-stretch flex flex-col gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+          <p className="font-medium leading-[normal] w-full text-[#001525] text-sm sm:text-base md:text-[18px]">Phone</p>
+          <div className="bg-white relative shrink-0 w-full">
+            <div className="flex flex-row items-center overflow-clip relative size-full">
+              <div className="box-border content-stretch flex items-center p-3 sm:p-4 md:p-[16px] relative w-full">
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="Enter your phone number"
-                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none w-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-sm sm:text-base md:text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -251,17 +301,19 @@ function ContactForm() {
         </div>
 
         {/* Message Field */}
-        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
-          <p className="font-medium leading-[normal] relative shrink-0 text-[#001525] text-[18px] w-full">Message</p>
+        <div className="content-stretch flex flex-col gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
+          <p className="font-medium leading-[normal] relative shrink-0 text-[#001525] text-sm sm:text-base md:text-[18px] w-full">Message</p>
           <div className="bg-white h-[110px] min-h-[80px] min-w-[240px] relative shrink-0 w-full">
             <div className="min-h-inherit min-w-inherit overflow-clip relative size-full">
-              <div className="box-border content-stretch flex h-[110px] items-start min-h-inherit min-w-inherit p-[16px] relative w-full">
+              <div className="box-border content-stretch flex h-[110px] items-start min-h-inherit min-w-inherit p-3 sm:p-4 md:p-[16px] relative w-full">
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder="Place your comment"
-                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-[18px] bg-transparent border-none outline-none resize-none w-full h-full"
+                  required
+                  disabled={isSubmitting}
+                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-sm sm:text-base md:text-[18px] bg-transparent border-none outline-none resize-none w-full h-full disabled:opacity-50"
                 />
               </div>
             </div>
@@ -270,12 +322,15 @@ function ContactForm() {
         </div>
 
         {/* Submit Button */}
-        <div className="content-stretch flex gap-[16px] items-start relative shrink-0">
+        <div className="content-stretch flex gap-3 sm:gap-4 items-start relative shrink-0 w-full">
           <button
             type="submit"
-            className="bg-[#306bea] box-border content-stretch flex gap-[10px] items-center justify-center px-[24px] py-[16px] relative rounded-[100px] shadow-[0px_0px_1px_0px_rgba(48,107,234,0.24),0px_4px_6px_1px_rgba(229,231,235,0.5)] shrink-0 w-full max-w-[356px] hover:bg-[#2557d1] transition-colors"
+            disabled={isSubmitting}
+            className="bg-[#306bea] box-border content-stretch flex gap-[10px] items-center justify-center px-5 sm:px-6 md:px-[24px] py-3 sm:py-4 md:py-[16px] relative rounded-[100px] shadow-[0px_0px_1px_0px_rgba(48,107,234,0.24),0px_4px_6px_1px_rgba(229,231,235,0.5)] shrink-0 w-full sm:max-w-[356px] hover:bg-[#2557d1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <p className="font-medium leading-[normal] relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">Submit</p>
+            <p className="font-medium leading-[normal] relative shrink-0 text-sm sm:text-base md:text-[18px] text-nowrap text-white whitespace-pre">
+              {isSubmitting ? 'Sending...' : 'Submit'}
+            </p>
           </button>
         </div>
       </form>
@@ -287,52 +342,21 @@ function MapSection() {
   return (
     <div className="w-full">
       <div className="h-[495px] rounded-[12px] w-full max-w-[1917px] mx-auto overflow-hidden relative bg-slate-100 border-2 border-gray-200">
-        {/* Interactive Map Container - Clickable Map */}
-        <a
-          href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full h-full relative group cursor-pointer"
-        >
-          {/* Clean Map Interface */}
-          <div className="w-full h-full bg-white rounded-[12px] relative overflow-hidden border border-gray-200">
-            {/* Map Container */}
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
-
-              {/* Map Icon and Text */}
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                </div>
-
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Muneer Complex</h3>
-                <p className="text-gray-600 mb-4 max-w-sm">
-                  No. 130, II Floor, Muneer Complex<br />
-                  Palani Road, Udumalpet<br />
-                  Tamil Nadu, India
-                </p>
-
-                <div className="space-y-3">
-                  <div className="bg-blue-600 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors inline-block">
-                    View Location on Google Maps
-                  </div>
-                  <p className="text-xs text-gray-500">Click anywhere to open directions</p>
-                </div>
-              </div>
-
-              {/* Decorative Elements */}
-              <div className="absolute top-4 left-4 w-2 h-2 bg-blue-400 rounded-full opacity-60"></div>
-              <div className="absolute top-8 right-8 w-3 h-3 bg-green-400 rounded-full opacity-60"></div>
-              <div className="absolute bottom-6 left-8 w-2 h-2 bg-red-400 rounded-full opacity-60"></div>
-              <div className="absolute bottom-4 right-4 w-3 h-3 bg-yellow-400 rounded-full opacity-60"></div>
-            </div>
-          </div>
-        </a>
+        {/* Embedded Google Map - TBS Technologies / Muneer Complex Location */}
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d608.3352149153551!2d77.2527547!3d10.5836394!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba9cdb2ca3bf08f%3A0x5f8035bea3394e46!2sTBS%20Technologies%20Private%20Limited!5e1!3m2!1sen!2sin!4v1761385887270!5m2!1sen!2sin"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="rounded-[12px]"
+          title="PowerCA Office Location - Muneer Complex, Udumalpet"
+        ></iframe>
 
         {/* Overlay Information Card */}
-        <div className="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10">
+        <div className="absolute top-6 right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10 pointer-events-auto">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
               <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -346,7 +370,7 @@ function MapSection() {
                 Palani Road, Udumalpet
               </p>
               <a
-                href="https://www.google.com/maps/search/Muneer+Complex+Palani+Road+Udumalpet"
+                href="https://maps.app.goo.gl/m8Wxi2UVVdsHyXhh7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 text-xs mt-2 font-medium hover:text-blue-800 transition-colors inline-block"
@@ -365,9 +389,9 @@ export default function ContactPage() {
   return (
     <div className="bg-white relative w-full min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-[60px] flex items-center justify-center overflow-hidden bg-white">
-        {/* Background image with 48px padding */}
-        <div className="absolute inset-0 px-12">
+      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+        {/* Background image with responsive padding */}
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -379,35 +403,35 @@ export default function ContactPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <HeroSection />
         </div>
       </section>
 
       {/* Main Content Section */}
-      <div className="max-w-7xl mx-auto px-8 py-20 mb-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-10 sm:py-12 md:py-16 lg:py-20 mb-8 sm:mb-12 md:mb-16">
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-start">
           {/* Contact Info - Left Column */}
           <div>
             {/* Section Header */}
-            <div className="mb-16">
-              <h2 className="text-4xl md:text-[42px] font-semibold text-gray-900 mb-6 leading-normal">Contact Information</h2>
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed">Fill up the form and our team will get back to you within 24 hours</p>
+            <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 mb-4 sm:mb-6 leading-normal">Contact Information</h2>
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">Fill up the form and our team will get back to you within 24 hours</p>
             </div>
 
             <ContactInfo />
           </div>
 
           {/* Contact Form - Right Column */}
-          <div className="bg-[#F4F7FD] rounded-2xl p-8 shadow-lg">
+          <div className="bg-[#F4F7FD] rounded-2xl py-4 sm:p-6 md:p-8 shadow-lg">
             <ContactForm />
           </div>
         </div>
       </div>
 
       {/* Map Section */}
-      <div className="max-w-[1920px] mx-auto px-8 mb-16">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-8 sm:mb-12 md:mb-16">
         <div className="text-center mb-8">
         </div>
         <MapSection />

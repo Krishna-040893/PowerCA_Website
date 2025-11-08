@@ -1,13 +1,13 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {isTestMode  } from '@/lib/payment-config'
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
-    const auth = await requireAdminAuth(req)
-    if (!auth.authorized) {
-      return auth.error
+    const auth = await requireAdminAuth()
+    if (!auth) {
+      return createUnauthorizedResponse()
     }
 
     // Only allow in test mode

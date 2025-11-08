@@ -159,8 +159,18 @@ EMAIL_FROM
 
 ### Admin Credentials (Development)
 
+**Superadmin Account:**
+
 - Username: `superadmin`
-- Password: `Admin@123`
+- Password: `Powerca@25`
+- Email: `superadmin@powerca.in`
+
+**Primary Admin Account:**
+
+- Username: `PCAadmin`
+- Password: `Powerca@25`
+- Email: `admin@powerca.in`
+
 - Login at: `/admin-login`
 
 ## Important Notes

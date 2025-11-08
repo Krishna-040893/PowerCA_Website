@@ -5,7 +5,7 @@ import {Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Progress  } from '@/components/ui/progress'
-import { Users, Mail, DollarSign,
+import { Users, Mail, IndianRupee,
   Activity,
   Target,
   Zap,
@@ -190,7 +190,7 @@ export default function HubSpotMetricsCard() {
 
           <div className="bg-orange-50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
-              <DollarSign className="h-4 w-4 text-orange-600" />
+              <IndianRupee className="h-4 w-4 text-orange-600" />
               <Badge variant="secondary" className="text-xs">Deals</Badge>
             </div>
             <div className="text-2xl font-bold text-orange-900">₹{(metrics.dealValue / 1000).toFixed(0)}k</div>

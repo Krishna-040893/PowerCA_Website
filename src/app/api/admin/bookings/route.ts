@@ -1,23 +1,20 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createClient  } from '@supabase/supabase-js'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {logger  } from '@/lib/logger'
 import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured  } from '@/lib/error-handler'
 
-// Force Node.js runtime for JWT support
-export const runtime = 'nodejs'
-
 // Get all bookings (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    // Verify admin authentication using centralized helper
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Admin is authorized, proceed with the request
-    const adminUser = auth.admin
+    const adminUser = session.user
 
     // Log admin action for audit trail (without sensitive data)
     logger.adminAction('GET_BOOKINGS', adminUser.id)
@@ -41,7 +38,6 @@ export async function GET(request: NextRequest) {
           date: new Date().toISOString().split('T')[0],
           time: '10:00 AM - 11:00 AM',
           type: 'demo',
-          status: 'CONFIRMED',
           message: 'Interested in practice management features',
           created_at: new Date().toISOString()
         },
@@ -54,7 +50,6 @@ export async function GET(request: NextRequest) {
           date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
           time: '02:00 PM - 03:00 PM',
           type: 'demo',
-          status: 'PENDING',
           message: 'Need help with GST compliance',
           created_at: new Date(Date.now() - 86400000).toISOString() // Yesterday
         },
@@ -67,7 +62,6 @@ export async function GET(request: NextRequest) {
           date: new Date(Date.now() - 172800000).toISOString().split('T')[0], // 2 days ago
           time: '11:00 AM - 12:00 PM',
           type: 'consultation',
-          status: 'COMPLETED',
           message: 'Looking for client management solutions',
           created_at: new Date(Date.now() - 259200000).toISOString() // 3 days ago
         }
@@ -118,7 +112,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   date DATE NOT NULL,
   time VARCHAR(50) NOT NULL,
   type VARCHAR(50) DEFAULT 'demo',
-  status VARCHAR(50) DEFAULT 'PENDING',
   message TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -161,9 +154,10 @@ CREATE POLICY "Service role can manage bookings" ON bookings
 // Create a new booking (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()

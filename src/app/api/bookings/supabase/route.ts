@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
         date: new Date(date).toISOString(),
         time,
         message: message || null,
-        status: 'confirmed',
         created_at: new Date().toISOString()
       }
 
@@ -62,11 +61,12 @@ export async function POST(request: NextRequest) {
           name,
           email,
           phone,
-          firmName: firmName || null,
+          firm_name: firmName || null, // Fixed: snake_case for database
           date: new Date(date).toISOString().split('T')[0], // Format as YYYY-MM-DD
           time,
+          type: 'demo', // Added: booking type
           message: message || null,
-          status: 'confirmed'
+          // Status removed - no longer tracking booking status
         })
         .select()
         .single()
@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
           date: new Date(date).toISOString(),
           time,
           message: message || null,
-          status: 'confirmed',
           created_at: new Date().toISOString()
         }
       } else {
@@ -99,7 +98,6 @@ export async function POST(request: NextRequest) {
         date: new Date(date).toISOString(),
         time,
         message: message || null,
-        status: 'confirmed',
         created_at: new Date().toISOString()
       }
     }
@@ -152,7 +150,7 @@ export async function GET(request: NextRequest) {
         .from('bookings')
         .select('time')
         .eq('date', new Date(date).toISOString().split('T')[0])
-        .in('status', ['CONFIRMED', 'PENDING'])
+        // Status filtering removed - no longer tracking booking status
 
       if (error) {
         // Return empty array instead of error to allow booking to continue

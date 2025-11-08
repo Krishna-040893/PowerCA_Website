@@ -126,3 +126,14 @@ export interface AdminUser {
   createdAt: string | Date
   updatedAt: string | Date
 }
+
+export interface NewsletterSubscriber {
+  id: string
+  email: string
+  subscribedAt: string | Date
+  isActive: boolean
+  unsubscribedAt?: string | Date
+  source: string
+  createdAt: string | Date
+  updatedAt: string | Date
+}

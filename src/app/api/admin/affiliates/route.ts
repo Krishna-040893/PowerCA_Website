@@ -1,13 +1,15 @@
 import {NextRequest, NextResponse  } from 'next/server'
-import {requireAdminAuth  } from '@/lib/admin-auth-helper'
+import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-session'
 import {createClient  } from '@supabase/supabase-js'
+import {sendAffiliateApprovalEmail  } from '@/lib/resend'
+import {logger  } from '@/lib/logger'
 
 // Get all affiliate applications (Admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     // Initialize Supabase client
@@ -59,17 +61,30 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch affiliate applications
+    // Fetch affiliate registrations with user info
     const { data: applications, error } = await supabase
-      .from('affiliate_applications')
+      .from('affiliate_registrations')
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Supabase error:', error)
+    // Generate username from email for display (no registration_forms dependency)
+    let enrichedApplications = applications || []
+    if (applications && applications.length > 0) {
+      enrichedApplications = applications.map(app => {
+        // Generate username from email (part before @)
+        const username = app.email ? app.email.split('@')[0] : 'affiliate'
+        return {
+          ...app,
+          registrations: { username, email: app.email }
+        }
+      })
+    }
 
-      // If table doesn't exist, return empty array with setup instructions
-      if (error.message?.includes('affiliate_applications') || error.code === '42P01') {
+    if (error) {
+      logger.error('Supabase error', error)
+
+      // If table doesn't exist, return empty array
+      if (error.message?.includes('affiliate_registrations') || error.code === '42P01') {
         return NextResponse.json([])
       }
 
@@ -79,10 +94,37 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(applications || [])
+    // Map the data to match the expected format with all fields
+    const mappedApplications = enrichedApplications.map(app => ({
+      id: app.id,
+      name: app.full_name,
+      email: app.email,
+      phone: app.phone,
+      city: app.city,
+      state: app.state,
+      business_type: app.business_type,
+      company_name: app.company_name,
+      designation: app.designation,
+      experience: app.experience,
+      promotion_method: app.promotion_method,
+      target_audience: app.target_audience,
+      monthly_leads: app.monthly_leads,
+      account_number: app.account_number,
+      ifsc_code: app.ifsc_code,
+      pan_number: app.pan_number,
+      gst_number: app.gst_number,
+      status: app.status,
+      admin_notes: app.rejection_reason,
+      created_at: app.created_at,
+      referral_code: app.referral_code,
+      approved_at: app.approved_at,
+      registrations: app.registrations
+    }))
+
+    return NextResponse.json(mappedApplications)
 
   } catch (error) {
-    console.error('Admin affiliates error:', error)
+    logger.error('Admin affiliates error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -93,13 +135,13 @@ export async function GET(request: NextRequest) {
 // Update affiliate application status (Admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await requireAdminAuth(request)
-    if (!auth.authorized) {
-      return auth.error
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
     }
 
     const body = await request.json()
-    const { applicationId, status, adminNotes, approvedBy } = body
+    const { applicationId, status, adminNotes } = body
 
     // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -121,33 +163,89 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // First, get the affiliate registration to find the user_id and email
+    const { data: affiliateReg, error: fetchError } = await supabase
+      .from('affiliate_registrations')
+      .select('user_id, full_name, email')
+      .eq('id', applicationId)
+      .single()
+
+    if (fetchError) {
+      logger.error('Failed to fetch affiliate registration', fetchError)
+      return NextResponse.json(
+        { error: 'Failed to find affiliate registration' },
+        { status: 500 }
+      )
+    }
+
+    // Prepare update data based on status
+    const updateData: Record<string, unknown> = {
+      status,
+      updated_at: new Date().toISOString()
+    }
+
+    if (status === 'approved') {
+      updateData.approved_at = new Date().toISOString()
+      // Referral code will be auto-generated by database trigger
+    } else if (status === 'rejected') {
+      updateData.rejected_at = new Date().toISOString()
+      updateData.rejection_reason = adminNotes
+    }
+
     const { data, error } = await supabase
-      .from('affiliate_applications')
-      .update({
-        status,
-        admin_notes: adminNotes,
-        approved_by: approvedBy,
-        updated_at: new Date().toISOString()
-      })
+      .from('affiliate_registrations')
+      .update(updateData)
       .eq('id', applicationId)
       .select()
       .single()
 
     if (error) {
-      console.error('Supabase error:', error)
+      logger.error('Supabase error updating affiliate registration', error)
       return NextResponse.json(
-        { error: 'Failed to update application' },
+        { error: error.message || 'Failed to update application' },
         { status: 500 }
       )
     }
 
+    logger.info('Affiliate application updated successfully', {
+      applicationId,
+      status,
+      referralCode: data.referral_code
+    })
+
+    // Send approval email if status is approved
+    if (status === 'approved' && data.referral_code) {
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const affiliateLoginUrl = `${appUrl}/affiliate-login`
+
+        const emailResult = await sendAffiliateApprovalEmail({
+          name: affiliateReg.full_name,
+          email: affiliateReg.email,
+          referralCode: data.referral_code,
+          affiliateLoginUrl
+        })
+
+        if (emailResult.success) {
+          logger.info('Affiliate approval email sent successfully', { email: affiliateReg.email })
+        } else {
+          logger.error('Failed to send affiliate approval email', emailResult.error)
+          // Don't fail the request if email fails - approval is already done
+        }
+      } catch (emailError) {
+        logger.error('Error sending affiliate approval email', emailError)
+        // Don't fail the request if email fails - approval is already done
+      }
+    }
+
     return NextResponse.json({
       message: 'Application updated successfully',
-      application: data
+      application: data,
+      referral_code: data.referral_code // Return the auto-generated referral code
     })
 
   } catch (error) {
-    console.error('Update application error:', error)
+    logger.error('Update application error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

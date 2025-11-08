@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function GET(_request: NextRequest) {
 
     // Test basic connection
     const { data, error, count } = await supabase
-      .from('registrations')
+      .from(REGISTRATION_FORMS_TABLE)
       .select('*', { count: 'exact' })
       .limit(5)
 
@@ -25,7 +26,7 @@ export async function GET(_request: NextRequest) {
       success: true,
       count,
       data,
-      message: 'Successfully connected to Supabase registrations table'
+      message: 'Successfully connected to Supabase registration_forms table'
     })
 
   } catch (error) {

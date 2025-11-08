@@ -226,19 +226,19 @@ export default function AdminAffiliatesViewPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
                     Affiliate
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
                     Referrals
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -306,16 +306,16 @@ export default function AdminAffiliatesViewPage() {
                                 <table className="min-w-full divide-y divide-gray-200">
                                   <thead className="bg-gray-100">
                                     <tr>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                      <th className="px-4 py-2 text-left text-base font-bold text-gray-500">
                                         Customer
                                       </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                      <th className="px-4 py-2 text-left text-base font-bold text-gray-500">
                                         Email
                                       </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                      <th className="px-4 py-2 text-left text-base font-bold text-gray-500">
                                         Status
                                       </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                      <th className="px-4 py-2 text-left text-base font-bold text-gray-500">
                                         Date
                                       </th>
                                     </tr>
