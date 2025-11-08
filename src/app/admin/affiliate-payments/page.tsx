@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   IndianRupee,
   TrendingUp,
@@ -196,7 +197,7 @@ export default function AffiliatePaymentsPage() {
 
   return (
     <AdminPageWrapper
-      title="Affiliate Referral Payments"
+      title="Affiliate Payments"
       description="Track and manage affiliate commissions and payments"
       actions={
         <Button
@@ -303,16 +304,22 @@ export default function AffiliatePaymentsPage() {
                 />
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full sm:w-[180px] px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-10"
-              >
-                <option value="all">All Statuses</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
-              </select>
+              <Select value={statusFilter} onValueChange={(value) => {
+                setStatusFilter(value)
+              }}>
+                <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200 bg-white">
+                  <SelectValue placeholder="Filter by status">
+                    {statusFilter === 'all' && 'All Statuses'}
+                    {statusFilter === 'completed' && 'Paid'}
+                    {statusFilter === 'pending' && 'Pending'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-white z-50">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="completed">Paid</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -336,28 +343,28 @@ export default function AffiliatePaymentsPage() {
                   <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Affiliate
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Referral Info
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Commission
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-base font-bold">
                     Actions
                   </th>
                 </tr>
@@ -423,7 +430,7 @@ export default function AffiliatePaymentsPage() {
                           <Button
                             size="sm"
                             onClick={() => handleMarkPaidClick(payment)}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 text-white"
                           >
                             Mark Paid
                           </Button>

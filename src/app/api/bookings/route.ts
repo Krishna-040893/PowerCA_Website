@@ -5,9 +5,6 @@ import type { Booking } from '@/types/booking'
 import { withRateLimit, RateLimits } from '@/lib/middleware'
 import {
   createErrorResponse,
-  handleConfigurationError,
-  handleDatabaseError,
-  isServiceConfigured,
   ErrorType
 } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'

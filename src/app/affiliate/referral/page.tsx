@@ -192,9 +192,8 @@ export default function AffiliateAccountPage() {
     try {
       const response = await fetch('/api/user/profile-photo')
       if (response.ok) {
-        const data = await response.json()
+        await response.json()
         // TODO: Add profile photo state management
-        console.log('Profile photo URL:', data.photoUrl)
       }
     } catch (error) {
       console.error('Error fetching profile photo:', error)
@@ -506,7 +505,7 @@ export default function AffiliateAccountPage() {
               <ul className="text-sm text-blue-800 space-y-2">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  Contact our team at <a href="mailto:affiliates@powerca.in" className="text-blue-600 hover:underline">affiliates@powerca.in</a> for feedback
+                  Contact our team at <a href="mailto:contact@powerca.in" className="text-blue-600 hover:underline"> contact@powerca.in</a> for feedback
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>

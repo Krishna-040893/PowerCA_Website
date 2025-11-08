@@ -29,6 +29,8 @@ function LoginContent() {
     setIsLoading(true)
     setError('')
 
+    let hasError = false
+
     try {
       const result = await signIn('credentials', {
         email,
@@ -37,17 +39,44 @@ function LoginContent() {
       })
 
       if (result?.ok) {
+        // Wait for session to be established (important for Vercel)
+        // Increased delay for Vercel edge network
+        await new Promise(resolve => setTimeout(resolve, 1200))
+
         // Check if user is an affiliate by fetching session
-        const response = await fetch('/api/auth/session')
-        const session = await response.json()
+        // Try multiple times to ensure session is established on Vercel
+        let session = null
+        let retries = 0
+        const maxRetries = 3
+
+        while (retries < maxRetries) {
+          const response = await fetch('/api/auth/session', {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          })
+          const data = await response.json()
+
+          if (data?.user?.role) {
+            session = data
+            break
+          }
+
+          retries++
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+        }
 
         // Block affiliates from client login
-        if (session?.user?.role?.toLowerCase() === 'affiliate') {
+        if (session?.user && session?.user?.role?.toLowerCase() === 'affiliate') {
           // Sign out immediately to prevent login
           await signOut({ redirect: false })
 
           setError('You are an affiliate partner. Please use the Affiliate Login page.')
-          setIsLoading(false)
+          hasError = true
 
           // Redirect to affiliate login after 2 seconds
           setTimeout(() => {
@@ -77,12 +106,18 @@ function LoginContent() {
         window.location.href = callbackUrl
       } else {
         setError(result?.error || 'Invalid email or password. Please try again.')
+        hasError = true
       }
     } catch (error) {
       console.error('Login error:', error)
       setError('An unexpected error occurred. Please try again.')
+      hasError = true
     } finally {
-      setIsLoading(false)
+      // Don't set loading to false if redirect is happening
+      if (hasError) {
+        setIsLoading(false)
+      }
+      // Keep loading state if successful to avoid flicker before redirect
     }
   }
 

@@ -31,9 +31,13 @@ export async function GET(req: NextRequest) {
       query = query.eq('affiliate_id', affiliateId)
     }
 
-    // Filter by payment status if provided
+    // Filter by commission payment status if provided
     if (status) {
-      query = query.eq('payment_status', status)
+      if (status === 'pending') {
+        query = query.eq('commission_paid', false)
+      } else if (status === 'completed') {
+        query = query.eq('commission_paid', true)
+      }
     }
 
     const { data: payments, error } = await query

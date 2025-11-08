@@ -168,7 +168,7 @@ export default function AdminAffiliateApprovalPage() {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">Approved Affiliate Partners</CardTitle>
+                <CardTitle className="text-lg sm:text-xl font-bold">Approved</CardTitle>
                 <CardDescription className="text-xs sm:text-sm mt-1">All approved and active affiliate partners</CardDescription>
               </div>
               <Button onClick={fetchApplications} variant="outline" size="sm">
@@ -200,13 +200,13 @@ export default function AdminAffiliateApprovalPage() {
                   <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Applicant</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Location & Phone</TableHead>
-                      <TableHead>Expected Leads</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Applied Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-base font-bold">Applicant</TableHead>
+                      <TableHead className="text-base font-bold">Company</TableHead>
+                      <TableHead className="text-base font-bold">Location & Phone</TableHead>
+                      <TableHead className="text-base font-bold">Expected Leads</TableHead>
+                      <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Applied Date</TableHead>
+                      <TableHead className="text-base font-bold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -234,15 +234,15 @@ export default function AdminAffiliateApprovalPage() {
                         </TableCell>
                         <TableCell>
                           <Button
-                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setSelectedApplication(application)
                               setShowReviewDialog(true)
                             }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            Review
+                            View
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -311,10 +311,10 @@ export default function AdminAffiliateApprovalPage() {
                               setSelectedApplication(application)
                               setShowReviewDialog(true)
                             }}
-                            className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
                           </Button>
                         </div>
                       </CardContent>

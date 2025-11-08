@@ -119,7 +119,7 @@ export default function AdminBookingsPage() {
 
   return (
     <AdminPageWrapper
-      title="Bookings Management"
+      title="Bookings"
       description="Manage and track demo bookings"
       actions={
         <Button onClick={fetchBookings} variant="outline" size="sm">
@@ -195,11 +195,11 @@ export default function AdminBookingsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Date & Time</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-base font-bold">Name</TableHead>
+                        <TableHead className="text-base font-bold">Contact</TableHead>
+                        <TableHead className="text-base font-bold">Date & Time</TableHead>
+                        <TableHead className="text-base font-bold">Type</TableHead>
+                        <TableHead className="text-base font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -240,12 +240,12 @@ export default function AdminBookingsPage() {
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
-                                  variant="outline"
                                   size="sm"
                                   onClick={() => setSelectedBooking(booking)}
-                                  className="bg-white hover:bg-gray-50"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-md">
@@ -346,13 +346,12 @@ export default function AdminBookingsPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedBooking(booking)}
-                                className="w-full bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Full Details
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-md rounded-xl">
