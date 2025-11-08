@@ -167,3 +167,27 @@ async function handleContactForm(request: NextRequest) {
 // Apply strict rate limiting (3 requests per minute for contact form)
 export const POST = withRateLimit(handleContactForm, RateLimits.STRICT)
 
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
+// Handle GET requests (return method not allowed)
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Method not allowed. Please use POST to submit the contact form.' },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+      },
+    }
+  )
+}
