@@ -1,0 +1,43 @@
+# robots.txt for PowerCA - Practice Management Software
+# https://powerca.in
+
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes from search engines
+Disallow: /admin/
+Disallow: /admin-login
+Disallow: /api/
+Disallow: /affiliate/dashboard/
+
+# Disallow authentication and sensitive pages
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Allow public pages
+Allow: /about
+Allow: /features
+Allow: /pricing
+Allow: /modules
+Allow: /contact
+Allow: /blog
+Allow: /book-demo
+
+# Sitemap location
+Sitemap: https://powerca.in/sitemap.xml
+
+# Crawl-delay for polite crawling (optional)
+Crawl-delay: 1
+
+# Specific rules for common bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
