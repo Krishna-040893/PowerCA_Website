@@ -51,7 +51,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
           {/* Header with Logo */}
           <Section style={header}>
             <Img
-              src="https://powerca.com/images/powerca-logo-horizontal.png"
+              src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
               alt="PowerCA"
@@ -94,15 +94,15 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
                   © {new Date().getFullYear()} PowerCA. All rights reserved.
                 </Text>
                 <Text style={footerLinks}>
-                  <Link href="https://powerca.com" style={link}>
+                  <Link href="https://powerca.in" style={link}>
                     Website
                   </Link>
                   {' • '}
-                  <Link href="https://powerca.com/privacy" style={link}>
+                  <Link href="https://powerca.in/privacy" style={link}>
                     Privacy Policy
                   </Link>
                   {' • '}
-                  <Link href="https://powerca.com/terms" style={link}>
+                  <Link href="https://powerca.in/terms" style={link}>
                     Terms of Service
                   </Link>
                 </Text>

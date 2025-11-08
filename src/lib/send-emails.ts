@@ -20,8 +20,8 @@ interface WelcomeEmailData {
 export async function sendContactFormEmail(data: ContactFormData) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
-      to: process.env.CONTACT_EMAIL || 'support@powerca.com',
+      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+      to: process.env.CONTACT_EMAIL || 'support@powerca.in',
       subject: `New Contact Form Submission from ${data.name}`,
       react: ContactFormEmail({
         name: data.name,
@@ -43,7 +43,7 @@ export async function sendContactFormEmail(data: ContactFormData) {
 export async function sendWelcomeEmail(data: WelcomeEmailData) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to: data.email,
       subject: `Welcome to PowerCA, ${data.name}!`,
       react: WelcomeEmail({
@@ -71,7 +71,7 @@ export async function sendCustomEmail({
 }) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to,
       subject,
       react: EmailTemplate({
@@ -106,7 +106,7 @@ export async function sendEmail({
 }) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to,
       subject,
       html,
