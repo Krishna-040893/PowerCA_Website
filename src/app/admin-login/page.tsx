@@ -254,19 +254,6 @@ export default function AdminLoginPage() {
                 </div>
               </div>
             </div>
-
-            {/* User Login Link */}
-            <div className="text-center pt-4 border-t border-gray-100">
-              <p className="text-gray-600">
-                Not an admin?{' '}
-                <Link
-                  href="/login"
-                  className="text-blue-600 hover:text-blue-800 font-medium underline"
-                >
-                  Go to User Login
-                </Link>
-              </p>
-            </div>
           </form>
         </motion.div>
       </div>
