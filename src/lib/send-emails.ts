@@ -1,8 +1,5 @@
 import React from 'react'
 import {resend  } from './email'
-import {ContactFormEmail  } from '@/emails/contact-form-email'
-import {WelcomeEmail  } from '@/emails/welcome-email'
-import {EmailTemplate  } from '@/emails/email-template'
 
 interface ContactFormData {
   name: string
@@ -19,6 +16,9 @@ interface WelcomeEmailData {
 
 export async function sendContactFormEmail(data: ContactFormData) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { ContactFormEmail } = await import('@/emails/contact-form-email')
+
     const result = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to: process.env.CONTACT_EMAIL || 'support@powerca.in',
@@ -42,6 +42,9 @@ export async function sendContactFormEmail(data: ContactFormData) {
 
 export async function sendWelcomeEmail(data: WelcomeEmailData) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { WelcomeEmail } = await import('@/emails/welcome-email')
+
     const result = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to: data.email,
@@ -70,6 +73,9 @@ export async function sendCustomEmail({
   footer?: string | React.ReactNode
 }) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { EmailTemplate } = await import('@/emails/email-template')
+
     const result = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
       to,

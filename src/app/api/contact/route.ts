@@ -1,5 +1,4 @@
-﻿import DOMPurify from 'isomorphic-dompurify'
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
@@ -12,32 +11,9 @@ import {
   isServiceConfigured,
   ErrorType
 } from '@/lib/error-handler'
+import { sanitizeRequired, sanitizeOptional } from '@/lib/sanitize'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const sanitizeRequired = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return ''
-  }
-
-  return DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  }).trim()
-}
-
-const sanitizeOptional = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return undefined
-  }
-
-  const sanitized = DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  }).trim()
-
-  return sanitized || undefined
-}
 
 async function handleContactForm(request: NextRequest) {
   let body: unknown
