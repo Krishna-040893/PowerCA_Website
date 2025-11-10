@@ -463,7 +463,7 @@ This project is proprietary software. All rights reserved.
 
 ### For Users
 
-- **Email:** support@powerca.in
+- **Email:** contact@powerca.in
 - **Website:** [https://powerca.in](https://powerca.in)
 - **Book a Demo:** [https://powerca.in/book-demo](https://powerca.in/book-demo)
 
