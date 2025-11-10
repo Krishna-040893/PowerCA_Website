@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       // Check if it's a unique constraint violation
       if (insertError.message?.includes('duplicate') || insertError.code === '23505') {
         return NextResponse.json(
-          { error: 'User with this email already exists' },
+          { error: 'This email is already registered. Please try another email address.' },
           { status: 400 }
         )
       }

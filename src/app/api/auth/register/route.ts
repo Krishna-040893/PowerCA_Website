@@ -220,7 +220,7 @@ async function handleRegister(request: NextRequest) {
         if (existingUser) {
           return createErrorResponse(
             ErrorType.VALIDATION,
-            'User with this email or username already exists'
+            'This email is already registered. Please try another email address.'
           )
         }
 
@@ -267,7 +267,7 @@ async function handleRegister(request: NextRequest) {
           if (insertError.message?.includes('duplicate') || insertError.code === '23505') {
             return createErrorResponse(
               ErrorType.VALIDATION,
-              'User with this email or username already exists'
+              'This email is already registered. Please try another email address.'
             )
           }
 
@@ -296,7 +296,7 @@ async function handleRegister(request: NextRequest) {
             if (professionalError.code === '23505') {
               return createErrorResponse(
                 ErrorType.VALIDATION,
-                professionalError.message?.includes('email') ? 'Email already registered' : 'Membership number already registered'
+                professionalError.message?.includes('email') ? 'This email is already registered. Please try another email address.' : 'Membership number already registered'
               )
             }
             return handleDatabaseError(professionalError)
@@ -323,7 +323,7 @@ async function handleRegister(request: NextRequest) {
             if (studentError.code === '23505') {
               return createErrorResponse(
                 ErrorType.VALIDATION,
-                studentError.message?.includes('email') ? 'Email already registered' : 'Registration number already registered'
+                studentError.message?.includes('email') ? 'This email is already registered. Please try another email address.' : 'Registration number already registered'
               )
             }
             return handleDatabaseError(studentError)
@@ -400,7 +400,7 @@ async function handleRegister(request: NextRequest) {
           if (existingUsers.find((u: FileUserData) => u.email === sanitizedEmail || u.username === finalUsername)) {
             return createErrorResponse(
               ErrorType.VALIDATION,
-              'User with this email or username already exists'
+              'This email is already registered. Please try another email address.'
             )
           }
         } catch {

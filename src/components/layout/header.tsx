@@ -26,7 +26,7 @@ export function Header() {
       className="fixed w-full z-[60] bg-white"
       style={{ top: 'var(--banner-height, 48px)' }}
     >
-      <div className="w-full px-4 sm:px-6 lg:px-12">
+      <div className="w-full px-4 sm:px-6 lg:px-6 xl:px-12">
         <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20 relative">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -42,7 +42,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden lg:flex items-center lg:space-x-3 xl:space-x-6 absolute left-1/2 -translate-x-1/2">
             {navigationConfig.mainNav.map((item, index) => {
               const isActive = pathname === item.href
               return (

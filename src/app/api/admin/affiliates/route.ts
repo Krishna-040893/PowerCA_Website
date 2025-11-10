@@ -216,8 +216,7 @@ export async function PUT(request: NextRequest) {
     // Send approval email if status is approved
     if (status === 'approved' && data.referral_code) {
       try {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-        const affiliateLoginUrl = `${appUrl}/affiliate-login`
+        const affiliateLoginUrl = 'https://powerca.in/affiliate-login'
 
         const emailResult = await sendAffiliateApprovalEmail({
           name: affiliateReg.full_name,

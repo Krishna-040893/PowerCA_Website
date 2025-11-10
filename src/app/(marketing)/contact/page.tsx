@@ -31,16 +31,16 @@ function HeroSection() {
         </span>
       </div>
 
-      {/* Main Heading - about page style */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 px-2">
+      {/* Main Heading - Optimized for Laptop */}
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[2.5rem] 2xl:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 lg:mb-10 px-2">
         Get in Touch
         <br />
               <span className="text-blue-600">With Us</span>
       </h1>
 
-      {/* Description - about page style */}
+      {/* Description - Optimized for Laptop */}
       <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
-        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">
+        <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-xl text-gray-600 leading-relaxed">
           We're always here to chat! Reach out to us with any questions or concerns you may have, and we'll be happy to help.
         </p>
       </div>
@@ -391,7 +391,7 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -403,21 +403,21 @@ export default function ContactPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
           <HeroSection />
         </div>
       </section>
 
       {/* Main Content Section */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-10 sm:py-12 md:py-16 lg:py-20 mb-8 sm:mb-12 md:mb-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-6 py-10 sm:py-12 md:py-16 lg:py-20 mb-8 sm:mb-12 md:mb-16">
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-start">
           {/* Contact Info - Left Column */}
           <div>
             {/* Section Header */}
             <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 mb-4 sm:mb-6 leading-normal">Contact Information</h2>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed">Fill up the form and our team will get back to you within 24 hours</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold text-gray-900 mb-4 sm:mb-6 leading-normal">Contact Information</h2>
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">Fill up the form and our team will get back to you within 24 hours</p>
             </div>
 
             <ContactInfo />
@@ -431,7 +431,7 @@ export default function ContactPage() {
       </div>
 
       {/* Map Section */}
-      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-8 sm:mb-12 md:mb-16">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 md:px-6 lg:px-6 mb-8 sm:mb-12 md:mb-16">
         <div className="text-center mb-8">
         </div>
         <MapSection />

@@ -150,7 +150,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
         <p>This is an automated email. Please do not reply to this email.</p>
         <p>© ${new Date().getFullYear()} PowerCA. All rights reserved.</p>
         <p>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/terms">Terms & Conditions</a> | 
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/terms">Terms & Conditions</a> |
           <a href="${process.env.NEXT_PUBLIC_APP_URL}/privacy">Privacy Policy</a>
         </p>
       </div>

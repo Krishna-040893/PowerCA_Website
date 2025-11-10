@@ -56,14 +56,14 @@ export default function TestimonialsSection() {
       <div className="hidden sm:grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12 lg:mb-16">
         {/* Left Content - Title */}
         <div className="lg:col-span-6">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
             What Practicing Chartered Accountants Say!
           </h2>
         </div>
 
         {/* Right Content - Description */}
         <div className="lg:col-span-6">
-          <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
             Don't just take our word for it. Here's what our clients have to say about PowerCA.
           </p>
         </div>
