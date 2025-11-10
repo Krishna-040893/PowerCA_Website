@@ -369,7 +369,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
         <h4>TERMS AND CONDITIONS:</h4>
         <p>
           This is a computer-generated invoice. First year subscription is FREE with implementation.
-          Renewal charges apply from second year onwards. For any queries, please contact support@powerca.in
+          Renewal charges apply from second year onwards. For any queries, please contact contact@powerca.in
         </p>
       </div>
 

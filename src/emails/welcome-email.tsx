@@ -140,8 +140,8 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               </Text>
               <Row>
                 <Column align="center">
-                  <Link href="mailto:support@powerca.in" style={helpLink}>
-                    📧 support@powerca.in
+                  <Link href="mailto:contact@powerca.in" style={helpLink}>
+                    📧 contact@powerca.in
                   </Link>
                 </Column>
                 <Column align="center">

@@ -99,7 +99,7 @@ function ContactInfo() {
           <p className="font-['Inter:Medium',_sans-serif] font-medium leading-[42px] min-w-full relative shrink-0 text-[#001525] text-[28px]" style={{ width: "min-content" }}>
             Email Us :
           </p>
-          <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] relative shrink-0 text-[#666d80] text-[18px] w-[602px]">contact@powerca.in | support@powerca.in</p>
+          <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] relative shrink-0 text-[#666d80] text-[18px] w-[602px]">contact@powerca.in | contact@powerca.in</p>
         </div>
       </div>
 

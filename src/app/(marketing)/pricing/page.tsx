@@ -190,7 +190,7 @@ function PricingContent() {
                 <div className="text-center mb-6 md:mb-8">
                   <h3 className="text-2xl md:text-3xl font-medium mb-3 md:mb-4">Power CA</h3>
                   <p className="text-[#f4f7fd] text-base md:text-lg px-2">
-                    Special discount 50% for CAs only – Till 31st Oct 2025
+                    Special discount 50% for CAs only – Till 30th Nov 2025
                   </p>
                 </div>
 

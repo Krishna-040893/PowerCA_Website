@@ -134,7 +134,7 @@ const handleForgotPassword = async (request: NextRequest) => {
               </div>
 
               <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-                Need help? Contact us at <a href="mailto:support@powerca.in">support@powerca.in</a>
+                Need help? Contact us at <a href="mailto:contact@powerca.in">contact@powerca.in</a>
               </p>
             </div>
           </div>

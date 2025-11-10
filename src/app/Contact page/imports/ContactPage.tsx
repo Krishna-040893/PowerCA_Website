@@ -394,7 +394,7 @@ function Frame1000005949() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
       <Icons />
-      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">contact@powerca.in | support@powerca.in</p>
+      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">contact@powerca.in | contact@powerca.in</p>
     </div>
   );
 }
@@ -959,7 +959,7 @@ function Frame2095585177() {
       <p className="font-['Inter:Medium',_sans-serif] font-medium leading-[42px] min-w-full relative shrink-0 text-[#001525] text-[28px]" style={{ width: "min-content" }}>
         Email Us :
       </p>
-      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] relative shrink-0 text-[#666d80] text-[18px] w-[602px]">contact@powerca.in | support@powerca.in</p>
+      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] relative shrink-0 text-[#666d80] text-[18px] w-[602px]">contact@powerca.in | contact@powerca.in</p>
     </div>
   );
 }

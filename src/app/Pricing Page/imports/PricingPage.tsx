@@ -392,7 +392,7 @@ function Frame1000005949() {
   return (
     <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
       <Icons />
-      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">contact@powerca.in | support@powerca.in</p>
+      <p className="font-['Poppins:Regular',_sans-serif] leading-[normal] not-italic relative shrink-0 text-[18px] text-nowrap text-white whitespace-pre">contact@powerca.in | contact@powerca.in</p>
     </div>
   );
 }

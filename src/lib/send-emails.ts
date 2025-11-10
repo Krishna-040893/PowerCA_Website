@@ -20,8 +20,8 @@ export async function sendContactFormEmail(data: ContactFormData) {
     const { ContactFormEmail } = await import('@/emails/contact-form-email')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
-      to: process.env.CONTACT_EMAIL || 'support@powerca.in',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      to: process.env.CONTACT_EMAIL || 'contact@powerca.in',
       subject: `New Contact Form Submission from ${data.name}`,
       react: ContactFormEmail({
         name: data.name,
@@ -46,7 +46,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
     const { WelcomeEmail } = await import('@/emails/welcome-email')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: data.email,
       subject: `Welcome to PowerCA, ${data.name}!`,
       react: WelcomeEmail({
@@ -77,7 +77,7 @@ export async function sendCustomEmail({
     const { EmailTemplate } = await import('@/emails/email-template')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to,
       subject,
       react: EmailTemplate({
@@ -112,7 +112,7 @@ export async function sendEmail({
 }) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to,
       subject,
       html,
