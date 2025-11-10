@@ -94,7 +94,7 @@ export default function PaymentFailedPage() {
               <p className="text-sm text-blue-800">
                 <strong>Need assistance?</strong> We're here to help!
                 Call us at <a href="tel:+919876543210" className="underline">+91 98765 43210</a> or
-                email <a href="mailto:support@powerca.in" className="underline">support@powerca.in</a>
+                email <a href="mailto:contact@powerca.in" className="underline">contact@powerca.in</a>
               </p>
             </div>
 

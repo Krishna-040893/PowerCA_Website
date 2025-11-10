@@ -119,7 +119,7 @@ function ContactInfo() {
           <p className="font-medium leading-tight sm:leading-[42px] w-full text-[#001525] text-lg sm:text-xl md:text-[24px]">
             Email Us :
           </p>
-          <p className="font-normal leading-relaxed sm:leading-[normal] text-[#666d80] text-sm sm:text-base md:text-[18px] max-w-[602px] break-words">contact@powerca.in | support@powerca.in</p>
+          <p className="font-normal leading-relaxed sm:leading-[normal] text-[#666d80] text-sm sm:text-base md:text-[18px] max-w-[602px] break-words">contact@powerca.in | contact@powerca.in</p>
         </div>
       </div>
 

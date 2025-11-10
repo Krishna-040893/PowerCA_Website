@@ -461,7 +461,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
             ✅ This is a computer-generated invoice.<br>
             🎁 First year subscription is FREE with implementation.<br>
             🔄 Renewal charges apply from second year onwards.<br>
-            📞 For queries, contact support@powerca.in
+            📞 For queries, contact contact@powerca.in
           </p>
         </div>
 
