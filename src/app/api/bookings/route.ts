@@ -218,6 +218,10 @@ async function sendConfirmationEmail(booking: Booking) {
       day: 'numeric'
     })
 
+    // Handle both camelCase and snake_case field names from database
+    const firmName = (booking as any).firmName || (booking as any).firm_name
+    const message = booking.message
+
     // HTML email template for customer
     const customerEmailHtml = `
       <!DOCTYPE html>
@@ -246,8 +250,8 @@ async function sendConfirmationEmail(booking: Booking) {
                   <h3 style="color: #333; margin: 0 0 15px 0;">Booking Details:</h3>
                   <p style="margin: 8px 0; color: #666;"><strong>Date:</strong> ${bookingDate}</p>
                   <p style="margin: 8px 0; color: #666;"><strong>Time:</strong> ${booking.time}</p>
-                  ${booking.firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${booking.firmName}</p>` : ''}
-                  ${booking.message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${booking.message}</p>` : ''}
+                  ${firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${firmName}</p>` : ''}
+                  ${message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${message}</p>` : ''}
                 </div>
 
                 <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
@@ -274,16 +278,33 @@ async function sendConfirmationEmail(booking: Booking) {
       </html>
     `
 
-    // Send confirmation email to customer with CC to team
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
-      to: booking.email,
-      cc: 'contact@powerca.in', // CC to your team
-      subject: `Demo Booking Confirmed - PowerCA`,
-      html: customerEmailHtml,
-    })
-
-    logger.info('Customer confirmation email sent', { bookingId: booking.id, email: booking.email })
+    // Send confirmation email to customer only
+    // Skip sending if customer email is contact@powerca.in to avoid duplicates
+    if (booking.email.toLowerCase() !== 'contact@powerca.in') {
+      try {
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+          to: booking.email,
+          subject: `Demo Booking Confirmed - PowerCA`,
+          html: customerEmailHtml,
+        })
+        logger.info('Customer confirmation email sent', { bookingId: booking.id, email: booking.email })
+      } catch (customerEmailError: any) {
+        // IMPORTANT: Never retry or fallback to contact@powerca.in
+        // Just log the error and continue
+        logger.error('Failed to send customer confirmation email - no retry', customerEmailError, {
+          bookingId: booking.id,
+          email: booking.email,
+          errorCode: customerEmailError?.statusCode,
+          note: 'Customer confirmation not sent to avoid team inbox duplication'
+        })
+        // Silently fail - team will still get notification
+      }
+    } else {
+      logger.info('Skipped customer confirmation - email is team address', {
+        bookingId: booking.id
+      })
+    }
 
     // Team notification email
     const teamEmailHtml = `
@@ -300,12 +321,12 @@ async function sendConfirmationEmail(booking: Booking) {
             <p><strong>Name:</strong> ${booking.name}</p>
             <p><strong>Email:</strong> ${booking.email}</p>
             <p><strong>Phone:</strong> ${booking.phone}</p>
-            <p><strong>Firm:</strong> ${booking.firmName || 'Not provided'}</p>
+            <p><strong>Firm:</strong> ${firmName || 'Not provided'}</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <h3 style="color: #333;">Booking Details:</h3>
             <p><strong>Date:</strong> ${bookingDate}</p>
             <p><strong>Time:</strong> ${booking.time}</p>
-            <p><strong>Message:</strong> ${booking.message || 'No message'}</p>
+            <p><strong>Message:</strong> ${message || 'No message'}</p>
           </div>
           <p style="color: #666;">Please prepare for the demo session and ensure someone is available at the scheduled time.</p>
         </body>
@@ -316,7 +337,7 @@ async function sendConfirmationEmail(booking: Booking) {
     await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: 'contact@powerca.in',
-      subject: `[TEAM] New Demo Booking - ${booking.name} - ${booking.firmName || 'Individual'}`,
+      subject: `[TEAM] New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 

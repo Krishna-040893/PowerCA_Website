@@ -152,7 +152,7 @@ async function handleRegistration(request: NextRequest) {
       logger.warn('Email already registered as client', { email })
       return createErrorResponse(
         ErrorType.VALIDATION,
-        'This email is already registered. Please use a different email address or login to your existing account.',
+        'This email is already registered. Please try another email address.',
         { statusCode: 400 }
       )
     }
@@ -168,7 +168,7 @@ async function handleRegistration(request: NextRequest) {
       logger.warn('Email already registered as affiliate, cannot use for client', { email })
       return createErrorResponse(
         ErrorType.VALIDATION,
-        'This email is already registered. Please use a different email address.',
+        'This email is already registered. Please try another email address.',
         { statusCode: 400 }
       )
     }
@@ -205,7 +205,7 @@ async function handleRegistration(request: NextRequest) {
         if (supabaseError.message.includes('email')) {
           return createErrorResponse(
             ErrorType.VALIDATION,
-            'Email already registered.',
+            'This email is already registered. Please try another email address.',
             { statusCode: 400 }
           )
         }
@@ -310,10 +310,11 @@ async function handleRegistration(request: NextRequest) {
         await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
 
         if (professionalError.code === '23505') {
-          const duplicateField = professionalError.message?.includes('email') ? 'Email' : 'Membership number'
           return createErrorResponse(
             ErrorType.VALIDATION,
-            `${duplicateField} already registered.`,
+            professionalError.message?.includes('email')
+              ? 'This email is already registered. Please try another email address.'
+              : 'Membership number already registered.',
             { statusCode: 400 }
           )
         }
@@ -344,10 +345,11 @@ async function handleRegistration(request: NextRequest) {
         await supabase.from(REGISTRATION_FORMS_TABLE).delete().eq('id', newUser.id)
 
         if (studentError.code === '23505') {
-          const duplicateField = studentError.message?.includes('email') ? 'Email' : 'Registration number'
           return createErrorResponse(
             ErrorType.VALIDATION,
-            `${duplicateField} already registered.`,
+            studentError.message?.includes('email')
+              ? 'This email is already registered. Please try another email address.'
+              : 'Registration number already registered.',
             { statusCode: 400 }
           )
         }
