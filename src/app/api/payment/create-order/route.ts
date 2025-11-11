@@ -107,7 +107,19 @@ export async function POST(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger.info('Creating Razorpay order with options', {
+      amount: options.amount,
+      currency: options.currency,
+      receipt: options.receipt
+    })
+
     const order = await razorpay.orders.create(options as any)
+
+    logger.info('Razorpay order created successfully', {
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency
+    })
 
     // Store order details in database for tracking
     try {
@@ -166,6 +178,25 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
+    // Log detailed error information
+    logger.error('Razorpay payment order creation failed', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined,
+      // @ts-expect-error - Razorpay specific error properties
+      errorCode: error?.error?.code,
+      // @ts-expect-error - Razorpay specific error properties
+      errorDescription: error?.error?.description,
+      // @ts-expect-error - Razorpay specific error properties
+      statusCode: error?.statusCode
+    })
+
+    // Also log to console for easier debugging
+    console.error('Razorpay Order Creation Error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      fullError: error
+    })
+
     return createErrorResponse(
       ErrorType.PAYMENT,
       error as Error,
