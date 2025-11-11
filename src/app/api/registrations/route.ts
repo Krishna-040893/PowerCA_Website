@@ -360,13 +360,32 @@ async function handleRegistration(request: NextRequest) {
       logger.info('Student registration completed', { userId: newUser.id, instituteName })
     }
 
-    // Send confirmation email
+    // Send confirmation email to client
     await sendConfirmationEmail(email, name, role, {
       professionalType: role === 'professional' ? professionalType : null,
       membershipNumber: role === 'professional' ? finalMembershipNumber : null,
       registrationNumber: role === 'student' ? registrationNumber : null,
       instituteName: role === 'student' ? instituteName : null,
       phone
+    })
+
+    // Send notification email to admin (non-blocking)
+    import('@/lib/send-emails').then(({ sendAdminRegistrationNotification }) => {
+      sendAdminRegistrationNotification({
+        userName: name,
+        userEmail: email,
+        userPhone: phone,
+        userRole: role,
+        professionalType: role === 'professional' ? professionalType : undefined,
+        membershipNo: role === 'professional' ? finalMembershipNumber : undefined,
+        registrationNo: role === 'student' ? registrationNumber : undefined,
+        instituteName: role === 'student' ? instituteName : undefined,
+        registeredAt: new Date().toISOString(),
+      }).catch(error => {
+        logger.error('Failed to send admin notification', error)
+      })
+    }).catch(error => {
+      logger.error('Failed to import admin email function', error)
     })
 
     return NextResponse.json({
