@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     // Prepare payment data
     // Amount received is TOTAL (including GST)
-    const totalAmount = productDetails?.amount || 22000 // Total amount in rupees (including 18% GST)
+    const totalAmount = productDetails?.amount || 59000 // Total amount in rupees (including 18% GST) - 50000 base + 18% GST
 
     // Calculate base amount (excluding GST): base = total / 1.18
     const paymentAmount = parseFloat((totalAmount / 1.18).toFixed(2))
