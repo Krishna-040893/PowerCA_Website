@@ -400,9 +400,15 @@ function CheckoutContent() {
       const orderData = await orderResponse.json()
 
       if (!orderData.success || !orderData.paymentSessionId) {
-        const errorMessage = typeof orderData.error === 'object'
+        let errorMessage = typeof orderData.error === 'object'
           ? orderData.error?.message || JSON.stringify(orderData.error)
           : orderData.error || 'Failed to create Cashfree order'
+
+        // Check if it's an amount limit error in sandbox mode
+        if (orderData.error?.code === 'AMOUNT_LIMIT_EXCEEDED') {
+          errorMessage = `⚠️ Cashfree ${orderData.error?.environment === 'sandbox' ? 'Test' : ''} Account Limit Exceeded\n\n${errorMessage}\n\nTip: For real payments, please use Razorpay or contact admin to configure Cashfree Production credentials.`
+        }
+
         throw new Error(errorMessage)
       }
 

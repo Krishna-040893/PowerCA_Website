@@ -185,14 +185,26 @@ export async function POST(req: NextRequest) {
 
     if (!cashfreeResponse.ok) {
       logger.error('❌ Cashfree Order Failed', cashfreeOrder)
+
+      // Check if it's an amount limit error
+      const errorMessage = cashfreeOrder.message || cashfreeOrder.error?.message || ''
+      const isAmountLimitError = errorMessage.toLowerCase().includes('max order amount') ||
+                                  errorMessage.toLowerCase().includes('amount limit')
+
+      let userFriendlyMessage = errorMessage || 'Failed to create Cashfree order'
+
+      if (isAmountLimitError && environment === 'sandbox') {
+        userFriendlyMessage = `Cashfree Sandbox has a transaction limit (typically ₹10,000 max). Your order amount (₹${amount.toLocaleString()}) exceeds this limit. Please either:\n\n1. Use Production Cashfree credentials for real payments\n2. Use Razorpay payment gateway instead\n3. Contact support for assistance`
+      }
+
       return NextResponse.json(
         {
           success: false,
           error: {
-            message:
-              cashfreeOrder.message ||
-              cashfreeOrder.error?.message ||
-              'Failed to create Cashfree order',
+            message: userFriendlyMessage,
+            code: isAmountLimitError ? 'AMOUNT_LIMIT_EXCEEDED' : 'CASHFREE_ERROR',
+            environment,
+            amount,
             details: cashfreeOrder,
           },
         },
