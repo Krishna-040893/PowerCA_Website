@@ -34,7 +34,7 @@ export default function EmailPreviewPage() {
             heading="System Maintenance Notice"
             body="We'll be performing scheduled maintenance on our systems this weekend to improve performance and add new features. The maintenance window is scheduled for Saturday, 2:00 AM - 6:00 AM EST."
             ctaText="View Details"
-            ctaLink="https://powerca.com/maintenance"
+            ctaLink="https://powerca.in/maintenance"
           />
         )
       default:

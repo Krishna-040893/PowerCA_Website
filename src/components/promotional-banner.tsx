@@ -38,7 +38,7 @@ export default function PromotionalBanner() {
             <span className="text-white font-medium text-[11px] sm:text-sm">
               Special discount 50% off CAs
             </span>
-            <span className="text-slate-300 italic text-[10px] hidden sm:inline">(Till 31st Oct 2025)</span>
+            <span className="text-slate-300 italic text-[10px] hidden sm:inline">(Till 30th Nov 2025)</span>
           </div>
 
           {/* Click Here button - compact on mobile */}

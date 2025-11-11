@@ -45,7 +45,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           {/* Header with Logo */}
           <Section style={header}>
             <Img
-              src="https://powerca.com/images/powerca-logo-horizontal.png"
+              src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
               alt="PowerCA"
@@ -112,44 +112,9 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               <Text style={ctaText}>
                 Ready to transform your business with PowerCA?
               </Text>
-              <Button href="https://powerca.com/dashboard" style={primaryButton}>
-                Go to Dashboard
+              <Button href="https://powerca.in/login" style={primaryButton}>
+                Go to Login
               </Button>
-              <Text style={alternativeActions}>
-                or
-              </Text>
-              <Row>
-                <Column align="center">
-                  <Link href="https://powerca.com/docs" style={secondaryLink}>
-                    📚 Read Documentation
-                  </Link>
-                </Column>
-                <Column align="center">
-                  <Link href="https://powerca.com/contact" style={secondaryLink}>
-                    💬 Contact Support
-                  </Link>
-                </Column>
-              </Row>
-            </Section>
-
-            {/* Help Section */}
-            <Section style={helpSection}>
-              <Text style={helpTitle}>Need Help?</Text>
-              <Text style={helpText}>
-                Our support team is available 24/7 to assist you. Don't hesitate to reach out if you have any questions or need assistance.
-              </Text>
-              <Row>
-                <Column align="center">
-                  <Link href="mailto:support@powerca.com" style={helpLink}>
-                    📧 support@powerca.com
-                  </Link>
-                </Column>
-                <Column align="center">
-                  <Link href="tel:+1234567890" style={helpLink}>
-                    📞 +1 (234) 567-890
-                  </Link>
-                </Column>
-              </Row>
             </Section>
           </Section>
 
@@ -159,16 +124,20 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           <Section style={footerSection}>
             <Row>
               <Column align="center" style={socialLinks}>
-                <Link href="https://twitter.com/powerca" style={socialLink}>
-                  Twitter
+                <Link href="https://www.instagram.com/powerca24/" style={socialLink}>
+                  Instagram
                 </Link>
-                <Text style={socialSeparator}>•</Text>
-                <Link href="https://linkedin.com/company/powerca" style={socialLink}>
+                <Text style={socialSeparator}>|</Text>
+                <Link href="https://www.linkedin.com/in/power-ca-tbs25100" style={socialLink}>
                   LinkedIn
                 </Link>
-                <Text style={socialSeparator}>•</Text>
-                <Link href="https://github.com/powerca" style={socialLink}>
-                  GitHub
+                <Text style={socialSeparator}>|</Text>
+                <Link href="https://x.com/Powerca_24" style={socialLink}>
+                  Twitter
+                </Link>
+                <Text style={socialSeparator}>|</Text>
+                <Link href="https://www.youtube.com/@powerCA-24" style={socialLink}>
+                  Youtube
                 </Link>
               </Column>
             </Row>

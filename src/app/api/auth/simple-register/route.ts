@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       // Check if it's a unique constraint violation
       if (insertError.message?.includes('duplicate') || insertError.code === '23505') {
         return NextResponse.json(
-          { error: 'User with this email already exists' },
+          { error: 'This email is already registered. Please try another email address.' },
           { status: 400 }
         )
       }
@@ -130,6 +130,29 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info('User registration successful', { userId: newUser.id })
+
+    // Send welcome email to client (non-blocking)
+    import('@/lib/send-emails').then(({ sendWelcomeEmail, sendAdminRegistrationNotification }) => {
+      sendWelcomeEmail({
+        name: newUser.name,
+        email: newUser.email,
+      }).catch(error => {
+        logger.error('Failed to send welcome email', error)
+      })
+
+      // Send notification to admin (non-blocking)
+      sendAdminRegistrationNotification({
+        userName: newUser.name,
+        userEmail: newUser.email,
+        userPhone: newUser.phone,
+        userRole: 'user',
+        registeredAt: new Date().toISOString(),
+      }).catch(error => {
+        logger.error('Failed to send admin notification', error)
+      })
+    }).catch(error => {
+      logger.error('Failed to import email functions', error)
+    })
 
     return NextResponse.json(
       {

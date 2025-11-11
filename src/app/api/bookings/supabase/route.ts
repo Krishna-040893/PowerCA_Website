@@ -86,6 +86,13 @@ export async function POST(request: NextRequest) {
         }
       } else {
         booking = data
+        console.log('✅ Booking created in database:', {
+          id: data.id,
+          name: data.name,
+          firm_name: (data as any).firm_name,
+          firmName: (data as any).firmName,
+          allKeys: Object.keys(data)
+        })
       }
     } catch {
       // Fall back to simple storage if network fails
@@ -189,6 +196,19 @@ async function sendConfirmationEmail(booking: Booking) {
       day: 'numeric'
     })
 
+    // Handle both camelCase and snake_case field names from database
+    const firmName = (booking as any).firmName || (booking as any).firm_name
+    const message = booking.message
+
+    // Debug log to verify firm name is captured
+    console.log('📧 Email data:', {
+      bookingId: booking.id,
+      firmName: firmName,
+      firm_name_raw: (booking as any).firm_name,
+      firmName_raw: (booking as any).firmName,
+      message: message
+    })
+
     // HTML email template for customer
     const customerEmailHtml = `
       <!DOCTYPE html>
@@ -217,8 +237,8 @@ async function sendConfirmationEmail(booking: Booking) {
                   <h3 style="color: #333; margin: 0 0 15px 0;">Booking Details:</h3>
                   <p style="margin: 8px 0; color: #666;"><strong>Date:</strong> ${bookingDate}</p>
                   <p style="margin: 8px 0; color: #666;"><strong>Time:</strong> ${booking.time}</p>
-                  ${booking.firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${booking.firmName}</p>` : ''}
-                  ${booking.message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${booking.message}</p>` : ''}
+                  ${firmName ? `<p style="margin: 8px 0; color: #666;"><strong>Firm:</strong> ${firmName}</p>` : ''}
+                  ${message ? `<p style="margin: 8px 0; color: #666;"><strong>Message:</strong> ${message}</p>` : ''}
                 </div>
                 
                 <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
@@ -245,14 +265,23 @@ async function sendConfirmationEmail(booking: Booking) {
       </html>
     `
 
-    // Send confirmation email to customer with CC to team
-    const _customerEmailResult = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
-      to: booking.email,
-      cc: 'contact@powerca.in', // CC to your team
-      subject: `Demo Booking Confirmed - PowerCA`,
-      html: customerEmailHtml,
-    })
+    // Send confirmation email to customer only
+    // Skip sending if customer email is contact@powerca.in to avoid duplicates
+    if (booking.email.toLowerCase() !== 'contact@powerca.in') {
+      try {
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+          to: booking.email,
+          subject: `Demo Booking Confirmed - PowerCA`,
+          html: customerEmailHtml,
+        })
+      } catch (customerEmailError) {
+        // IMPORTANT: Never retry or fallback to contact@powerca.in
+        // Just log the error and continue
+        console.error('Failed to send customer confirmation email - no retry:', customerEmailError)
+        // Silently fail - team will still get notification
+      }
+    }
 
 
     // Team notification email
@@ -270,12 +299,12 @@ async function sendConfirmationEmail(booking: Booking) {
             <p><strong>Name:</strong> ${booking.name}</p>
             <p><strong>Email:</strong> ${booking.email}</p>
             <p><strong>Phone:</strong> ${booking.phone}</p>
-            <p><strong>Firm:</strong> ${booking.firmName || 'Not provided'}</p>
+            <p><strong>Firm:</strong> ${firmName || 'Not provided'}</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <h3 style="color: #333;">Booking Details:</h3>
             <p><strong>Date:</strong> ${bookingDate}</p>
             <p><strong>Time:</strong> ${booking.time}</p>
-            <p><strong>Message:</strong> ${booking.message || 'No message'}</p>
+            <p><strong>Message:</strong> ${message || 'No message'}</p>
           </div>
           <p style="color: #666;">Please prepare for the demo session and ensure someone is available at the scheduled time.</p>
         </body>
@@ -286,7 +315,7 @@ async function sendConfirmationEmail(booking: Booking) {
     const _teamEmailResult = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: 'contact@powerca.in',
-      subject: `[TEAM] New Demo Booking - ${booking.name} - ${booking.firmName || 'Individual'}`,
+      subject: `[TEAM] New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 

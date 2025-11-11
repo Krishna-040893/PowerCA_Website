@@ -105,7 +105,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative py-12 sm:py-16 md:py-20 lg:py-[100px] flex items-center justify-center overflow-hidden bg-white">
         {/* Optimized background image using next/image */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
             <Image
               src="/images/hero-bg.jpg"
@@ -121,7 +121,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-6 xl:px-16 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <div className="mb-6 sm:mb-8">
@@ -134,8 +134,8 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Main Heading with SEO Keywords */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6 lg:mb-8 px-2 text-center">
+            {/* Main Heading with SEO Keywords - Optimized for Laptop */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] xl:text-[2.75rem] 2xl:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6 lg:mb-8 xl:mb-10 px-2 text-center">
               <span className="lg:whitespace-nowrap">Practice Management Software for</span>
               <br />
               <span className="mt-2 sm:mt-4 block">
@@ -143,8 +143,8 @@ export default function Home() {
               </span>
             </h1>
 
-            {/* Description */}
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed mb-6 sm:mb-8 max-w-4xl mx-auto px-2">
+            {/* Description - Optimized for Laptop */}
+            <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-xl text-gray-600 leading-relaxed mb-6 sm:mb-8 lg:mb-10 max-w-4xl mx-auto px-2">
               Power CA is a robust administrative tool designed to take control and bring efficiency to your practice.
               Empower your practice by seamlessly managing your tasks, billing, documentation and other functions.
               We cordially welcome you to explore further.
@@ -217,7 +217,7 @@ export default function Home() {
 
 
       {/* Streamline Your Practice - Text Only Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-12 relative overflow-hidden">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden">
         <div className="relative rounded-2xl overflow-hidden">
           <Image
             src="/images/streamline-bg.jpg"
@@ -229,18 +229,18 @@ export default function Home() {
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-white/10"></div>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16 lg:py-20 relative z-10">
-          <div className="grid lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 items-start">
-            {/* Left Content - Title */}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 py-10 sm:py-12 md:py-16 lg:py-20 relative z-10">
+          <div className="grid lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-0 xl:gap-0 2xl:gap-12 items-start">
+            {/* Left Content - Title - Optimized for Laptop */}
             <div className="lg:col-span-1">
-              <h2 className="font-semibold leading-normal text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-gray-900 font-inter">
+              <h2 className="font-semibold leading-normal text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] text-gray-900 font-inter">
                 Streamline Your Practice
               </h2>
             </div>
 
-            {/* Center Content - Description */}
+            {/* Center Content - Description - Optimized for Laptop */}
             <div className="lg:col-span-2">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed font-inter">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed font-inter">
                 Power CA helps you organize and streamline your office functional areas like task management, client management, staff management, billing
                 and manage all information related to your practice in an accessible in-house application.
               </p>
@@ -281,20 +281,20 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 items-start mb-8 sm:mb-12 lg:mb-16">
-            {/* Left Content - Title */}
-            <div className="lg:col-span-2">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6">
+          <div className="grid lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-0 xl:gap-0 2xl:gap-12 items-center mb-8 sm:mb-12 lg:mb-16">
+            {/* Left Content - Title - Optimized for Laptop */}
+            <div className="lg:col-span-2 flex items-center lg:pr-0 xl:pr-0">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                 Important Power CA
                 <br />
                 Modules
               </h2>
             </div>
 
-            {/* Center Content - Description */}
+            {/* Center Content - Description - Optimized for Laptop */}
             <div className="lg:col-span-2 flex items-center">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
                 Discover the full potential of Power CA through its modules, designed to
                 streamline operations, increase productivity, and empower your practice.
               </p>
@@ -304,7 +304,7 @@ export default function Home() {
             <div className="lg:col-span-1 flex items-center justify-start lg:justify-end">
               <Link
                 href="/modules"
-                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer text-sm sm:text-base w-full sm:w-auto justify-center"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer text-sm sm:text-base w-full sm:w-auto"
               >
                 All Modules
                 <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,8 +327,8 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 font-inter text-white">Job Card Management</h3>
-              <p className="text-blue-100 text-sm sm:text-base">Comprehensive job management with intuitive dashboard, advanced search, and seamless edit functions for efficient workflow control.</p>
+              <h3 className="text-lg sm:text-xl lg:text-lg xl:text-lg 2xl:text-xl font-bold mb-2 sm:mb-3 lg:mb-4 font-inter text-white">Job Card Management</h3>
+              <p className="text-blue-100 text-sm sm:text-base lg:text-sm xl:text-sm 2xl:text-base">Comprehensive job management with intuitive dashboard, advanced search, and seamless edit functions for efficient workflow control.</p>
             </div>
 
             {/* Costing Module */}
@@ -343,8 +343,8 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 font-inter" style={{ color: '#001525' }}>Costing Module</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Track project costs and analyze profitability with detailed analytics.</p>
+              <h3 className="text-lg sm:text-xl lg:text-lg xl:text-lg 2xl:text-xl font-bold mb-2 sm:mb-3 lg:mb-4 font-inter" style={{ color: '#001525' }}>Costing Module</h3>
+              <p className="text-gray-600 text-sm sm:text-base lg:text-sm xl:text-sm 2xl:text-base">Track project costs and analyze profitability with detailed analytics.</p>
             </div>
 
             {/* CRM Module */}
@@ -415,7 +415,7 @@ export default function Home() {
       </section>
 
       {/* Start Using Power CA Today Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-12 relative overflow-hidden">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden">
         <div className="relative rounded-2xl overflow-hidden py-10 sm:py-12 md:py-16 lg:py-20" style={{
           backgroundImage: 'url(/images/start-using-bg.jpg)',
           backgroundSize: 'cover',
@@ -423,10 +423,10 @@ export default function Home() {
           backgroundRepeat: 'no-repeat'
         }}>
           <div className="absolute inset-0 bg-white/10"></div>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
             {/* Full Width Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16">
-              <h2 className="font-semibold font-inter text-2xl sm:text-3xl md:text-4xl lg:text-[42px]" style={{ color: '#001525', lineHeight: '1.1' }}>
+              <h2 className="font-semibold font-inter text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px]" style={{ color: '#001525', lineHeight: '1.1' }}>
                 Start using Power CA today!
               </h2>
               <Link
@@ -616,18 +616,18 @@ export default function Home() {
 
       {/* Benefits Section */}
       <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center">
             {/* Left Content - Title */}
             <div className="lg:col-span-6">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                 Benefits of PowerCA
               </h2>
             </div>
 
             {/* Right Content - Description */}
             <div className="lg:col-span-6">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
                 Discover how PowerCA streamlines audit-firm operations, automates administrative tasks, and enhances service quality with built-in best practices, digital workflows, and powerful reporting tools.
               </p>
             </div>
@@ -642,37 +642,37 @@ export default function Home() {
 
       {/* Testimonials Section */}
       <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <TestimonialsSection />
         </div>
       </section>
 
       {/* Client-Server Background Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-12 relative overflow-hidden">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden">
         <div className="relative rounded-2xl overflow-hidden py-10 sm:py-12 md:py-14 lg:py-16" style={{
           backgroundImage: 'url(/images/client-server-bg.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
+            <div className="grid lg:grid-cols-12 gap-1 sm:gap-2 lg:gap-0 xl:gap-0 2xl:gap-8 items-center">
               {/* Left Content - Title */}
-              <div className="lg:col-span-5">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
+              <div className="lg:col-span-4 flex items-center lg:pr-0 xl:pr-0">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
                   Client - Server Model
                 </h2>
               </div>
 
               {/* Center Content - Description */}
-              <div className="lg:col-span-5">
-                <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+              <div className="lg:col-span-5 flex items-center">
+                <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
                   Efficient Communication, Centralized Data Management, and Seamless Interaction.
                 </p>
               </div>
 
               {/* Right Content - Book Demo Button */}
-              <div className="lg:col-span-2 flex justify-start lg:justify-end">
+              <div className="lg:col-span-3 flex items-center justify-start lg:justify-end">
                 <Link
                   href="/book-demo"
                   className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg text-sm sm:text-base w-full sm:w-auto justify-center"

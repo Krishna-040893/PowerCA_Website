@@ -1,8 +1,5 @@
 import React from 'react'
 import {resend  } from './email'
-import {ContactFormEmail  } from '@/emails/contact-form-email'
-import {WelcomeEmail  } from '@/emails/welcome-email'
-import {EmailTemplate  } from '@/emails/email-template'
 
 interface ContactFormData {
   name: string
@@ -19,9 +16,12 @@ interface WelcomeEmailData {
 
 export async function sendContactFormEmail(data: ContactFormData) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { ContactFormEmail } = await import('@/emails/contact-form-email')
+
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
-      to: process.env.CONTACT_EMAIL || 'support@powerca.com',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      to: process.env.CONTACT_EMAIL || 'contact@powerca.in',
       subject: `New Contact Form Submission from ${data.name}`,
       react: ContactFormEmail({
         name: data.name,
@@ -42,8 +42,11 @@ export async function sendContactFormEmail(data: ContactFormData) {
 
 export async function sendWelcomeEmail(data: WelcomeEmailData) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { WelcomeEmail } = await import('@/emails/welcome-email')
+
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: data.email,
       subject: `Welcome to PowerCA, ${data.name}!`,
       react: WelcomeEmail({
@@ -59,6 +62,47 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
   }
 }
 
+interface AdminRegistrationNotificationData {
+  userName: string
+  userEmail: string
+  userPhone?: string
+  userRole?: string
+  professionalType?: string
+  membershipNo?: string
+  registrationNo?: string
+  instituteName?: string
+  registeredAt?: string
+}
+
+export async function sendAdminRegistrationNotification(data: AdminRegistrationNotificationData) {
+  try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { AdminRegistrationNotification } = await import('@/emails/admin-registration-notification')
+
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      to: process.env.CONTACT_EMAIL || 'contact@powerca.in',
+      subject: `New Registration: ${data.userName} (${data.userRole || 'User'})`,
+      react: AdminRegistrationNotification({
+        userName: data.userName,
+        userEmail: data.userEmail,
+        userPhone: data.userPhone,
+        userRole: data.userRole,
+        professionalType: data.professionalType,
+        membershipNo: data.membershipNo,
+        registrationNo: data.registrationNo,
+        instituteName: data.instituteName,
+        registeredAt: data.registeredAt,
+      }) as React.ReactElement,
+    })
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Failed to send admin registration notification:', error)
+    return { success: false, error }
+  }
+}
+
 export async function sendCustomEmail({
   to, subject, heading, body, ctaText, ctaLink, footer }: {
   to: string
@@ -70,8 +114,11 @@ export async function sendCustomEmail({
   footer?: string | React.ReactNode
 }) {
   try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { EmailTemplate } = await import('@/emails/email-template')
+
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to,
       subject,
       react: EmailTemplate({
@@ -106,7 +153,7 @@ export async function sendEmail({
 }) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.com>',
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to,
       subject,
       html,

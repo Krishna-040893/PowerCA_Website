@@ -229,7 +229,7 @@ function Frame2095585186() {
           <p className="font-['Inter:Medium',_sans-serif] font-medium leading-[42px] min-w-full relative shrink-0 text-[28px] text-white" style={{ width: "min-content" }}>
             Power CA
           </p>
-          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only â€“ Till 31st Oct 2025</p>
+          <p className="font-['Poppins:Medium',_sans-serif] leading-[normal] relative shrink-0 text-[#f4f7fd] text-[18px] w-[333px]">Special discount 50% for CAs only â€“ Till 30th Nov 2025</p>
         </div>
       </div>
     </div>

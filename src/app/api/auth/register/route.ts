@@ -220,7 +220,7 @@ async function handleRegister(request: NextRequest) {
         if (existingUser) {
           return createErrorResponse(
             ErrorType.VALIDATION,
-            'User with this email or username already exists'
+            'This email is already registered. Please try another email address.'
           )
         }
 
@@ -267,7 +267,7 @@ async function handleRegister(request: NextRequest) {
           if (insertError.message?.includes('duplicate') || insertError.code === '23505') {
             return createErrorResponse(
               ErrorType.VALIDATION,
-              'User with this email or username already exists'
+              'This email is already registered. Please try another email address.'
             )
           }
 
@@ -296,7 +296,7 @@ async function handleRegister(request: NextRequest) {
             if (professionalError.code === '23505') {
               return createErrorResponse(
                 ErrorType.VALIDATION,
-                professionalError.message?.includes('email') ? 'Email already registered' : 'Membership number already registered'
+                professionalError.message?.includes('email') ? 'This email is already registered. Please try another email address.' : 'Membership number already registered'
               )
             }
             return handleDatabaseError(professionalError)
@@ -323,7 +323,7 @@ async function handleRegister(request: NextRequest) {
             if (studentError.code === '23505') {
               return createErrorResponse(
                 ErrorType.VALIDATION,
-                studentError.message?.includes('email') ? 'Email already registered' : 'Registration number already registered'
+                studentError.message?.includes('email') ? 'This email is already registered. Please try another email address.' : 'Registration number already registered'
               )
             }
             return handleDatabaseError(studentError)
@@ -331,6 +331,33 @@ async function handleRegister(request: NextRequest) {
         }
 
         logger.info('User registration successful', { userId: newUser.id })
+
+        // Send welcome email to client (non-blocking)
+        import('@/lib/send-emails').then(({ sendWelcomeEmail, sendAdminRegistrationNotification }) => {
+          sendWelcomeEmail({
+            name: newUser.name,
+            email: newUser.email,
+          }).catch(error => {
+            logger.error('Failed to send welcome email', error)
+          })
+
+          // Send notification to admin (non-blocking)
+          sendAdminRegistrationNotification({
+            userName: newUser.name,
+            userEmail: newUser.email,
+            userPhone: newUser.phone,
+            userRole: role,
+            professionalType: sanitizedProfessionalType || undefined,
+            membershipNo: sanitizedMembershipNumber || undefined,
+            registrationNo: sanitizedRegistrationNumber || undefined,
+            instituteName: sanitizedInstituteName || undefined,
+            registeredAt: new Date().toISOString(),
+          }).catch(error => {
+            logger.error('Failed to send admin notification', error)
+          })
+        }).catch(error => {
+          logger.error('Failed to import email functions', error)
+        })
 
         // Sync to HubSpot (non-blocking)
         syncMiddleware.afterUserCreate({
@@ -400,7 +427,7 @@ async function handleRegister(request: NextRequest) {
           if (existingUsers.find((u: FileUserData) => u.email === sanitizedEmail || u.username === finalUsername)) {
             return createErrorResponse(
               ErrorType.VALIDATION,
-              'User with this email or username already exists'
+              'This email is already registered. Please try another email address.'
             )
           }
         } catch {
@@ -409,6 +436,33 @@ async function handleRegister(request: NextRequest) {
 
         existingUsers.push(newUser)
         await fs.writeFile(usersFilePath, JSON.stringify(existingUsers, null, 2))
+
+        // Send welcome email to client (non-blocking)
+        import('@/lib/send-emails').then(({ sendWelcomeEmail, sendAdminRegistrationNotification }) => {
+          sendWelcomeEmail({
+            name: newUser.name,
+            email: newUser.email,
+          }).catch(error => {
+            logger.error('Failed to send welcome email', error)
+          })
+
+          // Send notification to admin (non-blocking)
+          sendAdminRegistrationNotification({
+            userName: newUser.name,
+            userEmail: newUser.email,
+            userPhone: newUser.phone,
+            userRole: newUser.role,
+            professionalType: newUser.professional_type || undefined,
+            membershipNo: newUser.membership_number || undefined,
+            registrationNo: newUser.registration_number || undefined,
+            instituteName: newUser.institute_name || undefined,
+            registeredAt: newUser.created_at,
+          }).catch(error => {
+            logger.error('Failed to send admin notification', error)
+          })
+        }).catch(error => {
+          logger.error('Failed to import email functions', error)
+        })
 
         // Sync to HubSpot (non-blocking)
         syncMiddleware.afterUserCreate({
@@ -453,3 +507,15 @@ async function handleRegister(request: NextRequest) {
 
 // Apply rate limiting middleware (5 requests per minute for registration)
 export const POST = withRateLimit(handleRegister, RateLimits.AUTH)
+
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}

@@ -112,29 +112,39 @@ export function createErrorResponse(
       errorDetails = { error, ...options.details }
     }
   } else {
-    // In production, use safe generic messages
-    message = PRODUCTION_ERROR_MESSAGES[type]
-    // Only include safe details in production
-    if (options.details && typeof options.details === 'object') {
-      // Filter out sensitive information
-      const safeDetails = Object.keys(options.details).reduce((acc, key) => {
-        const value = options.details ? options.details[key] : undefined
-        // Don't include values that might contain sensitive info
-        if (
-          key.toLowerCase().includes('password') ||
-          key.toLowerCase().includes('token') ||
-          key.toLowerCase().includes('secret') ||
-          key.toLowerCase().includes('key') ||
-          key.toLowerCase().includes('auth')
-        ) {
+    // In production, show specific validation messages (they're safe for users)
+    // For other error types, use generic messages
+    if (type === ErrorType.VALIDATION && typeof error === 'string') {
+      message = error
+      errorDetails = options.details
+    } else if (error instanceof Error && type === ErrorType.VALIDATION) {
+      message = error.message
+      errorDetails = options.details
+    } else {
+      // For non-validation errors, use safe generic messages
+      message = PRODUCTION_ERROR_MESSAGES[type]
+      // Only include safe details in production
+      if (options.details && typeof options.details === 'object') {
+        // Filter out sensitive information
+        const safeDetails = Object.keys(options.details).reduce((acc, key) => {
+          const value = options.details ? options.details[key] : undefined
+          // Don't include values that might contain sensitive info
+          if (
+            key.toLowerCase().includes('password') ||
+            key.toLowerCase().includes('token') ||
+            key.toLowerCase().includes('secret') ||
+            key.toLowerCase().includes('key') ||
+            key.toLowerCase().includes('auth')
+          ) {
+            return acc
+          }
+          acc[key] = value
           return acc
-        }
-        acc[key] = value
-        return acc
-      }, {} as Record<string, unknown>)
+        }, {} as Record<string, unknown>)
 
-      if (Object.keys(safeDetails).length > 0) {
-        errorDetails = safeDetails
+        if (Object.keys(safeDetails).length > 0) {
+          errorDetails = safeDetails
+        }
       }
     }
   }

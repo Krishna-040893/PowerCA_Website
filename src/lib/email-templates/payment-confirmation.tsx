@@ -143,14 +143,14 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
       
       <div style="background: #E8F5E9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 0;"><strong>💡 Need Help?</strong> Our support team is available 24/7.<br>
-        Call: <a href="tel:+919876543210">+91 98765 43210</a> | Email: <a href="mailto:support@powerca.in">support@powerca.in</a></p>
+        Call: <a href="tel:+919876543210">+91 98765 43210</a> | Email: <a href="mailto:contact@powerca.in">contact@powerca.in</a></p>
       </div>
       
       <div class="footer">
         <p>This is an automated email. Please do not reply to this email.</p>
         <p>© ${new Date().getFullYear()} PowerCA. All rights reserved.</p>
         <p>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/terms">Terms & Conditions</a> | 
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/terms">Terms & Conditions</a> |
           <a href="${process.env.NEXT_PUBLIC_APP_URL}/privacy">Privacy Policy</a>
         </p>
       </div>
@@ -201,7 +201,7 @@ Access your dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
 
 Need Help?
 Call: +91 98765 43210
-Email: support@powerca.in
+Email: contact@powerca.in
 
 Thank you for choosing PowerCA!
 

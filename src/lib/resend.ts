@@ -97,7 +97,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
             </div>
             
             <p>If you need to reschedule or have any questions, please feel free to contact us at:</p>
-            <p>📧 Email: support@powerca.in<br>
+            <p>📧 Email: contact@powerca.in<br>
             📞 Phone: +91 9629514635</p>
           </div>
           
@@ -110,7 +110,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
     </html>
   `
 
-  const fromEmail = process.env.EMAIL_FROM || 'noreply@powerca.in'
+  const fromEmail = process.env.EMAIL_FROM || 'contact@powerca.in'
 
   // Send confirmation email to the user
   try {
@@ -239,7 +239,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
             <div style="text-align: center; margin-top: 30px;">
               <p style="margin-bottom: 10px;">Questions? We're here to help!</p>
               <p style="margin: 5px 0;">
-                📧 <a href="mailto:support@powerca.in" style="color: #1D91EB;">support@powerca.in</a><br>
+                📧 <a href="mailto:contact@powerca.in" style="color: #1D91EB;">contact@powerca.in</a><br>
                 📞 <a href="tel:+919629514635" style="color: #1D91EB;">+91 9629514635</a>
               </p>
             </div>
@@ -250,7 +250,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
             <p>© ${new Date().getFullYear()} TBS Technologies, Udumalpet, Tamil Nadu</p>
             <p style="font-size: 12px; color: #999; margin-top: 15px;">
               You received this referral from ${affiliateName}. This is a one-time invitation.<br>
-              For support, contact us at <a href="mailto:support@powerca.in" style="color: #1D91EB;">support@powerca.in</a>
+              For support, contact us at <a href="mailto:contact@powerca.in" style="color: #1D91EB;">contact@powerca.in</a>
             </p>
           </div>
         </div>
@@ -259,7 +259,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
   `
 
   try {
-    const fromEmail = process.env.EMAIL_FROM || 'noreply@powerca.in'
+    const fromEmail = process.env.EMAIL_FROM || 'contact@powerca.in'
 
     const emailResult = await resend.emails.send({
       from: `PowerCA Referrals <${fromEmail}>`,
@@ -369,7 +369,7 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
             <p>© ${new Date().getFullYear()} TBS Technologies, Udumalpet, Tamil Nadu</p>
             <p style="font-size: 12px; color: #999; margin-top: 15px;">
               You received this email because your affiliate application was approved.<br>
-              For questions, contact us at <a href="mailto:support@powerca.in" style="color: #1D91EB;">support@powerca.in</a>
+              For questions, contact us at <a href="mailto:contact@powerca.in" style="color: #1D91EB;">contact@powerca.in</a>
             </p>
           </div>
         </div>
@@ -378,7 +378,7 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
   `
 
   try {
-    const fromEmail = process.env.EMAIL_FROM || 'noreply@powerca.in'
+    const fromEmail = process.env.EMAIL_FROM || 'contact@powerca.in'
 
     const emailResult = await resend.emails.send({
       from: `PowerCA Affiliates <${fromEmail}>`,
