@@ -45,7 +45,7 @@
       "url": "/book-demo",
       "icons": [
         {
-          "src": "/favicon-192x192.png",
+          "src": "/android-chrome-192x192.png",
           "sizes": "192x192"
         }
       ]
@@ -57,7 +57,7 @@
       "url": "/pricing",
       "icons": [
         {
-          "src": "/favicon-192x192.png",
+          "src": "/android-chrome-192x192.png",
           "sizes": "192x192"
         }
       ]
@@ -69,7 +69,7 @@
       "url": "/contact",
       "icons": [
         {
-          "src": "/favicon-192x192.png",
+          "src": "/android-chrome-192x192.png",
           "sizes": "192x192"
         }
       ]

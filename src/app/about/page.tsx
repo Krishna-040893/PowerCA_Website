@@ -58,8 +58,8 @@ export default function AboutPage() {
     ? allTeamMembers
     : allTeamMembers.filter(member => member.category === selectedFilter)
 
-  // Desktop: 4 members per slide
-  const membersPerSlide = 4
+  // Desktop: 5 members per slide
+  const membersPerSlide = 5
   const totalSlides = Math.max(1, filteredMembers.length - membersPerSlide + 1)
 
   // Mobile: 2 members per slide
@@ -106,7 +106,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6 xl:px-12">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -131,7 +131,7 @@ export default function AboutPage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 px-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] xl:text-[2.75rem] 2xl:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 px-2">
               Explore Power CA –
               <br />
               <span className="text-blue-600">Built by a Team of Passionate Experts</span>
@@ -139,7 +139,7 @@ export default function AboutPage() {
 
             {/* Description */}
             <div className="mb-8 sm:mb-10 lg:mb-12 max-w-5xl mx-auto">
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed mb-4 px-2">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-xl text-gray-600 leading-relaxed mb-4 px-2">
                 Power CA is created by experienced professionals to simplify practice management and deliver reliable, efficient tools for your day-to-day work.
               </p>
             </div>
@@ -163,23 +163,23 @@ export default function AboutPage() {
       {/* Elevate your practice to the next level with PowerCA */}
       <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 items-start">
+          <div className="grid lg:grid-cols-8 gap-6 sm:gap-8 lg:gap-4 xl:gap-6 2xl:gap-12 items-start">
             {/* Left Content - Title */}
-            <div className="lg:col-span-2">
-              <h2 className="font-semibold leading-normal font-inter text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-gray-900">
+            <div className="lg:col-span-3">
+              <h2 className="font-semibold leading-normal font-inter text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] text-gray-900">
                 Elevate your practice to the next level with PowerCA
               </h2>
             </div>
 
             {/* Center Content - Description */}
-            <div className="lg:col-span-1">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+            <div className="lg:col-span-3">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
                 Power CA was developed by CA Arul Maniam as a passion project to streamline the administrative tasks for his CA firm.
               </p>
             </div>
 
             {/* Right Content - Button */}
-            <div className="lg:col-span-1 flex items-start justify-start lg:justify-end">
+            <div className="lg:col-span-2 flex items-start justify-start lg:justify-end">
               <Link
                 href="/modules"
                 className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
@@ -192,9 +192,9 @@ export default function AboutPage() {
       </section>
 
       {/* Image Section */}
-      <section className="pt-6 sm:pt-8 pb-10 sm:pb-12 md:pb-16 lg:pb-20 bg-white">
+      <section className="pt-6 sm:pt-4 pb-10 sm:pb-12 md:pb-16 lg:pb-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-12 items-center">
+          <div className="grid lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-6 xl:gap-8 2xl:gap-12 items-center">
             {/* Left - Image */}
             <div className="lg:col-span-2">
               <Image
@@ -209,7 +209,7 @@ export default function AboutPage() {
 
             {/* Right - Text */}
               <div className="lg:col-span-3">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed mb-6 sm:mb-8">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed mb-6 sm:mb-8">
                 The concept for this software was envisioned over two decades ago, inspired by the need to bring structure and efficiency to professional audit practices. For years the idea matured through research, real-world experience, and continuous refinement. Advancements in technology have now made it possible to deliver the full vision as a robust, cloud-ready solution. In 2025, we proudly launch it for practicing professionals, turning a long-standing dream into a practical, modern reality.
               </p>
 
@@ -255,7 +255,7 @@ export default function AboutPage() {
       {/* Our Team Members */}
       <section className="relative py-10 sm:py-12 md:py-14 lg:py-16 bg-white overflow-hidden">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6 xl:px-12">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -268,26 +268,30 @@ export default function AboutPage() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12 lg:mb-16">
+          {/* Header - Responsive Layout */}
+          <div className="mb-8 sm:mb-12 lg:mb-16">
+            {/* Title and Description - Stacked until xl breakpoint */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
               {/* Left - Title */}
-              <div className="lg:col-span-5">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 leading-normal">
+              <div className="pl-4 sm:pl-8 lg:pl-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold text-gray-900 leading-tight">
                   Our Team Members
                 </h2>
               </div>
 
-              {/* Center - Description */}
-              <div className="lg:col-span-4">
-                <p className="text-sm sm:text-base md:text-lg text-gray-500 leading-relaxed">
+              {/* Right - Description */}
+              <div className="xl:flex xl:items-start pl-4 sm:pl-0">
+                <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-500 leading-relaxed">
                   Efficient Communication, Centralized Data Management, and Seamless Interaction.
                 </p>
               </div>
+            </div>
 
-              {/* Right - Filter Button */}
-              <div className="lg:col-span-3 flex justify-start lg:justify-end relative" ref={filterRef}>
-                <button
+            {/* Filter Button - Right-aligned with spacing */}
+            <div className="flex justify-end relative pr-4 sm:pr-8 lg:pr-12" ref={filterRef}>
+              <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto"
+                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
                 >
                   {filterCategories.find(cat => cat.value === selectedFilter)?.label || 'Filter'}
                   <svg
@@ -302,7 +306,7 @@ export default function AboutPage() {
 
                 {/* Filter Dropdown */}
                 {isFilterOpen && (
-                  <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                  <div className="absolute top-full right-0 mt-2 w-full sm:w-56 lg:w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20 max-h-80 overflow-y-auto">
                     {filterCategories.map((category) => (
                       <button
                         key={category.value}
@@ -364,7 +368,7 @@ export default function AboutPage() {
 
           {/* Team Members Carousel - Desktop View (Hidden on mobile) */}
           <div className="hidden sm:block relative overflow-hidden mb-6 sm:mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {getVisibleMembers().map((member, index) => {
                 const gradients = [
                   'from-purple-100 to-pink-100',
@@ -375,12 +379,12 @@ export default function AboutPage() {
                 return (
                   <div
                     key={`desktop-${currentSlide}-${index}`}
-                    className="bg-white rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
+                    className="bg-white rounded-2xl p-2 sm:p-3 md:p-4 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
                     style={{
                       animation: 'slideInFromRight 0.5s ease-out'
                     }}
                   >
-                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
+                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-2 sm:mb-3 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
                       {member.image ? (
                         <Image
                           src={member.image}
@@ -395,8 +399,8 @@ export default function AboutPage() {
                         </div>
                       )}
                     </div>
-                    <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1">{member.name}</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">{member.role}</p>
+                    <h4 className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 mb-1">{member.name}</h4>
+                    <p className="text-gray-500 text-xs">{member.role}</p>
                   </div>
                 )
               })}
@@ -479,7 +483,7 @@ export default function AboutPage() {
               ))}
             </div>
 
-            <div className="flex items-center justify-end gap-2 sm:gap-3">
+            <div className="flex items-center justify-end gap-2 sm:gap-3 pr-4 sm:pr-8 lg:pr-12">
               <button
                 onClick={prevSlide}
                 disabled={currentSlide === 0}
@@ -515,20 +519,20 @@ export default function AboutPage() {
       {/* Our Mission, Vision & Values Section */}
       <section className="py-10 sm:py-12 md:py-14 lg:py-16 bg-white">
         <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center">
+          <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-4 xl:gap-6 2xl:gap-8 items-center">
             {/* Left - Title */}
             <div className="lg:col-span-4">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-semibold text-gray-900 leading-normal">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold text-gray-900 leading-normal">
                 Our Mission, Vision & Values
               </h2>
             </div>
 
             {/* Center - Description */}
             <div className="lg:col-span-5">
-              <p className="text-sm sm:text-base md:text-lg text-gray-500 leading-relaxed mb-3 sm:mb-4">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-500 leading-relaxed mb-3 sm:mb-4">
                 We are driven by a clear purpose, a bold vision for the future, and guiding values that shape every decision we make.
               </p>
-              <p className="text-sm sm:text-base md:text-lg text-gray-500 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-500 leading-relaxed">
                 Our mission defines what we do today, our vision paints the picture of tomorrow, and our core values keep us true to our principles as we innovate and grow.
               </p>
             </div>

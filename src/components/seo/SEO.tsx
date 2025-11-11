@@ -67,9 +67,9 @@ export default function SEO({
           'url': 'https://powerca.in',
           'logo': {
             '@type': 'ImageObject',
-            'url': 'https://powerca.in/images/power-ca-logo.png',
-            'width': 200,
-            'height': 75
+            'url': 'https://powerca.in/logo.png',
+            'width': 512,
+            'height': 512
           },
           'address': {
             '@type': 'PostalAddress',

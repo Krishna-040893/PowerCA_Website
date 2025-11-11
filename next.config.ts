@@ -97,12 +97,28 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       {
-        // Additional security for API routes
+        // Additional security for API routes with CORS support
         source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'no-store, max-age=0'
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-Requested-With'
+          },
+          {
+            key: 'Access-Control-Max-Age',
+            value: '86400'
           }
         ]
       }

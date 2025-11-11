@@ -21,7 +21,7 @@ export function DashboardPreview() {
           </div>
           <div className="flex-1 flex justify-center">
             <div className="bg-gray-800 rounded px-4 py-1 text-xs text-gray-300">
-              app.powerca.com
+              app.powerca.in
             </div>
           </div>
         </div>

@@ -1,5 +1,4 @@
-﻿import DOMPurify from 'isomorphic-dompurify'
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
@@ -12,32 +11,9 @@ import {
   isServiceConfigured,
   ErrorType
 } from '@/lib/error-handler'
+import { sanitizeRequired, sanitizeOptional } from '@/lib/sanitize'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const sanitizeRequired = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return ''
-  }
-
-  return DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  }).trim()
-}
-
-const sanitizeOptional = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return undefined
-  }
-
-  const sanitized = DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  }).trim()
-
-  return sanitized || undefined
-}
 
 async function handleContactForm(request: NextRequest) {
   let body: unknown
@@ -167,3 +143,27 @@ async function handleContactForm(request: NextRequest) {
 // Apply strict rate limiting (3 requests per minute for contact form)
 export const POST = withRateLimit(handleContactForm, RateLimits.STRICT)
 
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
+// Handle GET requests (return method not allowed)
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Method not allowed. Please use POST to submit the contact form.' },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+      },
+    }
+  )
+}

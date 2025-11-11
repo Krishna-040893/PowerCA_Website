@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         })
 
         await resend.emails.send({
-          from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+          from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
           to: user.email,
           subject: '🎉 Your PowerCA Annual Subscription is Now Available!',
           html: emailHtml as string

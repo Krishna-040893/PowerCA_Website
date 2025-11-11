@@ -167,7 +167,7 @@ function CheckoutContent() {
 
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
-  const basePrice = 11 // ₹11 - Testing amount for LIVE mode
+  const basePrice = 50000 // ₹50,000 base price
   const subtotal = basePrice * quantity
   const gstRate = 0.18 // 18% GST
   const gstAmount = subtotal * gstRate
