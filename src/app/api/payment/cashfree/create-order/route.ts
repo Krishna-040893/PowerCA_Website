@@ -170,6 +170,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ API Call
+    logger.info('Sending request to Cashfree', {
+      url: `${cashfreeApiUrl}/orders`,
+      orderId,
+      amount,
+      environment,
+      hasGSTIN: !!cashfreeOrderPayload.order_tags.gstin
+    })
+
     const cashfreeResponse = await fetch(`${cashfreeApiUrl}/orders`, {
       method: 'POST',
       headers: {
@@ -183,16 +191,53 @@ export async function POST(req: NextRequest) {
 
     const cashfreeOrder = await cashfreeResponse.json()
 
+    // Log the response for debugging
+    if (!cashfreeResponse.ok) {
+      logger.error('Cashfree API Error Response', {
+        status: cashfreeResponse.status,
+        statusText: cashfreeResponse.statusText,
+        response: cashfreeOrder,
+        requestPayload: {
+          orderId: cashfreeOrderPayload.order_id,
+          amount: cashfreeOrderPayload.order_amount,
+          currency: cashfreeOrderPayload.order_currency,
+          environment
+        }
+      })
+    }
+
     if (!cashfreeResponse.ok) {
       logger.error('❌ Cashfree Order Failed', cashfreeOrder)
+
+      // Check if it's an amount limit error
+      const errorMessage = cashfreeOrder.message || cashfreeOrder.error?.message || ''
+      const isAmountLimitError = errorMessage.toLowerCase().includes('max order amount') ||
+                                  errorMessage.toLowerCase().includes('amount limit')
+
+      let userFriendlyMessage = errorMessage || 'Failed to create Cashfree order'
+
+      if (isAmountLimitError && environment === 'sandbox') {
+        userFriendlyMessage = `Cashfree Sandbox has a transaction limit (typically ₹10,000 max). Your order amount (₹${amount.toLocaleString()}) exceeds this limit. Please either:\n\n1. Use Production Cashfree credentials for real payments\n2. Use Razorpay payment gateway instead\n3. Contact support for assistance`
+      }
+
+      // Log to console for easier debugging
+      console.error('Cashfree Order Creation Failed:', {
+        status: cashfreeResponse.status,
+        message: userFriendlyMessage,
+        fullError: cashfreeOrder,
+        requestAmount: amount,
+        environment
+      })
+
       return NextResponse.json(
         {
           success: false,
           error: {
-            message:
-              cashfreeOrder.message ||
-              cashfreeOrder.error?.message ||
-              'Failed to create Cashfree order',
+            message: userFriendlyMessage,
+            code: isAmountLimitError ? 'AMOUNT_LIMIT_EXCEEDED' : 'CASHFREE_ERROR',
+            environment,
+            amount,
+            fullError: cashfreeOrder, // Include full error for debugging
             details: cashfreeOrder,
           },
         },

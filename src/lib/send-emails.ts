@@ -62,6 +62,47 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
   }
 }
 
+interface AdminRegistrationNotificationData {
+  userName: string
+  userEmail: string
+  userPhone?: string
+  userRole?: string
+  professionalType?: string
+  membershipNo?: string
+  registrationNo?: string
+  instituteName?: string
+  registeredAt?: string
+}
+
+export async function sendAdminRegistrationNotification(data: AdminRegistrationNotificationData) {
+  try {
+    // Dynamic import to avoid bundling react-email components at build time
+    const { AdminRegistrationNotification } = await import('@/emails/admin-registration-notification')
+
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      to: process.env.CONTACT_EMAIL || 'contact@powerca.in',
+      subject: `New Registration: ${data.userName} (${data.userRole || 'User'})`,
+      react: AdminRegistrationNotification({
+        userName: data.userName,
+        userEmail: data.userEmail,
+        userPhone: data.userPhone,
+        userRole: data.userRole,
+        professionalType: data.professionalType,
+        membershipNo: data.membershipNo,
+        registrationNo: data.registrationNo,
+        instituteName: data.instituteName,
+        registeredAt: data.registeredAt,
+      }) as React.ReactElement,
+    })
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Failed to send admin registration notification:', error)
+    return { success: false, error }
+  }
+}
+
 export async function sendCustomEmail({
   to, subject, heading, body, ctaText, ctaLink, footer }: {
   to: string
