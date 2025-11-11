@@ -510,7 +510,17 @@ function CheckoutContent() {
 
       const orderData = await orderResponse.json()
 
+      // Log response for debugging
+      console.log('Razorpay Order Response:', orderData)
+
       if (!orderData.success && !orderData.orderId) {
+        // Log full error details
+        console.error('Razorpay Order Creation Failed:', {
+          status: orderResponse.status,
+          statusText: orderResponse.statusText,
+          response: orderData
+        })
+
         // Handle error object properly
         const errorMessage = typeof orderData.error === 'object'
           ? orderData.error?.message || JSON.stringify(orderData.error)
