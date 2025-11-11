@@ -62,11 +62,10 @@ export async function GET(_request: NextRequest) {
         .from('registration_forms')
         .select('id', { count: 'exact', head: true }),
 
-      // Total approved affiliates count
+      // Total affiliates count (ALL statuses: pending, approved, rejected)
       supabase
         .from('affiliate_registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'approved'),
+        .select('id', { count: 'exact', head: true }),
 
       // Pending affiliate approvals count
       supabase
