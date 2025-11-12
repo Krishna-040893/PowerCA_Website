@@ -23,9 +23,6 @@
     "src/app/api/payment/webhook/route.ts": {
       "maxDuration": 30
     },
-    "src/app/api/admin/hubspot/**/*.ts": {
-      "maxDuration": 30
-    },
     "src/app/api/subscriptions/check-renewal-eligibility/route.ts": {
       "maxDuration": 60
     }

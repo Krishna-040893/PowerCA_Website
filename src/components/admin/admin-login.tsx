@@ -99,7 +99,9 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={credentials.email}
                   onChange={handleInputChange('email')}
                   placeholder="admin@powerca.in"
@@ -114,7 +116,9 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                 </Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   value={credentials.password}
                   onChange={handleInputChange('password')}
                   placeholder="Enter your password"
@@ -150,15 +154,18 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
             </form>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="text-center text-sm text-gray-500">
-                <p className="mb-2">Demo Credentials:</p>
-                <div className="space-y-1 text-xs">
-                  <p><strong>Email:</strong> admin@powerca.in</p>
-                  <p><strong>Password:</strong> admin123</p>
+              {/* Only show demo credentials in development mode */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-center text-sm text-gray-500 mb-4">
+                  <p className="mb-2 text-orange-600 font-semibold">Development Mode Only:</p>
+                  <div className="space-y-1 text-xs">
+                    <p><strong>Email:</strong> admin@powerca.in</p>
+                    <p><strong>Password:</strong> admin123</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="mt-4 text-center">
+              <div className="text-center">
                 <Link
                   href="/"
                   className="text-sm text-primary-600 hover:text-primary-700 underline"

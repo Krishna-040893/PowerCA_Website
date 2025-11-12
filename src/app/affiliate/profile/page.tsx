@@ -455,7 +455,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                      className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>
@@ -583,7 +583,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                      className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>
@@ -715,7 +715,7 @@ export default function AffiliateProfilePage() {
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
+                      className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                     >
                       {isSaving ? (
                         <>
