@@ -612,7 +612,7 @@ export default function AccountPage() {
                           size="sm"
                           onClick={handleSaveBilling}
                           disabled={isSavingBilling}
-                          className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto text-sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto text-sm"
                         >
                           {isSavingBilling ? (
                             <>

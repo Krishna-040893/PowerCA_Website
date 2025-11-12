@@ -22,7 +22,7 @@ export function FAQWithSchema({
   faqs,
   className
 }: FAQSectionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set())
 
   // Generate FAQ schema markup
   const faqSchema = {
@@ -39,8 +39,16 @@ export function FAQWithSchema({
   }
 
   const toggleAccordion = (index: number) => {
-    // If clicking the same item, close it. Otherwise, open the new one
-    setOpenIndex(openIndex === index ? null : index)
+    // Toggle the accordion independently - can have multiple open at once
+    setOpenIndices(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
   }
 
   return (
@@ -64,42 +72,45 @@ export function FAQWithSchema({
           </div>
 
           <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-              {faqs.map((faq, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() => toggleAccordion(index)}
-                    className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
-                    aria-expanded={openIndex === index}
-                    aria-controls={`faq-answer-${index}`}
-                  >
-                    <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 pr-3 sm:pr-4">
-                      {faq.question}
-                    </h3>
-                    <ChevronDown
-                      className={cn(
-                        'w-4 h-4 sm:w-5 sm:h-5 text-gray-500 flex-shrink-0 transition-transform',
-                        openIndex === index && 'rotate-180'
-                      )}
-                    />
-                  </button>
-
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 items-start">
+              {faqs.map((faq, index) => {
+                const isOpen = openIndices.has(index)
+                return (
                   <div
-                    id={`faq-answer-${index}`}
-                    className={cn(
-                      'px-4 sm:px-5 lg:px-6 overflow-hidden transition-all duration-300 ease-in-out',
-                      openIndex === index ? 'py-3 sm:py-4 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
-                    )}
+                    key={`faq-${index}-${faq.question.substring(0, 20)}`}
+                    className="border border-gray-200 rounded-lg overflow-hidden h-auto"
                   >
-                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                      {faq.answer}
-                    </p>
+                    <button
+                      onClick={() => toggleAccordion(index)}
+                      className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-answer-${index}`}
+                    >
+                      <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 pr-3 sm:pr-4">
+                        {faq.question}
+                      </h3>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 sm:w-5 sm:h-5 text-gray-500 flex-shrink-0 transition-transform',
+                          isOpen && 'rotate-180'
+                        )}
+                      />
+                    </button>
+
+                    <div
+                      id={`faq-answer-${index}`}
+                      className={cn(
+                        'px-4 sm:px-5 lg:px-6 bg-white overflow-hidden transition-all duration-300 ease-in-out',
+                        isOpen ? 'py-3 sm:py-4 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
+                      )}
+                    >
+                      <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                        {faq.answer}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
