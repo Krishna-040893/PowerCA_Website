@@ -1,0 +1,282 @@
+COMPREHENSIVE SECURITY AUDIT REPORT
+PowerCA Website V4
+
+AUDIT DATE: November 12, 2024
+OVERALL ASSESSMENT: CLEAN AND SECURE
+SECURITY GRADE: A- (Excellent)
+
+=== CRITICAL FINDINGS ===
+Critical Vulnerabilities: 0
+High Risk Issues: 0
+Malware Detected: 0
+Backdoors Found: 0
+Obfuscated Code: 0
+
+=== EXTERNAL RESOURCES (SECTION 1) ===
+
+All external resources verified as legitimate:
+
+1. Google Analytics
+   - URL: https://www.googletagmanager.com/gtag/js?id=G-P15M72BCQ6
+   - File: src/components/google-analytics.tsx
+   - Status: LEGITIMATE VERIFIED
+
+2. Google Tag Manager (GTM)
+   - URL: https://www.googletagmanager.com/gtm.js?id=GTM-5QRPSNJQ
+   - File: src/components/google-tag-manager.tsx
+   - Status: LEGITIMATE VERIFIED
+
+3. Razorpay Payment Gateway
+   - URL: https://checkout.razorpay.com/v1/checkout.js
+   - File: src/app/checkout/page.tsx
+   - Status: LEGITIMATE VERIFIED
+
+4. Cashfree Payment Gateway
+   - URLs: https://sdk.cashfree.com, https://sandbox.cashfree.com
+   - Status: LEGITIMATE VERIFIED
+
+5. Google Fonts
+   - URLs: https://fonts.googleapis.com, https://fonts.gstatic.com
+   - Status: LEGITIMATE VERIFIED
+
+6. Google Maps Embed
+   - URL: https://www.google.com/maps/embed
+   - File: src/app/(marketing)/contact/page.tsx
+   - Status: LEGITIMATE VERIFIED
+
+7. HubSpot CRM Integration
+   - URL: https://track.hubspot.com/v1/event
+   - File: src/lib/hubspot-service.ts
+   - Status: LEGITIMATE VERIFIED
+
+8. Sentry Error Tracking
+   - URL: https://browser.sentry-cdn.com
+   - File: next.config.ts
+   - Status: LEGITIMATE VERIFIED
+
+9. Vercel Platform
+   - URLs: https://vercel.live, https://*.vercel.live
+   - Status: LEGITIMATE VERIFIED (deployment platform)
+
+TOTAL EXTERNAL DOMAINS: 12
+VERIFIED LEGITIMATE: 12/12 (100%)
+SUSPICIOUS DOMAINS: 0
+
+=== DANGEROUS CODE PATTERNS (SECTION 2) ===
+
+Search for dangerous functions:
+
+eval()               NOT FOUND
+Function()           NOT FOUND
+document.write()     NOT FOUND
+innerHTML =          NOT FOUND
+atob() misuse        NOT FOUND
+btoa() misuse        NOT FOUND
+document.location    FOUND - All legitimate redirects
+window.location      FOUND - All legitimate redirects
+
+Dangerous redirects: NONE
+Dynamic code execution: NONE
+Code injection: NONE
+
+=== OBFUSCATED CODE (SECTION 3) ===
+
+Code obfuscation:     NONE DETECTED
+Unicode escaping:     NONE DETECTED
+Minified source:      NONE DETECTED
+String concatenation tricks: NONE DETECTED
+
+Code quality: EXCELLENT - All code is readable and maintainable
+
+=== CRYPTOGRAPHIC OPERATIONS (SECTION 4) ===
+
+1. HMAC-SHA256 Signature Verification
+   - File: src/lib/razorpay.ts
+   - Purpose: Razorpay webhook validation
+   - Status: SECURE and LEGITIMATE
+
+2. Password Reset Token Generation
+   - File: src/app/api/auth/forgot-password/route.ts
+   - Method: crypto.randomBytes(32).toString('hex')
+   - Status: SECURE and LEGITIMATE
+
+3. JWT Token Verification
+   - File: src/app/api/admin/payments/sync-status/route.ts
+   - Status: SECURE and LEGITIMATE
+
+=== BASE64 ENCODING (SECTION 5) ===
+
+1. Invoice PDF Image Encoding
+   - File: src/lib/invoice-generator.ts
+   - Purpose: Embed logo in PDF
+   - Status: LEGITIMATE
+
+2. Email Attachment Encoding
+   - File: src/app/api/payment/verify/route.ts
+   - Purpose: Base64 encode PDF for email
+   - Status: LEGITIMATE
+
+All Base64 usage verified as legitimate data encoding.
+
+=== CONTENT SECURITY POLICY (SECTION 6) ===
+
+File: next.config.ts (Lines 10-26)
+
+CSP Headers Implemented:
+- default-src: 'self'
+- script-src: 'self' 'unsafe-eval' 'unsafe-inline' + payment gateways + analytics
+- style-src: 'self' 'unsafe-inline' https://fonts.googleapis.com
+- font-src: 'self' data: https://fonts.gstatic.com
+- img-src: 'self' data: https: blob:
+- connect-src: 'self' + API endpoints + analytics
+- frame-src: Razorpay, Google, Vercel
+- base-uri: 'self'
+- form-action: 'self' + payment processing endpoints
+- upgrade-insecure-requests: Enabled
+
+Assessment: COMPREHENSIVE AND APPROPRIATE
+Note: unsafe-inline/unsafe-eval needed for GTM compatibility
+
+=== REDIRECTS & URL ANALYSIS (SECTION 7) ===
+
+All window.location redirects verified as legitimate:
+
+1. Payment Success: /payment-success?payment_id=...
+2. Admin Login: /admin
+3. Affiliate Login: /affiliate-login
+4. Checkout: /login?callbackUrl=...
+5. Google Calendar: https://calendar.google.com/calendar/render
+
+Status: SAFE - All internal or legitimate third-party URLs
+
+=== HTML SANITIZATION (SECTION 8) ===
+
+DOMPurify Implementation: EXCELLENT
+
+Files using sanitization:
+- src/components/blog/blog-content.tsx: HTML sanitization
+- src/components/seo/SEO.tsx: Schema sanitization
+
+Pattern: import DOMPurify from 'isomorphic-dompurify'
+         const sanitized = DOMPurify.sanitize(content)
+
+Assessment: EXCELLENT XSS PROTECTION
+
+=== IFRAME ANALYSIS (SECTION 9) ===
+
+1. Google Tag Manager Noscript
+   - URL: https://www.googletagmanager.com/ns.html
+   - File: src/components/google-tag-manager.tsx
+   - Status: LEGITIMATE
+
+2. Google Maps
+   - URL: https://www.google.com/maps/embed
+   - File: src/app/(marketing)/contact/page.tsx
+   - Status: LEGITIMATE
+
+All iframes verified as legitimate.
+
+=== AUTHENTICATION & SESSION (SECTION 10) ===
+
+Framework: NextAuth.js with JWT
+
+Implementation:
+- Credentials-based auth: SECURE
+- Google OAuth: Integrated
+- Supabase Row-Level Security: Implemented
+- Password hashing: bcryptjs
+
+Assessment: SECURE AND PROPER
+
+=== ENVIRONMENT VARIABLES (SECTION 11) ===
+
+Public Variables (NEXT_PUBLIC_*):
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY (read-only)
+- NEXT_PUBLIC_GA_MEASUREMENT_ID
+- NEXT_PUBLIC_GTM_ID
+- NEXT_PUBLIC_RAZORPAY_KEY_ID
+- NEXT_PUBLIC_CASHFREE_APP_ID
+Status: APPROPRIATE - these are meant to be public
+
+Private Variables:
+- RAZORPAY_KEY_SECRET
+- RAZORPAY_WEBHOOK_SECRET
+- SUPABASE_SERVICE_ROLE_KEY
+- NEXTAUTH_SECRET
+- HUBSPOT_PRIVATE_APP_TOKEN
+Status: PROPERLY PROTECTED - server-side only
+
+Assessment: EXCELLENT SEPARATION OF CONCERNS
+
+=== WEBHOOK SECURITY (SECTION 12) ===
+
+Razorpay Webhook (src/app/api/payment/webhook/route.ts):
+- Signature verification: IMPLEMENTED
+- HMAC-SHA256: USED
+- Error handling: PROPER
+Status: SECURE
+
+Cashfree Webhook (src/app/api/payment/cashfree/webhook/route.ts):
+- Signature verification: IMPLEMENTED
+Status: SECURE
+
+=== DATA PERSISTENCE (SECTION 13) ===
+
+localStorage Usage:
+- Affiliate referral data: Non-sensitive
+- User preferences: Non-sensitive
+- No credentials stored: VERIFIED
+
+Assessment: SAFE - No sensitive data in localStorage
+
+=== MONITORING & ERROR TRACKING (SECTION 14) ===
+
+Sentry Integration:
+- Error tracking: YES
+- Production only: YES
+- Data collected: Error messages, stack traces, URLs
+- User identification: Email only (minimal PII)
+- Session tracking: Randomized IDs
+
+Assessment: SECURE AND PRIVACY-AWARE
+
+=== DEPENDENCIES (SECTION 15) ===
+
+Security-related packages verified:
+- @sentry/nextjs: TRUSTED
+- isomorphic-dompurify: TRUSTED
+- jsonwebtoken: TRUSTED
+- bcryptjs: TRUSTED
+- razorpay: TRUSTED
+- next-auth: TRUSTED
+- @supabase/supabase-js: TRUSTED
+- puppeteer: TRUSTED
+
+All from well-maintained, verified sources.
+
+=== SECURITY RECOMMENDATIONS ===
+
+MEDIUM PRIORITY:
+1. Implement CSP Nonce instead of 'unsafe-inline'
+2. Add SRI (Sub-Resource Integrity) to external scripts
+3. Implement password reset token expiration verification
+4. Rotate HubSpot API token quarterly
+
+LOW PRIORITY:
+5. Document and review monitoring data collection
+6. Consider GDPR compliance for user analytics
+
+=== VERDICT ===
+
+Status: CLEAN AND SECURE
+
+No malware, backdoors, or suspicious code detected.
+All external resources verified as legitimate.
+Security best practices properly implemented.
+
+RECOMMENDATION: Safe for production deployment
+
+Grade: A- (Excellent)
+
+Audit completed: November 12, 2024

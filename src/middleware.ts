@@ -5,6 +5,11 @@ import {NextRequest, NextResponse, type NextFetchEvent  } from 'next/server'
 export async function middleware(req: NextRequest, event: NextFetchEvent) {
   const pathname = req.nextUrl.pathname
 
+  // Redirect old admin login to new one (prevent duplicate login pages - phishing detection)
+  if (pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/admin-login', req.url))
+  }
+
   // Handle admin routes with NextAuth
   if (pathname.startsWith('/admin')) {
     // Allow access to admin login page
@@ -67,6 +72,7 @@ export async function middleware(req: NextRequest, event: NextFetchEvent) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/admin/login', // Redirect to /admin-login
     '/api/admin/:path*',
     '/dashboard/:path*',
     '/affiliate/:path*',

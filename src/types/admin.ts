@@ -28,16 +28,6 @@ export interface DashboardStats {
   registrations?: number
 }
 
-export interface HubSpotContact {
-  id?: string
-  email: string
-  firstname?: string
-  lastname?: string
-  phone?: string
-  company?: string
-  [key: string]: string | undefined
-}
-
 export interface TestData {
   id: string
   type: string
