@@ -6,7 +6,6 @@ import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabase
 import {validatePassword  } from '@/lib/password-validator'
 import {sanitizeInput, sanitizeEmail, sanitizePhone  } from '@/lib/sanitizer'
 import {logger  } from '@/lib/logger'
-import {syncMiddleware  } from '@/middleware/hubspot-sync'
 import { withRateLimit, RateLimits } from '@/lib/middleware'
 
 interface FileUserData {
@@ -359,20 +358,6 @@ async function handleRegister(request: NextRequest) {
           logger.error('Failed to import email functions', error)
         })
 
-        // Sync to HubSpot (non-blocking)
-        syncMiddleware.afterUserCreate({
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.name?.split(' ')[0],
-          lastName: newUser.name?.split(' ').slice(1).join(' '),
-          phone: newUser.phone,
-          firmName: (newUser as { firm_name?: string }).firm_name,
-          caNumber: newUser.membership_number,
-          status: 'lead'
-        }).catch(error => {
-          logger.error('Failed to sync to HubSpot', error)
-        })
-
         return NextResponse.json(
           {
             success: true,
@@ -462,20 +447,6 @@ async function handleRegister(request: NextRequest) {
           })
         }).catch(error => {
           logger.error('Failed to import email functions', error)
-        })
-
-        // Sync to HubSpot (non-blocking)
-        syncMiddleware.afterUserCreate({
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.name?.split(' ')[0],
-          lastName: newUser.name?.split(' ').slice(1).join(' '),
-          phone: newUser.phone,
-          firmName: undefined, // firm_name not available in file storage
-          caNumber: (newUser as {membership_no?: string; membership_number?: string}).membership_no || newUser.membership_number,
-          status: 'lead'
-        }).catch(error => {
-          logger.error('Failed to sync to HubSpot', error)
         })
 
         return NextResponse.json(

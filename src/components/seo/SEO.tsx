@@ -8,7 +8,6 @@ type JSONLDSchema = Record<string, unknown>
 interface SEOProps {
   title?: string
   description?: string
-  keywords?: string
   image?: string
   article?: boolean
   author?: string
@@ -23,7 +22,6 @@ interface SEOProps {
 const DEFAULT_SEO = {
   title: 'PowerCA - Practice Management Software for Chartered Accountants',
   description: 'Simplify your practice, amplify your growth. The all-in-one practice management software designed for Chartered Accountants. Save 10+ hours weekly, ensure 100% compliance.',
-  keywords: 'CA practice management software, chartered accountant software India, tax compliance software, accounting software India, CA firm management, practice management solution',
   image: '/images/og-image.jpg',
   type: 'website' as const
 }
@@ -31,7 +29,6 @@ const DEFAULT_SEO = {
 export default function SEO({
   title,
   description,
-  keywords,
   image,
   article = false,
   author,
@@ -47,7 +44,6 @@ export default function SEO({
   const seo = {
     title: title ? `${title} | PowerCA` : DEFAULT_SEO.title,
     description: description || DEFAULT_SEO.description,
-    keywords: keywords || DEFAULT_SEO.keywords,
     image: image || DEFAULT_SEO.image,
     url: `https://powerca.in${router.asPath}`,
     type: article ? 'article' : type
@@ -191,7 +187,6 @@ export default function SEO({
       {/* Basic Meta Tags */}
       <title>{seo.title}</title>
       <meta name="description" content={seo.description} />
-      <meta name="keywords" content={seo.keywords} />
       <meta name="author" content="TBS Technologies [P] Limited" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="robots" content={noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'} />

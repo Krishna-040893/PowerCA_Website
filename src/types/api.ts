@@ -178,30 +178,6 @@ export interface ReferralData {
   converted_at?: string
 }
 
-// HubSpot Types
-export interface HubSpotContact {
-  id?: string
-  properties: {
-    firstname?: string
-    lastname?: string
-    email: string
-    phone?: string
-    company?: string
-    [key: string]: string | number | boolean | undefined
-  }
-}
-
-export interface HubSpotDeal {
-  id?: string
-  properties: {
-    dealname: string
-    amount?: number
-    dealstage?: string
-    closedate?: string
-    [key: string]: string | number | boolean | undefined
-  }
-}
-
 // Supabase Error Types
 export interface SupabaseError {
   message: string
