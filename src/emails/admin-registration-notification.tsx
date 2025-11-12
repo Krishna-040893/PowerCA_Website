@@ -43,7 +43,7 @@ export const AdminRegistrationNotification: React.FC<AdminRegistrationNotificati
       <Head>
         <Font
           fontFamily="Geist"
-          fallbackFontFamily="sans-serif"
+          fallbackFontFamily="Verdana"
           webFont={{
             url: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
             format: 'woff2',

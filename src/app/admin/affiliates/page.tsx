@@ -537,7 +537,7 @@ export default function AdminAffiliatesPage() {
                                         variant="outline"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
                                         disabled={processingId === selectedApp.id}
-                                        className="text-red-600 border-red-300 hover:bg-red-50"
+                                        className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
                                       >
                                         <XCircle className="h-4 w-4 mr-1" />
                                         Reject
@@ -545,7 +545,7 @@ export default function AdminAffiliatesPage() {
                                       <Button
                                         onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
                                         disabled={processingId === selectedApp.id}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
                                         Approve
@@ -782,7 +782,7 @@ export default function AdminAffiliatesPage() {
                                         variant="outline"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
                                         disabled={processingId === selectedApp.id}
-                                        className="text-red-600 border-red-300 hover:bg-red-50"
+                                        className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
                                       >
                                         <XCircle className="h-4 w-4 mr-1" />
                                         Reject
@@ -790,7 +790,7 @@ export default function AdminAffiliatesPage() {
                                       <Button
                                         onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
                                         disabled={processingId === selectedApp.id}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
                                         Approve
