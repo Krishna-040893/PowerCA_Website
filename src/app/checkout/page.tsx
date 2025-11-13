@@ -340,7 +340,7 @@ function CheckoutContent() {
     if (!formData.city.trim()) newErrors.city = 'Town/City is required'
     if (!formData.state.trim()) newErrors.state = 'State is required'
     if (!formData.postcode.trim()) newErrors.postcode = 'Postcode is required'
-    if (!paymentGateway) newErrors.paymentGateway = 'Please select a payment gateway'
+    // Payment gateway is always 'razorpay' now (Cashfree disabled)
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
     setErrors(newErrors)
@@ -1038,31 +1038,23 @@ function CheckoutContent() {
               {/* Payment Method */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
-                  Select Payment Gateway
+                  Payment Gateway
                 </h3>
 
-                {/* Payment Gateway Radio Buttons - Two Columns */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Payment Gateway - Razorpay Only (Cashfree disabled - KYC under review) */}
+                <div className="max-w-md">
                   {/* Razorpay Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    paymentGateway === 'razorpay'
-                      ? 'border-purple-500 bg-purple-50'
-                      : errors.paymentGateway
-                      ? 'border-red-500'
-                      : 'border-gray-300 hover:border-purple-300'
-                  }`}
-                  onClick={() => setPaymentGateway('razorpay')}
-                  >
+                  <div className="border-2 rounded-lg p-4 border-purple-500 bg-purple-50">
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
                         id="razorpay"
                         name="payment"
-                        checked={paymentGateway === 'razorpay'}
-                        onChange={() => setPaymentGateway('razorpay')}
-                        className="w-4 h-4 cursor-pointer text-purple-600 flex-shrink-0"
+                        checked={true}
+                        readOnly
+                        className="w-4 h-4 text-purple-600 flex-shrink-0"
                       />
-                      <Label htmlFor="razorpay" className="cursor-pointer flex-1">
+                      <Label htmlFor="razorpay" className="flex-1">
                         <div className="flex items-center justify-center h-8">
                           <Image
                             src="https://razorpay.com/assets/razorpay-logo.svg"
@@ -1071,39 +1063,6 @@ function CheckoutContent() {
                             height={32}
                             className="object-contain"
                             unoptimized
-                          />
-                        </div>
-                      </Label>
-                    </div>
-                  </div>
-
-                  {/* Cashfree Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    paymentGateway === 'cashfree'
-                      ? 'border-teal-500 bg-teal-50'
-                      : errors.paymentGateway
-                      ? 'border-red-500'
-                      : 'border-gray-300 hover:border-teal-300'
-                  }`}
-                  onClick={() => setPaymentGateway('cashfree')}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        id="cashfree"
-                        name="payment"
-                        checked={paymentGateway === 'cashfree'}
-                        onChange={() => setPaymentGateway('cashfree')}
-                        className="w-4 h-4 cursor-pointer text-teal-600 flex-shrink-0"
-                      />
-                      <Label htmlFor="cashfree" className="cursor-pointer flex-1">
-                        <div className="flex items-center justify-center h-8">
-                          <Image
-                            src="https://merchant.cashfree.com/auth/99bf3bd232800f0f1c4e.svg"
-                            alt="Cashfree"
-                            width={120}
-                            height={32}
-                            className="h-8 w-auto object-contain"
                           />
                         </div>
                       </Label>
@@ -1174,7 +1133,7 @@ function CheckoutContent() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
                 <p className="text-xs sm:text-sm text-gray-700 font-medium flex items-center justify-center gap-2">
                   <span className="text-green-600 text-base">🔒</span>
-                  Secure payment powered by {paymentGateway === 'razorpay' ? 'Razorpay' : 'Cashfree'}
+                  Secure payment powered by Razorpay
                 </p>
               </div>
             </div>

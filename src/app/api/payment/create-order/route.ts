@@ -151,8 +151,7 @@ export async function POST(req: NextRequest) {
           customer_city: city || body.city,
           customer_state: state || body.state,
           customer_postcode: postcode || body.postcode,
-          customer_country: country || body.country,
-          customer_gst_no: gstNo || body.gstNo || customerDetails?.gst
+          customer_country: country || body.country
         })
 
       if (error) {
