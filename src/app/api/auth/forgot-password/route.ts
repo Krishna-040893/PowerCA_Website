@@ -88,8 +88,10 @@ const handleForgotPassword = async (request: NextRequest) => {
       return handleDatabaseError(updateError)
     }
 
-    // Create reset password link
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    // Create reset password link - Always use production domain for emails
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://powerca.in'
+      : (process.env.NEXTAUTH_URL || 'http://localhost:3000')
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&type=${userType}`
 
     // Send email with reset link
