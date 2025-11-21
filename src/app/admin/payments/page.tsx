@@ -248,6 +248,12 @@ export default function AdminPaymentsPage() {
     <AdminPageWrapper
       title="Payments"
       description="View and manage all payment transactions"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Successful', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Failed', value: stats.failed, color: 'bg-red-100 text-red-800' },
+        { label: 'Revenue', value: `₹${stats.totalAmount.toFixed(0)}`, color: 'bg-indigo-100 text-indigo-800' }
+      ]}
       actions={
         <Button onClick={fetchPayments} variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -255,69 +261,6 @@ export default function AdminPaymentsPage() {
         </Button>
       }
     >
-      {/* Stats Overview - 2 Columns on Mobile, 4 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Payments</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">All transactions</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Successful</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
-                <p className="text-xs text-gray-500 mt-1">Completed</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Failed</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.failed}</p>
-                <p className="text-xs text-gray-500 mt-1">Declined</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-red-50">
-                <XCircle className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
-                <p className="text-xs text-gray-500 mt-1">Earned</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-indigo-50">
-                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-indigo-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Payments Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardContent className="pt-6">

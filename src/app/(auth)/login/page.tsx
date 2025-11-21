@@ -91,10 +91,8 @@ function LoginContent() {
           const referralData = await referralResponse.json()
 
           if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
-            // User has a pending referral, redirect to pricing with referral parameters
-            const { referralCode, customerId } = referralData.referralInfo
-            const redirectUrl = `/pricing?ref=${referralCode}&cus=${customerId}`
-            window.location.href = redirectUrl
+            // Referral user - redirect to account page with billing tab open
+            window.location.href = '/account?tab=billing'
             return
           }
         } catch (referralError) {
@@ -213,7 +211,13 @@ function LoginContent() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
                   placeholder="Enter Your Email"
                   className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                   required
@@ -234,7 +238,13 @@ function LoginContent() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
                   placeholder="Enter Your Password"
                   className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
                   required

@@ -436,6 +436,11 @@ export default function AdminBlogPage() {
     <AdminPageWrapper
       title="Blog Posts"
       description="Create and manage blog posts"
+      stats={[
+        { label: 'Total', value: posts.length, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Published', value: posts.filter(p => p.is_published).length, color: 'bg-green-100 text-green-800' },
+        { label: 'Drafts', value: posts.filter(p => !p.is_published).length, color: 'bg-gray-100 text-gray-800' }
+      ]}
       actions={
         <div className="flex gap-2">
           <Button
@@ -459,40 +464,6 @@ export default function AdminBlogPage() {
         </div>
       }
     >
-      {/* Statistics Cards - 2 Columns */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Posts</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{posts.length}</p>
-                <p className="text-xs text-gray-500 mt-1">All time</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <FileText className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Published</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  {posts.filter(p => p.is_published).length}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Live now</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <Eye className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Blog Posts Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardContent className="pt-6">

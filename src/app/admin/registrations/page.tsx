@@ -197,6 +197,12 @@ export default function AdminRegistrationsPage() {
     <AdminPageWrapper
       title="Registrations"
       description="View detailed information about all registered users"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Professionals', value: stats.professionals, color: 'bg-green-100 text-green-800' },
+        { label: 'Students', value: stats.students, color: 'bg-purple-100 text-purple-800' },
+        { label: 'Today', value: stats.today, color: 'bg-orange-100 text-orange-800' }
+      ]}
       actions={
         <div className="flex gap-2">
           <Button
@@ -220,69 +226,9 @@ export default function AdminRegistrationsPage() {
         </div>
       }
     >
-        {/* Statistics Cards - 2 Columns on Mobile, 4 on Desktop */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Registrations</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                  <p className="text-xs text-gray-500 mt-1">All time</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Professionals</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.professionals}</p>
-                  <p className="text-xs text-gray-500 mt-1">Verified CAs</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Students</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.students}</p>
-                  <p className="text-xs text-gray-500 mt-1">Enrolled</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-purple-50">
-                  <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Today's Registrations</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.today}</p>
-                  <p className="text-xs text-gray-500 mt-1">New signups</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
-                  <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Main Content Card - Enhanced */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
+          {/* <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-lg sm:text-xl font-bold">Registration Details</CardTitle>
@@ -291,7 +237,7 @@ export default function AdminRegistrationsPage() {
                 </CardDescription>
               </div>
             </div>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             {/* Search and Filter Controls - Enhanced Mobile */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">

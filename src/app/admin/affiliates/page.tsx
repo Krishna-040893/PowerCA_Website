@@ -7,7 +7,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Textarea  } from '@/components/ui/textarea'
-import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar  } from 'lucide-react'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Search  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
@@ -84,6 +84,7 @@ export default function AdminAffiliatesPage() {
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
   const [adminNotes, setAdminNotes] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
   const ITEMS_PER_PAGE = 10
 
   // Fetch data when authenticated
@@ -217,6 +218,14 @@ export default function AdminAffiliatesPage() {
     rejected: applications.filter(app => app.status === 'rejected').length
   }
 
+  // Filter applications based on search term
+  const filteredApplications = applications.filter(app =>
+    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    app.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (app.referral_code && app.referral_code.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -233,6 +242,12 @@ export default function AdminAffiliatesPage() {
     <AdminPageWrapper
       title="Affiliate Management"
       description="Review and manage affiliate applications"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Pending', value: stats.pending, color: 'bg-yellow-100 text-yellow-800' },
+        { label: 'Approved', value: stats.approved, color: 'bg-green-100 text-green-800' },
+        { label: 'Rejected', value: stats.rejected, color: 'bg-red-100 text-red-800' }
+      ]}
       actions={
         <Button
           onClick={fetchApplications}
@@ -244,74 +259,30 @@ export default function AdminAffiliatesPage() {
         </Button>
       }
     >
-      <div>
-        {/* Statistics Cards - Enhanced Mobile Design */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Applications</p>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-gray-500 mt-1">All time</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                  <Star className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Pending Review</p>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.pending}</p>
-                  <p className="text-xs text-gray-500 mt-1">Awaiting action</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-yellow-50">
-                  <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Approved</p>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.approved}</p>
-                  <p className="text-xs text-gray-500 mt-1">Active partners</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Rejected</p>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.rejected}</p>
-                  <p className="text-xs text-gray-500 mt-1">Declined</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-red-50">
-                  <XCircle className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Main Content Card */}
         <Card className="shadow-sm border border-gray-100">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-bold">All Affiliates</CardTitle>
-            <CardDescription className="text-xs sm:text-sm mt-1">
-              Review affiliate applications and approve or reject them
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* <div>
+                <CardTitle className="text-lg sm:text-xl font-bold">All Affiliates</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-1">
+                  Review affiliate applications and approve or reject them
+                </CardDescription>
+              </div> */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search by name, email, phone..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1) // Reset to first page on search
+                  }}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {error && (
@@ -325,9 +296,9 @@ export default function AdminAffiliatesPage() {
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 <p className="mt-2 text-gray-600">Loading applications...</p>
               </div>
-            ) : applications.length === 0 ? (
+            ) : filteredApplications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No affiliate applications found
+                {searchTerm ? 'No applications match your search' : 'No affiliate applications found'}
               </div>
             ) : (
               <>
@@ -346,7 +317,7 @@ export default function AdminAffiliatesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {applications
+                    {filteredApplications
                       .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                       .map((application) => (
                       <TableRow key={application.id}>
@@ -565,7 +536,7 @@ export default function AdminAffiliatesPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                  {applications
+                  {filteredApplications
                     .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                     .map((application) => (
                     <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
@@ -810,7 +781,7 @@ export default function AdminAffiliatesPage() {
               {/* Pagination */}
               <AdminPagination
                 currentPage={currentPage}
-                totalItems={applications.length}
+                totalItems={filteredApplications.length}
                 itemsPerPage={ITEMS_PER_PAGE}
                 onPageChange={setCurrentPage}
                 itemName="applications"
@@ -819,7 +790,6 @@ export default function AdminAffiliatesPage() {
             )}
           </CardContent>
         </Card>
-      </div>
     </AdminPageWrapper>
   )
 }

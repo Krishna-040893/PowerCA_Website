@@ -199,6 +199,12 @@ export default function AffiliatePaymentsPage() {
     <AdminPageWrapper
       title="Affiliate Payments"
       description="Track and manage affiliate commissions and payments"
+      stats={[
+        { label: 'Total', value: summary.totalPayments, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Revenue', value: formatCurrency(summary.totalAmount), color: 'bg-green-100 text-green-800' },
+        { label: 'Pending', value: formatCurrency(summary.pendingCommission), color: 'bg-orange-100 text-orange-800' },
+        { label: 'Paid', value: formatCurrency(summary.paidCommission), color: 'bg-green-100 text-green-800' }
+      ]}
       actions={
         <Button
           onClick={fetchPayments}
@@ -211,84 +217,6 @@ export default function AffiliatePaymentsPage() {
       }
     >
       <div>
-        {/* Summary Cards - Enhanced Mobile Design */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Payments</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{summary.totalPayments}</p>
-                  <p className="text-xs text-gray-500 mt-1">Transactions</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                  <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Amount</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(summary.totalAmount)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Revenue</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm col-span-2 lg:col-span-1">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Commission</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(summary.totalCommission)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Payable</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-purple-50">
-                  <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Pending</p>
-                  <p className="text-xl sm:text-2xl font-bold text-orange-600">{formatCurrency(summary.pendingCommission)}</p>
-                  <p className="text-xs text-gray-500 mt-1">To pay</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
-                  <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Paid</p>
-                  <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(summary.paidCommission)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Completed</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Filters and Actions - Enhanced Mobile */}
         <Card className="mb-5 shadow-sm border border-gray-100">
           <CardContent className="p-4">

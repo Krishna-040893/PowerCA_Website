@@ -64,7 +64,8 @@ export async function POST(req: NextRequest) {
       city,
       state,
       postcode,
-      gstNo
+      gstNo,
+      addressId // Address ID from user_addresses table
     } = body
 
     // Validate amount is provided
@@ -151,7 +152,8 @@ export async function POST(req: NextRequest) {
           customer_city: city || body.city,
           customer_state: state || body.state,
           customer_postcode: postcode || body.postcode,
-          customer_country: country || body.country
+          customer_country: country || body.country,
+          address_id: addressId || null
         })
 
       if (error) {

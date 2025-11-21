@@ -110,6 +110,9 @@ export default function AdminAffiliateApprovalPage() {
     <AdminPageWrapper
       title="Approved Affiliates"
       description="View and manage approved affiliate partners"
+      stats={[
+        { label: 'Total', value: applications.length, color: 'bg-green-100 text-green-800' }
+      ]}
       actions={
         <Button onClick={fetchApplications} variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -117,59 +120,13 @@ export default function AdminAffiliateApprovalPage() {
         </Button>
       }
     >
-        {/* Stats - Enhanced Mobile Design */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-8">
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Approved Affiliates</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-green-600">{applications.length}</p>
-                  <p className="text-xs text-gray-500 mt-1">Active partners</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Approved Today</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-green-600">0</p>
-                  <p className="text-xs text-gray-500 mt-1">New today</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-gray-100 shadow-sm col-span-2 lg:col-span-1">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Affiliates</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-blue-600">{applications.length}</p>
-                  <p className="text-xs text-gray-500 mt-1">All time</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                  <Star className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Applications Table */}
         <Card className="shadow-sm border border-gray-100">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">Approved</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">All approved and active affiliate partners</CardDescription>
+                {/* <CardTitle className="text-lg sm:text-xl font-bold">Approved</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-1">All approved and active affiliate partners</CardDescription> */}
               </div>
               <Button onClick={fetchApplications} variant="outline" size="sm">
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />

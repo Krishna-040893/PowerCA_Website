@@ -185,73 +185,16 @@ export default function PaymentOrdersPage() {
     <AdminPageWrapper
       title="Payment Orders"
       description="Manage and track all payment orders"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Paid', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Created', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
+        { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-indigo-100 text-indigo-800' }
+      ]}
     >
-      {/* Stats Cards - 2 Columns on Mobile, 4 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Orders</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All time' : 'Filtered'}</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <ShoppingCart className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Paid</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
-                <p className="text-xs text-gray-500 mt-1">Completed</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Created</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.created}</p>
-                <p className="text-xs text-gray-500 mt-1">Pending</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
-                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All Orders' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + ' Orders'}</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Orders Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
+        {/* <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <ShoppingCart className="h-5 w-5" />
             Payment Orders ({filteredOrders.length})
@@ -259,7 +202,7 @@ export default function PaymentOrdersPage() {
           <CardDescription className="text-xs sm:text-sm mt-1">
             All payment orders
           </CardDescription>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">

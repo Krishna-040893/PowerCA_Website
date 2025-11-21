@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, ArrowLeft, Download, AlertCircle, Loader2 } from 'lucide-react'
@@ -37,6 +37,7 @@ interface InvoiceData {
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [isTestMode, setIsTestMode] = useState(false)
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -503,12 +504,10 @@ function PaymentSuccessContent() {
                 <Button
                   variant="outline"
                   className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
-                  asChild
+                  onClick={() => router.push('/account')}
                 >
-                  <Link href="/">
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to Home
-                  </Link>
+                  <ArrowLeft className="mr-2 w-4 h-4" />
+                  Back to Dashboard
                 </Button>
               </>
             ) : paymentStatus === 'pending' ? (
@@ -552,12 +551,10 @@ function PaymentSuccessContent() {
                 <Button
                   variant="outline"
                   className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
-                  asChild
+                  onClick={() => router.push('/account')}
                 >
-                  <Link href="/">
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to Home
-                  </Link>
+                  <ArrowLeft className="mr-2 w-4 h-4" />
+                  Back to Dashboard
                 </Button>
               </>
             )}

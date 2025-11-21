@@ -135,6 +135,11 @@ export default function NewsletterSubscribersPage() {
     <AdminPageWrapper
       title="Newsletter Subscribers"
       description="Manage newsletter subscriptions"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Active', value: stats.active, color: 'bg-green-100 text-green-800' },
+        { label: 'Today', value: stats.today, color: 'bg-orange-100 text-orange-800' }
+      ]}
       actions={
         <div className="flex gap-2">
           <Button
@@ -158,52 +163,6 @@ export default function NewsletterSubscribersPage() {
         </div>
       }
     >
-      {/* Statistics Cards - 2 Columns on Mobile, 3 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Subscribers</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">All time</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <Mail className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Active</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.active}</p>
-                <p className="text-xs text-gray-500 mt-1">Subscribed</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Today's Subscriptions</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.today}</p>
-                <p className="text-xs text-gray-500 mt-1">New today</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
-                <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Main Content Card - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardContent className="pt-6">

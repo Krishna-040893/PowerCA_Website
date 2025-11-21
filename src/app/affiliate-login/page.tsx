@@ -29,6 +29,8 @@ function AffiliateLoginContent() {
     setIsLoading(true)
     setError('')
 
+    let hasError = false
+
     try {
       const result = await signIn('credentials', {
         email,
@@ -76,7 +78,7 @@ function AffiliateLoginContent() {
           await signOut({ redirect: false })
 
           setError('You are not an affiliate partner. Please use the Client Login page.')
-          setIsLoading(false)
+          hasError = true
 
           // Redirect to client login after 2 seconds
           setTimeout(() => {
@@ -90,16 +92,17 @@ function AffiliateLoginContent() {
         window.location.href = callbackUrl
       } else {
         setError(result?.error || 'Invalid email or password. Please try again.')
+        hasError = true
       }
     } catch {
       setError('An unexpected error occurred. Please try again.')
+      hasError = true
     } finally {
       // Don't set loading to false if redirect is happening
-      if (!error) {
-        // Keep loading state if successful
-      } else {
+      if (hasError) {
         setIsLoading(false)
       }
+      // Keep loading state if successful to avoid flicker before redirect
     }
   }
 
@@ -195,7 +198,13 @@ function AffiliateLoginContent() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
                   placeholder="Enter Your Email"
                   className="pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
                   required
@@ -216,7 +225,13 @@ function AffiliateLoginContent() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
                   placeholder="Enter Your Password"
                   className="pl-10 pr-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
                   required

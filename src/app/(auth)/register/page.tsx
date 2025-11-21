@@ -12,7 +12,9 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Phone, Mail, Lock, ArrowLeft, Shield, GraduationCap  } from 'lucide-react'
+import {Eye, EyeOff, User, Mail, Lock, ArrowLeft, Shield, GraduationCap  } from 'lucide-react'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 function RegisterContent() {
   const [formData, setFormData] = useState({
@@ -83,8 +85,8 @@ function RegisterContent() {
       case 'mobile':
         if (!value.trim()) {
           error = 'Mobile number is required'
-        } else if (!/^\d{10}$/.test(value.trim())) {
-          error = 'Mobile number must be exactly 10 digits'
+        } else if (value.length < 10) {
+          error = 'Please enter a valid phone number'
         }
         break
 
@@ -200,9 +202,9 @@ function RegisterContent() {
       }
 
       // Preserve callbackUrl when redirecting to login after successful registration
-      const loginUrl = callbackUrl
-        ? `/login?registered=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
-        : '/login?registered=1'
+      // Default to account page for new registrations
+      const redirectUrl = callbackUrl || '/account'
+      const loginUrl = `/login?registered=1&callbackUrl=${encodeURIComponent(redirectUrl)}`
       router.push(loginUrl)
     } catch (error) {
       console.error('Registration error:', error)
@@ -338,19 +340,18 @@ function RegisterContent() {
                   <Label htmlFor="mobile" className="text-gray-900 font-medium">
                     Mobile Number <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <Input
-                      id="mobile"
-                      type="tel"
+                  <div className={fieldErrors.mobile ? 'border-red-500' : ''}>
+                    <PhoneInput
+                      international
+                      defaultCountry="IN"
                       value={formData.mobile}
-                      onChange={(e) => handleInputChange('mobile', e.target.value)}
+                      onChange={(value) => handleInputChange('mobile', value || '')}
                       onBlur={() => handleBlur('mobile')}
-                      placeholder="Enter Your Mobile number"
-                      className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
-                        fieldErrors.mobile ? 'border-red-500 focus:border-red-500' : ''
-                      }`}
-                      required
+                      className="flex gap-0 [&>input]:h-12 [&>input]:md:h-11 [&>input]:bg-blue-50 [&>input]:border-2 [&>input]:border-blue-200 [&>input]:rounded-r-xl [&>input]:focus:border-blue-400 [&>input]:placeholder:text-gray-400 [&>input]:px-4 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:md:h-11 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-blue-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-5 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+                      numberInputProps={{
+                        className: "flex-1"
+                      }}
+                      placeholder="Enter phone number"
                     />
                   </div>
                   {fieldErrors.mobile && (

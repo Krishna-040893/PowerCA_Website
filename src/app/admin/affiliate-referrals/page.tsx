@@ -206,6 +206,12 @@ export default function AffiliateReferralsPage() {
     <AdminPageWrapper
       title="Affiliate Referrals"
       description="View all referral customers grouped by affiliate"
+      stats={[
+        { label: 'Total', value: totalStats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Pending', value: totalStats.pending, color: 'bg-orange-100 text-orange-800' },
+        { label: 'Completed', value: totalStats.completed, color: 'bg-green-100 text-green-800' },
+        { label: 'Affiliates', value: data.length, color: 'bg-purple-100 text-purple-800' }
+      ]}
       actions={
         <Button
           onClick={fetchReferrals}
@@ -218,71 +224,6 @@ export default function AffiliateReferralsPage() {
       }
     >
       <div>
-        {/* Stats removed from here as they'll be in the page content */}
-
-        {/* Summary Cards - Enhanced Mobile Design */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Referrals</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{totalStats.total}</p>
-                  <p className="text-xs text-gray-500 mt-1">All referrals</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Pending</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-orange-600">{totalStats.pending}</p>
-                  <p className="text-xs text-gray-500 mt-1">Awaiting</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-orange-50">
-                  <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Completed</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-green-600">{totalStats.completed}</p>
-                  <p className="text-xs text-gray-500 mt-1">Successful</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-100 shadow-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Active Affiliates</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-gray-900">{data.length}</p>
-                  <p className="text-xs text-gray-500 mt-1">Partners</p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-xl bg-purple-50">
-                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Filters - Enhanced Mobile */}
         <Card className="mb-5 shadow-sm border border-gray-100">
           <CardContent className="p-4">
@@ -303,12 +244,12 @@ export default function AffiliateReferralsPage() {
 
         {/* Main Content */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
+          {/* <CardHeader className="pb-4">
             <CardTitle className="text-lg sm:text-xl font-bold">Affiliate Referrals</CardTitle>
             <CardDescription className="text-xs sm:text-sm mt-1">
               Click on an affiliate to view their referral customers
             </CardDescription>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">

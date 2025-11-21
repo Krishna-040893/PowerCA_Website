@@ -121,6 +121,9 @@ export default function AdminBookingsPage() {
     <AdminPageWrapper
       title="Bookings"
       description="Manage and track demo bookings"
+      stats={[
+        { label: 'Total', value: bookings.length, color: 'bg-blue-100 text-blue-800' }
+      ]}
       actions={
         <Button onClick={fetchBookings} variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -128,32 +131,16 @@ export default function AdminBookingsPage() {
         </Button>
       }
     >
-        {/* Stats Overview - Enhanced Mobile Design */}
-        <Card className="shadow-sm border border-gray-100 mb-6">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Bookings</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{bookings.length}</p>
-                <p className="text-xs text-gray-500 mt-1">All time</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <Calendar className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Bookings Table - Enhanced */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
+          {/* <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-lg sm:text-xl font-bold">All Bookings</CardTitle>
                 <CardDescription className="text-xs sm:text-sm mt-1">View and manage demo bookings</CardDescription>
               </div>
             </div>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             {/* Search Filter - Enhanced Mobile */}
             <div className="flex gap-2 mb-5">
