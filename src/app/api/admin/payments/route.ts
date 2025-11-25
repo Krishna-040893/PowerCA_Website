@@ -90,7 +90,10 @@ export async function GET(_request: NextRequest) {
 
       if (orders) {
         orderAddressMap = orders.reduce((acc, order) => {
-          const addressData = order.user_addresses as { label: string; city: string; state: string; postcode: string; country: string } | null
+          const addresses = order.user_addresses as unknown as Array<{ label: string; city: string; state: string; postcode: string; country: string }> | null
+          const addressData = addresses && Array.isArray(addresses) && addresses.length > 0
+            ? addresses[0]
+            : null
           acc[order.order_id] = {
             // Use label from user_addresses for location, or fall back to customer_city/state
             location: addressData?.label || (order.customer_city && order.customer_state ? `${order.customer_city}, ${order.customer_state}` : null),
