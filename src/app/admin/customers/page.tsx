@@ -341,7 +341,7 @@ export default function AdminCustomersPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Calendar className="w-4 h-4" />
-                          {format(new Date(customer.createdAt), 'MMM dd, yyyy')}
+                          {format(new Date(customer.createdAt), 'dd/MM/yyyy')}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -474,7 +474,7 @@ export default function AdminCustomersPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-500">Registered At</label>
                     <p className="mt-1 text-gray-900">
-                      {format(new Date(selectedCustomer.createdAt), "MMMM dd, yyyy 'at' hh:mm a")}
+                      {format(new Date(selectedCustomer.createdAt), "dd/MM/yyyy 'at' hh:mm a")}
                     </p>
                   </div>
                 </div>

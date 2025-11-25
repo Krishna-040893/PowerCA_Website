@@ -245,7 +245,7 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Date(booking.date).toLocaleDateString()}
+                      {new Date(booking.date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{booking.time}</td>
                     <td className="px-6 py-4">

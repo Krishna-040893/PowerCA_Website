@@ -67,6 +67,9 @@ interface OrderHistory {
   issuedAt: string
   paidAt: string
   location: string
+  discountPercentage: number
+  discountAmount: number
+  originalAmount: number | null
 }
 
 interface UserData {
@@ -135,10 +138,16 @@ function AccountPageContent() {
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [expandedOrders, setExpandedOrders] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 5
 
   // Handle tab change - update both state and URL
   const handleTabChange = (value: string) => {
     setActiveTab(value)
+    // Reset pagination when switching to orders tab
+    if (value === 'orders') {
+      setCurrentPage(1)
+    }
     // Update URL without full page reload
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', value)
@@ -456,33 +465,33 @@ function AccountPageContent() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100 shadow-md">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:space-x-4 lg:space-x-6 w-full sm:w-auto">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex flex-col sm:flex-row items-center sm:space-x-3 w-full sm:w-auto">
               {/* Profile Photo Display with Edit Button */}
-              <div className="flex-shrink-0 mb-3 sm:mb-0">
+              <div className="flex-shrink-0">
                 <ProfilePhotoUpload
                   currentPhotoUrl={currentProfilePhotoUrl}
                   onPhotoUpdate={handleProfilePhotoUpdate}
                   onPhotoDelete={handleProfilePhotoDelete}
-                  size="md"
+                  size="sm"
                   editable={true}
                 />
               </div>
 
-              <div className="flex flex-col justify-center text-center sm:text-left">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+              <div className="flex flex-col justify-center text-center sm:text-left mt-1.5 sm:mt-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">
                   {session.user?.name || 'Welcome'}
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center sm:justify-start gap-2">
-                  <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                <p className="text-xs text-gray-600 flex items-center justify-center sm:justify-start gap-1.5">
+                  <Mail className="h-3 w-3 text-gray-400" />
                   <span className="truncate max-w-[200px] sm:max-w-none">{session.user?.email}</span>
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
-              size="default"
+              size="sm"
               onClick={() => signOut({ callbackUrl: '/' })}
               className="text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors w-full sm:w-auto"
             >
@@ -495,7 +504,7 @@ function AccountPageContent() {
 
       {/* Main Content */}
       <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-8 ${showAddressForm ? 'max-w-[1400px]' : 'max-w-6xl'}`}>
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-2">
           {/* Individual Spaced Tabs */}
           <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
             <TabsTrigger
@@ -525,38 +534,34 @@ function AccountPageContent() {
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6 mt-6">
-            {/* Affiliate Referral Info Banner - Only show if pending */}
+          <TabsContent value="profile" className="space-y-4">
+            {/* Affiliate Referral Info - Only show if pending */}
             {referralInfo && referralInfo.status === 'pending' && (
-              <Card className="shadow-lg border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg text-blue-700">
-                    <Package className="h-5 w-5" />
-                    Affiliate Referral Information
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    You were referred by an affiliate partner. Complete your payment to activate your account!
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4 border border-blue-200">
-                      <p className="text-xs text-gray-500 mb-1">Customer ID</p>
-                      <p className="text-lg font-bold text-blue-700">{referralInfo.customerId}</p>
+              <div className="py-2">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Package className="h-4 w-4" />
+                  Affiliate Referral Information
+                </h3>
+                <p className="text-xs text-gray-500 mb-2">
+                  You were referred by an affiliate partner. Complete your payment to activate your account!
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                  <div className="flex items-center gap-4 text-xs text-gray-700 mb-1.5">
+                    <div>
+                      <span className="text-gray-600">Customer ID:</span>{' '}
+                      <span className="font-semibold text-gray-900">{referralInfo.customerId}</span>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-blue-200">
-                      <p className="text-xs text-gray-500 mb-1">Referral Code</p>
-                      <p className="text-lg font-bold text-blue-700">{referralInfo.referralCode}</p>
+                    <div>
+                      <span className="text-gray-600">Referral Code:</span>{' '}
+                      <span className="font-semibold text-gray-900">{referralInfo.referralCode}</span>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>This information will be hidden once your payment is completed</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p className="text-xs text-gray-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>This information will be hidden once your payment is completed</span>
+                  </p>
+                </div>
+              </div>
             )}
 
             <Card className="shadow-lg border-0">
@@ -632,7 +637,7 @@ function AccountPageContent() {
           </TabsContent>
 
           {/* Billing Address Tab */}
-          <TabsContent value="billing" className="mt-6">
+          <TabsContent value="billing">
             <style jsx global>{`
               .billing-form input::placeholder,
               .billing-form textarea::placeholder {
@@ -763,12 +768,19 @@ function AccountPageContent() {
                                                 </span>
                                                 {originalIndex > 0 && (
                                                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                                                    {originalIndex}% Off
+                                                    {originalIndex * 10}% Off
                                                   </span>
                                                 )}
                                               </div>
                                               <button
-                                                onClick={() => router.push(`/checkout?addressId=${address.id}`)}
+                                                onClick={() => {
+                                                  // Store address ID in multiple locations for reliability
+                                                  sessionStorage.setItem('checkoutAddressId', address.id)
+                                                  localStorage.setItem('checkoutAddressId', address.id)
+
+                                                  // Navigate to checkout with addressId in URL
+                                                  router.push(`/checkout?addressId=${address.id}`)
+                                                }}
                                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
                                               >
                                                 Proceed to Order
@@ -858,10 +870,10 @@ function AccountPageContent() {
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading billing information...</span>
                   </div>
                 ) : (
-                  <div className="space-y-4 sm:space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {/* Firm Name */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Firm Name <span className="text-red-500">*</span>
                         </Label>
@@ -877,7 +889,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* GST No */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           GST No <span className="text-gray-400 text-xs">(Optional)</span>
                         </Label>
@@ -894,7 +906,7 @@ function AccountPageContent() {
                       </div>
 
                         {/* Location (Purchase Place) */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Location <span className="text-red-500">*</span>
                           <span className="text-gray-400 text-xs ml-1">(Place of purchase)</span>
@@ -908,7 +920,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Street Address */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Street Address <span className="text-red-500">*</span>
                         </Label>
@@ -924,7 +936,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Town/City */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Town/City <span className="text-red-500">*</span>
                         </Label>
@@ -937,7 +949,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Postcode/Zip */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Postcode/Zip <span className="text-red-500">*</span>
                         </Label>
@@ -951,7 +963,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Country */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Country <span className="text-red-500">*</span>
                         </Label>
@@ -978,7 +990,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* State */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           State <span className="text-red-500">*</span>
                         </Label>
@@ -1027,7 +1039,7 @@ function AccountPageContent() {
           </TabsContent>
 
           {/* Order History Tab */}
-          <TabsContent value="orders" className="space-y-6 mt-6">
+          <TabsContent value="orders" className="space-y-6">
             <Card className="shadow-lg border-0">
               <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -1052,8 +1064,11 @@ function AccountPageContent() {
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading order history...</span>
                   </div>
                 ) : userData && userData.orderHistory.length > 0 ? (
+                  <>
                   <div className="space-y-2">
-                    {userData.orderHistory.map((order) => {
+                    {userData.orderHistory
+                      .slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage)
+                      .map((order) => {
                       const isExpanded = expandedOrders.includes(order.invoiceNumber)
                       return (
                         <div
@@ -1074,7 +1089,7 @@ function AccountPageContent() {
                             {/* Left: Invoice info */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-900 text-base">Invoice: #{order.invoiceNumber}</p>
+                                <p className="font-semibold text-gray-900 text-base">Invoice No: #{order.invoiceNumber}</p>
                                 {order.location && (
                                   <span className="text-sm text-blue-600 flex items-center gap-0.5">
                                     <MapPin className="h-4 w-4" />
@@ -1111,13 +1126,39 @@ function AccountPageContent() {
                           {isExpanded && (
                             <div className="px-4 pb-4 pt-0 border-t border-gray-100 bg-gray-50">
                               <div className="grid grid-cols-3 gap-4 py-3 text-sm">
-                                <div>
-                                  <p className="text-gray-500 mb-1">Amount</p>
-                                  <p className="font-medium text-gray-900 flex items-center">
-                                    <IndianRupee className="h-4 w-4" />
-                                    {formatCurrency(order.amount).replace('₹', '')}
-                                  </p>
-                                </div>
+                                {order.originalAmount && order.discountAmount > 0 ? (
+                                  <>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Original Amount</p>
+                                      <p className="font-medium text-gray-400 line-through flex items-center">
+                                        <IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.originalAmount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Discount ({order.discountPercentage}%)</p>
+                                      <p className="font-medium text-green-600 flex items-center">
+                                        -<IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.discountAmount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Discounted Amount</p>
+                                      <p className="font-medium text-gray-900 flex items-center">
+                                        <IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.amount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div>
+                                    <p className="text-gray-500 mb-1">Amount</p>
+                                    <p className="font-medium text-gray-900 flex items-center">
+                                      <IndianRupee className="h-4 w-4" />
+                                      {formatCurrency(order.amount).replace('₹', '')}
+                                    </p>
+                                  </div>
+                                )}
                                 <div>
                                   <p className="text-gray-500 mb-1">GST</p>
                                   <p className="font-medium text-gray-900 flex items-center">
@@ -1152,6 +1193,50 @@ function AccountPageContent() {
                       )
                     })}
                   </div>
+
+                  {/* Pagination Controls */}
+                  {userData.orderHistory.length > ordersPerPage && (
+                    <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="text-sm"
+                      >
+                        Previous
+                      </Button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.ceil(userData.orderHistory.length / ordersPerPage) }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-9 h-9 text-sm ${
+                              currentPage === page
+                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(userData.orderHistory.length / ordersPerPage), prev + 1))}
+                        disabled={currentPage === Math.ceil(userData.orderHistory.length / ordersPerPage)}
+                        className="text-sm"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                  </>
                 ) : (
                   <div className="text-center py-8 sm:py-12">
                     <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />

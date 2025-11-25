@@ -344,7 +344,7 @@ export default function AdminAffiliatesPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(application.created_at), 'MMM dd, yyyy')}
+                          {format(new Date(application.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
                           <Dialog>
@@ -587,7 +587,7 @@ export default function AdminAffiliatesPage() {
                           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                               <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                              <span className="font-medium">{format(new Date(application.created_at), 'MMM dd, yyyy')}</span>
+                              <span className="font-medium">{format(new Date(application.created_at), 'dd/MM/yyyy')}</span>
                             </div>
                           </div>
 

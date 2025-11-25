@@ -234,7 +234,7 @@ export default function NewsletterSubscribersPage() {
                         </TableCell>
                         <TableCell>
                           {subscriber.subscribed_at
-                            ? format(new Date(subscriber.subscribed_at), 'dd MMM yyyy HH:mm')
+                            ? format(new Date(subscriber.subscribed_at), 'dd/MM/yyyy HH:mm')
                             : '-'}
                         </TableCell>
                       </TableRow>
@@ -262,7 +262,7 @@ export default function NewsletterSubscribersPage() {
                                 <p className="font-semibold text-sm text-gray-900 truncate">{subscriber.email}</p>
                                 <p className="text-xs text-gray-500">
                                   {subscriber.subscribed_at
-                                    ? format(new Date(subscriber.subscribed_at), 'dd MMM yyyy')
+                                    ? format(new Date(subscriber.subscribed_at), 'dd/MM/yyyy')
                                     : '-'}
                                 </p>
                               </div>

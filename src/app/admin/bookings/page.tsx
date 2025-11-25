@@ -11,6 +11,7 @@ import {Input  } from '@/components/ui/input'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import { Loader2, Calendar, Search, Eye, RefreshCw, Phone, Mail, User, Clock } from 'lucide-react'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { format } from 'date-fns'
 
 interface Booking {
   id: string
@@ -184,8 +185,9 @@ export default function AdminBookingsPage() {
                       <TableRow>
                         <TableHead className="text-base font-bold">Name</TableHead>
                         <TableHead className="text-base font-bold">Contact</TableHead>
-                        <TableHead className="text-base font-bold">Date & Time</TableHead>
+                        <TableHead className="text-base font-bold">Booking Date & Time</TableHead>
                         <TableHead className="text-base font-bold">Type</TableHead>
+                        <TableHead className="text-base font-bold">Created</TableHead>
                         <TableHead className="text-base font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -216,12 +218,18 @@ export default function AdminBookingsPage() {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <p>{booking.date}</p>
+                              <p>{format(new Date(booking.date), 'dd/MM/yyyy')}</p>
                               <p className="text-sm text-gray-500">{booking.time}</p>
                             </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{booking.type}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm">{format(new Date(booking.created_at), 'dd/MM/yyyy')}</p>
+                              <p className="text-xs text-gray-500">{new Date(booking.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Dialog>
@@ -258,9 +266,15 @@ export default function AdminBookingsPage() {
                                     <div>
                                       <h4 className="font-medium mb-2">Booking Information</h4>
                                       <div className="space-y-2 text-sm">
-                                        <p><Calendar className="inline h-4 w-4 mr-2" />{selectedBooking.date}</p>
+                                        <p><Calendar className="inline h-4 w-4 mr-2" />{format(new Date(selectedBooking.date), 'dd/MM/yyyy')}</p>
                                         <p><Clock className="inline h-4 w-4 mr-2" />{selectedBooking.time}</p>
                                       </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium mb-2">Created</h4>
+                                      <p className="text-sm text-gray-600">
+                                        {format(new Date(selectedBooking.created_at), 'dd/MM/yyyy')} {new Date(selectedBooking.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                      </p>
                                     </div>
                                     {selectedBooking.message && (
                                       <div>
@@ -321,7 +335,7 @@ export default function AdminBookingsPage() {
                           <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                               <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                              <span className="font-medium">{booking.date}</span>
+                              <span className="font-medium">{format(new Date(booking.date), 'dd/MM/yyyy')}</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                               <Clock className="h-3.5 w-3.5 text-green-500" />
@@ -386,13 +400,21 @@ export default function AdminBookingsPage() {
                                     <div className="space-y-2">
                                       <div className="flex items-center gap-2">
                                         <Calendar className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
-                                        <p className="text-sm font-medium text-gray-900">{selectedBooking.date}</p>
+                                        <p className="text-sm font-medium text-gray-900">{format(new Date(selectedBooking.date), 'dd/MM/yyyy')}</p>
                                       </div>
                                       <div className="flex items-center gap-2">
                                         <Clock className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
                                         <p className="text-sm font-medium text-gray-900">{selectedBooking.time}</p>
                                       </div>
                                     </div>
+                                  </div>
+
+                                  {/* Created Date Section */}
+                                  <div className="bg-gray-50 rounded-lg p-3">
+                                    <h4 className="font-semibold text-sm text-gray-900 mb-2">Created</h4>
+                                    <p className="text-xs text-gray-700">
+                                      {format(new Date(selectedBooking.created_at), 'dd/MM/yyyy')} {new Date(selectedBooking.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                    </p>
                                   </div>
 
                                   {/* Message Section */}

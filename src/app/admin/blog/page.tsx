@@ -526,7 +526,7 @@ export default function AdminBlogPage() {
                       </TableCell>
                       <TableCell>
                         {post.published_at
-                          ? format(new Date(post.published_at), 'MMM dd, yyyy')
+                          ? format(new Date(post.published_at), 'dd/MM/yyyy')
                           : '-'}
                       </TableCell>
                       <TableCell>
@@ -597,7 +597,7 @@ export default function AdminBlogPage() {
                               <p className="text-xs text-gray-500">Published</p>
                               <p className="text-xs font-medium text-gray-900 mt-1">
                                 {post.published_at
-                                  ? format(new Date(post.published_at), 'MMM dd, yyyy')
+                                  ? format(new Date(post.published_at), 'dd/MM/yyyy')
                                   : '-'}
                               </p>
                             </div>

@@ -33,6 +33,11 @@ interface InvoiceData {
     amount: number
     created_at: string
   }
+  discount_info?: {
+    discount_percentage: number
+    discount_amount: number
+    original_amount: number | null
+  }
 }
 
 function PaymentSuccessContent() {
@@ -168,6 +173,11 @@ function PaymentSuccessContent() {
         })
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  // Separate effect for confetti animation
+  useEffect(() => {
     // Trigger confetti animation only on success
     if (paymentStatus === 'success' || invoiceData) {
       confetti({
@@ -176,7 +186,7 @@ function PaymentSuccessContent() {
         origin: { y: 0.6 }
       })
     }
-  }, [searchParams, paymentStatus, invoiceData])
+  }, [paymentStatus, invoiceData])
 
   const handleDownloadInvoice = async () => {
     if (!invoiceData?.invoice_number) {
@@ -451,8 +461,29 @@ function PaymentSuccessContent() {
                             Complete setup with first year subscription FREE
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-right font-medium">{formatCurrency(invoiceData.amount)}</td>
+                        <td className="px-4 py-4 text-right font-medium">
+                          {invoiceData.discount_info?.original_amount ? (
+                            <div>
+                              <span className="text-gray-400 line-through text-sm block">
+                                {formatCurrency(invoiceData.discount_info.original_amount)}
+                              </span>
+                              <span>{formatCurrency(invoiceData.amount)}</span>
+                            </div>
+                          ) : (
+                            formatCurrency(invoiceData.amount)
+                          )}
+                        </td>
                       </tr>
+                      {invoiceData.discount_info && invoiceData.discount_info.discount_percentage > 0 && (
+                        <tr className="bg-green-50">
+                          <td className="px-4 py-3 text-sm text-green-700 font-medium">
+                            Discount ({invoiceData.discount_info.discount_percentage}%)
+                          </td>
+                          <td className="px-4 py-3 text-right text-sm text-green-700 font-medium">
+                            -{formatCurrency(invoiceData.discount_info.discount_amount)}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <td className="px-4 py-3 text-sm text-gray-600">CGST (9%)</td>
                         <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(invoiceData.amount).cgst)}</td>

@@ -29,8 +29,9 @@ export function AdminPageWrapper({
         {/* Page Header - Mobile optimized */}
         {(title || description || actions || stats) && (
           <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-              {/* Left Column - Title & Description */}
+            {/* Header Row - Title & Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              {/* Title & Description */}
               <div className="text-center sm:text-left">
                 {title && (
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h1>
@@ -40,35 +41,29 @@ export function AdminPageWrapper({
                 )}
               </div>
 
-              {/* Center Column - Stats */}
-              {stats && stats.length > 0 && (
-                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                  {stats.map((stat, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col items-center"
-                    >
-                      <span className="text-xs font-medium text-gray-500">
-                        {stat.label}
-                      </span>
-                      <span
-                        className={`text-lg sm:text-xl font-bold mt-0.5 ${
-                          stat.color ? stat.color.replace('bg-', 'text-').replace('-100', '-700') : 'text-blue-700'
-                        }`}
-                      >
-                        {stat.value}
-                      </span>
-                    </div>
-                  ))}
+              {/* Actions */}
+              {actions && (
+                <div className="flex items-center justify-center sm:justify-end space-x-2 sm:space-x-3">
+                  {actions}
                 </div>
               )}
-              {!stats && <div className="hidden sm:block" />}
-
-              {/* Right Column - Actions */}
-              <div className="flex items-center justify-center sm:justify-end space-x-2 sm:space-x-3">
-                {actions}
-              </div>
             </div>
+
+            {/* Stats Row - All in one line */}
+            {stats && stats.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
+                {stats.map((stat, index) => (
+                  <div
+                    key={index}
+                    className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold ${
+                      stat.color || 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {stat.label}: {stat.value}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

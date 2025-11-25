@@ -21,8 +21,24 @@ function LoginContent() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/account'
+  const callbackUrl = searchParams.get('callbackUrl') || '/account?tab=billing'
+
+  // Email validation function
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  // Validate email on blur
+  const handleEmailBlur = () => {
+    if (email && !isValidEmail(email)) {
+      setEmailError('Enter valid email address')
+    } else {
+      setEmailError('')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,6 +46,13 @@ function LoginContent() {
     setError('')
 
     let hasError = false
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      setError('Enter valid email address')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const result = await signIn('credentials', {
@@ -91,7 +114,7 @@ function LoginContent() {
           const referralData = await referralResponse.json()
 
           if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
-            // Referral user - redirect to account page with billing tab open
+            // Referral user - redirect to account page with billing tab
             window.location.href = '/account?tab=billing'
             return
           }
@@ -213,16 +236,23 @@ function LoginContent() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value)
+                    if (emailError) {
+                      setEmailError('')
+                    }
                     if (error) {
                       setError('')
                       setIsLoading(false)
                     }
                   }}
+                  onBlur={handleEmailBlur}
                   placeholder="Enter Your Email"
-                  className="pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                  className={`pl-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${emailError ? 'border-red-500' : ''}`}
                   required
                 />
               </div>
+              {emailError && (
+                <p className="text-sm text-red-600 mt-1">{emailError}</p>
+              )}
             </div>
 
             {/* Password Field */}

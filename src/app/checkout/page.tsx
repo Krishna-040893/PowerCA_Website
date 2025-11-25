@@ -192,7 +192,7 @@ function CheckoutContent() {
   const product = featuresConfig.pricingPlans[0]
 
   // Calculate pricing based on address position
-  // First address = full price, Second+ addresses = progressive discount (1%, 2%, 3%...)
+  // First address = full price, Second+ addresses = progressive discount (10%, 20%, 30%...)
   const getAddressIndex = () => {
     if (!selectedAddressId || savedAddresses.length === 0) return 0
     return savedAddresses.findIndex(addr => addr.id === selectedAddressId)
@@ -200,8 +200,8 @@ function CheckoutContent() {
 
   const addressIndex = getAddressIndex()
   const isFirstAddress = addressIndex === 0
-  const discountRate = addressIndex * 0.01 // Progressive: 0% for 1st, 1% for 2nd, 2% for 3rd, etc.
-  const discountPercentage = addressIndex // For display: 0, 1, 2, 3...
+  const discountRate = addressIndex * 0.10 // Progressive: 0% for 1st, 10% for 2nd, 20% for 3rd, etc.
+  const discountPercentage = addressIndex * 10 // For display: 0, 10, 20, 30...
 
   const fullBasePrice = 50000 // ₹50,000 base price
   const discountAmount = fullBasePrice * discountRate
@@ -210,6 +210,7 @@ function CheckoutContent() {
   const gstRate = 0.18 // 18% GST
   const gstAmount = subtotal * gstRate
   const total = subtotal + gstAmount
+
 
   // Enforce authentication - redirect to login if not authenticated
   useEffect(() => {
@@ -304,34 +305,31 @@ function CheckoutContent() {
     }
   }, [searchParams])
 
-  // Fetch saved addresses
+  // Track if address was loaded from sessionStorage
+  const [addressLoadedFromStorage, setAddressLoadedFromStorage] = useState(false)
+
+  // Fetch saved addresses FIRST (before other useEffects)
   useEffect(() => {
     if (session?.user) {
       fetchSavedAddresses()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
-
-  // Handle addressId query parameter
-  useEffect(() => {
-    const addressId = searchParams.get('addressId')
-    if (addressId && savedAddresses.length > 0) {
-      const address = savedAddresses.find(addr => addr.id === addressId)
-      if (address) {
-        handleSelectAddress(address)
-      }
-    }
-  }, [savedAddresses, searchParams])
 
   useEffect(() => {
     if (session?.user) {
-      // Skip auto-fill if there's an addressId in URL (address will be loaded from saved addresses)
+      // Check if we have addressId in URL/storage - if so, skip auto-fill entirely
       const addressIdFromUrl = searchParams.get('addressId')
-      if (addressIdFromUrl) {
-        // Only set email if not provided by address
-        setFormData(prev => ({
-          ...prev,
-          email: prev.email || session.user?.email || '',
-        }))
+      const addressIdFromSession = sessionStorage.getItem('checkoutAddressId')
+      const addressIdFromLocal = localStorage.getItem('checkoutAddressId')
+
+      if (addressIdFromUrl || addressIdFromSession || addressIdFromLocal) {
+        // Address will be loaded by fetchSavedAddresses, skip this auto-fill
+        return
+      }
+
+      // Skip auto-fill if address was already loaded from storage
+      if (addressLoadedFromStorage) {
         return
       }
 
@@ -374,7 +372,7 @@ function CheckoutContent() {
 
       fetchLastOrder()
     }
-  }, [session, searchParams])
+  }, [session, addressLoadedFromStorage, searchParams])
 
   const fetchSavedAddresses = async () => {
     setLoadingAddresses(true)
@@ -385,13 +383,26 @@ function CheckoutContent() {
       if (result.success && result.addresses) {
         setSavedAddresses(result.addresses)
 
-        // Check for addressId in URL first
+        // Check multiple sources for addressId (in order of priority)
         const addressIdFromUrl = searchParams.get('addressId')
-        if (addressIdFromUrl) {
-          const urlAddress = result.addresses.find((addr: SavedAddress) => addr.id === addressIdFromUrl)
-          if (urlAddress) {
-            loadAddressToForm(urlAddress)
-            setSelectedAddressId(urlAddress.id)
+        const addressIdFromSession = sessionStorage.getItem('checkoutAddressId')
+        const addressIdFromLocal = localStorage.getItem('checkoutAddressId')
+
+        const addressIdFromStorage = addressIdFromUrl || addressIdFromSession || addressIdFromLocal
+
+        if (addressIdFromStorage) {
+          const storageAddress = result.addresses.find((addr: SavedAddress) => addr.id === addressIdFromStorage)
+          if (storageAddress) {
+            // Set the flag FIRST to prevent other useEffects from running
+            setAddressLoadedFromStorage(true)
+
+            // Then load the address data
+            loadAddressToForm(storageAddress)
+            setSelectedAddressId(storageAddress.id)
+
+            // Clear all storage after using
+            sessionStorage.removeItem('checkoutAddressId')
+            localStorage.removeItem('checkoutAddressId')
           }
         } else {
           // Auto-select default address if exists and form is empty
@@ -417,8 +428,7 @@ function CheckoutContent() {
   }
 
   const loadAddressToForm = (address: SavedAddress) => {
-    setFormData(prev => ({
-      ...prev,
+    const newData = {
       firstName: address.full_name,
       firmName: address.firm_name,
       gstNo: address.gst_no || '',
@@ -429,7 +439,11 @@ function CheckoutContent() {
       country: address.country,
       phone: address.phone,
       email: address.email,
-    }))
+      company: '',
+      orderNotes: '',
+    }
+
+    setFormData(newData)
   }
 
   const handleSaveAddress = async () => {
@@ -527,12 +541,6 @@ function CheckoutContent() {
     }
   }
 
-  const handleSelectAddress = (address: SavedAddress) => {
-    setSelectedAddressId(address.id)
-    loadAddressToForm(address)
-    setAddressSaveSuccess(false)
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
@@ -600,6 +608,10 @@ function CheckoutContent() {
           gstNo: formData.gstNo,
           gstAmount: gstAmount,
           gstPercentage: gstRate * 100, // Convert 0.18 to 18
+          // Discount information for progressive pricing
+          discountPercentage: discountPercentage,
+          discountAmount: discountAmount,
+          originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -711,6 +723,10 @@ function CheckoutContent() {
           postcode: formData.postcode,
           gstNo: formData.gstNo,
           addressId: selectedAddressId, // Track which address this purchase is for
+          // Discount information for progressive pricing
+          discountPercentage: discountPercentage,
+          discountAmount: discountAmount,
+          originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -957,7 +973,7 @@ function CheckoutContent() {
                         <Input
                           value={formData.firstName}
                           disabled
-                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                         />
                       </div>
                       <div>
@@ -965,7 +981,7 @@ function CheckoutContent() {
                         <Input
                           value={formData.firmName}
                           disabled
-                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                         />
                       </div>
                     </div>
@@ -976,7 +992,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.gstNo || 'Not provided'}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -986,7 +1002,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.address}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -996,7 +1012,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.city}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -1006,7 +1022,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.postcode}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -1016,7 +1032,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.country}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -1026,7 +1042,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.state}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -1036,7 +1052,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.phone}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
 
@@ -1046,7 +1062,7 @@ function CheckoutContent() {
                       <Input
                         value={formData.email}
                         disabled
-                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-12 !px-5 !py-3"
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
                     </div>
                   </div>

@@ -40,6 +40,16 @@ interface Payment {
   firm_name?: string
   created_at: string
   updated_at: string
+  // Discount fields
+  discount_percentage?: number
+  discount_amount?: number
+  original_amount?: number
+  // Location fields
+  location?: string  // Label field from user_addresses (e.g., "Udumalpet, Tamil Nadu")
+  city?: string
+  state?: string
+  postcode?: string
+  country?: string
 }
 
 export default function AdminPaymentsPage() {
@@ -297,6 +307,7 @@ export default function AdminPaymentsPage() {
                       <TableHead className="text-base font-bold">Order ID</TableHead>
                       <TableHead className="text-base font-bold">Customer</TableHead>
                       <TableHead className="text-base font-bold">Amount</TableHead>
+                      <TableHead className="text-base font-bold">Discount</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
                       <TableHead className="text-base font-bold">Date</TableHead>
                       <TableHead className="text-base font-bold">Actions</TableHead>
@@ -324,12 +335,30 @@ export default function AdminPaymentsPage() {
                         </TableCell>
                         <TableCell>
                           <p className="font-medium">₹{payment.amount.toFixed(2)}</p>
-                          <p className="text-xs text-gray-500">{payment.currency}</p>
+                          {payment.location && (
+                            <p className="text-xs text-blue-600 font-medium mt-0.5">
+                              {payment.location}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(payment.discount_percentage !== null && payment.discount_percentage !== undefined && Number(payment.discount_percentage) > 0) ? (
+                            <div>
+                              <p className="text-sm font-medium text-orange-600">
+                                {payment.discount_percentage}%
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{Number(payment.discount_amount || 0).toFixed(2)}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell>{getStatusBadge(payment.status)}</TableCell>
                         <TableCell>
-                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString()}</p>
-                          <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString()}</p>
+                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                          <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -399,12 +428,58 @@ export default function AdminPaymentsPage() {
                                         </div>
                                       </div>
                                     </div>
+                                    {/* Discount Information */}
+                                    {(selectedPayment.discount_percentage || selectedPayment.discount_amount) && (
+                                      <div className="bg-orange-50 rounded-lg p-3">
+                                        <h4 className="font-medium mb-2 text-orange-800">Discount Information</h4>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                          {selectedPayment.discount_percentage && (
+                                            <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
+                                          )}
+                                          {selectedPayment.discount_amount && (
+                                            <p><span className="font-medium">Discount Amount:</span> ₹{selectedPayment.discount_amount.toFixed(2)}</p>
+                                          )}
+                                          {selectedPayment.original_amount && (
+                                            <p><span className="font-medium">Original Amount:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {/* Location Information */}
+                                    {(selectedPayment.location || selectedPayment.city || selectedPayment.state || selectedPayment.address) && (
+                                      <div className="bg-indigo-50 rounded-lg p-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h4 className="font-medium text-indigo-800">Location (Place of Purchase)</h4>
+                                          {selectedPayment.location && (
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
+                                              {selectedPayment.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="space-y-1 text-sm">
+                                          {selectedPayment.address && (
+                                            <p><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                          )}
+                                          {(selectedPayment.city || selectedPayment.state) && (
+                                            <p>
+                                              <span className="font-medium">City/State:</span> {[selectedPayment.city, selectedPayment.state].filter(Boolean).join(', ')}
+                                            </p>
+                                          )}
+                                          {selectedPayment.postcode && (
+                                            <p><span className="font-medium">Postcode:</span> {selectedPayment.postcode}</p>
+                                          )}
+                                          {selectedPayment.country && (
+                                            <p><span className="font-medium">Country:</span> {selectedPayment.country}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
                                       <div>
-                                        <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                        <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                       </div>
                                       <div>
-                                        <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
+                                        <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.updated_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -460,9 +535,9 @@ export default function AdminPaymentsPage() {
 
                         {/* Date */}
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <span>{new Date(payment.created_at).toLocaleDateString()}</span>
+                          <span>{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                           <span>•</span>
-                          <span>{new Date(payment.created_at).toLocaleTimeString()}</span>
+                          <span>{new Date(payment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                         </div>
 
                         {/* Actions */}
@@ -534,12 +609,58 @@ export default function AdminPaymentsPage() {
                                       </div>
                                     </div>
                                   </div>
+                                  {/* Discount Information */}
+                                  {(selectedPayment.discount_percentage || selectedPayment.discount_amount) && (
+                                    <div className="bg-orange-50 rounded-lg p-3">
+                                      <h4 className="font-medium mb-2 text-orange-800">Discount Information</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {selectedPayment.discount_percentage && (
+                                          <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
+                                        )}
+                                        {selectedPayment.discount_amount && (
+                                          <p><span className="font-medium">Discount Amount:</span> ₹{selectedPayment.discount_amount.toFixed(2)}</p>
+                                        )}
+                                        {selectedPayment.original_amount && (
+                                          <p><span className="font-medium">Original Amount:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Location Information */}
+                                  {(selectedPayment.location || selectedPayment.city || selectedPayment.state || selectedPayment.address) && (
+                                    <div className="bg-indigo-50 rounded-lg p-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <h4 className="font-medium text-indigo-800">Location (Place of Purchase)</h4>
+                                        {selectedPayment.location && (
+                                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
+                                            {selectedPayment.location}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="space-y-1 text-sm">
+                                        {selectedPayment.address && (
+                                          <p><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                        )}
+                                        {(selectedPayment.city || selectedPayment.state) && (
+                                          <p>
+                                            <span className="font-medium">City/State:</span> {[selectedPayment.city, selectedPayment.state].filter(Boolean).join(', ')}
+                                          </p>
+                                        )}
+                                        {selectedPayment.postcode && (
+                                          <p><span className="font-medium">Postcode:</span> {selectedPayment.postcode}</p>
+                                        )}
+                                        {selectedPayment.country && (
+                                          <p><span className="font-medium">Country:</span> {selectedPayment.country}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
                                     <div>
-                                      <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                      <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                     </div>
                                     <div>
-                                      <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
+                                      <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.updated_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                     </div>
                                   </div>
                                 </div>

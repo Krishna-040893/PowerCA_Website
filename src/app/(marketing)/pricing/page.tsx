@@ -82,7 +82,7 @@ function PricingContent() {
     }
 
     if (!session) {
-      // Redirect to login with callback URL to return to account page
+      // Redirect to login with callback URL to return to account page with billing tab
       window.location.href = `/login?callbackUrl=${encodeURIComponent('/account?tab=billing')}`
       return
     }

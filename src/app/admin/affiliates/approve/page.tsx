@@ -3,14 +3,15 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
-import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Star  } from 'lucide-react'
+import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Search  } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { Input } from '@/components/ui/input'
 
 interface AffiliateApplication {
   id: string
@@ -39,10 +40,12 @@ interface AffiliateApplication {
 export default function AdminAffiliateApprovalPage() {
   const { isAuthenticated, isLoading: authLoading, adminUser, getAuthHeaders } = useAdminAuth()
   const [applications, setApplications] = useState<AffiliateApplication[]>([])
+  const [filteredApplications, setFilteredApplications] = useState<AffiliateApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedApplication, setSelectedApplication] = useState<AffiliateApplication | null>(null)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
 
@@ -79,6 +82,27 @@ export default function AdminAffiliateApprovalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading])
 
+  // Filter applications based on search term
+  useEffect(() => {
+    let filtered = [...applications]
+
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(app =>
+        app.name?.toLowerCase().includes(search) ||
+        app.email?.toLowerCase().includes(search) ||
+        app.phone?.toLowerCase().includes(search) ||
+        app.company_name?.toLowerCase().includes(search) ||
+        app.city?.toLowerCase().includes(search) ||
+        app.state?.toLowerCase().includes(search) ||
+        app.referral_code?.toLowerCase().includes(search)
+      )
+    }
+
+    setFilteredApplications(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
+  }, [applications, searchTerm])
+
   const getStatusBadge = (status: string) => {
     const config = {
       pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -111,7 +135,7 @@ export default function AdminAffiliateApprovalPage() {
       title="Approved Affiliates"
       description="View and manage approved affiliate partners"
       stats={[
-        { label: 'Total', value: applications.length, color: 'bg-green-100 text-green-800' }
+        { label: 'Total', value: filteredApplications.length, color: 'bg-green-100 text-green-800' }
       ]}
       actions={
         <Button onClick={fetchApplications} variant="outline" size="sm">
@@ -122,19 +146,19 @@ export default function AdminAffiliateApprovalPage() {
     >
         {/* Applications Table */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                {/* <CardTitle className="text-lg sm:text-xl font-bold">Approved</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">All approved and active affiliate partners</CardDescription> */}
+          <CardContent className="pt-6">
+            {/* Search Filter */}
+            <div className="mb-5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search by name, email, phone, company, city, state, or referral code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                />
               </div>
-              <Button onClick={fetchApplications} variant="outline" size="sm">
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
             </div>
-          </CardHeader>
-          <CardContent>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
@@ -146,9 +170,9 @@ export default function AdminAffiliateApprovalPage() {
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
                 <p className="mt-2 text-gray-600">Loading applications...</p>
               </div>
-            ) : applications.length === 0 ? (
+            ) : filteredApplications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No approved affiliates found
+                {searchTerm ? 'No affiliates match your search' : 'No approved affiliates found'}
               </div>
             ) : (
               <>
@@ -167,7 +191,7 @@ export default function AdminAffiliateApprovalPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {applications
+                    {filteredApplications
                       .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                       .map((application) => (
                       <TableRow key={application.id}>
@@ -187,7 +211,7 @@ export default function AdminAffiliateApprovalPage() {
                         <TableCell>{application.monthly_leads || '-'}</TableCell>
                         <TableCell>{getStatusBadge(application.status)}</TableCell>
                         <TableCell>
-                          {format(new Date(application.created_at), 'MMM dd, yyyy')}
+                          {format(new Date(application.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
                           <Button
@@ -210,7 +234,7 @@ export default function AdminAffiliateApprovalPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                  {applications
+                  {filteredApplications
                     .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                     .map((application) => (
                     <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
@@ -256,7 +280,7 @@ export default function AdminAffiliateApprovalPage() {
                           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                               <Clock className="h-3.5 w-3.5 text-blue-500" />
-                              <span className="font-medium">{format(new Date(application.created_at), 'MMM dd, yyyy')}</span>
+                              <span className="font-medium">{format(new Date(application.created_at), 'dd/MM/yyyy')}</span>
                             </div>
                           </div>
 
@@ -282,7 +306,7 @@ export default function AdminAffiliateApprovalPage() {
               {/* Pagination */}
               <AdminPagination
                 currentPage={currentPage}
-                totalItems={applications.length}
+                totalItems={filteredApplications.length}
                 itemsPerPage={ITEMS_PER_PAGE}
                 onPageChange={setCurrentPage}
                 itemName="affiliates"
@@ -373,7 +397,7 @@ export default function AdminAffiliateApprovalPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
                       <p className="text-sm text-green-700 font-medium">
-                        Approved on {format(new Date(selectedApplication.approved_at), 'MMM dd, yyyy')}
+                        Approved on {format(new Date(selectedApplication.approved_at), 'dd/MM/yyyy')}
                       </p>
                     </div>
                   </div>

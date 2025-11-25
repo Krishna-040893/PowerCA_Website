@@ -186,13 +186,18 @@ export default function AffiliatePaymentsPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
+    const date = new Date(dateString)
+    const dateFormatted = date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
     })
+    const timeFormatted = date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    return `${dateFormatted} ${timeFormatted}`
   }
 
   return (

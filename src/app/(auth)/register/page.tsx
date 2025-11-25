@@ -202,8 +202,8 @@ function RegisterContent() {
       }
 
       // Preserve callbackUrl when redirecting to login after successful registration
-      // Default to account page for new registrations
-      const redirectUrl = callbackUrl || '/account'
+      // Default to account page with billing tab for new registrations
+      const redirectUrl = callbackUrl || '/account?tab=billing'
       const loginUrl = `/login?registered=1&callbackUrl=${encodeURIComponent(redirectUrl)}`
       router.push(loginUrl)
     } catch (error) {

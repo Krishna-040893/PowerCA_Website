@@ -30,9 +30,33 @@ export async function GET(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
+    // Normalize payment to single object (Supabase returns array from join)
+    const payment = Array.isArray(invoice.payment) ? invoice.payment[0] : invoice.payment
+    let discountInfo = null
+
+    if (payment?.order_id) {
+      const { data: orderData } = await supabase
+        .from('payment_orders')
+        .select('discount_percentage, discount_amount, original_amount')
+        .eq('order_id', payment.order_id)
+        .single()
+
+      if (orderData) {
+        discountInfo = {
+          discount_percentage: orderData.discount_percentage || 0,
+          discount_amount: orderData.discount_amount || 0,
+          original_amount: orderData.original_amount || null
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      data: invoice
+      data: {
+        ...invoice,
+        payment: payment, // Return as single object, not array
+        discount_info: discountInfo
+      }
     })
 
   } catch (error) {
