@@ -304,8 +304,13 @@ export default function PaymentOrdersPage() {
                               {order.discount_percentage}%
                             </div>
                             <div className="text-xs text-gray-500">
-                              ₹{Number(order.discount_amount || 0).toFixed(2)}
+                              -₹{Number(order.discount_amount || 0).toFixed(2)}
                             </div>
+                            {order.original_amount && (
+                              <div className="text-xs text-green-600 font-medium">
+                                ₹{(Number(order.original_amount) - Number(order.discount_amount || 0)).toFixed(2)}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
@@ -570,21 +575,30 @@ export default function PaymentOrdersPage() {
                         <p className="font-medium text-orange-600">{selectedOrder.discount_percentage}%</p>
                       </div>
                     )}
+                    {selectedOrder.original_amount && (
+                      <div>
+                        <span className="text-gray-600">Original Price:</span>
+                        <p className="font-medium flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {selectedOrder.original_amount.toFixed(2)}
+                        </p>
+                      </div>
+                    )}
                     {selectedOrder.discount_amount && (
                       <div>
                         <span className="text-gray-600">Discount Amount:</span>
-                        <p className="font-medium text-orange-600 flex items-center">
-                          <IndianRupee className="h-3 w-3" />
+                        <p className="font-medium text-red-600 flex items-center">
+                          -<IndianRupee className="h-3 w-3" />
                           {selectedOrder.discount_amount.toFixed(2)}
                         </p>
                       </div>
                     )}
-                    {selectedOrder.original_amount && (
+                    {selectedOrder.original_amount && selectedOrder.discount_amount && (
                       <div>
-                        <span className="text-gray-600">Original Amount:</span>
-                        <p className="font-medium flex items-center">
+                        <span className="text-gray-600">Discounted Price:</span>
+                        <p className="font-bold text-green-600 flex items-center">
                           <IndianRupee className="h-3 w-3" />
-                          {selectedOrder.original_amount.toFixed(2)}
+                          {(selectedOrder.original_amount - selectedOrder.discount_amount).toFixed(2)}
                         </p>
                       </div>
                     )}

@@ -192,7 +192,7 @@ function CheckoutContent() {
   const product = featuresConfig.pricingPlans[0]
 
   // Calculate pricing based on address position
-  // First address = full price, Second+ addresses = progressive discount (10%, 20%, 30%...)
+  // First address = full price, Second+ addresses = flat 10% discount
   const getAddressIndex = () => {
     if (!selectedAddressId || savedAddresses.length === 0) return 0
     return savedAddresses.findIndex(addr => addr.id === selectedAddressId)
@@ -200,8 +200,8 @@ function CheckoutContent() {
 
   const addressIndex = getAddressIndex()
   const isFirstAddress = addressIndex === 0
-  const discountRate = addressIndex * 0.10 // Progressive: 0% for 1st, 10% for 2nd, 20% for 3rd, etc.
-  const discountPercentage = addressIndex * 10 // For display: 0, 10, 20, 30...
+  const discountRate = isFirstAddress ? 0 : 0.10 // Flat 10% for 2nd address onwards
+  const discountPercentage = isFirstAddress ? 0 : 10 // For display: 0 for 1st, 10 for 2nd+
 
   const fullBasePrice = 50000 // ₹50,000 base price
   const discountAmount = fullBasePrice * discountRate
@@ -1166,9 +1166,7 @@ function CheckoutContent() {
                   {/* Show discount info for second+ address */}
                   {!isFirstAddress && selectedAddressId && (
                     <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium">{discountPercentage}% Discount
-
-                      </span>
+                      <span className="font-medium">{discountPercentage}% Discount</span>
                       <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
                     </div>
                   )}

@@ -348,8 +348,13 @@ export default function AdminPaymentsPage() {
                                 {payment.discount_percentage}%
                               </p>
                               <p className="text-xs text-gray-500">
-                                ₹{Number(payment.discount_amount || 0).toFixed(2)}
+                                -₹{Number(payment.discount_amount || 0).toFixed(2)}
                               </p>
+                              {payment.original_amount && (
+                                <p className="text-xs text-green-600 font-medium">
+                                  ₹{(Number(payment.original_amount) - Number(payment.discount_amount || 0)).toFixed(2)}
+                                </p>
+                              )}
                             </div>
                           ) : (
                             <span className="text-sm text-gray-400">-</span>
@@ -436,11 +441,14 @@ export default function AdminPaymentsPage() {
                                           {selectedPayment.discount_percentage && (
                                             <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
                                           )}
-                                          {selectedPayment.discount_amount && (
-                                            <p><span className="font-medium">Discount Amount:</span> ₹{selectedPayment.discount_amount.toFixed(2)}</p>
-                                          )}
                                           {selectedPayment.original_amount && (
-                                            <p><span className="font-medium">Original Amount:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                            <p><span className="font-medium">Original Price:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                          )}
+                                          {selectedPayment.discount_amount && (
+                                            <p><span className="font-medium">Discount Amount:</span> <span className="text-red-600">-₹{selectedPayment.discount_amount.toFixed(2)}</span></p>
+                                          )}
+                                          {selectedPayment.original_amount && selectedPayment.discount_amount && (
+                                            <p><span className="font-medium">Discounted Price:</span> <span className="text-green-600 font-bold">₹{(selectedPayment.original_amount - selectedPayment.discount_amount).toFixed(2)}</span></p>
                                           )}
                                         </div>
                                       </div>
@@ -617,11 +625,14 @@ export default function AdminPaymentsPage() {
                                         {selectedPayment.discount_percentage && (
                                           <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
                                         )}
-                                        {selectedPayment.discount_amount && (
-                                          <p><span className="font-medium">Discount Amount:</span> ₹{selectedPayment.discount_amount.toFixed(2)}</p>
-                                        )}
                                         {selectedPayment.original_amount && (
-                                          <p><span className="font-medium">Original Amount:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                          <p><span className="font-medium">Original Price:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                        )}
+                                        {selectedPayment.discount_amount && (
+                                          <p><span className="font-medium">Discount Amount:</span> <span className="text-red-600">-₹{selectedPayment.discount_amount.toFixed(2)}</span></p>
+                                        )}
+                                        {selectedPayment.original_amount && selectedPayment.discount_amount && (
+                                          <p><span className="font-medium">Discounted Price:</span> <span className="text-green-600 font-bold">₹{(selectedPayment.original_amount - selectedPayment.discount_amount).toFixed(2)}</span></p>
                                         )}
                                       </div>
                                     </div>

@@ -751,7 +751,6 @@ function AccountPageContent() {
                                           <div className="text-sm text-gray-600 space-y-1">
                                             <p>{address.address}</p>
                                             <p>{address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                            <p className="text-gray-500">{address.phone} • {address.email}</p>
                                           </div>
                                           {/* Purchase status */}
                                           {purchasedAddressIds.includes(address.id) ? (
@@ -768,7 +767,7 @@ function AccountPageContent() {
                                                 </span>
                                                 {originalIndex > 0 && (
                                                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                                                    {originalIndex * 10}% Off
+                                                    10% Off
                                                   </span>
                                                 )}
                                               </div>
@@ -909,7 +908,7 @@ function AccountPageContent() {
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
                           Location <span className="text-red-500">*</span>
-                          <span className="text-gray-400 text-xs ml-1">(Place of purchase)</span>
+                          <span className="text-gray-400 text-xs ml-1">(Branch location)</span>
                         </Label>
                         <Input
                           value={billingForm.location}
