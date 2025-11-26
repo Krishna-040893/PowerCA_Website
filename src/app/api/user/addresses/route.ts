@@ -3,6 +3,50 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// Common spelling corrections for Indian cities
+const citySpellingCorrections: Record<string, string> = {
+  'bangalroe': 'Bangalore', 'banglore': 'Bangalore', 'banglaore': 'Bangalore',
+  'bengluru': 'Bangalore', 'bengaluru': 'Bangalore', 'bangaluru': 'Bangalore',
+  'banagalore': 'Bangalore', 'bangalore': 'Bangalore',
+  'mumbai': 'Mumbai', 'mubai': 'Mumbai', 'mumbaii': 'Mumbai', 'bombay': 'Mumbai',
+  'delhi': 'Delhi', 'dehli': 'Delhi', 'delli': 'Delhi',
+  'newdelhi': 'New Delhi', 'new delhi': 'New Delhi',
+  'chennai': 'Chennai', 'chenai': 'Chennai', 'channai': 'Chennai', 'madras': 'Chennai',
+  'hyderabad': 'Hyderabad', 'hydrabad': 'Hyderabad', 'hiderabad': 'Hyderabad',
+  'kolkata': 'Kolkata', 'kolkatta': 'Kolkata', 'calcutta': 'Kolkata',
+  'pune': 'Pune', 'poona': 'Pune', 'puna': 'Pune',
+  'ahmedabad': 'Ahmedabad', 'ahemdabad': 'Ahmedabad', 'ahmadabad': 'Ahmedabad',
+  'jaipur': 'Jaipur', 'jaiur': 'Jaipur', 'jaipure': 'Jaipur',
+  'lucknow': 'Lucknow', 'luknow': 'Lucknow', 'luckow': 'Lucknow',
+  'chandigarh': 'Chandigarh', 'chandigrah': 'Chandigarh',
+  'gurgaon': 'Gurugram', 'gurugram': 'Gurugram', 'gurgoan': 'Gurugram',
+  'noida': 'Noida', 'nodia': 'Noida',
+  'coimbatore': 'Coimbatore', 'coimbatur': 'Coimbatore',
+  'indore': 'Indore', 'indor': 'Indore',
+  'kochi': 'Kochi', 'cochin': 'Kochi', 'kochin': 'Kochi',
+  'nagpur': 'Nagpur', 'nagpure': 'Nagpur',
+  'surat': 'Surat', 'suart': 'Surat',
+  'vadodara': 'Vadodara', 'baroda': 'Vadodara',
+  'visakhapatnam': 'Visakhapatnam', 'vizag': 'Visakhapatnam',
+  'bhopal': 'Bhopal', 'bhoapl': 'Bhopal',
+  'patna': 'Patna', 'panta': 'Patna',
+  'ranchi': 'Ranchi', 'rachi': 'Ranchi',
+  'thiruvananthapuram': 'Thiruvananthapuram', 'trivandrum': 'Thiruvananthapuram',
+}
+
+// Helper function to normalize location name (Title Case + Spelling Correction)
+const normalizeLocation = (location: string): string => {
+  if (!location) return ''
+  const trimmed = location.trim().toLowerCase()
+  if (citySpellingCorrections[trimmed]) {
+    return citySpellingCorrections[trimmed]
+  }
+  return trimmed
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 // GET /api/user/addresses - List all addresses for the authenticated user
 export async function GET() {
   try {
@@ -105,7 +149,7 @@ export async function POST(request: Request) {
         phone,
         email,
         is_default: shouldBeDefault,
-        label: label || null
+        label: label ? normalizeLocation(label) : null
       })
       .select()
       .single()

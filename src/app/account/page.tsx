@@ -13,16 +13,13 @@ import {
   Mail,
   Phone,
   MapPin,
-  Building2,
   ShoppingBag,
   Trash2,
   LogOut,
   AlertCircle,
   Download,
   Package,
-  Settings,
   Loader2,
-  FileText,
   Calendar,
   IndianRupee,
   Save,
@@ -31,17 +28,6 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import ProfilePhotoUpload from '@/components/profile-photo-upload'
@@ -103,6 +89,129 @@ interface SavedAddress {
   created_at: string
 }
 
+// Common spelling corrections for Indian cities
+const citySpellingCorrections: Record<string, string> = {
+  // Bangalore variations
+  'bangalroe': 'Bangalore',
+  'banglore': 'Bangalore',
+  'banglaore': 'Bangalore',
+  'bengluru': 'Bangalore',
+  'bengaluru': 'Bangalore',
+  'bangaluru': 'Bangalore',
+  'banagalore': 'Bangalore',
+  'bangalore': 'Bangalore',
+  // Mumbai variations
+  'mumbai': 'Mumbai',
+  'mubai': 'Mumbai',
+  'mumbaii': 'Mumbai',
+  'bombay': 'Mumbai',
+  // Delhi variations
+  'delhi': 'Delhi',
+  'dehli': 'Delhi',
+  'delli': 'Delhi',
+  'newdelhi': 'New Delhi',
+  'new delhi': 'New Delhi',
+  // Chennai variations
+  'chennai': 'Chennai',
+  'chenai': 'Chennai',
+  'channai': 'Chennai',
+  'madras': 'Chennai',
+  // Hyderabad variations
+  'hyderabad': 'Hyderabad',
+  'hydrabad': 'Hyderabad',
+  'hiderabad': 'Hyderabad',
+  'hyderabd': 'Hyderabad',
+  // Kolkata variations
+  'kolkata': 'Kolkata',
+  'kolkatta': 'Kolkata',
+  'calcutta': 'Kolkata',
+  'kolkota': 'Kolkata',
+  // Pune variations
+  'pune': 'Pune',
+  'poona': 'Pune',
+  'puna': 'Pune',
+  // Ahmedabad variations
+  'ahmedabad': 'Ahmedabad',
+  'ahemdabad': 'Ahmedabad',
+  'ahmedabd': 'Ahmedabad',
+  'ahmadabad': 'Ahmedabad',
+  // Jaipur variations
+  'jaipur': 'Jaipur',
+  'jaiur': 'Jaipur',
+  'jaipure': 'Jaipur',
+  // Lucknow variations
+  'lucknow': 'Lucknow',
+  'luknow': 'Lucknow',
+  'luckow': 'Lucknow',
+  // Chandigarh variations
+  'chandigarh': 'Chandigarh',
+  'chandigrah': 'Chandigarh',
+  'chandighar': 'Chandigarh',
+  // Gurgaon/Gurugram variations
+  'gurgaon': 'Gurugram',
+  'gurugram': 'Gurugram',
+  'gurgoan': 'Gurugram',
+  // Noida variations
+  'noida': 'Noida',
+  'nodia': 'Noida',
+  // Coimbatore variations
+  'coimbatore': 'Coimbatore',
+  'coimbatur': 'Coimbatore',
+  'coimbtore': 'Coimbatore',
+  // Indore variations
+  'indore': 'Indore',
+  'indor': 'Indore',
+  // Kochi variations
+  'kochi': 'Kochi',
+  'cochin': 'Kochi',
+  'kochin': 'Kochi',
+  // Nagpur variations
+  'nagpur': 'Nagpur',
+  'nagpure': 'Nagpur',
+  // Surat variations
+  'surat': 'Surat',
+  'suart': 'Surat',
+  // Vadodara variations
+  'vadodara': 'Vadodara',
+  'baroda': 'Vadodara',
+  'vadodra': 'Vadodara',
+  // Visakhapatnam variations
+  'visakhapatnam': 'Visakhapatnam',
+  'vizag': 'Visakhapatnam',
+  'vishakhapatnam': 'Visakhapatnam',
+  // Bhopal variations
+  'bhopal': 'Bhopal',
+  'bhoapl': 'Bhopal',
+  // Patna variations
+  'patna': 'Patna',
+  'panta': 'Patna',
+  // Ranchi variations
+  'ranchi': 'Ranchi',
+  'rachi': 'Ranchi',
+  // Thiruvananthapuram variations
+  'thiruvananthapuram': 'Thiruvananthapuram',
+  'trivandrum': 'Thiruvananthapuram',
+  'trivendrum': 'Thiruvananthapuram',
+}
+
+// Helper function to normalize location name (Title Case + Spelling Correction)
+const normalizeLocation = (location: string): string => {
+  if (!location) return ''
+
+  const trimmed = location.trim().toLowerCase()
+
+  // Check if there's a spelling correction available
+  if (citySpellingCorrections[trimmed]) {
+    return citySpellingCorrections[trimmed]
+  }
+
+  // If no correction found, just apply title case
+  return trimmed
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 // Indian states list
 const indianStates = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -119,7 +228,7 @@ function AccountPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [, setIsDeleting] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [activeTab, setActiveTab] = useState(() => {
@@ -138,6 +247,7 @@ function AccountPageContent() {
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [expandedOrders, setExpandedOrders] = useState<string[]>([])
+  const [expandedAddresses, setExpandedAddresses] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 5
 
@@ -210,7 +320,7 @@ function AccountPageContent() {
     }
   }
 
-  const handleDeleteAddress = async (addressId: string) => {
+  const _handleDeleteAddress = async (addressId: string) => {
     if (!confirm('Are you sure you want to delete this address?')) {
       return
     }
@@ -301,7 +411,7 @@ function AccountPageContent() {
     setCurrentProfilePhotoUrl(null)
   }
 
-  const handleDeleteAccount = async () => {
+  const _handleDeleteAccount = async () => {
     setIsDeleting(true)
     try {
       const response = await fetch('/api/user/delete', {
@@ -323,12 +433,24 @@ function AccountPageContent() {
   }
 
   const handleBillingFormChange = (field: string, value: string) => {
+    // Normalize location field on blur (will be called with normalized value)
     setBillingForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // Normalize location when user leaves the field
+  const handleLocationBlur = () => {
+    const normalized = normalizeLocation(billingForm.location)
+    if (normalized !== billingForm.location) {
+      setBillingForm(prev => ({ ...prev, location: normalized }))
+    }
+  }
+
   const handleSaveBillingAddress = async () => {
+    // Normalize location before validation and saving
+    const normalizedLocation = normalizeLocation(billingForm.location)
+
     // Validate required fields
-    if (!billingForm.firmName || !billingForm.address || !billingForm.city || !billingForm.country || !billingForm.state || !billingForm.postcode || !billingForm.location) {
+    if (!billingForm.firmName || !billingForm.address || !billingForm.city || !billingForm.country || !billingForm.state || !billingForm.postcode || !normalizedLocation) {
       toast.error('Please fill all required fields')
       return
     }
@@ -357,7 +479,7 @@ function AccountPageContent() {
           phone: session?.user?.phone || '',
           email: session?.user?.email || '',
           is_default: false,
-          label: billingForm.location
+          label: normalizedLocation
         }),
       })
 
@@ -641,8 +763,26 @@ function AccountPageContent() {
             <style jsx global>{`
               .billing-form input::placeholder,
               .billing-form textarea::placeholder {
-                color: #666D80 !important;
+                color: #9CA3AF !important;
                 opacity: 1;
+                font-size: 0.9rem !important;
+              }
+              .billing-form input {
+                background-color: #F9FAFB !important;
+                border-color: #D1D5DB !important;
+                padding: 20px !important;
+              }
+              .billing-form select {
+                background-color: #F9FAFB !important;
+                border-color: #D1D5DB !important;
+              }
+              .billing-form input:focus,
+              .billing-form select:focus {
+                background-color: #FFFFFF !important;
+                border-color: #3B82F6 !important;
+              }
+              .billing-form select {
+                font-size: 0.875rem !important;
               }
             `}</style>
 
@@ -700,7 +840,10 @@ function AccountPageContent() {
                             <div className="flex gap-2 pb-4 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                               {uniqueLocations.map((location) => {
                                 const isSelected = currentLocation === location
-                                const addressCount = savedAddresses.filter(a => (a.label || a.city) === location).length
+                                // Count only "Not Ordered" addresses for this location
+                                const notOrderedCount = savedAddresses.filter(
+                                  a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
+                                ).length
                                 return (
                                   <button
                                     key={location}
@@ -713,9 +856,9 @@ function AccountPageContent() {
                                   >
                                     <MapPin className="w-4 h-4" />
                                     {location}
-                                    {addressCount > 1 && (
-                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-gray-300'}`}>
-                                        {addressCount}
+                                    {notOrderedCount > 0 && (
+                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-red-500' : 'bg-red-400 text-white'}`}>
+                                        {notOrderedCount}
                                       </span>
                                     )}
                                   </button>
@@ -725,14 +868,144 @@ function AccountPageContent() {
 
                             {/* Show Addresses for Selected Location */}
                             <div className="space-y-3">
-                              {savedAddresses
-                                .filter(address => (address.label || address.city) === currentLocation)
-                                .map((address) => {
+                              {(() => {
+                                const locationAddresses = savedAddresses.filter(
+                                  address => (address.label || address.city) === currentLocation
+                                )
+                                const useAccordion = locationAddresses.length > 3
+
+                                return locationAddresses.map((address) => {
                                   const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
+                                  const isBeingEdited = editingAddressId === address.id
+                                  const isExpanded = expandedAddresses.includes(address.id) || isBeingEdited
+                                  const isOrdered = purchasedAddressIds.includes(address.id)
+
+                                  // If accordion mode and more than 3 addresses
+                                  if (useAccordion) {
+                                    return (
+                                      <div
+                                        key={address.id}
+                                        className={`rounded-lg border-2 transition-all overflow-hidden ${
+                                          isBeingEdited
+                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
+                                            : 'border-gray-200 bg-white'
+                                        }`}
+                                      >
+                                        {/* Accordion Header - Always visible */}
+                                        <div
+                                          className={`p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
+                                            isExpanded ? 'border-b border-gray-200' : ''
+                                          }`}
+                                          onClick={() => {
+                                            setExpandedAddresses(prev =>
+                                              prev.includes(address.id)
+                                                ? prev.filter(id => id !== address.id)
+                                                : [...prev, address.id]
+                                            )
+                                          }}
+                                        >
+                                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2 flex-wrap">
+                                                <p className="font-bold text-gray-900 text-base truncate">{address.firm_name}</p>
+                                                {isOrdered ? (
+                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                                                    ✓ Ordered
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
+                                                    ○ Not Ordered
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <p className="text-sm text-gray-500 truncate">{address.city}, {address.state}</p>
+                                            </div>
+                                          </div>
+                                          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                        </div>
+
+                                        {/* Accordion Content - Expandable */}
+                                        {isExpanded && (
+                                          <div className="p-4 pt-3">
+                                            <div className="flex items-start gap-3">
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-2 mb-3">
+                                                  <div className="flex-1">
+                                                    {address.gst_no && (
+                                                      <p className="font-bold text-sm text-gray-700">GST: {address.gst_no}</p>
+                                                    )}
+                                                  </div>
+                                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-blue-500 text-white">
+                                                    <MapPin className="w-3 h-3 mr-1" />
+                                                    {address.label || address.city}
+                                                  </span>
+                                                </div>
+                                                <div className="text-sm text-gray-600 space-y-1">
+                                                  <p>{address.address}</p>
+                                                  <p>{address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                                </div>
+                                                {/* Purchase status */}
+                                                {isOrdered ? (
+                                                  <div className="mt-3 p-3 rounded bg-green-100 border border-green-300">
+                                                    <p className="text-sm font-bold text-green-800 flex items-center gap-1">
+                                                      <span>✓</span> Ordered
+                                                    </p>
+                                                  </div>
+                                                ) : (
+                                                  <div className="mt-3 p-3 rounded bg-blue-50 border border-blue-200">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                      <span className="text-sm font-medium text-red-500 flex items-center gap-1">
+                                                        <span>○</span> Not Ordered
+                                                      </span>
+                                                      {originalIndex > 0 && (
+                                                        <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
+                                                          10% Off
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                    <button
+                                                      onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        sessionStorage.setItem('checkoutAddressId', address.id)
+                                                        localStorage.setItem('checkoutAddressId', address.id)
+                                                        router.push(`/checkout?addressId=${address.id}`)
+                                                      }}
+                                                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
+                                                    >
+                                                      Proceed to Order
+                                                    </button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                              {!isOrdered && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleEditAddress(address)
+                                                  }}
+                                                  className="text-blue-500 hover:text-blue-700 p-1.5"
+                                                  title="Edit address"
+                                                >
+                                                  <Pencil className="w-4 h-4" />
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  }
+
+                                  // Normal card format (3 or fewer addresses)
                                   return (
                                     <div
                                       key={address.id}
-                                      className="p-4 rounded-lg border border-gray-200 bg-white"
+                                      className={`p-4 rounded-lg border-2 transition-all ${
+                                        isBeingEdited
+                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
+                                          : 'border-gray-200 bg-white'
+                                      }`}
                                     >
                                       <div className="flex items-start gap-3">
                                         <div className="flex-1 min-w-0">
@@ -753,7 +1026,7 @@ function AccountPageContent() {
                                             <p>{address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                           </div>
                                           {/* Purchase status */}
-                                          {purchasedAddressIds.includes(address.id) ? (
+                                          {isOrdered ? (
                                             <div className="mt-3 p-3 rounded bg-green-100 border border-green-300">
                                               <p className="text-sm font-bold text-green-800 flex items-center gap-1">
                                                 <span>✓</span> Ordered
@@ -773,11 +1046,8 @@ function AccountPageContent() {
                                               </div>
                                               <button
                                                 onClick={() => {
-                                                  // Store address ID in multiple locations for reliability
                                                   sessionStorage.setItem('checkoutAddressId', address.id)
                                                   localStorage.setItem('checkoutAddressId', address.id)
-
-                                                  // Navigate to checkout with addressId in URL
                                                   router.push(`/checkout?addressId=${address.id}`)
                                                 }}
                                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
@@ -787,7 +1057,7 @@ function AccountPageContent() {
                                             </div>
                                           )}
                                         </div>
-                                        {!purchasedAddressIds.includes(address.id) && (
+                                        {!isOrdered && (
                                           <button
                                             type="button"
                                             onClick={() => handleEditAddress(address)}
@@ -800,7 +1070,8 @@ function AccountPageContent() {
                                       </div>
                                     </div>
                                   )
-                                })}
+                                })
+                              })()}
                             </div>
                           </>
                         )
@@ -855,7 +1126,7 @@ function AccountPageContent() {
                           location: ''
                         })
                       }}
-                      className="text-gray-400 hover:text-gray-600 h-8 w-8 p-0"
+                      className="text-red-500 hover:text-white hover:bg-red-500 h-8 w-8 p-0 rounded-full border border-red-300 hover:border-red-500 transition-all font-bold text-lg"
                     >
                       ×
                     </Button>
@@ -876,15 +1147,12 @@ function AccountPageContent() {
                         <Label className="text-sm font-medium text-gray-700">
                           Firm Name <span className="text-red-500">*</span>
                         </Label>
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
+                        <Input
                             value={billingForm.firmName}
                             onChange={(e) => handleBillingFormChange('firmName', e.target.value)}
                             placeholder="Enter your firm"
-                            className="pl-8 sm:pl-10 text-sm sm:text-base"
+                            className="text-sm sm:text-base"
                           />
-                        </div>
                       </div>
 
                       {/* GST No */}
@@ -892,16 +1160,13 @@ function AccountPageContent() {
                         <Label className="text-sm font-medium text-gray-700">
                           GST No <span className="text-gray-400 text-xs">(Optional)</span>
                         </Label>
-                        <div className="relative">
-                          <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
+                        <Input
                             value={billingForm.gstNo}
                             onChange={(e) => handleBillingFormChange('gstNo', e.target.value)}
                             placeholder="GST No"
-                            className="pl-8 sm:pl-10 text-sm sm:text-base font-mono uppercase"
-                            maxLength={15}
+                            className="text-sm sm:text-base"
+                            maxLength={20}
                           />
-                        </div>
                       </div>
 
                         {/* Location (Purchase Place) */}
@@ -913,6 +1178,7 @@ function AccountPageContent() {
                         <Input
                           value={billingForm.location}
                           onChange={(e) => handleBillingFormChange('location', e.target.value)}
+                          onBlur={handleLocationBlur}
                           placeholder="Enter Location"
                           className="text-sm sm:text-base"
                         />
@@ -923,15 +1189,12 @@ function AccountPageContent() {
                         <Label className="text-sm font-medium text-gray-700">
                           Street Address <span className="text-red-500">*</span>
                         </Label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
+                        <Input
                             value={billingForm.address}
                             onChange={(e) => handleBillingFormChange('address', e.target.value)}
                             placeholder="Enter your street address"
-                            className="pl-8 sm:pl-10 text-sm sm:text-base"
+                            className="text-sm sm:text-base"
                           />
-                        </div>
                       </div>
 
                       {/* Town/City */}
@@ -1010,7 +1273,27 @@ function AccountPageContent() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-end pt-4 border-t">
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setBillingForm({
+                            firmName: '',
+                            gstNo: '',
+                            address: '',
+                            city: '',
+                            country: 'India',
+                            state: '',
+                            postcode: '',
+                            location: ''
+                          })
+                        }}
+                        className="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800 px-6"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Clear
+                      </Button>
                       <Button
                         onClick={handleSaveBillingAddress}
                         disabled={isSavingBilling}

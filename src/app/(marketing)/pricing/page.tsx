@@ -41,10 +41,10 @@ function PricingContent() {
     }
   }, [searchParams])
 
-  // Verify if the logged-in user actually matches this referral
+  // Verify if the logged-in user has a valid referral
   useEffect(() => {
     const verifyReferral = async () => {
-      if (!session?.user?.email || !referralInfo?.ref || !referralInfo?.cus) {
+      if (!session?.user?.email) {
         setIsValidReferral(false)
         return
       }
@@ -55,11 +55,18 @@ function PricingContent() {
         const data = await response.json()
 
         if (data.hasReferral && data.referralInfo) {
-          // Check if the URL parameters match the user's actual referral
-          const matchesRef = data.referralInfo.referralCode === referralInfo.ref
-          const matchesCus = data.referralInfo.customerId === referralInfo.cus
-
-          setIsValidReferral(matchesRef && matchesCus)
+          // User has a valid referral in the database
+          setIsValidReferral(true)
+          // Update referralInfo state with database values if not already set from URL
+          if (!referralInfo?.ref || !referralInfo?.cus) {
+            const dbReferralInfo = {
+              ref: data.referralInfo.referralCode,
+              cus: data.referralInfo.customerId
+            }
+            setReferralInfo(dbReferralInfo)
+            // Also update localStorage
+            localStorage.setItem('affiliate_referral', JSON.stringify(dbReferralInfo))
+          }
         } else {
           setIsValidReferral(false)
         }
