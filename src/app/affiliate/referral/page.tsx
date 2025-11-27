@@ -526,8 +526,21 @@ export default function AffiliateAccountPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Custom styles for 1400x900 resolution */}
+      <style jsx>{`
+        @media (min-width: 1400px) and (max-width: 1400px) and (min-height: 900px) and (max-height: 900px) {
+          .affiliate-container {
+            max-width: 1300px !important;
+          }
+        }
+        @media (width: 1400px) and (height: 900px) {
+          .affiliate-container {
+            max-width: 1300px !important;
+          }
+        }
+      `}</style>
       {/* Main Content */}
-      <div className="max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
+      <div className="affiliate-container max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
         {/* Header Section - Highlighted Background */}
         <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

@@ -212,17 +212,92 @@ const normalizeLocation = (location: string): string => {
     .join(' ')
 }
 
-// Indian states list
-const indianStates = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
-  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
-  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
-  'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
-  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
-]
+// States/Provinces by country
+const statesByCountry: Record<string, string[]> = {
+  'India': [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ],
+  'United States': [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+    'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+    'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
+    'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+    'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
+    'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+    'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
+    'Wisconsin', 'Wyoming', 'District of Columbia'
+  ],
+  'United Kingdom': [
+    'England', 'Scotland', 'Wales', 'Northern Ireland'
+  ],
+  'Canada': [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+    'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+    'Quebec', 'Saskatchewan', 'Yukon'
+  ],
+  'Australia': [
+    'Australian Capital Territory', 'New South Wales', 'Northern Territory', 'Queensland',
+    'South Australia', 'Tasmania', 'Victoria', 'Western Australia'
+  ],
+  'Germany': [
+    'Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hesse',
+    'Lower Saxony', 'Mecklenburg-Vorpommern', 'North Rhine-Westphalia', 'Rhineland-Palatinate',
+    'Saarland', 'Saxony', 'Saxony-Anhalt', 'Schleswig-Holstein', 'Thuringia'
+  ],
+  'United Arab Emirates': [
+    'Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'
+  ],
+  'France': [
+    'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Brittany', 'Centre-Val de Loire',
+    'Corsica', 'Grand Est', 'Hauts-de-France', 'Île-de-France', 'Normandy', 'Nouvelle-Aquitaine',
+    'Occitanie', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'
+  ],
+  'China': [
+    'Anhui', 'Beijing', 'Chongqing', 'Fujian', 'Gansu', 'Guangdong', 'Guangxi', 'Guizhou',
+    'Hainan', 'Hebei', 'Heilongjiang', 'Henan', 'Hong Kong', 'Hubei', 'Hunan', 'Inner Mongolia',
+    'Jiangsu', 'Jiangxi', 'Jilin', 'Liaoning', 'Macau', 'Ningxia', 'Qinghai', 'Shaanxi',
+    'Shandong', 'Shanghai', 'Shanxi', 'Sichuan', 'Taiwan', 'Tianjin', 'Tibet', 'Xinjiang',
+    'Yunnan', 'Zhejiang'
+  ],
+  'Japan': [
+    'Aichi', 'Akita', 'Aomori', 'Chiba', 'Ehime', 'Fukui', 'Fukuoka', 'Fukushima', 'Gifu',
+    'Gunma', 'Hiroshima', 'Hokkaido', 'Hyogo', 'Ibaraki', 'Ishikawa', 'Iwate', 'Kagawa',
+    'Kagoshima', 'Kanagawa', 'Kochi', 'Kumamoto', 'Kyoto', 'Mie', 'Miyagi', 'Miyazaki',
+    'Nagano', 'Nagasaki', 'Nara', 'Niigata', 'Oita', 'Okayama', 'Okinawa', 'Osaka', 'Saga',
+    'Saitama', 'Shiga', 'Shimane', 'Shizuoka', 'Tochigi', 'Tokushima', 'Tokyo', 'Tottori',
+    'Toyama', 'Wakayama', 'Yamagata', 'Yamaguchi', 'Yamanashi'
+  ],
+  'Brazil': [
+    'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal',
+    'Espírito Santo', 'Goiás', 'Maranhão', 'Mato Grosso', 'Mato Grosso do Sul', 'Minas Gerais',
+    'Pará', 'Paraíba', 'Paraná', 'Pernambuco', 'Piauí', 'Rio de Janeiro', 'Rio Grande do Norte',
+    'Rio Grande do Sul', 'Rondônia', 'Roraima', 'Santa Catarina', 'São Paulo', 'Sergipe', 'Tocantins'
+  ],
+  'Mexico': [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+    'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México',
+    'Mexico City', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro',
+    'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala',
+    'Veracruz', 'Yucatán', 'Zacatecas'
+  ],
+  'Spain': [
+    'Andalusia', 'Aragon', 'Asturias', 'Balearic Islands', 'Basque Country', 'Canary Islands',
+    'Cantabria', 'Castile and León', 'Castile-La Mancha', 'Catalonia', 'Ceuta', 'Extremadura',
+    'Galicia', 'La Rioja', 'Madrid', 'Melilla', 'Murcia', 'Navarre', 'Valencia'
+  ],
+  'Italy': [
+    'Abruzzo', 'Aosta Valley', 'Apulia', 'Basilicata', 'Calabria', 'Campania', 'Emilia-Romagna',
+    'Friuli Venezia Giulia', 'Lazio', 'Liguria', 'Lombardy', 'Marche', 'Molise', 'Piedmont',
+    'Sardinia', 'Sicily', 'Trentino-South Tyrol', 'Tuscany', 'Umbria', 'Veneto'
+  ]
+}
 
 function AccountPageContent() {
   const { data: session, status } = useSession()
@@ -273,8 +348,7 @@ function AccountPageContent() {
     city: '',
     country: 'India',
     state: '',
-    postcode: '',
-    location: ''
+    postcode: ''
   })
 
   useEffect(() => {
@@ -345,16 +419,15 @@ function AccountPageContent() {
   }
 
   const handleEditAddress = (address: SavedAddress) => {
-    // Load address data into form
+    // Load address data into form - use label as city if available for consistency
     setBillingForm({
       firmName: address.firm_name,
       gstNo: address.gst_no || '',
       address: address.address,
-      city: address.city,
+      city: address.label || address.city,
       country: address.country,
       state: address.state,
-      postcode: address.postcode,
-      location: address.label || ''
+      postcode: address.postcode
     })
     setEditingAddressId(address.id)
     setShowAddressForm(true)
@@ -433,24 +506,28 @@ function AccountPageContent() {
   }
 
   const handleBillingFormChange = (field: string, value: string) => {
-    // Normalize location field on blur (will be called with normalized value)
-    setBillingForm(prev => ({ ...prev, [field]: value }))
+    // Reset state when country changes
+    if (field === 'country') {
+      setBillingForm(prev => ({ ...prev, [field]: value, state: '' }))
+    } else {
+      setBillingForm(prev => ({ ...prev, [field]: value }))
+    }
   }
 
-  // Normalize location when user leaves the field
+  // Normalize city/location when user leaves the field
   const handleLocationBlur = () => {
-    const normalized = normalizeLocation(billingForm.location)
-    if (normalized !== billingForm.location) {
-      setBillingForm(prev => ({ ...prev, location: normalized }))
+    const normalized = normalizeLocation(billingForm.city)
+    if (normalized !== billingForm.city) {
+      setBillingForm(prev => ({ ...prev, city: normalized }))
     }
   }
 
   const handleSaveBillingAddress = async () => {
-    // Normalize location before validation and saving
-    const normalizedLocation = normalizeLocation(billingForm.location)
+    // Normalize city/location before validation and saving
+    const normalizedCity = normalizeLocation(billingForm.city)
 
     // Validate required fields
-    if (!billingForm.firmName || !billingForm.address || !billingForm.city || !billingForm.country || !billingForm.state || !billingForm.postcode || !normalizedLocation) {
+    if (!billingForm.firmName || !billingForm.address || !normalizedCity || !billingForm.country || !billingForm.state || !billingForm.postcode) {
       toast.error('Please fill all required fields')
       return
     }
@@ -472,14 +549,14 @@ function AccountPageContent() {
           firm_name: billingForm.firmName,
           gst_no: billingForm.gstNo || null,
           address: billingForm.address,
-          city: billingForm.city,
+          city: normalizedCity,
           state: billingForm.state,
           postcode: billingForm.postcode,
           country: billingForm.country,
           phone: session?.user?.phone || '',
           email: session?.user?.email || '',
           is_default: false,
-          label: normalizedLocation
+          label: normalizedCity
         }),
       })
 
@@ -495,6 +572,10 @@ function AccountPageContent() {
         }
 
         // For edits, stay on the page
+        // Store the edited address ID and location before resetting
+        const editedAddressId = editingAddressId
+        const editedLocation = normalizedCity
+
         // Fetch updated addresses list
         await fetchSavedAddresses()
 
@@ -506,14 +587,24 @@ function AccountPageContent() {
           city: '',
           country: 'India',
           state: '',
-          postcode: '',
-          location: ''
+          postcode: ''
         })
 
-        // Hide form and select the address tab
+        // Hide form
         setShowAddressForm(false)
         setEditingAddressId(null)
-        setSelectedLocationTab(result.address?.id || editingAddressId || '')
+
+        // Set the current location tab to the edited address's location
+        if (editedLocation) {
+          setSelectedLocationTab(editedLocation)
+        }
+
+        // Expand the edited address accordion
+        if (editedAddressId) {
+          setExpandedAddresses(prev =>
+            prev.includes(editedAddressId) ? prev : [...prev, editedAddressId]
+          )
+        }
       } else {
         toast.error(result.error || 'Failed to save billing address')
       }
@@ -789,7 +880,7 @@ function AccountPageContent() {
             <div className={`grid gap-6 ${showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left Column - Saved Addresses */}
               <Card className="shadow-lg border-0 h-fit">
-                <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
+                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -809,35 +900,43 @@ function AccountPageContent() {
                           city: '',
                           country: 'India',
                           state: '',
-                          postcode: '',
-                          location: ''
+                          postcode: ''
                         })
                       }}
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-700 text-white text-sm shrink-0"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Add new billing address
+                      Add billing address
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-4 sm:pt-6">
+                <CardContent className="pt-2 sm:pt-3">
                   {loadingAddresses ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-blue-600 mr-2" />
                       <span className="text-gray-600">Loading addresses...</span>
                     </div>
                   ) : savedAddresses.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {/* Location Tabs - One tab per unique location */}
                       {(() => {
                         // Get unique locations
                         const uniqueLocations = [...new Set(savedAddresses.map(addr => addr.label || addr.city))]
-                        const currentLocation = selectedLocationTab || uniqueLocations[0]
+
+                        // Find the first location with "Not Ordered" addresses
+                        const firstNotOrderedLocation = uniqueLocations.find(location => {
+                          return savedAddresses.some(
+                            a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
+                          )
+                        })
+
+                        // Default to first location with "Not Ordered", or first location if all are ordered
+                        const currentLocation = selectedLocationTab || firstNotOrderedLocation || uniqueLocations[0]
 
                         return (
                           <>
-                            <div className="flex gap-2 pb-4 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                            <div className="flex gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                               {uniqueLocations.map((location) => {
                                 const isSelected = currentLocation === location
                                 // Count only "Not Ordered" addresses for this location
@@ -857,7 +956,7 @@ function AccountPageContent() {
                                     <MapPin className="w-4 h-4" />
                                     {location}
                                     {notOrderedCount > 0 && (
-                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-red-500' : 'bg-red-400 text-white'}`}>
+                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
                                         {notOrderedCount}
                                       </span>
                                     )}
@@ -867,25 +966,26 @@ function AccountPageContent() {
                             </div>
 
                             {/* Show Addresses for Selected Location */}
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                               {(() => {
                                 const locationAddresses = savedAddresses.filter(
                                   address => (address.label || address.city) === currentLocation
                                 )
-                                const useAccordion = locationAddresses.length > 3
 
                                 return locationAddresses.map((address) => {
                                   const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
                                   const isBeingEdited = editingAddressId === address.id
                                   const isExpanded = expandedAddresses.includes(address.id) || isBeingEdited
                                   const isOrdered = purchasedAddressIds.includes(address.id)
+                                  // Use accordion for ordered addresses OR when there are more than 3 addresses
+                                  const useAccordion = isOrdered || locationAddresses.length > 3
 
-                                  // If accordion mode and more than 3 addresses
+                                  // If accordion mode (ordered addresses or more than 3 total)
                                   if (useAccordion) {
                                     return (
                                       <div
                                         key={address.id}
-                                        className={`rounded-lg border-2 transition-all overflow-hidden ${
+                                        className={`rounded-xl border transition-all overflow-hidden shadow-md ${
                                           isBeingEdited
                                             ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
                                             : 'border-gray-200 bg-white'
@@ -893,9 +993,7 @@ function AccountPageContent() {
                                       >
                                         {/* Accordion Header - Always visible */}
                                         <div
-                                          className={`p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
-                                            isExpanded ? 'border-b border-gray-200' : ''
-                                          }`}
+                                          className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
                                           onClick={() => {
                                             setExpandedAddresses(prev =>
                                               prev.includes(address.id)
@@ -904,78 +1002,39 @@ function AccountPageContent() {
                                             )
                                           }}
                                         >
-                                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-bold text-gray-900 text-base truncate">{address.firm_name}</p>
-                                                {isOrdered ? (
-                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                                                    ✓ Ordered
-                                                  </span>
-                                                ) : (
-                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
-                                                    ○ Not Ordered
+                                          <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                            {address.gst_no && (
+                                              <p className="text-gray-600 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-2 shrink-0">
+                                            {isOrdered ? (
+                                              <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>
+                                                ✓ Ordered
+                                              </span>
+                                            ) : (
+                                              <div className="flex flex-col items-end">
+                                                <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
+                                                  ○ Not Ordered
+                                                </span>
+                                                {originalIndex > 0 && (
+                                                  <span className="text-gray-500 mt-0.5" style={{ fontSize: '13px' }}>
+                                                    10% Off
                                                   </span>
                                                 )}
                                               </div>
-                                              <p className="text-sm text-gray-500 truncate">{address.city}, {address.state}</p>
-                                            </div>
+                                            )}
+                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                           </div>
-                                          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                         </div>
 
                                         {/* Accordion Content - Expandable */}
                                         {isExpanded && (
-                                          <div className="p-4 pt-3">
-                                            <div className="flex items-start gap-3">
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2 mb-3">
-                                                  <div className="flex-1">
-                                                    {address.gst_no && (
-                                                      <p className="font-bold text-sm text-gray-700">GST: {address.gst_no}</p>
-                                                    )}
-                                                  </div>
-                                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-blue-500 text-white">
-                                                    <MapPin className="w-3 h-3 mr-1" />
-                                                    {address.label || address.city}
-                                                  </span>
-                                                </div>
-                                                <div className="text-sm text-gray-600 space-y-1">
-                                                  <p>{address.address}</p>
-                                                  <p>{address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                                </div>
-                                                {/* Purchase status */}
-                                                {isOrdered ? (
-                                                  <div className="mt-3 p-3 rounded bg-green-100 border border-green-300">
-                                                    <p className="text-sm font-bold text-green-800 flex items-center gap-1">
-                                                      <span>✓</span> Ordered
-                                                    </p>
-                                                  </div>
-                                                ) : (
-                                                  <div className="mt-3 p-3 rounded bg-blue-50 border border-blue-200">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                      <span className="text-sm font-medium text-red-500 flex items-center gap-1">
-                                                        <span>○</span> Not Ordered
-                                                      </span>
-                                                      {originalIndex > 0 && (
-                                                        <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                                                          10% Off
-                                                        </span>
-                                                      )}
-                                                    </div>
-                                                    <button
-                                                      onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        sessionStorage.setItem('checkoutAddressId', address.id)
-                                                        localStorage.setItem('checkoutAddressId', address.id)
-                                                        router.push(`/checkout?addressId=${address.id}`)
-                                                      }}
-                                                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
-                                                    >
-                                                      Proceed to Order
-                                                    </button>
-                                                  </div>
-                                                )}
+                                          <div className="px-4 pb-4 pt-2">
+                                            <div className="flex items-start gap-2">
+                                              <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                                                <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                               </div>
                                               {!isOrdered && (
                                                 <button
@@ -984,13 +1043,30 @@ function AccountPageContent() {
                                                     e.stopPropagation()
                                                     handleEditAddress(address)
                                                   }}
-                                                  className="text-blue-500 hover:text-blue-700 p-1.5"
+                                                  className="text-blue-500 hover:text-blue-700 p-1"
                                                   title="Edit address"
                                                 >
-                                                  <Pencil className="w-4 h-4" />
+                                                  <Pencil className="w-5 h-5" />
                                                 </button>
                                               )}
                                             </div>
+                                            {/* Centered Proceed to Order button */}
+                                            {!isOrdered && (
+                                              <div className="mt-4">
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    sessionStorage.setItem('checkoutAddressId', address.id)
+                                                    localStorage.setItem('checkoutAddressId', address.id)
+                                                    router.push(`/checkout?addressId=${address.id}`)
+                                                  }}
+                                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-2xl transition-colors text-center"
+                                                  style={{ fontSize: '15px' }}
+                                                >
+                                                  Proceed to Order
+                                                </button>
+                                              </div>
+                                            )}
                                           </div>
                                         )}
                                       </div>
@@ -1001,73 +1077,61 @@ function AccountPageContent() {
                                   return (
                                     <div
                                       key={address.id}
-                                      className={`p-4 rounded-lg border-2 transition-all ${
+                                      className={`p-4 rounded-xl border transition-all shadow-md ${
                                         isBeingEdited
                                           ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
                                           : 'border-gray-200 bg-white'
                                       }`}
                                     >
-                                      <div className="flex items-start gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-start justify-between gap-2 mb-3">
-                                            <div className="flex-1">
-                                              <p className="font-bold text-gray-900 text-base">{address.firm_name}</p>
-                                              {address.gst_no && (
-                                                <p className="font-bold text-sm text-gray-700">GST: {address.gst_no}</p>
+                                      <div className="flex items-start gap-2">
+                                        <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                                          <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                          {address.gst_no && (
+                                            <p className="text-gray-600">GST: {address.gst_no}</p>
+                                          )}
+                                          <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                          {isOrdered ? (
+                                            <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>✓ Ordered</span>
+                                          ) : (
+                                            <div className="flex flex-col items-end">
+                                              <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>○ Not Ordered</span>
+                                              {originalIndex > 0 && (
+                                                <span className="text-gray-500 mt-0.5" style={{ fontSize: '13px' }}>
+                                                  10% Off
+                                                </span>
                                               )}
                                             </div>
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-blue-500 text-white">
-                                              <MapPin className="w-3 h-3 mr-1" />
-                                              {address.label || address.city}
-                                            </span>
-                                          </div>
-                                          <div className="text-sm text-gray-600 space-y-1">
-                                            <p>{address.address}</p>
-                                            <p>{address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                          </div>
-                                          {/* Purchase status */}
-                                          {isOrdered ? (
-                                            <div className="mt-3 p-3 rounded bg-green-100 border border-green-300">
-                                              <p className="text-sm font-bold text-green-800 flex items-center gap-1">
-                                                <span>✓</span> Ordered
-                                              </p>
-                                            </div>
-                                          ) : (
-                                            <div className="mt-3 p-3 rounded bg-blue-50 border border-blue-200">
-                                              <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-medium text-red-500 flex items-center gap-1">
-                                                  <span>○</span> Not Ordered
-                                                </span>
-                                                {originalIndex > 0 && (
-                                                  <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                                                    10% Off
-                                                  </span>
-                                                )}
-                                              </div>
-                                              <button
-                                                onClick={() => {
-                                                  sessionStorage.setItem('checkoutAddressId', address.id)
-                                                  localStorage.setItem('checkoutAddressId', address.id)
-                                                  router.push(`/checkout?addressId=${address.id}`)
-                                                }}
-                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
-                                              >
-                                                Proceed to Order
-                                              </button>
-                                            </div>
+                                          )}
+                                          {!isOrdered && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleEditAddress(address)}
+                                              className="text-blue-500 hover:text-blue-700 p-1"
+                                              title="Edit address"
+                                            >
+                                              <Pencil className="w-5 h-5" />
+                                            </button>
                                           )}
                                         </div>
-                                        {!isOrdered && (
-                                          <button
-                                            type="button"
-                                            onClick={() => handleEditAddress(address)}
-                                            className="text-blue-500 hover:text-blue-700 p-1.5"
-                                            title="Edit address"
-                                          >
-                                            <Pencil className="w-4 h-4" />
-                                          </button>
-                                        )}
                                       </div>
+                                      {/* Centered Proceed to Order button */}
+                                      {!isOrdered && (
+                                        <div className="mt-4">
+                                          <button
+                                            onClick={() => {
+                                              sessionStorage.setItem('checkoutAddressId', address.id)
+                                              localStorage.setItem('checkoutAddressId', address.id)
+                                              router.push(`/checkout?addressId=${address.id}`)
+                                            }}
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-2xl transition-colors text-center"
+                                            style={{ fontSize: '15px' }}
+                                          >
+                                            Proceed to Order
+                                          </button>
+                                        </div>
+                                      )}
                                     </div>
                                   )
                                 })
@@ -1122,11 +1186,10 @@ function AccountPageContent() {
                           city: '',
                           country: 'India',
                           state: '',
-                          postcode: '',
-                          location: ''
+                          postcode: ''
                         })
                       }}
-                      className="text-red-500 hover:text-white hover:bg-red-500 h-8 w-8 p-0 rounded-full border border-red-300 hover:border-red-500 transition-all font-bold text-lg"
+                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 p-0 rounded-full border border-gray-300 hover:border-gray-400 transition-all font-bold text-lg"
                     >
                       ×
                     </Button>
@@ -1169,21 +1232,6 @@ function AccountPageContent() {
                           />
                       </div>
 
-                        {/* Location (Purchase Place) */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
-                          Location <span className="text-red-500">*</span>
-                          <span className="text-gray-400 text-xs ml-1">(Branch location)</span>
-                        </Label>
-                        <Input
-                          value={billingForm.location}
-                          onChange={(e) => handleBillingFormChange('location', e.target.value)}
-                          onBlur={handleLocationBlur}
-                          placeholder="Enter Location"
-                          className="text-sm sm:text-base"
-                        />
-                      </div>
-
                       {/* Street Address */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
@@ -1197,15 +1245,17 @@ function AccountPageContent() {
                           />
                       </div>
 
-                      {/* Town/City */}
+                      {/* City/Location */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          Town/City <span className="text-red-500">*</span>
+                          City/Location <span className="text-red-500">*</span>
+                          <span className="text-gray-400 text-xs ml-1">(Branch location)</span>
                         </Label>
                         <Input
                           value={billingForm.city}
                           onChange={(e) => handleBillingFormChange('city', e.target.value)}
-                          placeholder="Enter your town/city"
+                          onBlur={handleLocationBlur}
+                          placeholder="Enter city/location"
                           className="text-sm sm:text-base"
                         />
                       </div>
@@ -1254,7 +1304,7 @@ function AccountPageContent() {
                       {/* State */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          State <span className="text-red-500">*</span>
+                          State/Province <span className="text-red-500">*</span>
                         </Label>
                         <select
                           value={billingForm.state}
@@ -1262,7 +1312,7 @@ function AccountPageContent() {
                           className="w-full h-10 px-3 py-2 border rounded-md text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
                         >
                           <option value="">Select State</option>
-                          {indianStates.map((state) => (
+                          {(statesByCountry[billingForm.country] || []).map((state) => (
                             <option key={state} value={state}>
                               {state}
                             </option>
@@ -1274,26 +1324,28 @@ function AccountPageContent() {
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-3 pt-4 border-t">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setBillingForm({
-                            firmName: '',
-                            gstNo: '',
-                            address: '',
-                            city: '',
-                            country: 'India',
-                            state: '',
-                            postcode: '',
-                            location: ''
-                          })
-                        }}
-                        className="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800 px-6"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Clear
-                      </Button>
+                      {/* Only show Clear button when adding new address, not when editing */}
+                      {!editingAddressId && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setBillingForm({
+                              firmName: '',
+                              gstNo: '',
+                              address: '',
+                              city: '',
+                              country: 'India',
+                              state: '',
+                              postcode: ''
+                            })
+                          }}
+                          className="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800 px-6"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Clear
+                        </Button>
+                      )}
                       <Button
                         onClick={handleSaveBillingAddress}
                         disabled={isSavingBilling}
