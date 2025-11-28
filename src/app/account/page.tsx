@@ -956,7 +956,7 @@ function AccountPageContent() {
                                     <MapPin className="w-4 h-4" />
                                     {location}
                                     {notOrderedCount > 0 && (
-                                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
+                                      <span className={`text-[10px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
                                         {notOrderedCount}
                                       </span>
                                     )}
@@ -1009,21 +1009,10 @@ function AccountPageContent() {
                                             )}
                                           </div>
                                           <div className="flex items-center gap-2 shrink-0">
-                                            {isOrdered ? (
+                                            {isOrdered && (
                                               <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>
                                                 ✓ Ordered
                                               </span>
-                                            ) : (
-                                              <div className="flex flex-col items-end">
-                                                <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
-                                                  ○ Not Ordered
-                                                </span>
-                                                {originalIndex > 0 && (
-                                                  <span className="text-gray-500 mt-0.5" style={{ fontSize: '13px' }}>
-                                                    10% Off
-                                                  </span>
-                                                )}
-                                              </div>
                                             )}
                                             <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                           </div>
@@ -1050,9 +1039,19 @@ function AccountPageContent() {
                                                 </button>
                                               )}
                                             </div>
-                                            {/* Centered Proceed to Order button */}
+                                            {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
                                             {!isOrdered && (
-                                              <div className="mt-4">
+                                              <div className="mt-4 w-full flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
+                                                    ○ Not Ordered
+                                                  </span>
+                                                  {originalIndex > 0 && (
+                                                    <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
+                                                      10% Off
+                                                    </span>
+                                                  )}
+                                                </div>
                                                 <button
                                                   onClick={(e) => {
                                                     e.stopPropagation()
@@ -1060,8 +1059,7 @@ function AccountPageContent() {
                                                     localStorage.setItem('checkoutAddressId', address.id)
                                                     router.push(`/checkout?addressId=${address.id}`)
                                                   }}
-                                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-2xl transition-colors text-center"
-                                                  style={{ fontSize: '15px' }}
+                                                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
                                                 >
                                                   Proceed to Order
                                                 </button>
@@ -1092,17 +1090,8 @@ function AccountPageContent() {
                                           <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
-                                          {isOrdered ? (
+                                          {isOrdered && (
                                             <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>✓ Ordered</span>
-                                          ) : (
-                                            <div className="flex flex-col items-end">
-                                              <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>○ Not Ordered</span>
-                                              {originalIndex > 0 && (
-                                                <span className="text-gray-500 mt-0.5" style={{ fontSize: '13px' }}>
-                                                  10% Off
-                                                </span>
-                                              )}
-                                            </div>
                                           )}
                                           {!isOrdered && (
                                             <button
@@ -1116,17 +1105,26 @@ function AccountPageContent() {
                                           )}
                                         </div>
                                       </div>
-                                      {/* Centered Proceed to Order button */}
+                                      {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
                                       {!isOrdered && (
-                                        <div className="mt-4">
+                                        <div className="mt-4 w-full flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
+                                              ○ Not Ordered
+                                            </span>
+                                            {originalIndex > 0 && (
+                                              <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
+                                                10% Off
+                                              </span>
+                                            )}
+                                          </div>
                                           <button
                                             onClick={() => {
                                               sessionStorage.setItem('checkoutAddressId', address.id)
                                               localStorage.setItem('checkoutAddressId', address.id)
                                               router.push(`/checkout?addressId=${address.id}`)
                                             }}
-                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-2xl transition-colors text-center"
-                                            style={{ fontSize: '15px' }}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
                                           >
                                             Proceed to Order
                                           </button>

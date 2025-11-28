@@ -416,6 +416,13 @@
 .animate-slide-in-right { animation: slide-in-right 0.5s ease-out; }
 .animate-pulse-glow { animation: pulse-glow 2s infinite; }
 
+/* Affiliate page width for 1400x900 resolution */
+@media (min-width: 1380px) and (max-width: 1420px) {
+  .affiliate-1400-container {
+    max-width: 1300px !important;
+  }
+}
+
 /* Custom Scrollbar for Admin Panel */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

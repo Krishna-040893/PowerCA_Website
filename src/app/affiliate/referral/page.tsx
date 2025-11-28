@@ -526,21 +526,8 @@ export default function AffiliateAccountPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Custom styles for 1400x900 resolution */}
-      <style jsx>{`
-        @media (min-width: 1400px) and (max-width: 1400px) and (min-height: 900px) and (max-height: 900px) {
-          .affiliate-container {
-            max-width: 1300px !important;
-          }
-        }
-        @media (width: 1400px) and (height: 900px) {
-          .affiliate-container {
-            max-width: 1300px !important;
-          }
-        }
-      `}</style>
       {/* Main Content */}
-      <div className="affiliate-container max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
+      <div className="affiliate-1400-container max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
         {/* Header Section - Highlighted Background */}
         <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -630,11 +617,11 @@ export default function AffiliateAccountPage() {
                   </div>
 
                   {/* Create Referral Button */}
-                  <div className="flex justify-center">
+                  <div className="flex justify-end">
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 sm:px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-sm shadow-md hover:shadow-lg disabled:shadow-none"
+                      className="px-6 sm:px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-sm shadow-md hover:shadow-lg disabled:shadow-none"
                     >
                       <Save className="w-4 h-4" />
                       {loading ? 'Creating...' : 'Create Referral'}
