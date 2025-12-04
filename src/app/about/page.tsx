@@ -106,7 +106,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6 xl:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -118,7 +118,7 @@ export default function AboutPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
           <div className="max-w-6xl mx-auto text-center">
             {/* Badge */}
             <div className="mb-6 sm:mb-8">
@@ -162,7 +162,7 @@ export default function AboutPage() {
 
       {/* Elevate your practice to the next level with PowerCA */}
       <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-8 gap-6 sm:gap-8 lg:gap-4 xl:gap-6 2xl:gap-12 items-start">
             {/* Left Content - Title */}
             <div className="lg:col-span-3">
@@ -193,7 +193,7 @@ export default function AboutPage() {
 
       {/* Image Section */}
       <section className="pt-6 sm:pt-4 pb-10 sm:pb-12 md:pb-16 lg:pb-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-6 xl:gap-8 2xl:gap-12 items-center">
             {/* Left - Image */}
             <div className="lg:col-span-2">
@@ -255,7 +255,7 @@ export default function AboutPage() {
       {/* Our Team Members */}
       <section className="relative py-10 sm:py-12 md:py-14 lg:py-16 bg-white overflow-hidden">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6 xl:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -267,7 +267,7 @@ export default function AboutPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
           {/* Header - Responsive Layout */}
           <div className="mb-8 sm:mb-12 lg:mb-16">
             {/* Title and Description - Stacked until xl breakpoint */}
@@ -518,7 +518,7 @@ export default function AboutPage() {
 
       {/* Our Mission, Vision & Values Section */}
       <section className="py-10 sm:py-12 md:py-14 lg:py-16 bg-white">
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-4 xl:gap-6 2xl:gap-8 items-center">
             {/* Left - Title */}
             <div className="lg:col-span-4">
