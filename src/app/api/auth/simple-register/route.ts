@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name || !email || !phone || !password) {
-      console.error('Validation failed: Missing required fields')
+      logger.warn('Validation failed: Missing required fields', { email })
       return NextResponse.json(
         { error: 'Name, email, phone, and password are required' },
         { status: 400 }
@@ -112,7 +112,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('Registration insert error:', insertError)
       logger.error('Registration insert error', insertError)
 
       // Check if it's a unique constraint violation

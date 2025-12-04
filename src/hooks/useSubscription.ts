@@ -40,15 +40,7 @@ export function useSubscription(): SubscriptionStatus {
         const response = await fetch('/api/subscriptions/status')
 
         if (!response.ok) {
-          // Only log meaningful errors, not empty objects or network issues
-          try {
-            const errorData = await response.json()
-            if (errorData?.error && errorData.error !== 'Internal server error') {
-              console.error('Error fetching subscriptions:', errorData)
-            }
-          } catch {
-            // JSON parsing failed, ignore
-          }
+          // Silently handle subscription errors - not critical for app functionality
           setSubscriptionStatus(prev => ({ ...prev, isLoading: false }))
           return
         }
@@ -92,8 +84,8 @@ export function useSubscription(): SubscriptionStatus {
           daysUntilRenewal: Math.max(0, daysUntilRenewal)
         })
 
-      } catch (error) {
-        console.error('Error in fetchSubscriptionStatus:', error)
+      } catch {
+        // Silently handle errors - subscription is not critical
         setSubscriptionStatus(prev => ({ ...prev, isLoading: false }))
       }
     }

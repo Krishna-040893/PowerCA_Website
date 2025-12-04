@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, RefreshCw, Download, Mail, UserCheck, TrendingUp, Search } from 'lucide-react'
+import { Loader2, RefreshCw, Download, Mail, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 

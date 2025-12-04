@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 // Common spelling corrections for Indian cities
 const citySpellingCorrections: Record<string, string> = {
@@ -84,7 +85,7 @@ export async function GET(
       address
     })
   } catch (error) {
-    console.error('Error in GET /api/user/addresses/[id]:', error)
+    logger.error('Error in GET /api/user/addresses/[id]', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -164,7 +165,7 @@ export async function PUT(
       .single()
 
     if (error) {
-      console.error('Error updating address:', error)
+      logger.error('Error updating address', error)
       return NextResponse.json(
         { success: false, error: 'Failed to update address' },
         { status: 500 }
@@ -176,7 +177,7 @@ export async function PUT(
       address: updatedAddress
     })
   } catch (error) {
-    console.error('Error in PUT /api/user/addresses/[id]:', error)
+    logger.error('Error in PUT /api/user/addresses/[id]', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -225,7 +226,7 @@ export async function DELETE(
       .eq('user_id', session.user.id)
 
     if (error) {
-      console.error('Error deleting address:', error)
+      logger.error('Error deleting address', error)
       return NextResponse.json(
         { success: false, error: 'Failed to delete address' },
         { status: 500 }
@@ -253,7 +254,7 @@ export async function DELETE(
       message: 'Address deleted successfully'
     })
   } catch (error) {
-    console.error('Error in DELETE /api/user/addresses/[id]:', error)
+    logger.error('Error in DELETE /api/user/addresses/[id]', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

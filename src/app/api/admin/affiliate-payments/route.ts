@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
+import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
 
 export async function GET(req: NextRequest) {
   try {
-    // TODO: Add admin authentication check
+    // Verify admin authentication
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
+    }
 
     const supabase = createAdminClient()
     const searchParams = req.nextUrl.searchParams
@@ -77,6 +82,12 @@ export async function GET(req: NextRequest) {
 // Mark commission as paid
 export async function PUT(req: NextRequest) {
   try {
+    // Verify admin authentication
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
+    }
+
     const body = await req.json()
     const { paymentId, commissionPaid, paymentMode, paymentDate } = body
 
@@ -115,8 +126,7 @@ export async function PUT(req: NextRequest) {
       .single()
 
     if (error) {
-      logger.error('Failed to update commission status', error)
-      console.error('Database error details:', error)
+      logger.error('Failed to update commission status', { error, paymentId })
       return NextResponse.json(
         { success: false, error: `Failed to update commission: ${error.message}` },
         { status: 500 }

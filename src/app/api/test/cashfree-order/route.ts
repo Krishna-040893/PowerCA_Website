@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * Test endpoint to create a minimal Cashfree order
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('❌ Cashfree Order Creation Failed:', data)
+      logger.error('Cashfree Order Creation Failed', { status: response.status, data })
       return NextResponse.json({
         success: false,
         error: {
@@ -96,7 +97,7 @@ const testCashfree = async () => {
     paymentSessionId: '${data.payment_session_id}',
     redirectTarget: '_self'
   });
-  console.log('Cashfree test result:', result);
+  console.log('Cashfree result:', result);
 };
 testCashfree();
         `
@@ -104,7 +105,7 @@ testCashfree();
     })
 
   } catch (error) {
-    console.error('Test order error:', error)
+    logger.error('Test order error', error)
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

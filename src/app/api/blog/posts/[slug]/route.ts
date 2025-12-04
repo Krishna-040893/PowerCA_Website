@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 export async function GET(
   request: NextRequest,
@@ -38,7 +39,7 @@ export async function GET(
       post,
     })
   } catch (error) {
-    console.error('Failed to fetch blog post:', error)
+    logger.error('Failed to fetch blog post', error)
     return NextResponse.json(
       { post: null, error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }

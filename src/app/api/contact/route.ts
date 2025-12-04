@@ -66,10 +66,10 @@ async function handleContactForm(request: NextRequest) {
     // Initialize Supabase inside handler (not at module level)
     let contact = null
     if (isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
+      // Environment variables are already validated by isServiceConfigured above
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
+      const supabase = createClient(supabaseUrl, supabaseKey)
 
       // Save contact to database
       const { data: contactData, error: dbError } = await supabase

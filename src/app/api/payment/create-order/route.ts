@@ -200,12 +200,6 @@ export async function POST(req: NextRequest) {
       statusCode: error?.statusCode
     })
 
-    // Also log to console for easier debugging
-    console.error('Razorpay Order Creation Error:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      fullError: error
-    })
-
     return createErrorResponse(
       ErrorType.PAYMENT,
       error as Error,

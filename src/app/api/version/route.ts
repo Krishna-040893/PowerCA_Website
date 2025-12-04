@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { execSync } from 'child_process'
+import { logger } from '@/lib/logger'
 
 /**
  * Version API Endpoint
@@ -49,7 +50,7 @@ export async function GET() {
       commitHash = shortHash // Use short hash for display
     } catch (error) {
       // Git commands might fail in production environment
-      console.log('Could not retrieve git information:', error)
+      logger.info('Could not retrieve git information', error)
     }
 
     const versionInfo = {
@@ -83,7 +84,7 @@ export async function GET() {
       }
     })
   } catch (error) {
-    console.error('Error in version endpoint:', error)
+    logger.error('Error in version endpoint', error)
 
     return NextResponse.json(
       {

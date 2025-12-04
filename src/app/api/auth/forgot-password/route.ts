@@ -24,12 +24,13 @@ const handleForgotPassword = async (request: NextRequest) => {
     }
 
     // Initialize services inside the route handler (not at module level)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // Environment variables are already validated by isServiceConfigured above
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const resend = new Resend(process.env.RESEND_API_KEY!)
+    const resendApiKey = process.env.RESEND_API_KEY as string
+    const resend = new Resend(resendApiKey)
 
     const { email } = await request.json()
 

@@ -190,9 +190,9 @@ function PricingContent() {
                 {/* Header */}
                 <div className="text-center mb-6 md:mb-8">
                   <h3 className="text-2xl md:text-3xl font-medium mb-3 md:mb-4">Power CA</h3>
-                  <p className="text-[#f4f7fd] text-base md:text-lg px-2">
+                  {/* <p className="text-[#f4f7fd] text-base md:text-lg px-2">
                     Special discount 50% for CAs only – Till 30th Nov 2025
-                  </p>
+                  </p> */}
                 </div>
 
                 {/* Plan Type */}
@@ -232,7 +232,7 @@ function PricingContent() {
                     <p className="text-[#f4f7fd] text-xs md:text-sm mb-1 md:mb-2">LAUNCH OFFER</p>
                     <div className="flex items-baseline justify-center gap-1 md:gap-2">
                       <span className="text-lg md:text-2xl">₹</span>
-                      <span className="text-2xl md:text-4xl font-semibold">50,000</span>
+                      <span className="text-2xl md:text-4xl font-semibold">25,000</span>
                     </div>
                     <p className="text-[#f4f7fd] text-xs md:text-sm">+ Applicable Taxes</p>
                   </div>
@@ -309,7 +309,7 @@ function PricingContent() {
                   <div className="text-center">
                     <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Your Annual Turnover</p>
                     <div className="flex items-baseline justify-center gap-1 md:gap-2">
-                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">0.20%</span>
+                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">0.25%</span>
                       <span className="text-sm md:text-lg font-medium text-[#001525]">Cost</span>
                     </div>
                     <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
@@ -325,7 +325,7 @@ function PricingContent() {
                     <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Minimum Of Cost</p>
                     <div className="flex items-baseline justify-center gap-1 md:gap-2">
                       <span className="text-lg md:text-2xl text-[#001525]">₹</span>
-                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">10,000</span>
+                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">12,000</span>
                     </div>
                     <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
                   </div>

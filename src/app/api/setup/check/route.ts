@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest) {
       .limit(1)
 
     if (error) {
-      console.error('Error checking for admin:', error)
+      logger.error('Error checking for admin', error)
       // If there's an error (like table doesn't exist), assume no admin
       return NextResponse.json({ adminExists: false })
     }
@@ -22,7 +23,7 @@ export async function GET(_request: NextRequest) {
       adminExists: admins && admins.length > 0
     })
   } catch (error) {
-    console.error('Error in GET /api/setup/check:', error)
+    logger.error('Error in GET /api/setup/check', error)
     // On any error, allow setup to proceed
     return NextResponse.json({ adminExists: false })
   }
