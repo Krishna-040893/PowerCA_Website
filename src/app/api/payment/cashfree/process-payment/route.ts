@@ -339,6 +339,11 @@ export async function POST(req: NextRequest) {
       totalTax: gstAmount
     }
 
+    // Get discount information from order data
+    const discountPercentage = orderData.discount_percentage || 0
+    const discountAmount = orderData.discount_amount || 0
+    const originalAmount = orderData.original_amount || 0
+
     const invoiceData = {
       invoiceNumber,
       invoiceDate: new Date(),
@@ -360,7 +365,11 @@ export async function POST(req: NextRequest) {
       subtotal,
       ...gst,
       grandTotal: totalAmount,
-      isTestMode: false
+      isTestMode: false,
+      // Include discount information
+      discountPercentage,
+      discountAmount,
+      originalAmount,
     }
 
     // Generate and upload invoice
@@ -467,6 +476,16 @@ export async function POST(req: NextRequest) {
                       <span>📅 Date</span>
                       <span>${new Date().toLocaleDateString('en-IN')}</span>
                     </div>
+                    ${discountAmount > 0 ? `
+                    <div class="detail-row">
+                      <span>💰 Original Amount</span>
+                      <span style="text-decoration: line-through; color: #999;">₹${originalAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="detail-row" style="color: #27ae60;">
+                      <span>🎁 Discount (${discountPercentage}%)</span>
+                      <span>-₹${discountAmount.toFixed(2)}</span>
+                    </div>
+                    ` : ''}
                     <div class="detail-row">
                       <span>💵 Total Amount</span>
                       <strong>₹${totalAmount.toFixed(2)}</strong>

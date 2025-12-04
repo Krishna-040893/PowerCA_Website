@@ -39,6 +39,7 @@ export async function GET(_request: NextRequest) {
           name,
           email,
           phone,
+          address,
           created_at
         )
       `)
@@ -47,6 +48,64 @@ export async function GET(_request: NextRequest) {
 
     if (invoicesError) {
       logger.error('Error fetching user invoices', invoicesError)
+    }
+
+    // Fetch payment_orders with address_id to get location from user_addresses
+    const orderIds = invoices?.map(inv => {
+      const payment = Array.isArray(inv.payments) ? inv.payments[0] : inv.payments
+      return payment?.order_id
+    }).filter(Boolean) || []
+
+    // Get payment_orders with address_id and discount info
+    let paymentOrders = null
+    if (orderIds.length > 0) {
+      const { data } = await supabase
+        .from('payment_orders')
+        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount')
+        .in('order_id', orderIds)
+      paymentOrders = data
+    }
+
+    // Get all address_ids to fetch from user_addresses
+    const addressIds = paymentOrders?.map(po => po.address_id).filter(Boolean) || []
+
+    // Fetch user_addresses to get label/city
+    let userAddresses: { id: string; label: string | null; city: string }[] = []
+    if (addressIds.length > 0) {
+      const { data } = await supabase
+        .from('user_addresses')
+        .select('id, label, city')
+        .in('id', addressIds)
+      userAddresses = data || []
+    }
+
+    // Create a map of address_id to location (prefer label, fallback to city)
+    const addressLocationMap: Record<string, string> = {}
+    for (const addr of userAddresses) {
+      addressLocationMap[addr.id] = addr.label || addr.city
+    }
+
+    // Create a map of order_id to location and discount info
+    const orderCityMap: Record<string, string> = {}
+    const orderDiscountMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null }> = {}
+    if (paymentOrders) {
+      for (const po of paymentOrders) {
+        if (po.order_id) {
+          // First try to get location from user_addresses via address_id
+          if (po.address_id && addressLocationMap[po.address_id]) {
+            orderCityMap[po.order_id] = addressLocationMap[po.address_id]
+          } else if (po.customer_city) {
+            // Fallback to customer_city from payment_orders
+            orderCityMap[po.order_id] = po.customer_city
+          }
+          // Store discount info
+          orderDiscountMap[po.order_id] = {
+            discountPercentage: po.discount_percentage || 0,
+            discountAmount: po.discount_amount || 0,
+            originalAmount: po.original_amount || null
+          }
+        }
+      }
     }
 
     // Get billing address from the most recent payment, or from registration_forms if no payments
@@ -86,6 +145,10 @@ export async function GET(_request: NextRequest) {
     // Format order history
     const orderHistory = invoices?.map((invoice) => {
       const payment = Array.isArray(invoice.payments) ? invoice.payments[0] : invoice.payments
+      // Get city from payment_orders map
+      const location = payment?.order_id ? (orderCityMap[payment.order_id] || '') : ''
+      // Get discount info from payment_orders map
+      const discountInfo = payment?.order_id ? orderDiscountMap[payment.order_id] : null
       return {
         invoiceNumber: invoice.invoice_number,
         orderId: payment?.order_id || 'N/A',
@@ -96,6 +159,10 @@ export async function GET(_request: NextRequest) {
         status: invoice.status,
         issuedAt: invoice.issued_at,
         paidAt: payment?.created_at || invoice.issued_at,
+        location: location,
+        discountPercentage: discountInfo?.discountPercentage || 0,
+        discountAmount: discountInfo?.discountAmount || 0,
+        originalAmount: discountInfo?.originalAmount || null,
       }
     }) || []
 

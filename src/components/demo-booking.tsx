@@ -9,6 +9,8 @@ import {Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSqu
 import Link from 'next/link'
 import 'react-calendar/dist/Calendar.css'
 import {toast  } from 'sonner'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 type ValuePiece = Date | null
 type Value = ValuePiece | [ValuePiece, ValuePiece]
@@ -44,6 +46,8 @@ export function DemoBooking() {
   const [step, setStep] = useState(1)
   const [mounted, setMounted] = useState(false)
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
+  const [phoneNumber, setPhoneNumber] = useState<string>('')
+  const [phoneError, setPhoneError] = useState<string>('')
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<BookingFormData>()
 
@@ -101,6 +105,16 @@ export function DemoBooking() {
       return
     }
 
+    // Validate phone number
+    if (!phoneNumber) {
+      setPhoneError('Phone number is required')
+      return
+    }
+    if (phoneNumber.length < 10) {
+      setPhoneError('Please enter a valid phone number')
+      return
+    }
+
     setLoading(true)
     try {
       // Format date as YYYY-MM-DD to ensure correct date is stored
@@ -113,6 +127,7 @@ export function DemoBooking() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          phone: phoneNumber,
           date: formattedDate,
           time: selectedTime
         })
@@ -123,6 +138,8 @@ export function DemoBooking() {
       if (result.success) {
         setShowConfirmation(true)
         reset()
+        setPhoneNumber('')
+        setPhoneError('')
         setSelectedDate(null)
         setSelectedTime('')
         setStep(1)
@@ -484,20 +501,22 @@ export function DemoBooking() {
                         <Phone className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
                         Phone Number <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        {...register('phone', {
-                          required: 'Phone number is required',
-                          pattern: {
-                            value: /^[6-9]\d{9}$/,
-                            message: 'Invalid Indian phone number'
-                          }
-                        })}
-                        type="tel"
-                        className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
-                        placeholder="9876543210"
+                      <PhoneInput
+                        international
+                        defaultCountry="IN"
+                        value={phoneNumber}
+                        onChange={(value) => {
+                          setPhoneNumber(value || '')
+                          setPhoneError('')
+                        }}
+                        className="flex gap-0 [&>input]:w-full [&>input]:px-3 [&>input]:py-2 [&>input]:sm:py-2.5 [&>input]:text-sm [&>input]:sm:text-base [&>input]:rounded-r-lg [&>input]:border [&>input]:border-gray-300 [&>input]:focus:border-primary-500 [&>input]:focus:ring-2 [&>input]:focus:ring-primary-200 [&>input]:transition-all [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border [&>.PhoneInputCountry]:border-gray-300 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-lg [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-5 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+                        numberInputProps={{
+                          className: "flex-1"
+                        }}
+                        placeholder="Enter phone number"
                       />
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.phone.message}</p>
+                      {phoneError && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-1">{phoneError}</p>
                       )}
                     </div>
 

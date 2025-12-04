@@ -41,10 +41,10 @@ function PricingContent() {
     }
   }, [searchParams])
 
-  // Verify if the logged-in user actually matches this referral
+  // Verify if the logged-in user has a valid referral
   useEffect(() => {
     const verifyReferral = async () => {
-      if (!session?.user?.email || !referralInfo?.ref || !referralInfo?.cus) {
+      if (!session?.user?.email) {
         setIsValidReferral(false)
         return
       }
@@ -55,11 +55,18 @@ function PricingContent() {
         const data = await response.json()
 
         if (data.hasReferral && data.referralInfo) {
-          // Check if the URL parameters match the user's actual referral
-          const matchesRef = data.referralInfo.referralCode === referralInfo.ref
-          const matchesCus = data.referralInfo.customerId === referralInfo.cus
-
-          setIsValidReferral(matchesRef && matchesCus)
+          // User has a valid referral in the database
+          setIsValidReferral(true)
+          // Update referralInfo state with database values if not already set from URL
+          if (!referralInfo?.ref || !referralInfo?.cus) {
+            const dbReferralInfo = {
+              ref: data.referralInfo.referralCode,
+              cus: data.referralInfo.customerId
+            }
+            setReferralInfo(dbReferralInfo)
+            // Also update localStorage
+            localStorage.setItem('affiliate_referral', JSON.stringify(dbReferralInfo))
+          }
         } else {
           setIsValidReferral(false)
         }
@@ -72,29 +79,23 @@ function PricingContent() {
   }, [session, referralInfo])
 
   const handleLaunchOfferPurchase = () => {
+    // Store referral info in localStorage if present
+    if (referralInfo?.ref || referralInfo?.cus) {
+      localStorage.setItem('affiliate_referral', JSON.stringify({
+        ref: referralInfo.ref,
+        cus: referralInfo.cus,
+        timestamp: Date.now()
+      }))
+    }
+
     if (!session) {
-      // Build callback URL with referral params
-      const params = new URLSearchParams()
-
-      if (referralInfo?.ref) params.append('ref', referralInfo.ref)
-      if (referralInfo?.cus) params.append('cus', referralInfo.cus)
-
-      const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
-
-      // Redirect to login with callback URL to return to checkout
-      window.location.href = `/login?callbackUrl=${encodeURIComponent(checkoutUrl)}`
+      // Redirect to login with callback URL to return to account page with billing tab
+      window.location.href = `/login?callbackUrl=${encodeURIComponent('/account?tab=billing')}`
       return
     }
 
-    // Build checkout URL with referral params
-    const params = new URLSearchParams()
-    if (referralInfo?.ref) params.append('ref', referralInfo.ref)
-    if (referralInfo?.cus) params.append('cus', referralInfo.cus)
-
-    const checkoutUrl = params.toString() ? `/checkout?${params.toString()}` : '/checkout'
-
-    // Redirect to checkout page for payment
-    window.location.href = checkoutUrl
+    // Redirect to account page (billing tab) for address management
+    window.location.href = '/account?tab=billing'
   }
 
   return (
@@ -261,16 +262,21 @@ function PricingContent() {
                 {/* Button */}
                 <button
                   onClick={handleLaunchOfferPurchase}
-                  disabled={subscriptionStatus.hasLaunchOffer || isAffiliate}
-                  title={isAffiliate ? 'Affiliates cannot purchase directly' : subscriptionStatus.hasLaunchOffer ? '' : 'http://localhost:3000/checkout'}
+                  disabled={isAffiliate}
+                  title={isAffiliate ? 'Affiliates cannot purchase directly' : 'Proceed to checkout'}
                   className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
-                    subscriptionStatus.hasLaunchOffer || isAffiliate
+                    isAffiliate
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-white text-[#306bea] hover:bg-gray-50 cursor-pointer'
                   }`}
                 >
-                  {isAffiliate ? 'Not Available for Affiliates' : subscriptionStatus.hasLaunchOffer ? 'Already Purchased' : 'Book Now'}
+                  {isAffiliate ? 'Not Available for Affiliates' : 'Order Now'}
                 </button>
+                {!session && (
+                  <p className="text-sm text-white/90 text-center mt-3">
+                    *Please signin or signup to order
+                  </p>
+                )}
                 {isAffiliate && (
                   <p className="text-xs text-white/80 text-center mt-2">
                     As an affiliate, you can refer customers but cannot purchase directly

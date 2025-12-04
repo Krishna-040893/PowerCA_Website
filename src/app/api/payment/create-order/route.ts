@@ -64,7 +64,12 @@ export async function POST(req: NextRequest) {
       city,
       state,
       postcode,
-      gstNo
+      gstNo,
+      addressId, // Address ID from user_addresses table
+      // Discount fields for progressive pricing
+      discountPercentage,
+      discountAmount,
+      originalAmount
     } = body
 
     // Validate amount is provided
@@ -152,7 +157,11 @@ export async function POST(req: NextRequest) {
           customer_state: state || body.state,
           customer_postcode: postcode || body.postcode,
           customer_country: country || body.country,
-          customer_gst_no: gstNo || body.gstNo || customerDetails?.gst
+          address_id: addressId || null,
+          // Discount fields for progressive pricing
+          discount_percentage: discountPercentage || 0,
+          discount_amount: discountAmount || 0,
+          original_amount: originalAmount || null
         })
 
       if (error) {

@@ -143,8 +143,14 @@ export const authOptions: NextAuthOptions = {
             const { data: affiliate, error: affiliateError } = await supabase
               .from('affiliate_registrations')
               .select('*')
-              .eq('email', credentials.email)
+              .eq('email', credentials.email.toLowerCase().trim())
               .single()
+
+            logger.debug('Affiliate lookup result', {
+              found: !!affiliate,
+              hasError: !!affiliateError,
+              email: credentials.email.toLowerCase().trim()
+            })
 
             if (affiliate && !affiliateError) {
               // Check if affiliate has a password
@@ -175,7 +181,7 @@ export const authOptions: NextAuthOptions = {
           const { data: user, error } = await supabase
             .from('registration_forms')
             .select('*')
-            .eq('email', credentials.email)
+            .eq('email', credentials.email.toLowerCase().trim())
             .single()
 
           if (error || !user) {

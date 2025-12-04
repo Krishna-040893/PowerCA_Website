@@ -40,6 +40,16 @@ interface Payment {
   firm_name?: string
   created_at: string
   updated_at: string
+  // Discount fields
+  discount_percentage?: number
+  discount_amount?: number
+  original_amount?: number
+  // Location fields
+  location?: string  // Label field from user_addresses (e.g., "Udumalpet, Tamil Nadu")
+  city?: string
+  state?: string
+  postcode?: string
+  country?: string
 }
 
 export default function AdminPaymentsPage() {
@@ -248,6 +258,12 @@ export default function AdminPaymentsPage() {
     <AdminPageWrapper
       title="Payments"
       description="View and manage all payment transactions"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Successful', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Failed', value: stats.failed, color: 'bg-red-100 text-red-800' },
+        { label: 'Revenue', value: `₹${stats.totalAmount.toFixed(0)}`, color: 'bg-indigo-100 text-indigo-800' }
+      ]}
       actions={
         <Button onClick={fetchPayments} variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -255,69 +271,6 @@ export default function AdminPaymentsPage() {
         </Button>
       }
     >
-      {/* Stats Overview - 2 Columns on Mobile, 4 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Payments</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">All transactions</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Successful</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
-                <p className="text-xs text-gray-500 mt-1">Completed</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Failed</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.failed}</p>
-                <p className="text-xs text-gray-500 mt-1">Declined</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-red-50">
-                <XCircle className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">₹{stats.totalAmount.toFixed(2)}</p>
-                <p className="text-xs text-gray-500 mt-1">Earned</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-indigo-50">
-                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-indigo-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Payments Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardContent className="pt-6">
@@ -354,6 +307,7 @@ export default function AdminPaymentsPage() {
                       <TableHead className="text-base font-bold">Order ID</TableHead>
                       <TableHead className="text-base font-bold">Customer</TableHead>
                       <TableHead className="text-base font-bold">Amount</TableHead>
+                      <TableHead className="text-base font-bold">Discount</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
                       <TableHead className="text-base font-bold">Date</TableHead>
                       <TableHead className="text-base font-bold">Actions</TableHead>
@@ -381,12 +335,35 @@ export default function AdminPaymentsPage() {
                         </TableCell>
                         <TableCell>
                           <p className="font-medium">₹{payment.amount.toFixed(2)}</p>
-                          <p className="text-xs text-gray-500">{payment.currency}</p>
+                          {payment.location && (
+                            <p className="text-xs text-blue-600 font-medium mt-0.5">
+                              {payment.location}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(payment.discount_percentage !== null && payment.discount_percentage !== undefined && Number(payment.discount_percentage) > 0) ? (
+                            <div>
+                              <p className="text-sm font-medium text-orange-600">
+                                {payment.discount_percentage}%
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                -₹{Number(payment.discount_amount || 0).toFixed(2)}
+                              </p>
+                              {payment.original_amount && (
+                                <p className="text-xs text-green-600 font-medium">
+                                  ₹{(Number(payment.original_amount) - Number(payment.discount_amount || 0)).toFixed(2)}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell>{getStatusBadge(payment.status)}</TableCell>
                         <TableCell>
-                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString()}</p>
-                          <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString()}</p>
+                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                          <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -456,12 +433,61 @@ export default function AdminPaymentsPage() {
                                         </div>
                                       </div>
                                     </div>
+                                    {/* Discount Information */}
+                                    {(selectedPayment.discount_percentage || selectedPayment.discount_amount) && (
+                                      <div className="bg-orange-50 rounded-lg p-3">
+                                        <h4 className="font-medium mb-2 text-orange-800">Discount Information</h4>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                          {selectedPayment.discount_percentage && (
+                                            <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
+                                          )}
+                                          {selectedPayment.original_amount && (
+                                            <p><span className="font-medium">Original Price:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                          )}
+                                          {selectedPayment.discount_amount && (
+                                            <p><span className="font-medium">Discount Amount:</span> <span className="text-red-600">-₹{selectedPayment.discount_amount.toFixed(2)}</span></p>
+                                          )}
+                                          {selectedPayment.original_amount && selectedPayment.discount_amount && (
+                                            <p><span className="font-medium">Discounted Price:</span> <span className="text-green-600 font-bold">₹{(selectedPayment.original_amount - selectedPayment.discount_amount).toFixed(2)}</span></p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {/* Location Information */}
+                                    {(selectedPayment.location || selectedPayment.city || selectedPayment.state || selectedPayment.address) && (
+                                      <div className="bg-indigo-50 rounded-lg p-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h4 className="font-medium text-indigo-800">Location (Place of Purchase)</h4>
+                                          {selectedPayment.location && (
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
+                                              {selectedPayment.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="space-y-1 text-sm">
+                                          {selectedPayment.address && (
+                                            <p><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                          )}
+                                          {(selectedPayment.city || selectedPayment.state) && (
+                                            <p>
+                                              <span className="font-medium">City/State:</span> {[selectedPayment.city, selectedPayment.state].filter(Boolean).join(', ')}
+                                            </p>
+                                          )}
+                                          {selectedPayment.postcode && (
+                                            <p><span className="font-medium">Postcode:</span> {selectedPayment.postcode}</p>
+                                          )}
+                                          {selectedPayment.country && (
+                                            <p><span className="font-medium">Country:</span> {selectedPayment.country}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
                                       <div>
-                                        <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                        <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                       </div>
                                       <div>
-                                        <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
+                                        <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.updated_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -517,9 +543,9 @@ export default function AdminPaymentsPage() {
 
                         {/* Date */}
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <span>{new Date(payment.created_at).toLocaleDateString()}</span>
+                          <span>{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                           <span>•</span>
-                          <span>{new Date(payment.created_at).toLocaleTimeString()}</span>
+                          <span>{new Date(payment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                         </div>
 
                         {/* Actions */}
@@ -591,12 +617,61 @@ export default function AdminPaymentsPage() {
                                       </div>
                                     </div>
                                   </div>
+                                  {/* Discount Information */}
+                                  {(selectedPayment.discount_percentage || selectedPayment.discount_amount) && (
+                                    <div className="bg-orange-50 rounded-lg p-3">
+                                      <h4 className="font-medium mb-2 text-orange-800">Discount Information</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {selectedPayment.discount_percentage && (
+                                          <p><span className="font-medium">Discount:</span> {selectedPayment.discount_percentage}%</p>
+                                        )}
+                                        {selectedPayment.original_amount && (
+                                          <p><span className="font-medium">Original Price:</span> ₹{selectedPayment.original_amount.toFixed(2)}</p>
+                                        )}
+                                        {selectedPayment.discount_amount && (
+                                          <p><span className="font-medium">Discount Amount:</span> <span className="text-red-600">-₹{selectedPayment.discount_amount.toFixed(2)}</span></p>
+                                        )}
+                                        {selectedPayment.original_amount && selectedPayment.discount_amount && (
+                                          <p><span className="font-medium">Discounted Price:</span> <span className="text-green-600 font-bold">₹{(selectedPayment.original_amount - selectedPayment.discount_amount).toFixed(2)}</span></p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Location Information */}
+                                  {(selectedPayment.location || selectedPayment.city || selectedPayment.state || selectedPayment.address) && (
+                                    <div className="bg-indigo-50 rounded-lg p-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <h4 className="font-medium text-indigo-800">Location (Place of Purchase)</h4>
+                                        {selectedPayment.location && (
+                                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
+                                            {selectedPayment.location}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="space-y-1 text-sm">
+                                        {selectedPayment.address && (
+                                          <p><span className="font-medium">Address:</span> {selectedPayment.address}</p>
+                                        )}
+                                        {(selectedPayment.city || selectedPayment.state) && (
+                                          <p>
+                                            <span className="font-medium">City/State:</span> {[selectedPayment.city, selectedPayment.state].filter(Boolean).join(', ')}
+                                          </p>
+                                        )}
+                                        {selectedPayment.postcode && (
+                                          <p><span className="font-medium">Postcode:</span> {selectedPayment.postcode}</p>
+                                        )}
+                                        {selectedPayment.country && (
+                                          <p><span className="font-medium">Country:</span> {selectedPayment.country}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 pt-4 border-t">
                                     <div>
-                                      <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleString()}</p>
+                                      <p><span className="font-medium">Created:</span> {new Date(selectedPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                     </div>
                                     <div>
-                                      <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleString()}</p>
+                                      <p><span className="font-medium">Updated:</span> {new Date(selectedPayment.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(selectedPayment.updated_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                                     </div>
                                   </div>
                                 </div>

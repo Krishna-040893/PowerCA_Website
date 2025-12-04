@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,33 +13,21 @@ import {
   Mail,
   Phone,
   MapPin,
-  Building2,
   ShoppingBag,
   Trash2,
   LogOut,
   AlertCircle,
   Download,
   Package,
-  Settings,
   Loader2,
-  FileText,
   Calendar,
   IndianRupee,
-  Edit2,
   Save,
-  X
+  Plus,
+  Pencil,
+  ChevronDown
 } from 'lucide-react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import ProfilePhotoUpload from '@/components/profile-photo-upload'
@@ -64,6 +52,10 @@ interface OrderHistory {
   status: string
   issuedAt: string
   paidAt: string
+  location: string
+  discountPercentage: number
+  discountAmount: number
+  originalAmount: number | null
 }
 
 interface UserData {
@@ -80,18 +72,284 @@ interface ReferralInfo {
   createdAt: string
 }
 
-export default function AccountPage() {
+interface SavedAddress {
+  id: string
+  full_name: string
+  firm_name: string
+  gst_no?: string
+  address: string
+  city: string
+  state: string
+  postcode: string
+  country: string
+  phone: string
+  email: string
+  is_default: boolean
+  label?: string
+  created_at: string
+}
+
+// Common spelling corrections for Indian cities
+const citySpellingCorrections: Record<string, string> = {
+  // Bangalore variations
+  'bangalroe': 'Bangalore',
+  'banglore': 'Bangalore',
+  'banglaore': 'Bangalore',
+  'bengluru': 'Bangalore',
+  'bengaluru': 'Bangalore',
+  'bangaluru': 'Bangalore',
+  'banagalore': 'Bangalore',
+  'bangalore': 'Bangalore',
+  // Mumbai variations
+  'mumbai': 'Mumbai',
+  'mubai': 'Mumbai',
+  'mumbaii': 'Mumbai',
+  'bombay': 'Mumbai',
+  // Delhi variations
+  'delhi': 'Delhi',
+  'dehli': 'Delhi',
+  'delli': 'Delhi',
+  'newdelhi': 'New Delhi',
+  'new delhi': 'New Delhi',
+  // Chennai variations
+  'chennai': 'Chennai',
+  'chenai': 'Chennai',
+  'channai': 'Chennai',
+  'madras': 'Chennai',
+  // Hyderabad variations
+  'hyderabad': 'Hyderabad',
+  'hydrabad': 'Hyderabad',
+  'hiderabad': 'Hyderabad',
+  'hyderabd': 'Hyderabad',
+  // Kolkata variations
+  'kolkata': 'Kolkata',
+  'kolkatta': 'Kolkata',
+  'calcutta': 'Kolkata',
+  'kolkota': 'Kolkata',
+  // Pune variations
+  'pune': 'Pune',
+  'poona': 'Pune',
+  'puna': 'Pune',
+  // Ahmedabad variations
+  'ahmedabad': 'Ahmedabad',
+  'ahemdabad': 'Ahmedabad',
+  'ahmedabd': 'Ahmedabad',
+  'ahmadabad': 'Ahmedabad',
+  // Jaipur variations
+  'jaipur': 'Jaipur',
+  'jaiur': 'Jaipur',
+  'jaipure': 'Jaipur',
+  // Lucknow variations
+  'lucknow': 'Lucknow',
+  'luknow': 'Lucknow',
+  'luckow': 'Lucknow',
+  // Chandigarh variations
+  'chandigarh': 'Chandigarh',
+  'chandigrah': 'Chandigarh',
+  'chandighar': 'Chandigarh',
+  // Gurgaon/Gurugram variations
+  'gurgaon': 'Gurugram',
+  'gurugram': 'Gurugram',
+  'gurgoan': 'Gurugram',
+  // Noida variations
+  'noida': 'Noida',
+  'nodia': 'Noida',
+  // Coimbatore variations
+  'coimbatore': 'Coimbatore',
+  'coimbatur': 'Coimbatore',
+  'coimbtore': 'Coimbatore',
+  // Indore variations
+  'indore': 'Indore',
+  'indor': 'Indore',
+  // Kochi variations
+  'kochi': 'Kochi',
+  'cochin': 'Kochi',
+  'kochin': 'Kochi',
+  // Nagpur variations
+  'nagpur': 'Nagpur',
+  'nagpure': 'Nagpur',
+  // Surat variations
+  'surat': 'Surat',
+  'suart': 'Surat',
+  // Vadodara variations
+  'vadodara': 'Vadodara',
+  'baroda': 'Vadodara',
+  'vadodra': 'Vadodara',
+  // Visakhapatnam variations
+  'visakhapatnam': 'Visakhapatnam',
+  'vizag': 'Visakhapatnam',
+  'vishakhapatnam': 'Visakhapatnam',
+  // Bhopal variations
+  'bhopal': 'Bhopal',
+  'bhoapl': 'Bhopal',
+  // Patna variations
+  'patna': 'Patna',
+  'panta': 'Patna',
+  // Ranchi variations
+  'ranchi': 'Ranchi',
+  'rachi': 'Ranchi',
+  // Thiruvananthapuram variations
+  'thiruvananthapuram': 'Thiruvananthapuram',
+  'trivandrum': 'Thiruvananthapuram',
+  'trivendrum': 'Thiruvananthapuram',
+}
+
+// Helper function to normalize location name (Title Case + Spelling Correction)
+const normalizeLocation = (location: string): string => {
+  if (!location) return ''
+
+  const trimmed = location.trim().toLowerCase()
+
+  // Check if there's a spelling correction available
+  if (citySpellingCorrections[trimmed]) {
+    return citySpellingCorrections[trimmed]
+  }
+
+  // If no correction found, just apply title case
+  return trimmed
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+// States/Provinces by country
+const statesByCountry: Record<string, string[]> = {
+  'India': [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ],
+  'United States': [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+    'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+    'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
+    'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+    'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
+    'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+    'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
+    'Wisconsin', 'Wyoming', 'District of Columbia'
+  ],
+  'United Kingdom': [
+    'England', 'Scotland', 'Wales', 'Northern Ireland'
+  ],
+  'Canada': [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+    'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+    'Quebec', 'Saskatchewan', 'Yukon'
+  ],
+  'Australia': [
+    'Australian Capital Territory', 'New South Wales', 'Northern Territory', 'Queensland',
+    'South Australia', 'Tasmania', 'Victoria', 'Western Australia'
+  ],
+  'Germany': [
+    'Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hesse',
+    'Lower Saxony', 'Mecklenburg-Vorpommern', 'North Rhine-Westphalia', 'Rhineland-Palatinate',
+    'Saarland', 'Saxony', 'Saxony-Anhalt', 'Schleswig-Holstein', 'Thuringia'
+  ],
+  'United Arab Emirates': [
+    'Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'
+  ],
+  'France': [
+    'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Brittany', 'Centre-Val de Loire',
+    'Corsica', 'Grand Est', 'Hauts-de-France', 'Île-de-France', 'Normandy', 'Nouvelle-Aquitaine',
+    'Occitanie', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'
+  ],
+  'China': [
+    'Anhui', 'Beijing', 'Chongqing', 'Fujian', 'Gansu', 'Guangdong', 'Guangxi', 'Guizhou',
+    'Hainan', 'Hebei', 'Heilongjiang', 'Henan', 'Hong Kong', 'Hubei', 'Hunan', 'Inner Mongolia',
+    'Jiangsu', 'Jiangxi', 'Jilin', 'Liaoning', 'Macau', 'Ningxia', 'Qinghai', 'Shaanxi',
+    'Shandong', 'Shanghai', 'Shanxi', 'Sichuan', 'Taiwan', 'Tianjin', 'Tibet', 'Xinjiang',
+    'Yunnan', 'Zhejiang'
+  ],
+  'Japan': [
+    'Aichi', 'Akita', 'Aomori', 'Chiba', 'Ehime', 'Fukui', 'Fukuoka', 'Fukushima', 'Gifu',
+    'Gunma', 'Hiroshima', 'Hokkaido', 'Hyogo', 'Ibaraki', 'Ishikawa', 'Iwate', 'Kagawa',
+    'Kagoshima', 'Kanagawa', 'Kochi', 'Kumamoto', 'Kyoto', 'Mie', 'Miyagi', 'Miyazaki',
+    'Nagano', 'Nagasaki', 'Nara', 'Niigata', 'Oita', 'Okayama', 'Okinawa', 'Osaka', 'Saga',
+    'Saitama', 'Shiga', 'Shimane', 'Shizuoka', 'Tochigi', 'Tokushima', 'Tokyo', 'Tottori',
+    'Toyama', 'Wakayama', 'Yamagata', 'Yamaguchi', 'Yamanashi'
+  ],
+  'Brazil': [
+    'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal',
+    'Espírito Santo', 'Goiás', 'Maranhão', 'Mato Grosso', 'Mato Grosso do Sul', 'Minas Gerais',
+    'Pará', 'Paraíba', 'Paraná', 'Pernambuco', 'Piauí', 'Rio de Janeiro', 'Rio Grande do Norte',
+    'Rio Grande do Sul', 'Rondônia', 'Roraima', 'Santa Catarina', 'São Paulo', 'Sergipe', 'Tocantins'
+  ],
+  'Mexico': [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+    'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México',
+    'Mexico City', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro',
+    'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala',
+    'Veracruz', 'Yucatán', 'Zacatecas'
+  ],
+  'Spain': [
+    'Andalusia', 'Aragon', 'Asturias', 'Balearic Islands', 'Basque Country', 'Canary Islands',
+    'Cantabria', 'Castile and León', 'Castile-La Mancha', 'Catalonia', 'Ceuta', 'Extremadura',
+    'Galicia', 'La Rioja', 'Madrid', 'Melilla', 'Murcia', 'Navarre', 'Valencia'
+  ],
+  'Italy': [
+    'Abruzzo', 'Aosta Valley', 'Apulia', 'Basilicata', 'Calabria', 'Campania', 'Emilia-Romagna',
+    'Friuli Venezia Giulia', 'Lazio', 'Liguria', 'Lombardy', 'Marche', 'Molise', 'Piedmont',
+    'Sardinia', 'Sicily', 'Trentino-South Tyrol', 'Tuscany', 'Umbria', 'Veneto'
+  ]
+}
+
+function AccountPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isDeleting, setIsDeleting] = useState(false)
+  const searchParams = useSearchParams()
+  const [, setIsDeleting] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoadingData, setIsLoadingData] = useState(true)
-  const [activeTab, setActiveTab] = useState('profile')
-  const [isEditingBilling, setIsEditingBilling] = useState(false)
-  const [editedBilling, setEditedBilling] = useState<BillingAddress | null>(null)
-  const [isSavingBilling, setIsSavingBilling] = useState(false)
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check URL param for initial tab
+    const tabParam = searchParams.get('tab')
+    return tabParam && ['profile', 'billing', 'orders'].includes(tabParam)
+      ? tabParam
+      : 'profile'
+  })
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [loadingAddresses, setLoadingAddresses] = useState(false)
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [purchasedAddressIds, setPurchasedAddressIds] = useState<string[]>([])
+  const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
+  const [expandedOrders, setExpandedOrders] = useState<string[]>([])
+  const [expandedAddresses, setExpandedAddresses] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const ordersPerPage = 5
+
+  // Handle tab change - update both state and URL
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    // Reset pagination when switching to orders tab
+    if (value === 'orders') {
+      setCurrentPage(1)
+    }
+    // Update URL without full page reload
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', value)
+    router.replace(`/account?${params.toString()}`, { scroll: false })
+  }
+
+  // Billing form state
+  const [isSavingBilling, setIsSavingBilling] = useState(false)
+  const [billingForm, setBillingForm] = useState({
+    firmName: '',
+    gstNo: '',
+    address: '',
+    city: '',
+    country: 'India',
+    state: '',
+    postcode: ''
+  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -104,9 +362,76 @@ export default function AccountPage() {
       fetchUserData()
       fetchProfilePhoto()
       fetchReferralInfo()
+      fetchSavedAddresses()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.email])
+
+  const fetchSavedAddresses = async () => {
+    setLoadingAddresses(true)
+    try {
+      const response = await fetch('/api/user/addresses')
+      const result = await response.json()
+
+      if (result.success && result.addresses) {
+        setSavedAddresses(result.addresses)
+        // Show form automatically if no addresses exist
+        if (result.addresses.length === 0) {
+          setShowAddressForm(true)
+        }
+      }
+
+      // Fetch purchased address IDs
+      const purchasedResponse = await fetch('/api/user/purchased-addresses')
+      const purchasedResult = await purchasedResponse.json()
+      if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
+        setPurchasedAddressIds(purchasedResult.purchasedAddressIds)
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    } finally {
+      setLoadingAddresses(false)
+    }
+  }
+
+  const _handleDeleteAddress = async (addressId: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/user/addresses/${addressId}`, {
+        method: 'DELETE'
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Address deleted successfully')
+        await fetchSavedAddresses()
+      } else {
+        toast.error(result.error || 'Failed to delete address')
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error)
+      toast.error('An error occurred while deleting address')
+    }
+  }
+
+  const handleEditAddress = (address: SavedAddress) => {
+    // Load address data into form - use label as city if available for consistency
+    setBillingForm({
+      firmName: address.firm_name,
+      gstNo: address.gst_no || '',
+      address: address.address,
+      city: address.label || address.city,
+      country: address.country,
+      state: address.state,
+      postcode: address.postcode
+    })
+    setEditingAddressId(address.id)
+    setShowAddressForm(true)
+  }
 
   const fetchProfilePhoto = async () => {
     if (!session?.user?.id) return
@@ -151,57 +476,6 @@ export default function AccountPage() {
     }
   }
 
-  const handleEditBilling = () => {
-    setEditedBilling(userData?.billingAddress || null)
-    setIsEditingBilling(true)
-  }
-
-  const handleCancelEdit = () => {
-    setIsEditingBilling(false)
-    setEditedBilling(null)
-  }
-
-  const handleSaveBilling = async () => {
-    if (!editedBilling) return
-
-    setIsSavingBilling(true)
-    try {
-      // Call API to update billing information
-      const response = await fetch('/api/user/billing', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editedBilling),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to save billing information')
-      }
-
-      // Update local state with saved data
-      if (userData) {
-        setUserData({
-          ...userData,
-          billingAddress: editedBilling
-        })
-      }
-
-      setIsEditingBilling(false)
-      setEditedBilling(null)
-
-      // Show success message
-      alert('Billing information saved successfully!')
-    } catch (error) {
-      console.error('Error saving billing info:', error)
-      alert(error instanceof Error ? error.message : 'Failed to save billing information. Please try again.')
-    } finally {
-      setIsSavingBilling(false)
-    }
-  }
-
   const handleProfilePhotoUpdate = (newUrl: string) => {
     setCurrentProfilePhotoUrl(newUrl)
   }
@@ -210,7 +484,7 @@ export default function AccountPage() {
     setCurrentProfilePhotoUrl(null)
   }
 
-  const handleDeleteAccount = async () => {
+  const _handleDeleteAccount = async () => {
     setIsDeleting(true)
     try {
       const response = await fetch('/api/user/delete', {
@@ -228,6 +502,117 @@ export default function AccountPage() {
       console.error('Error deleting account:', error)
       alert('Failed to delete account. Please try again or contact support.')
       setIsDeleting(false)
+    }
+  }
+
+  const handleBillingFormChange = (field: string, value: string) => {
+    // Reset state when country changes
+    if (field === 'country') {
+      setBillingForm(prev => ({ ...prev, [field]: value, state: '' }))
+    } else {
+      setBillingForm(prev => ({ ...prev, [field]: value }))
+    }
+  }
+
+  // Normalize city/location when user leaves the field
+  const handleLocationBlur = () => {
+    const normalized = normalizeLocation(billingForm.city)
+    if (normalized !== billingForm.city) {
+      setBillingForm(prev => ({ ...prev, city: normalized }))
+    }
+  }
+
+  const handleSaveBillingAddress = async () => {
+    // Normalize city/location before validation and saving
+    const normalizedCity = normalizeLocation(billingForm.city)
+
+    // Validate required fields
+    if (!billingForm.firmName || !billingForm.address || !normalizedCity || !billingForm.country || !billingForm.state || !billingForm.postcode) {
+      toast.error('Please fill all required fields')
+      return
+    }
+
+    setIsSavingBilling(true)
+    try {
+      const isEditing = !!editingAddressId
+      const url = isEditing
+        ? `/api/user/addresses/${editingAddressId}`
+        : '/api/user/addresses'
+
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          full_name: session?.user?.name || '',
+          firm_name: billingForm.firmName,
+          gst_no: billingForm.gstNo || null,
+          address: billingForm.address,
+          city: normalizedCity,
+          state: billingForm.state,
+          postcode: billingForm.postcode,
+          country: billingForm.country,
+          phone: session?.user?.phone || '',
+          email: session?.user?.email || '',
+          is_default: false,
+          label: normalizedCity
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(isEditing ? 'Address updated successfully!' : 'Billing address saved successfully!')
+
+        // For new addresses, redirect to checkout with the new address ID
+        if (!isEditing && result.address?.id) {
+          router.push(`/checkout?addressId=${result.address.id}`)
+          return
+        }
+
+        // For edits, stay on the page
+        // Store the edited address ID and location before resetting
+        const editedAddressId = editingAddressId
+        const editedLocation = normalizedCity
+
+        // Fetch updated addresses list
+        await fetchSavedAddresses()
+
+        // Reset form
+        setBillingForm({
+          firmName: '',
+          gstNo: '',
+          address: '',
+          city: '',
+          country: 'India',
+          state: '',
+          postcode: ''
+        })
+
+        // Hide form
+        setShowAddressForm(false)
+        setEditingAddressId(null)
+
+        // Set the current location tab to the edited address's location
+        if (editedLocation) {
+          setSelectedLocationTab(editedLocation)
+        }
+
+        // Expand the edited address accordion
+        if (editedAddressId) {
+          setExpandedAddresses(prev =>
+            prev.includes(editedAddressId) ? prev : [...prev, editedAddressId]
+          )
+        }
+      } else {
+        toast.error(result.error || 'Failed to save billing address')
+      }
+    } catch (error) {
+      console.error('Error saving billing address:', error)
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setIsSavingBilling(false)
     }
   }
 
@@ -293,33 +678,33 @@ export default function AccountPage() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100 shadow-md">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:space-x-4 lg:space-x-6 w-full sm:w-auto">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex flex-col sm:flex-row items-center sm:space-x-3 w-full sm:w-auto">
               {/* Profile Photo Display with Edit Button */}
-              <div className="flex-shrink-0 mb-3 sm:mb-0">
+              <div className="flex-shrink-0">
                 <ProfilePhotoUpload
                   currentPhotoUrl={currentProfilePhotoUrl}
                   onPhotoUpdate={handleProfilePhotoUpdate}
                   onPhotoDelete={handleProfilePhotoDelete}
-                  size="md"
+                  size="sm"
                   editable={true}
                 />
               </div>
 
-              <div className="flex flex-col justify-center text-center sm:text-left">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+              <div className="flex flex-col justify-center text-center sm:text-left mt-1.5 sm:mt-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">
                   {session.user?.name || 'Welcome'}
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center sm:justify-start gap-2">
-                  <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                <p className="text-xs text-gray-600 flex items-center justify-center sm:justify-start gap-1.5">
+                  <Mail className="h-3 w-3 text-gray-400" />
                   <span className="truncate max-w-[200px] sm:max-w-none">{session.user?.email}</span>
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
-              size="default"
+              size="sm"
               onClick={() => signOut({ callbackUrl: '/' })}
               className="text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors w-full sm:w-auto"
             >
@@ -331,8 +716,8 @@ export default function AccountPage() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+      <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-8 ${showAddressForm ? 'max-w-[1400px]' : 'max-w-6xl'}`}>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-2">
           {/* Individual Spaced Tabs */}
           <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
             <TabsTrigger
@@ -359,49 +744,37 @@ export default function AccountPage() {
               <span className="hidden sm:inline">Order History</span>
               <span className="sm:hidden">Orders</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="settings"
-              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
-            >
-              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Settings</span>
-              <span className="sm:hidden">Settings</span>
-            </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6 mt-6">
-            {/* Affiliate Referral Info Banner - Only show if pending */}
+          <TabsContent value="profile" className="space-y-4">
+            {/* Affiliate Referral Info - Only show if pending */}
             {referralInfo && referralInfo.status === 'pending' && (
-              <Card className="shadow-lg border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg text-blue-700">
-                    <Package className="h-5 w-5" />
-                    Affiliate Referral Information
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    You were referred by an affiliate partner. Complete your payment to activate your account!
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4 border border-blue-200">
-                      <p className="text-xs text-gray-500 mb-1">Customer ID</p>
-                      <p className="text-lg font-bold text-blue-700">{referralInfo.customerId}</p>
+              <div className="py-2">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Package className="h-4 w-4" />
+                  Affiliate Referral Information
+                </h3>
+                <p className="text-xs text-gray-500 mb-2">
+                  You were referred by an affiliate partner. Complete your payment to activate your account!
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                  <div className="flex items-center gap-4 text-xs text-gray-700 mb-1.5">
+                    <div>
+                      <span className="text-gray-600">Customer ID:</span>{' '}
+                      <span className="font-semibold text-gray-900">{referralInfo.customerId}</span>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-blue-200">
-                      <p className="text-xs text-gray-500 mb-1">Referral Code</p>
-                      <p className="text-lg font-bold text-blue-700">{referralInfo.referralCode}</p>
+                    <div>
+                      <span className="text-gray-600">Referral Code:</span>{' '}
+                      <span className="font-semibold text-gray-900">{referralInfo.referralCode}</span>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>This information will be hidden once your payment is completed</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p className="text-xs text-gray-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>This information will be hidden once your payment is completed</span>
+                  </p>
+                </div>
+              </div>
             )}
 
             <Card className="shadow-lg border-0">
@@ -477,26 +850,346 @@ export default function AccountPage() {
           </TabsContent>
 
           {/* Billing Address Tab */}
-          <TabsContent value="billing" className="space-y-6 mt-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                      Billing Address
-                    </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Your billing and company information</CardDescription>
-                  </div>
-                  {!isEditingBilling && userData?.billingAddress && (
+          <TabsContent value="billing">
+            <style jsx global>{`
+              .billing-form input::placeholder,
+              .billing-form textarea::placeholder {
+                color: #9CA3AF !important;
+                opacity: 1;
+                font-size: 0.9rem !important;
+              }
+              .billing-form input {
+                background-color: #F9FAFB !important;
+                border-color: #D1D5DB !important;
+                padding: 20px !important;
+              }
+              .billing-form select {
+                background-color: #F9FAFB !important;
+                border-color: #D1D5DB !important;
+              }
+              .billing-form input:focus,
+              .billing-form select:focus {
+                background-color: #FFFFFF !important;
+                border-color: #3B82F6 !important;
+              }
+              .billing-form select {
+                font-size: 0.875rem !important;
+              }
+            `}</style>
+
+            <div className={`grid gap-6 ${showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Left Column - Saved Addresses */}
+              <Card className="shadow-lg border-0 h-fit">
+                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                        <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                        Saved Billing Addresses
+                      </CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">Your saved billing addresses for purchases</CardDescription>
+                    </div>
                     <Button
-                      variant="outline"
+                      onClick={() => {
+                        setShowAddressForm(true)
+                        setEditingAddressId(null)
+                        setBillingForm({
+                          firmName: '',
+                          gstNo: '',
+                          address: '',
+                          city: '',
+                          country: 'India',
+                          state: '',
+                          postcode: ''
+                        })
+                      }}
                       size="sm"
-                      onClick={handleEditBilling}
-                      className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto text-sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm shrink-0"
                     >
-                      <Edit2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                      Edit
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add billing address
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-2 sm:pt-3">
+                  {loadingAddresses ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-600 mr-2" />
+                      <span className="text-gray-600">Loading addresses...</span>
+                    </div>
+                  ) : savedAddresses.length > 0 ? (
+                    <div className="space-y-2">
+                      {/* Location Tabs - One tab per unique location */}
+                      {(() => {
+                        // Get unique locations
+                        const uniqueLocations = [...new Set(savedAddresses.map(addr => addr.label || addr.city))]
+
+                        // Find the first location with "Not Ordered" addresses
+                        const firstNotOrderedLocation = uniqueLocations.find(location => {
+                          return savedAddresses.some(
+                            a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
+                          )
+                        })
+
+                        // Default to first location with "Not Ordered", or first location if all are ordered
+                        const currentLocation = selectedLocationTab || firstNotOrderedLocation || uniqueLocations[0]
+
+                        return (
+                          <>
+                            <div className="flex gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                              {uniqueLocations.map((location) => {
+                                const isSelected = currentLocation === location
+                                // Count only "Not Ordered" addresses for this location
+                                const notOrderedCount = savedAddresses.filter(
+                                  a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
+                                ).length
+                                return (
+                                  <button
+                                    key={location}
+                                    onClick={() => setSelectedLocationTab(location)}
+                                    className={`px-4 py-2 rounded-lg text-base font-medium transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                                      isSelected
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    <MapPin className="w-4 h-4" />
+                                    {location}
+                                    {notOrderedCount > 0 && (
+                                      <span className={`text-[10px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
+                                        {notOrderedCount}
+                                      </span>
+                                    )}
+                                  </button>
+                                )
+                              })}
+                            </div>
+
+                            {/* Show Addresses for Selected Location */}
+                            <div className="space-y-4">
+                              {(() => {
+                                const locationAddresses = savedAddresses.filter(
+                                  address => (address.label || address.city) === currentLocation
+                                )
+
+                                return locationAddresses.map((address) => {
+                                  const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
+                                  const isBeingEdited = editingAddressId === address.id
+                                  const isExpanded = expandedAddresses.includes(address.id) || isBeingEdited
+                                  const isOrdered = purchasedAddressIds.includes(address.id)
+                                  // Use accordion for ordered addresses OR when there are more than 3 addresses
+                                  const useAccordion = isOrdered || locationAddresses.length > 3
+
+                                  // If accordion mode (ordered addresses or more than 3 total)
+                                  if (useAccordion) {
+                                    return (
+                                      <div
+                                        key={address.id}
+                                        className={`rounded-xl border transition-all overflow-hidden shadow-md ${
+                                          isBeingEdited
+                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
+                                            : 'border-gray-200 bg-white'
+                                        }`}
+                                      >
+                                        {/* Accordion Header - Always visible */}
+                                        <div
+                                          className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                                          onClick={() => {
+                                            setExpandedAddresses(prev =>
+                                              prev.includes(address.id)
+                                                ? prev.filter(id => id !== address.id)
+                                                : [...prev, address.id]
+                                            )
+                                          }}
+                                        >
+                                          <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                            {address.gst_no && (
+                                              <p className="text-gray-600 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-2 shrink-0">
+                                            {isOrdered && (
+                                              <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>
+                                                ✓ Ordered
+                                              </span>
+                                            )}
+                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                          </div>
+                                        </div>
+
+                                        {/* Accordion Content - Expandable */}
+                                        {isExpanded && (
+                                          <div className="px-4 pb-4 pt-2">
+                                            <div className="flex items-start gap-2">
+                                              <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                                                <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                              </div>
+                                              {!isOrdered && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleEditAddress(address)
+                                                  }}
+                                                  className="text-blue-500 hover:text-blue-700 p-1"
+                                                  title="Edit address"
+                                                >
+                                                  <Pencil className="w-5 h-5" />
+                                                </button>
+                                              )}
+                                            </div>
+                                            {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
+                                            {!isOrdered && (
+                                              <div className="mt-4 w-full flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
+                                                    ○ Not Ordered
+                                                  </span>
+                                                  {originalIndex > 0 && (
+                                                    <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
+                                                      10% Off
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    sessionStorage.setItem('checkoutAddressId', address.id)
+                                                    localStorage.setItem('checkoutAddressId', address.id)
+                                                    router.push(`/checkout?addressId=${address.id}`)
+                                                  }}
+                                                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
+                                                >
+                                                  Proceed to Order
+                                                </button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  }
+
+                                  // Normal card format (3 or fewer addresses)
+                                  return (
+                                    <div
+                                      key={address.id}
+                                      className={`p-4 rounded-xl border transition-all shadow-md ${
+                                        isBeingEdited
+                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
+                                          : 'border-gray-200 bg-white'
+                                      }`}
+                                    >
+                                      <div className="flex items-start gap-2">
+                                        <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                                          <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                          {address.gst_no && (
+                                            <p className="text-gray-600">GST: {address.gst_no}</p>
+                                          )}
+                                          <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                          {isOrdered && (
+                                            <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>✓ Ordered</span>
+                                          )}
+                                          {!isOrdered && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleEditAddress(address)}
+                                              className="text-blue-500 hover:text-blue-700 p-1"
+                                              title="Edit address"
+                                            >
+                                              <Pencil className="w-5 h-5" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                      {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
+                                      {!isOrdered && (
+                                        <div className="mt-4 w-full flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
+                                              ○ Not Ordered
+                                            </span>
+                                            {originalIndex > 0 && (
+                                              <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
+                                                10% Off
+                                              </span>
+                                            )}
+                                          </div>
+                                          <button
+                                            onClick={() => {
+                                              sessionStorage.setItem('checkoutAddressId', address.id)
+                                              localStorage.setItem('checkoutAddressId', address.id)
+                                              router.push(`/checkout?addressId=${address.id}`)
+                                            }}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
+                                          >
+                                            Proceed to Order
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })
+                              })()}
+                            </div>
+                          </>
+                        )
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-base text-gray-500 mb-3">No addresses saved yet</p>
+                      <p className="text-sm text-gray-400">Add your first billing address to get started</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Right Column - Add/Edit Form */}
+              {(showAddressForm || savedAddresses.length === 0) && (
+              <Card className="shadow-lg border-0 billing-form h-fit">
+                <CardHeader className="bg-blue-600/15 border-b py-3 sm:py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      {editingAddressId ? (
+                        <Pencil className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Plus className="h-4 w-4 text-blue-600" />
+                      )}
+                      {editingAddressId ? 'Edit Address' : 'New Address'}
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      {editingAddressId
+                        ? 'Update address details'
+                        : 'Enter billing information'
+                      }
+                    </CardDescription>
+                  </div>
+                  {savedAddresses.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowAddressForm(false)
+                        setEditingAddressId(null)
+                        setBillingForm({
+                          firmName: '',
+                          gstNo: '',
+                          address: '',
+                          city: '',
+                          country: 'India',
+                          state: '',
+                          postcode: ''
+                        })
+                      }}
+                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 p-0 rounded-full border border-gray-300 hover:border-gray-400 transition-all font-bold text-lg"
+                    >
+                      ×
                     </Button>
                   )}
                 </div>
@@ -507,141 +1200,178 @@ export default function AccountPage() {
                     <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-purple-600" />
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading billing information...</span>
                   </div>
-                ) : userData?.billingAddress ? (
-                  <div className="space-y-4 sm:space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="space-y-2">
-                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Full Name</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
-                            value={isEditingBilling ? editedBilling?.name || '' : userData.billingAddress.name || 'N/A'}
-                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, name: e.target.value } : null)}
-                            disabled={!isEditingBilling}
-                            className={`pl-8 sm:pl-10 text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                ) : (
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                      {/* Firm Name */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Firm Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            value={billingForm.firmName}
+                            onChange={(e) => handleBillingFormChange('firmName', e.target.value)}
+                            placeholder="Enter your firm"
+                            className="text-sm sm:text-base"
                           />
-                        </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Email</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
-                            value={isEditingBilling ? editedBilling?.email || '' : userData.billingAddress.email || 'N/A'}
-                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, email: e.target.value } : null)}
-                            disabled={!isEditingBilling}
-                            className={`pl-8 sm:pl-10 text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                      {/* GST No */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          GST No <span className="text-gray-400 text-xs">(Optional)</span>
+                        </Label>
+                        <Input
+                            value={billingForm.gstNo}
+                            onChange={(e) => handleBillingFormChange('gstNo', e.target.value)}
+                            placeholder="GST No"
+                            className="text-sm sm:text-base"
+                            maxLength={20}
                           />
-                        </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Phone</Label>
-                        <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
-                            value={isEditingBilling ? editedBilling?.phone || '' : userData.billingAddress.phone || 'N/A'}
-                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, phone: e.target.value } : null)}
-                            disabled={!isEditingBilling}
-                            className={`pl-8 sm:pl-10 text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                      {/* Street Address */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Street Address <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            value={billingForm.address}
+                            onChange={(e) => handleBillingFormChange('address', e.target.value)}
+                            placeholder="Enter your street address"
+                            className="text-sm sm:text-base"
                           />
-                        </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Firm/Company Name</Label>
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                          <Input
-                            value={isEditingBilling ? editedBilling?.firmName || editedBilling?.company || '' : userData.billingAddress.firmName || userData.billingAddress.company || 'N/A'}
-                            onChange={(e) => setEditedBilling(prev => prev ? { ...prev, firmName: e.target.value } : null)}
-                            disabled={!isEditingBilling}
-                            className={`pl-8 sm:pl-10 text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
-                          />
-                        </div>
+                      {/* City/Location */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          City/Location <span className="text-red-500">*</span>
+                          <span className="text-gray-400 text-xs ml-1">(Branch location)</span>
+                        </Label>
+                        <Input
+                          value={billingForm.city}
+                          onChange={(e) => handleBillingFormChange('city', e.target.value)}
+                          onBlur={handleLocationBlur}
+                          placeholder="Enter city/location"
+                          className="text-sm sm:text-base"
+                        />
                       </div>
 
-                      {(userData.billingAddress.gstNumber || isEditingBilling) && (
-                        <div className="space-y-2">
-                          <Label className="text-xs sm:text-sm font-medium text-gray-700">GST Number</Label>
-                          <div className="relative">
-                            <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                            <Input
-                              value={isEditingBilling ? editedBilling?.gstNumber || '' : userData.billingAddress.gstNumber || ''}
-                              onChange={(e) => setEditedBilling(prev => prev ? { ...prev, gstNumber: e.target.value } : null)}
-                              disabled={!isEditingBilling}
-                              className={`pl-8 sm:pl-10 font-mono text-xs sm:text-sm ${isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
-                            />
-                          </div>
-                        </div>
-                      )}
+                      {/* Postcode/Zip */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Postcode/Zip <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          value={billingForm.postcode}
+                          onChange={(e) => handleBillingFormChange('postcode', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="Enter postcode"
+                          className="text-sm sm:text-base"
+                          maxLength={6}
+                        />
+                      </div>
 
-                      {(userData.billingAddress.address || isEditingBilling) && (
-                        <div className="space-y-2 md:col-span-2">
-                          <Label className="text-xs sm:text-sm font-medium text-gray-700">Address</Label>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-3 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
-                            <textarea
-                              value={isEditingBilling ? editedBilling?.address || '' : userData.billingAddress.address || ''}
-                              onChange={(e) => setEditedBilling(prev => prev ? { ...prev, address: e.target.value } : null)}
-                              disabled={!isEditingBilling}
-                              rows={3}
-                              className={`w-full pl-8 sm:pl-10 pr-3 py-2 border rounded-md text-xs sm:text-sm ${
-                                isEditingBilling ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      )}
+                      {/* Country */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Country <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                          value={billingForm.country}
+                          onChange={(e) => handleBillingFormChange('country', e.target.value)}
+                          className="w-full h-10 px-3 py-2 border rounded-md text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="India">India</option>
+                          <option value="United States">United States</option>
+                          <option value="United Kingdom">United Kingdom</option>
+                          <option value="Canada">Canada</option>
+                          <option value="Australia">Australia</option>
+                          <option value="Germany">Germany</option>
+                          <option value="United Arab Emirates">United Arab Emirates</option>
+                          <option value="France">France</option>
+                          <option value="China">China</option>
+                          <option value="Japan">Japan</option>
+                          <option value="Brazil">Brazil</option>
+                          <option value="Mexico">Mexico</option>
+                          <option value="Spain">Spain</option>
+                          <option value="Italy">Italy</option>
+                        </select>
+                      </div>
+
+                      {/* State */}
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium text-gray-700">
+                          State/Province <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                          value={billingForm.state}
+                          onChange={(e) => handleBillingFormChange('state', e.target.value)}
+                          className="w-full h-10 px-3 py-2 border rounded-md text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="">Select State</option>
+                          {(statesByCountry[billingForm.country] || []).map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
                     </div>
 
-                    {isEditingBilling && (
-                      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t">
+                    {/* Action Buttons */}
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                      {/* Only show Clear button when adding new address, not when editing */}
+                      {!editingAddressId && (
                         <Button
+                          type="button"
                           variant="outline"
-                          size="sm"
-                          onClick={handleCancelEdit}
-                          disabled={isSavingBilling}
-                          className="w-full sm:w-auto text-sm"
+                          onClick={() => {
+                            setBillingForm({
+                              firmName: '',
+                              gstNo: '',
+                              address: '',
+                              city: '',
+                              country: 'India',
+                              state: '',
+                              postcode: ''
+                            })
+                          }}
+                          className="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800 px-6"
                         >
-                          <X className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          Cancel
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Clear
                         </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleSaveBilling}
-                          disabled={isSavingBilling}
-                          className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto text-sm"
-                        >
-                          {isSavingBilling ? (
-                            <>
-                              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                              Save Changes
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 sm:py-12">
-                    <MapPin className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">No billing address available</p>
-                    <p className="text-xs sm:text-sm text-gray-500">Your billing information will appear here after your first purchase</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      )}
+                      <Button
+                        onClick={handleSaveBillingAddress}
+                        disabled={isSavingBilling}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                      >
+                        {isSavingBilling ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            {editingAddressId ? 'Update' : 'Save'}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              )}
+            </div>
           </TabsContent>
 
           {/* Order History Tab */}
-          <TabsContent value="orders" className="space-y-6 mt-6">
+          <TabsContent value="orders" className="space-y-6">
             <Card className="shadow-lg border-0">
               <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -666,78 +1396,179 @@ export default function AccountPage() {
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading order history...</span>
                   </div>
                 ) : userData && userData.orderHistory.length > 0 ? (
-                  <div className="space-y-3 sm:space-y-4">
-                    {userData.orderHistory.map((order) => (
-                      <div
-                        key={order.invoiceNumber}
-                        className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow bg-white"
-                      >
-                        <div className="flex flex-col gap-3 sm:gap-4">
-                          <div className="flex-1 space-y-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Package className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                  <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">Invoice #{order.invoiceNumber}</p>
-                                </div>
-                                <p className="text-[10px] sm:text-xs text-gray-500 font-mono truncate">Order ID: {order.orderId}</p>
+                  <>
+                  <div className="space-y-2">
+                    {userData.orderHistory
+                      .slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage)
+                      .map((order) => {
+                      const isExpanded = expandedOrders.includes(order.invoiceNumber)
+                      return (
+                        <div
+                          key={order.invoiceNumber}
+                          className="border border-gray-200 rounded-lg hover:shadow-sm transition-shadow bg-white overflow-hidden"
+                        >
+                          {/* Clickable header row */}
+                          <div
+                            className="flex items-center justify-between gap-3 p-4 cursor-pointer"
+                            onClick={() => {
+                              setExpandedOrders(prev =>
+                                prev.includes(order.invoiceNumber)
+                                  ? prev.filter(id => id !== order.invoiceNumber)
+                                  : [...prev, order.invoiceNumber]
+                              )
+                            }}
+                          >
+                            {/* Left: Invoice info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-semibold text-gray-900 text-base">Invoice No: #{order.invoiceNumber}</p>
+                                {order.location && (
+                                  <span className="text-sm text-blue-600 flex items-center gap-0.5">
+                                    <MapPin className="h-4 w-4" />
+                                    {order.location}
+                                  </span>
+                                )}
+                                <Badge
+                                  className={`text-xs px-2 py-0.5 ${
+                                    order.status === 'paid'
+                                      ? 'bg-green-100 text-green-800 border-green-200'
+                                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                  }`}
+                                >
+                                  {order.status === 'paid' ? '✓' : order.status}
+                                </Badge>
                               </div>
-                              <Badge
-                                className={`text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0 ${
-                                  order.status === 'paid'
-                                    ? 'bg-green-100 text-green-800 border-green-200'
-                                    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                                }`}
-                              >
-                                {order.status === 'paid' ? '✓ Paid' : order.status}
-                              </Badge>
+                              <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">
+                                <span className="flex items-center">
+                                  <IndianRupee className="h-4 w-4" />
+                                  <span className="font-semibold text-green-700">{formatCurrency(order.total).replace('₹', '')}</span>
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  {formatDate(order.paidAt)}
+                                </span>
+                              </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
-                              <div>
-                                <p className="text-gray-500 text-[10px] sm:text-xs mb-1">Amount</p>
-                                <p className="font-medium text-gray-900 flex items-center text-xs sm:text-sm">
-                                  <IndianRupee className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                  {formatCurrency(order.amount).replace('₹', '')}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-[10px] sm:text-xs mb-1">GST</p>
-                                <p className="font-medium text-gray-900 flex items-center text-xs sm:text-sm">
-                                  <IndianRupee className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                  {formatCurrency(order.gst).replace('₹', '')}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-[10px] sm:text-xs mb-1">Total</p>
-                                <p className="font-semibold text-green-700 flex items-center text-xs sm:text-sm">
-                                  <IndianRupee className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                  {formatCurrency(order.total).replace('₹', '')}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 text-[10px] sm:text-xs mb-1 flex items-center gap-1">
-                                  <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                  Date
-                                </p>
-                                <p className="font-medium text-gray-900 text-[10px] sm:text-xs">{formatDate(order.paidAt)}</p>
-                              </div>
-                            </div>
+                            {/* Right: Expand icon */}
+                            <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </div>
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadInvoice(order.invoiceNumber)}
-                            className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 text-xs sm:text-sm py-2"
-                          >
-                            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                            Download Invoice
-                          </Button>
+                          {/* Expandable details */}
+                          {isExpanded && (
+                            <div className="px-4 pb-4 pt-0 border-t border-gray-100 bg-gray-50">
+                              <div className="grid grid-cols-3 gap-4 py-3 text-sm">
+                                {order.originalAmount && order.discountAmount > 0 ? (
+                                  <>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Original Amount</p>
+                                      <p className="font-medium text-gray-400 line-through flex items-center">
+                                        <IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.originalAmount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Discount ({order.discountPercentage}%)</p>
+                                      <p className="font-medium text-green-600 flex items-center">
+                                        -<IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.discountAmount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-500 mb-1">Discounted Amount</p>
+                                      <p className="font-medium text-gray-900 flex items-center">
+                                        <IndianRupee className="h-4 w-4" />
+                                        {formatCurrency(order.amount).replace('₹', '')}
+                                      </p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div>
+                                    <p className="text-gray-500 mb-1">Amount</p>
+                                    <p className="font-medium text-gray-900 flex items-center">
+                                      <IndianRupee className="h-4 w-4" />
+                                      {formatCurrency(order.amount).replace('₹', '')}
+                                    </p>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-gray-500 mb-1">GST</p>
+                                  <p className="font-medium text-gray-900 flex items-center">
+                                    <IndianRupee className="h-4 w-4" />
+                                    {formatCurrency(order.gst).replace('₹', '')}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500 mb-1">Total</p>
+                                  <p className="font-semibold text-green-700 flex items-center">
+                                    <IndianRupee className="h-4 w-4" />
+                                    {formatCurrency(order.total).replace('₹', '')}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-400 font-mono mb-3">Order ID: {order.orderId}</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDownloadInvoice(order.invoiceNumber)
+                                }}
+                                className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 text-sm py-2"
+                              >
+                                <Download className="h-4 w-4 mr-1.5" />
+                                Download Invoice
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
+
+                  {/* Pagination Controls */}
+                  {userData.orderHistory.length > ordersPerPage && (
+                    <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="text-sm"
+                      >
+                        Previous
+                      </Button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.ceil(userData.orderHistory.length / ordersPerPage) }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-9 h-9 text-sm ${
+                              currentPage === page
+                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(userData.orderHistory.length / ordersPerPage), prev + 1))}
+                        disabled={currentPage === Math.ceil(userData.orderHistory.length / ordersPerPage)}
+                        className="text-sm"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                  </>
                 ) : (
                   <div className="text-center py-8 sm:py-12">
                     <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
@@ -751,106 +1582,23 @@ export default function AccountPage() {
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6 mt-6">
-            <Card className="shadow-lg border-2 border-red-200">
-              <CardHeader className="bg-blue-600/15 border-b border-red-200 py-4 sm:py-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-red-700">
-                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Account Settings
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Manage your account preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4 sm:pt-6">
-                <div className="space-y-4 sm:space-y-6">
-                  {/* Danger Zone - More Visible */}
-                  <div className="bg-white border-2 border-red-300 rounded-lg p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                      <div className="flex-shrink-0 mx-auto sm:mx-0">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-600 flex items-center justify-center">
-                          <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                        </div>
-                      </div>
-                      <div className="flex-1 w-full">
-                        <h3 className="text-base sm:text-lg font-bold text-red-900 mb-2 text-center sm:text-left">Delete Account</h3>
-                        <p className="text-xs sm:text-sm text-red-800 mb-3 sm:mb-4 text-center sm:text-left">
-                          Permanently delete your account and all associated data. This action cannot be undone.
-                        </p>
-                        <div className="bg-white border border-red-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-                          <p className="text-xs sm:text-sm font-semibold text-red-900 mb-2">This will permanently delete:</p>
-                          <ul className="text-xs sm:text-sm text-red-800 space-y-1 sm:space-y-1.5 ml-4 list-disc">
-                            <li>Your personal information and profile</li>
-                            <li>All order history and invoices</li>
-                            <li>Billing and payment information</li>
-                            <li>Any associated data with your account</li>
-                          </ul>
-                        </div>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="lg"
-                              className="w-full bg-red-600 hover:bg-red-700 shadow-lg text-sm sm:text-base py-2 sm:py-3"
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                              Delete My Account Permanently
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="max-w-[90vw] sm:max-w-md mx-4">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="flex items-center gap-2 text-red-600 text-lg sm:text-xl">
-                                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                                Confirm Account Deletion
-                              </AlertDialogTitle>
-                              <AlertDialogDescription className="text-sm sm:text-base">
-                                <div className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
-                                  <p className="font-semibold text-gray-900 text-xs sm:text-sm">
-                                    Are you absolutely sure you want to delete your account?
-                                  </p>
-                                  <p className="text-gray-700 text-xs sm:text-sm">
-                                    This action cannot be undone. All your data will be permanently removed:
-                                  </p>
-                                  <ul className="ml-3 sm:ml-4 space-y-1 sm:space-y-1.5 list-disc text-gray-700 text-xs sm:text-sm">
-                                    <li>Personal information and profile</li>
-                                    <li>Order history and invoices</li>
-                                    <li>Billing information</li>
-                                    <li>All account data</li>
-                                  </ul>
-                                </div>
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="mt-4 sm:mt-6 flex-col-reverse sm:flex-row gap-2">
-                              <AlertDialogCancel className="w-full sm:w-auto sm:mr-2 text-sm">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={handleDeleteAccount}
-                                disabled={isDeleting}
-                                className="bg-red-600 hover:bg-red-700 w-full sm:w-auto text-sm"
-                              >
-                                {isDeleting ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                                    Deleting...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                    Yes, Delete Permanently
-                                  </>
-                                )}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
     </div>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading account...</p>
+        </div>
+      </div>
+    }>
+      <AccountPageContent />
+    </Suspense>
   )
 }

@@ -214,29 +214,29 @@ export default function AffiliateProfilePage() {
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-gray-50">
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
               {/* Profile Photo Upload Component */}
               <div className="flex-shrink-0">
                 <ProfilePhotoUpload
                   currentPhotoUrl={currentProfilePhotoUrl}
                   onPhotoUpdate={handleProfilePhotoUpdate}
                   onPhotoDelete={handleProfilePhotoDelete}
-                  size="md"
+                  size="sm"
                   editable={true}
                 />
               </div>
 
-              <div className="flex flex-col justify-center items-center sm:items-start text-center sm:text-left w-full sm:w-auto">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <div className="flex flex-col justify-center items-center sm:items-start text-center sm:text-left w-full sm:w-auto mt-1.5 sm:mt-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900">
                   {affiliateData.full_name}
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none mx-auto sm:mx-0">{affiliateData.email}</p>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1">
+                <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-none">{affiliateData.email}</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-0.5">
                   {getStatusBadge(affiliateData.status)}
                   {affiliateData.referral_code && (
-                    <span className="text-xs sm:text-sm text-green-600 font-mono font-semibold">
+                    <span className="text-xs text-green-600 font-mono font-semibold">
                       Code: {affiliateData.referral_code}
                     </span>
                   )}
@@ -258,7 +258,7 @@ export default function AffiliateProfilePage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 max-w-6xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
           {/* Individual Spaced Tabs - responsive */}
           <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
             <TabsTrigger
@@ -288,16 +288,16 @@ export default function AffiliateProfilePage() {
           </TabsList>
 
           {/* Profile Information Tab */}
-          <TabsContent value="profile" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+          <TabsContent value="profile" className="space-y-4 sm:space-y-6">
             <Card className="shadow-lg border-0 rounded-xl">
-              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardHeader className="bg-green-600/15 border-b py-3 sm:py-4 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <User className="h-4 w-4 text-green-600" />
                       Profile Information
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-1">Your personal and business details</CardDescription>
+                    <CardDescription className="text-xs mt-0.5">Your personal and business details</CardDescription>
                   </div>
                   {!isEditingProfile && (
                     <Button
@@ -312,10 +312,10 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {/* Full Name */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -329,7 +329,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Email */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Email Address</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -342,7 +342,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Phone */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -356,7 +356,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* City */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">City</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -370,7 +370,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* State */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">State</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -384,7 +384,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Business Type */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Business Type</Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -397,7 +397,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Company Name */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Company Name</Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -411,7 +411,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Designation */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Designation</Label>
                     <div className="relative">
                       <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -425,7 +425,7 @@ export default function AffiliateProfilePage() {
                   </div>
 
                   {/* Experience */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Experience</Label>
                     <div className="relative">
                       <TrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -476,16 +476,16 @@ export default function AffiliateProfilePage() {
           </TabsContent>
 
           {/* Affiliate Details Tab */}
-          <TabsContent value="affiliate" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+          <TabsContent value="affiliate" className="space-y-4 sm:space-y-6">
             <Card className="shadow-lg border-0 rounded-xl">
-              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardHeader className="bg-green-600/15 border-b py-3 sm:py-4 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Shield className="h-4 w-4 text-blue-600" />
                       Affiliate Details
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-1">Your affiliate marketing strategy and goals</CardDescription>
+                    <CardDescription className="text-xs mt-0.5">Your affiliate marketing strategy and goals</CardDescription>
                   </div>
                   {!isEditingAffiliate && (
                     <Button
@@ -500,7 +500,7 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+              <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
                 <div className="space-y-4 sm:space-y-6">
                   {/* Affiliate Status & Referral Code */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-4 sm:pb-6 border-b">
@@ -518,37 +518,40 @@ export default function AffiliateProfilePage() {
                     )}
                   </div>
 
-                  {/* Promotion Method */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Promotion Method</Label>
-                    <div className="relative">
-                      <Target className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-                      <textarea
-                        value={isEditingAffiliate ? editedData?.promotion_method || '' : affiliateData.promotion_method}
-                        onChange={(e) => setEditedData(prev => prev ? { ...prev, promotion_method: e.target.value } : null)}
-                        disabled={!isEditingAffiliate}
-                        rows={4}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
-                          isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'
-                        }`}
-                      />
+                  {/* Promotion Method & Target Audience - Same Line */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    {/* Promotion Method */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">Promotion Method</Label>
+                      <div className="relative">
+                        <Target className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                        <textarea
+                          value={isEditingAffiliate ? editedData?.promotion_method || '' : affiliateData.promotion_method}
+                          onChange={(e) => setEditedData(prev => prev ? { ...prev, promotion_method: e.target.value } : null)}
+                          disabled={!isEditingAffiliate}
+                          rows={4}
+                          className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
+                            isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'
+                          }`}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Target Audience */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Target Audience</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-                      <textarea
-                        value={isEditingAffiliate ? editedData?.target_audience || '' : affiliateData.target_audience}
-                        onChange={(e) => setEditedData(prev => prev ? { ...prev, target_audience: e.target.value } : null)}
-                        disabled={!isEditingAffiliate}
-                        rows={4}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
-                          isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'
-                        }`}
-                      />
+                    {/* Target Audience */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">Target Audience</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                        <textarea
+                          value={isEditingAffiliate ? editedData?.target_audience || '' : affiliateData.target_audience}
+                          onChange={(e) => setEditedData(prev => prev ? { ...prev, target_audience: e.target.value } : null)}
+                          disabled={!isEditingAffiliate}
+                          rows={4}
+                          className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
+                            isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -604,16 +607,16 @@ export default function AffiliateProfilePage() {
           </TabsContent>
 
           {/* Payment Information Tab */}
-          <TabsContent value="payment" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+          <TabsContent value="payment" className="space-y-4 sm:space-y-6">
             <Card className="shadow-lg border-0 rounded-xl">
-              <CardHeader className="bg-green-600/15 border-b py-4 sm:py-6 px-4 sm:px-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardHeader className="bg-green-600/15 border-b py-3 sm:py-4 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <CreditCard className="h-4 w-4 text-purple-600" />
                       Payment Information
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-1">Your bank and tax details for commission payments</CardDescription>
+                    <CardDescription className="text-xs mt-0.5">Your bank and tax details for commission payments</CardDescription>
                   </div>
                   {!isEditingPayment && (
                     <Button
@@ -628,7 +631,7 @@ export default function AffiliateProfilePage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+              <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Account Number */}
                   <div className="space-y-2">

@@ -271,11 +271,11 @@ export async function POST(request: NextRequest) {
                 <li>Our team will review your application</li>
                 <li>You'll receive an approval email with your unique referral code</li>
                 <li>Once approved, you can login to your affiliate dashboard</li>
-                <li>Start referring clients and earn 10% commission!</li>
+                <li>Start referring clients to start a long term association and earnings.</li>
               </ol>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.NEXTAUTH_URL || 'https://powerca.in'}/affiliate-login" class="button">Login to Your Account</a>
+                <a href="https://powerca.in/affiliate-login" class="button">Login to Your Account</a>
               </div>
 
               <p style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">

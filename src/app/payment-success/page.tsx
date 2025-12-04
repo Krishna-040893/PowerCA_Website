@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, ArrowLeft, Download, AlertCircle, Loader2 } from 'lucide-react'
@@ -33,10 +33,16 @@ interface InvoiceData {
     amount: number
     created_at: string
   }
+  discount_info?: {
+    discount_percentage: number
+    discount_amount: number
+    original_amount: number | null
+  }
 }
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [isTestMode, setIsTestMode] = useState(false)
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -167,6 +173,11 @@ function PaymentSuccessContent() {
         })
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  // Separate effect for confetti animation
+  useEffect(() => {
     // Trigger confetti animation only on success
     if (paymentStatus === 'success' || invoiceData) {
       confetti({
@@ -175,7 +186,7 @@ function PaymentSuccessContent() {
         origin: { y: 0.6 }
       })
     }
-  }, [searchParams, paymentStatus, invoiceData])
+  }, [paymentStatus, invoiceData])
 
   const handleDownloadInvoice = async () => {
     if (!invoiceData?.invoice_number) {
@@ -450,8 +461,29 @@ function PaymentSuccessContent() {
                             Complete setup with first year subscription FREE
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-right font-medium">{formatCurrency(invoiceData.amount)}</td>
+                        <td className="px-4 py-4 text-right font-medium">
+                          {invoiceData.discount_info?.original_amount ? (
+                            <div>
+                              <span className="text-gray-400 line-through text-sm block">
+                                {formatCurrency(invoiceData.discount_info.original_amount)}
+                              </span>
+                              <span>{formatCurrency(invoiceData.amount)}</span>
+                            </div>
+                          ) : (
+                            formatCurrency(invoiceData.amount)
+                          )}
+                        </td>
                       </tr>
+                      {invoiceData.discount_info && invoiceData.discount_info.discount_percentage > 0 && (
+                        <tr className="bg-green-50">
+                          <td className="px-4 py-3 text-sm text-green-700 font-medium">
+                            Discount ({invoiceData.discount_info.discount_percentage}%)
+                          </td>
+                          <td className="px-4 py-3 text-right text-sm text-green-700 font-medium">
+                            -{formatCurrency(invoiceData.discount_info.discount_amount)}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <td className="px-4 py-3 text-sm text-gray-600">CGST (9%)</td>
                         <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(invoiceData.amount).cgst)}</td>
@@ -503,12 +535,10 @@ function PaymentSuccessContent() {
                 <Button
                   variant="outline"
                   className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
-                  asChild
+                  onClick={() => router.push('/account')}
                 >
-                  <Link href="/">
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to Home
-                  </Link>
+                  <ArrowLeft className="mr-2 w-4 h-4" />
+                  Back to Dashboard
                 </Button>
               </>
             ) : paymentStatus === 'pending' ? (
@@ -552,12 +582,10 @@ function PaymentSuccessContent() {
                 <Button
                   variant="outline"
                   className="w-full sm:flex-1 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
-                  asChild
+                  onClick={() => router.push('/account')}
                 >
-                  <Link href="/">
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to Home
-                  </Link>
+                  <ArrowLeft className="mr-2 w-4 h-4" />
+                  Back to Dashboard
                 </Button>
               </>
             )}

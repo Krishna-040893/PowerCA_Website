@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 // SVG paths for icons - imported from Contact page folder design
 const svgPaths = {
@@ -185,6 +187,13 @@ function ContactForm() {
     }))
   }
 
+  const handlePhoneChange = (value: string | undefined) => {
+    setFormData(prev => ({
+      ...prev,
+      phone: value || ''
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -281,22 +290,19 @@ function ContactForm() {
         {/* Phone Field */}
         <div className="content-stretch flex flex-col gap-3 sm:gap-4 md:gap-[24px] items-start relative shrink-0 w-full">
           <p className="font-medium leading-[normal] w-full text-[#001525] text-sm sm:text-base md:text-[18px]">Phone</p>
-          <div className="bg-white relative shrink-0 w-full">
-            <div className="flex flex-row items-center overflow-clip relative size-full">
-              <div className="box-border content-stretch flex items-center p-3 sm:p-4 md:p-[16px] relative w-full">
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter your phone number"
-                  required
-                  disabled={isSubmitting}
-                  className="basis-0 font-normal grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#666d80] text-sm sm:text-base md:text-[18px] bg-transparent border-none outline-none w-full disabled:opacity-50"
-                />
-              </div>
-            </div>
-            <div className="absolute border-[#b6c9f3] border-2 border-solid inset-0 pointer-events-none rounded-[4px]" />
+          <div className="w-full">
+            <PhoneInput
+              international
+              defaultCountry="IN"
+              value={formData.phone}
+              onChange={handlePhoneChange}
+              disabled={isSubmitting}
+              className="flex gap-0 [&>input]:h-[50px] [&>input]:sm:h-[52px] [&>input]:md:h-[54px] [&>input]:bg-white [&>input]:border-2 [&>input]:border-[#b6c9f3] [&>input]:rounded-r-[4px] [&>input]:focus:border-[#306bea] [&>input]:placeholder:text-[#666d80] [&>input]:px-4 [&>input]:text-sm [&>input]:sm:text-base [&>input]:md:text-[18px] [&>input]:disabled:opacity-50 [&>.PhoneInputCountry]:h-[50px] [&>.PhoneInputCountry]:sm:h-[52px] [&>.PhoneInputCountry]:md:h-[54px] [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-[#b6c9f3] [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-[4px] [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:sm:px-4 [&>.PhoneInputCountry]:md:px-[12px] [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-5 [&_.PhoneInputCountryIcon]:sm:w-6 [&_.PhoneInputCountryIcon]:sm:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+              numberInputProps={{
+                className: "flex-1"
+              }}
+              placeholder="Enter your phone number"
+            />
           </div>
         </div>
 

@@ -8,7 +8,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {Loader2, AlertCircle, CheckCircle  } from 'lucide-react'
+import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus  } from 'lucide-react'
 import {useSession  } from 'next-auth/react'
 import {featuresConfig  } from '@/config/features'
 import Script from 'next/script'
@@ -36,6 +36,23 @@ interface ReferralInfo {
   validated?: boolean
   affiliateName?: string
   firmName?: string
+}
+
+interface SavedAddress {
+  id: string
+  full_name: string
+  firm_name: string
+  gst_no?: string
+  address: string
+  city: string
+  state: string
+  postcode: string
+  country: string
+  phone: string
+  email: string
+  is_default: boolean
+  label?: string
+  created_at: string
 }
 
 // Country-State mapping
@@ -160,6 +177,12 @@ function CheckoutContent() {
     orderNotes: '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [loadingAddresses, setLoadingAddresses] = useState(false)
+  const [savingAddress, setSavingAddress] = useState(false)
+  const [addressSaveSuccess, setAddressSaveSuccess] = useState(false)
+  const [purchasedAddressCount, setPurchasedAddressCount] = useState(0)
 
   // Get states for selected country
   const availableStates = countryStates[formData.country] || countryStates['default']
@@ -167,11 +190,27 @@ function CheckoutContent() {
 
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
-  const basePrice = 50000 // ₹50,000 base price
+
+  // Calculate pricing based on address position
+  // First address = full price, Second+ addresses = flat 10% discount
+  const getAddressIndex = () => {
+    if (!selectedAddressId || savedAddresses.length === 0) return 0
+    return savedAddresses.findIndex(addr => addr.id === selectedAddressId)
+  }
+
+  const addressIndex = getAddressIndex()
+  const isFirstAddress = addressIndex === 0
+  const discountRate = isFirstAddress ? 0 : 0.10 // Flat 10% for 2nd address onwards
+  const discountPercentage = isFirstAddress ? 0 : 10 // For display: 0 for 1st, 10 for 2nd+
+
+  const fullBasePrice = 50000 // ₹50,000 base price
+  const discountAmount = fullBasePrice * discountRate
+  const basePrice = fullBasePrice - discountAmount
   const subtotal = basePrice * quantity
   const gstRate = 0.18 // 18% GST
   const gstAmount = subtotal * gstRate
   const total = subtotal + gstAmount
+
 
   // Enforce authentication - redirect to login if not authenticated
   useEffect(() => {
@@ -266,8 +305,34 @@ function CheckoutContent() {
     }
   }, [searchParams])
 
+  // Track if address was loaded from sessionStorage
+  const [addressLoadedFromStorage, setAddressLoadedFromStorage] = useState(false)
+
+  // Fetch saved addresses FIRST (before other useEffects)
   useEffect(() => {
     if (session?.user) {
+      fetchSavedAddresses()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
+
+  useEffect(() => {
+    if (session?.user) {
+      // Check if we have addressId in URL/storage - if so, skip auto-fill entirely
+      const addressIdFromUrl = searchParams.get('addressId')
+      const addressIdFromSession = sessionStorage.getItem('checkoutAddressId')
+      const addressIdFromLocal = localStorage.getItem('checkoutAddressId')
+
+      if (addressIdFromUrl || addressIdFromSession || addressIdFromLocal) {
+        // Address will be loaded by fetchSavedAddresses, skip this auto-fill
+        return
+      }
+
+      // Skip auto-fill if address was already loaded from storage
+      if (addressLoadedFromStorage) {
+        return
+      }
+
       // First set basic user data from session
       setFormData(prev => ({
         ...prev,
@@ -307,7 +372,174 @@ function CheckoutContent() {
 
       fetchLastOrder()
     }
-  }, [session])
+  }, [session, addressLoadedFromStorage, searchParams])
+
+  const fetchSavedAddresses = async () => {
+    setLoadingAddresses(true)
+    try {
+      const response = await fetch('/api/user/addresses')
+      const result = await response.json()
+
+      if (result.success && result.addresses) {
+        setSavedAddresses(result.addresses)
+
+        // Check multiple sources for addressId (in order of priority)
+        const addressIdFromUrl = searchParams.get('addressId')
+        const addressIdFromSession = sessionStorage.getItem('checkoutAddressId')
+        const addressIdFromLocal = localStorage.getItem('checkoutAddressId')
+
+        const addressIdFromStorage = addressIdFromUrl || addressIdFromSession || addressIdFromLocal
+
+        if (addressIdFromStorage) {
+          const storageAddress = result.addresses.find((addr: SavedAddress) => addr.id === addressIdFromStorage)
+          if (storageAddress) {
+            // Set the flag FIRST to prevent other useEffects from running
+            setAddressLoadedFromStorage(true)
+
+            // Then load the address data
+            loadAddressToForm(storageAddress)
+            setSelectedAddressId(storageAddress.id)
+
+            // Clear all storage after using
+            sessionStorage.removeItem('checkoutAddressId')
+            localStorage.removeItem('checkoutAddressId')
+          }
+        } else {
+          // Auto-select default address if exists and form is empty
+          const defaultAddress = result.addresses.find((addr: SavedAddress) => addr.is_default)
+          if (defaultAddress && !formData.address) {
+            loadAddressToForm(defaultAddress)
+            setSelectedAddressId(defaultAddress.id)
+          }
+        }
+      }
+
+      // Fetch purchased addresses count for discount calculation
+      const purchasedResponse = await fetch('/api/user/purchased-addresses')
+      const purchasedResult = await purchasedResponse.json()
+      if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
+        setPurchasedAddressCount(purchasedResult.purchasedAddressIds.length)
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    } finally {
+      setLoadingAddresses(false)
+    }
+  }
+
+  const loadAddressToForm = (address: SavedAddress) => {
+    const newData = {
+      firstName: address.full_name,
+      firmName: address.firm_name,
+      gstNo: address.gst_no || '',
+      address: address.address,
+      city: address.city,
+      state: address.state,
+      postcode: address.postcode,
+      country: address.country,
+      phone: address.phone,
+      email: address.email,
+      company: '',
+      orderNotes: '',
+    }
+
+    setFormData(newData)
+  }
+
+  const handleSaveAddress = async () => {
+    // Validate required fields
+    if (!formData.firstName || !formData.firmName || !formData.address ||
+        !formData.city || !formData.state || !formData.postcode ||
+        !formData.country || !formData.phone || !formData.email) {
+      setError('Please fill all required fields before saving address')
+      return
+    }
+
+    setSavingAddress(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/user/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: formData.firstName,
+          firm_name: formData.firmName,
+          gst_no: formData.gstNo,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          postcode: formData.postcode,
+          country: formData.country,
+          phone: formData.phone,
+          email: formData.email,
+          is_default: savedAddresses.length === 0,
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Show success message
+        setAddressSaveSuccess(true)
+        setTimeout(() => setAddressSaveSuccess(false), 3000)
+
+        // Refresh addresses list
+        await fetchSavedAddresses()
+
+        // Clear form for next address
+        setFormData(prev => ({
+          ...prev,
+          firstName: session?.user?.name || '',
+          firmName: session?.user?.firmName || '',
+          gstNo: '',
+          address: '',
+          city: '',
+          state: '',
+          postcode: '',
+          country: '',
+          phone: session?.user?.phone || '',
+          email: session?.user?.email || '',
+        }))
+        setSelectedAddressId(null)
+      } else {
+        setError(result.error || 'Failed to save address')
+      }
+    } catch (error) {
+      console.error('Error saving address:', error)
+      setError('An error occurred while saving address')
+    } finally {
+      setSavingAddress(false)
+    }
+  }
+
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/user/addresses/${addressId}`, {
+        method: 'DELETE'
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        await fetchSavedAddresses()
+
+        // Clear form if deleted address was selected
+        if (selectedAddressId === addressId) {
+          setSelectedAddressId(null)
+        }
+      } else {
+        setError(result.error || 'Failed to delete address')
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error)
+      setError('An error occurred while deleting address')
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -330,17 +562,13 @@ function CheckoutContent() {
   const validateForm = () => {
     const newErrors: FormErrors = {}
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'Full name is required'
-    if (!formData.firmName.trim()) newErrors.firmName = 'Firm name is required'
-    if (!formData.email.trim()) newErrors.email = 'Email is required'
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid'
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
-    if (!formData.country.trim()) newErrors.country = 'Country is required'
-    if (!formData.address.trim()) newErrors.address = 'Street address is required'
-    if (!formData.city.trim()) newErrors.city = 'Town/City is required'
-    if (!formData.state.trim()) newErrors.state = 'State is required'
-    if (!formData.postcode.trim()) newErrors.postcode = 'Postcode is required'
-    if (!paymentGateway) newErrors.paymentGateway = 'Please select a payment gateway'
+    // Check if an address is selected
+    if (!selectedAddressId) {
+      setError('Please select a billing address to continue')
+      return false
+    }
+
+    // Payment gateway is always 'razorpay' now (Cashfree disabled)
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
     setErrors(newErrors)
@@ -380,6 +608,10 @@ function CheckoutContent() {
           gstNo: formData.gstNo,
           gstAmount: gstAmount,
           gstPercentage: gstRate * 100, // Convert 0.18 to 18
+          // Discount information for progressive pricing
+          discountPercentage: discountPercentage,
+          discountAmount: discountAmount,
+          originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -490,6 +722,11 @@ function CheckoutContent() {
           state: formData.state,
           postcode: formData.postcode,
           gstNo: formData.gstNo,
+          addressId: selectedAddressId, // Track which address this purchase is for
+          // Discount information for progressive pricing
+          discountPercentage: discountPercentage,
+          discountAmount: discountAmount,
+          originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -659,7 +896,7 @@ function CheckoutContent() {
       />
 
       <div className="min-h-screen bg-white py-4 sm:py-8 lg:py-12 checkout-page">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-[1400px]">
           {/* Affiliate Referral Banner */}
           {referralInfo?.ref && (
             <div className="mb-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4">
@@ -698,253 +935,151 @@ function CheckoutContent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Left Column - Billing Details */}
-            <div className="space-y-4 sm:space-y-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Billing Details</h2>
-
-                <div className="space-y-3 sm:space-y-4">
-                  {/* Full Name & Firm Name */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium text-gray-700">
-                        Full Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className={`mt-1 text-sm ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
-                      />
-                      {errors.firstName && <p className="text-red-500 text-[10px] sm:text-xs mt-1">{errors.firstName}</p>}
+            <div className="space-y-4 sm:space-y-6 h-full">
+              {/* Billing Details Form - Read Only from Selected Address */}
+              {loadingAddresses ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-purple-600 mr-2" />
+                  <span className="text-gray-600">Loading billing details...</span>
+                </div>
+              ) : savedAddresses.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">No billing address found</p>
+                  <Button
+                    onClick={() => router.push('/account?tab=billing')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Billing Address
+                  </Button>
+                </div>
+              ) : selectedAddressId ? (
+                <div className="h-full">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Billing Details</h2>
+                    {savedAddresses.find(a => a.id === selectedAddressId)?.label && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {savedAddresses.find(a => a.id === selectedAddressId)?.label}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2.5">
+                    {/* Full Name & Firm Name */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <Label className="text-[15px] font-medium text-gray-700">Full Name</Label>
+                        <Input
+                          value={formData.firstName}
+                          disabled
+                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[15px] font-medium text-gray-700">Firm Name</Label>
+                        <Input
+                          value={formData.firmName}
+                          disabled
+                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                        />
+                      </div>
                     </div>
+
+                    {/* GST No */}
                     <div>
-                      <Label htmlFor="firmName" className="text-xs sm:text-sm font-medium text-gray-700">
-                        Firm Name <span className="text-red-500">*</span>
-                      </Label>
+                      <Label className="text-[15px] font-medium text-gray-700">GST No</Label>
                       <Input
-                        id="firmName"
-                        name="firmName"
-                        value={formData.firmName}
-                        onChange={handleInputChange}
-                        className={`mt-1 text-sm ${errors.firmName ? 'border-red-500' : 'border-gray-300'}`}
+                        value={formData.gstNo || 'Not provided'}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
-                      {errors.firmName && <p className="text-red-500 text-[10px] sm:text-xs mt-1">{errors.firmName}</p>}
                     </div>
-                  </div>
 
-                  {/* GST No */}
-                  <div>
-                    <Label htmlFor="gstNo" className="text-sm font-medium text-gray-700">
-                      GST No <span className="text-gray-400 text-xs">(Optional)</span>
-                    </Label>
-                    <Input
-                      id="gstNo"
-                      name="gstNo"
-                      value={formData.gstNo}
-                      onChange={handleInputChange}
-                      placeholder="Enter your GST number if applicable"
-                      className="mt-1 border-gray-300"
-                    />
-                  </div>
+                    {/* Street Address */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Street Address</Label>
+                      <Input
+                        value={formData.address}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
 
-                  {/* Street Address */}
-                  <div>
-                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                      Street address <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="Street address"
-                      className={`mt-1 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-                  </div>
+                    {/* Town / City */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Town / City</Label>
+                      <Input
+                        value={formData.city}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
 
-                  {/* Town/City */}
-                  <div>
-                    <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                      Town / City <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-                  </div>
-
-                   {/* Postcode/ZIP */}
-                  <div>
-                    <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">
-                      Postcode / ZIP <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="postcode"
-                      name="postcode"
-                      value={formData.postcode}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.postcode ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.postcode && <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>}
-                  </div>
+                    {/* Postcode / ZIP */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Postcode / ZIP</Label>
+                      <Input
+                        value={formData.postcode}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
 
                     {/* Country */}
-                  <div>
-                    <Label htmlFor="country" className="text-sm font-medium text-gray-700">
-                      Country <span className="text-red-500">*</span>
-                    </Label>
-                    <select
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      className={`mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.country ? 'border-red-500' : 'border-gray-300'}`}
-                    >
-                      <option value="">Select Country</option>
-                      <option value="India">India</option>
-                      <option value="United States">United States</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="Canada">Canada</option>
-                      <option value="Australia">Australia</option>
-                      <option value="Afghanistan">Afghanistan</option>
-                      <option value="Albania">Albania</option>
-                      <option value="Algeria">Algeria</option>
-                      <option value="Argentina">Argentina</option>
-                      <option value="Austria">Austria</option>
-                      <option value="Bangladesh">Bangladesh</option>
-                      <option value="Belgium">Belgium</option>
-                      <option value="Brazil">Brazil</option>
-                      <option value="China">China</option>
-                      <option value="Denmark">Denmark</option>
-                      <option value="Egypt">Egypt</option>
-                      <option value="Finland">Finland</option>
-                      <option value="France">France</option>
-                      <option value="Germany">Germany</option>
-                      <option value="Greece">Greece</option>
-                      <option value="Hong Kong">Hong Kong</option>
-                      <option value="Indonesia">Indonesia</option>
-                      <option value="Ireland">Ireland</option>
-                      <option value="Italy">Italy</option>
-                      <option value="Japan">Japan</option>
-                      <option value="Malaysia">Malaysia</option>
-                      <option value="Mexico">Mexico</option>
-                      <option value="Netherlands">Netherlands</option>
-                      <option value="New Zealand">New Zealand</option>
-                      <option value="Norway">Norway</option>
-                      <option value="Pakistan">Pakistan</option>
-                      <option value="Philippines">Philippines</option>
-                      <option value="Poland">Poland</option>
-                      <option value="Portugal">Portugal</option>
-                      <option value="Russia">Russia</option>
-                      <option value="Saudi Arabia">Saudi Arabia</option>
-                      <option value="Singapore">Singapore</option>
-                      <option value="South Africa">South Africa</option>
-                      <option value="South Korea">South Korea</option>
-                      <option value="Spain">Spain</option>
-                      <option value="Sri Lanka">Sri Lanka</option>
-                      <option value="Sweden">Sweden</option>
-                      <option value="Switzerland">Switzerland</option>
-                      <option value="Thailand">Thailand</option>
-                      <option value="Turkey">Turkey</option>
-                      <option value="United Arab Emirates">United Arab Emirates</option>
-                      <option value="Vietnam">Vietnam</option>
-                    </select>
-                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
-                  </div>
-
-                  {/* State */}
-                  <div>
-                    <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-                      State<span className="text-red-500">*</span>
-                    </Label>
-                    {hasStateDropdown ? (
-                      <select
-                        id="state"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        className={`mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
-                      >
-                        <option value="">Select State</option>
-                        {availableStates.map((state) => (
-                          <option key={state} value={state}>
-                            {state}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Country</Label>
                       <Input
-                        id="state"
-                        name="state"
-                        type="text"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        placeholder={formData.country ? "Enter your state or county" : "Please select a country first"}
-                        disabled={!formData.country}
-                        className={`mt-1 ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
+                        value={formData.country}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                       />
-                    )}
-                    {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                  </div>
+                    </div>
 
-                  {/* Phone */}
-                  <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                      Phone <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                  </div>
+                    {/* State */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">State</Label>
+                      <Input
+                        value={formData.state}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
 
-                  {/* Email */}
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                      Email address <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`mt-1 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    {/* Phone */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Phone</Label>
+                      <Input
+                        value={formData.phone}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <Label className="text-[15px] font-medium text-gray-700">Email</Label>
+                      <Input
+                        value={formData.email}
+                        disabled
+                        className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Additional Information
-              /*<div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Additional information</h3>
-                <div>
-                  <Label htmlFor="orderNotes" className="text-sm font-medium text-gray-700">
-                    Order notes (optional)
-                  </Label>
-                  <textarea
-                    id="orderNotes"
-                    name="orderNotes"
-                    value={formData.orderNotes}
-                    onChange={handleInputChange}
-                    rows={4}
-                    placeholder="Notes about your order, e.g. special notes for delivery."
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              ) : (
+                // Has addresses but none selected
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">Please select a billing address to continue</p>
+                  <Button
+                    onClick={() => router.push('/account?tab=billing')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Select Billing Address
+                  </Button>
                 </div>
-              </div>*/}
+              )}
             </div>
 
             {/* Right Column - Order Summary */}
@@ -1010,19 +1145,34 @@ function CheckoutContent() {
                         </button>
                       </div> */}
                       <div className="sm:hidden ml-auto">
-                        <span className="text-base font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
+                        <div className="text-right">
+                          {!isFirstAddress && selectedAddressId && (
+                            <span className="text-xs text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
+                          )}
+                          <span className="text-base font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                   <div className="hidden sm:block text-right">
+                    {!isFirstAddress && selectedAddressId && (
+                      <span className="text-sm text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
+                    )}
                     <span className="text-lg font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
+                  {/* Show discount info for second+ address */}
+                  {!isFirstAddress && selectedAddressId && (
+                    <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                      <span className="font-medium">{discountPercentage}% Discount</span>
+                      <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                    <span>Subtotal</span>
-                    <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                    <span>Base Price</span>
+                    <span className="font-semibold">₹{basePrice.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm text-gray-700">
                     <span>SGST & CGST (18%)</span>
@@ -1032,37 +1182,37 @@ function CheckoutContent() {
                     <span>Total</span>
                     <span>₹{total.toLocaleString()}</span>
                   </div>
+                  {/* Show selected address info */}
+                  {selectedAddressId && savedAddresses.length > 0 && (
+                    <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+                      <p className="text-xs text-purple-700 font-medium">
+                        Purchasing for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Payment Method */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
-                  Select Payment Gateway
+                  Payment Gateway
                 </h3>
 
-                {/* Payment Gateway Radio Buttons - Two Columns */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Payment Gateway - Razorpay Only (Cashfree disabled - KYC under review) */}
+                <div className="max-w-md">
                   {/* Razorpay Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    paymentGateway === 'razorpay'
-                      ? 'border-purple-500 bg-purple-50'
-                      : errors.paymentGateway
-                      ? 'border-red-500'
-                      : 'border-gray-300 hover:border-purple-300'
-                  }`}
-                  onClick={() => setPaymentGateway('razorpay')}
-                  >
+                  <div className="border-2 rounded-lg p-4 border-purple-500 bg-purple-50">
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
                         id="razorpay"
                         name="payment"
-                        checked={paymentGateway === 'razorpay'}
-                        onChange={() => setPaymentGateway('razorpay')}
-                        className="w-4 h-4 cursor-pointer text-purple-600 flex-shrink-0"
+                        checked={true}
+                        readOnly
+                        className="w-4 h-4 text-purple-600 flex-shrink-0"
                       />
-                      <Label htmlFor="razorpay" className="cursor-pointer flex-1">
+                      <Label htmlFor="razorpay" className="flex-1">
                         <div className="flex items-center justify-center h-8">
                           <Image
                             src="https://razorpay.com/assets/razorpay-logo.svg"
@@ -1071,39 +1221,6 @@ function CheckoutContent() {
                             height={32}
                             className="object-contain"
                             unoptimized
-                          />
-                        </div>
-                      </Label>
-                    </div>
-                  </div>
-
-                  {/* Cashfree Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    paymentGateway === 'cashfree'
-                      ? 'border-teal-500 bg-teal-50'
-                      : errors.paymentGateway
-                      ? 'border-red-500'
-                      : 'border-gray-300 hover:border-teal-300'
-                  }`}
-                  onClick={() => setPaymentGateway('cashfree')}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        id="cashfree"
-                        name="payment"
-                        checked={paymentGateway === 'cashfree'}
-                        onChange={() => setPaymentGateway('cashfree')}
-                        className="w-4 h-4 cursor-pointer text-teal-600 flex-shrink-0"
-                      />
-                      <Label htmlFor="cashfree" className="cursor-pointer flex-1">
-                        <div className="flex items-center justify-center h-8">
-                          <Image
-                            src="https://merchant.cashfree.com/auth/99bf3bd232800f0f1c4e.svg"
-                            alt="Cashfree"
-                            width={120}
-                            height={32}
-                            className="h-8 w-auto object-contain"
                           />
                         </div>
                       </Label>
@@ -1174,7 +1291,7 @@ function CheckoutContent() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
                 <p className="text-xs sm:text-sm text-gray-700 font-medium flex items-center justify-center gap-2">
                   <span className="text-green-600 text-base">🔒</span>
-                  Secure payment powered by {paymentGateway === 'razorpay' ? 'Razorpay' : 'Cashfree'}
+                  Secure payment powered by Razorpay
                 </p>
               </div>
             </div>

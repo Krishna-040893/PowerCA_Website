@@ -87,7 +87,7 @@ export default function RegistrationsTable() {
   // Format date for display
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd MMM yyyy')
+      return format(new Date(dateString), 'dd/MM/yyyy')
     } catch {
       return 'N/A'
     }

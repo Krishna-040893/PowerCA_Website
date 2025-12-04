@@ -40,8 +40,15 @@ export function useSubscription(): SubscriptionStatus {
         const response = await fetch('/api/subscriptions/status')
 
         if (!response.ok) {
-          const errorData = await response.json()
-          console.error('Error fetching subscriptions:', errorData)
+          // Only log meaningful errors, not empty objects or network issues
+          try {
+            const errorData = await response.json()
+            if (errorData?.error && errorData.error !== 'Internal server error') {
+              console.error('Error fetching subscriptions:', errorData)
+            }
+          } catch {
+            // JSON parsing failed, ignore
+          }
           setSubscriptionStatus(prev => ({ ...prev, isLoading: false }))
           return
         }
