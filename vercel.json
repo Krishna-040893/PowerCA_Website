@@ -4,6 +4,30 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "regions": ["bom1"],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.powerca.in"
+        }
+      ],
+      "destination": "https://powerca.in/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "power-ca-website.vercel.app"
+        }
+      ],
+      "destination": "https://powerca.in/:path*",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/subscriptions/check-renewal-eligibility",

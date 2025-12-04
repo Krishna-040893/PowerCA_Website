@@ -75,6 +75,10 @@ export async function POST(req: NextRequest) {
       gstNo,
       gstAmount,
       gstPercentage,
+      // Discount fields for progressive pricing
+      discountPercentage,
+      discountAmount,
+      originalAmount,
     } = body
 
     if (!amount || amount <= 0) {
@@ -276,6 +280,10 @@ export async function POST(req: NextRequest) {
         customer_city: city || null,
         customer_state: state || null,
         customer_postcode: postcode || null,
+        // Discount fields for progressive pricing
+        discount_percentage: discountPercentage || 0,
+        discount_amount: discountAmount || 0,
+        original_amount: originalAmount || null,
       })
 
       if (error) {

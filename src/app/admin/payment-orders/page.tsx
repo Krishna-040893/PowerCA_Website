@@ -48,6 +48,17 @@ interface PaymentOrder {
   is_affiliate_purchase: boolean
   created_at: string
   updated_at: string
+  // Discount fields
+  discount_percentage: number | null
+  discount_amount: number | null
+  original_amount: number | null
+  // Location fields
+  location: string | null  // Label field from user_addresses (e.g., "Udumalpet, Tamil Nadu")
+  customer_address: string | null
+  customer_city: string | null
+  customer_state: string | null
+  customer_postcode: string | null
+  customer_country: string | null
 }
 
 export default function PaymentOrdersPage() {
@@ -160,13 +171,17 @@ export default function PaymentOrdersPage() {
     if (!dateStr) return 'N/A'
     const date = new Date(dateStr)
     if (isNaN(date.getTime())) return 'N/A'
-    return date.toLocaleString('en-IN', {
+    const dateFormatted = date.toLocaleDateString('en-IN', {
       day: '2-digit',
-      month: 'short',
+      month: '2-digit',
       year: 'numeric',
+    })
+    const timeFormatted = date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     })
+    return `${dateFormatted}\n${timeFormatted}`
   }
 
   const handleViewDetails = (order: PaymentOrder) => {
@@ -185,73 +200,16 @@ export default function PaymentOrdersPage() {
     <AdminPageWrapper
       title="Payment Orders"
       description="Manage and track all payment orders"
+      stats={[
+        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Paid', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Created', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
+        { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-indigo-100 text-indigo-800' }
+      ]}
     >
-      {/* Stats Cards - 2 Columns on Mobile, 4 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Orders</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All time' : 'Filtered'}</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <ShoppingCart className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Paid</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.paid}</p>
-                <p className="text-xs text-gray-500 mt-1">Completed</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Created</p>
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900">{stats.created}</p>
-                <p className="text-xs text-gray-500 mt-1">Pending</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-50">
-                <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-gray-100 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
-                <p className="text-xs text-gray-500 mt-1">{statusFilter === 'all' ? 'All Orders' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + ' Orders'}</p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-green-50">
-                <IndianRupee className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Orders Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        <CardHeader className="pb-4">
+        {/* <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <ShoppingCart className="h-5 w-5" />
             Payment Orders ({filteredOrders.length})
@@ -259,7 +217,7 @@ export default function PaymentOrdersPage() {
           <CardDescription className="text-xs sm:text-sm mt-1">
             All payment orders
           </CardDescription>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
@@ -308,6 +266,7 @@ export default function PaymentOrdersPage() {
                     <th className="px-6 py-3 text-left text-base font-bold">Customer</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Firm Name</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Amount</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Discount</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Status</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Affiliate</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Created</th>
@@ -332,6 +291,30 @@ export default function PaymentOrdersPage() {
                           <IndianRupee className="h-3 w-3" />
                           {order.amount.toFixed(2)}
                         </div>
+                        {order.location && (
+                          <div className="text-xs text-blue-600 font-medium mt-0.5">
+                            {order.location}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(order.discount_percentage !== null && order.discount_percentage !== undefined && Number(order.discount_percentage) > 0) ? (
+                          <div>
+                            <div className="text-sm font-medium text-orange-600">
+                              {order.discount_percentage}%
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              -₹{Number(order.discount_amount || 0).toFixed(2)}
+                            </div>
+                            {order.original_amount && (
+                              <div className="text-xs text-green-600 font-medium">
+                                ₹{(Number(order.original_amount) - Number(order.discount_amount || 0)).toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         {getStatusBadge(order.status)}
@@ -350,7 +333,12 @@ export default function PaymentOrdersPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">{formatDate(order.created_at)}</div>
+                        <div className="text-sm text-gray-900">
+                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {order.created_at ? new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <Button
@@ -575,6 +563,94 @@ export default function PaymentOrdersPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Discount Information */}
+              {(selectedOrder.discount_percentage || selectedOrder.discount_amount) && (
+                <div className="bg-orange-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-sm text-gray-700 mb-3">Discount Information</h3>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {selectedOrder.discount_percentage && (
+                      <div>
+                        <span className="text-gray-600">Discount Percentage:</span>
+                        <p className="font-medium text-orange-600">{selectedOrder.discount_percentage}%</p>
+                      </div>
+                    )}
+                    {selectedOrder.original_amount && (
+                      <div>
+                        <span className="text-gray-600">Original Price:</span>
+                        <p className="font-medium flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {selectedOrder.original_amount.toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOrder.discount_amount && (
+                      <div>
+                        <span className="text-gray-600">Discount Amount:</span>
+                        <p className="font-medium text-red-600 flex items-center">
+                          -<IndianRupee className="h-3 w-3" />
+                          {selectedOrder.discount_amount.toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOrder.original_amount && selectedOrder.discount_amount && (
+                      <div>
+                        <span className="text-gray-600">Discounted Price:</span>
+                        <p className="font-bold text-green-600 flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {(selectedOrder.original_amount - selectedOrder.discount_amount).toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Location Information */}
+              {(selectedOrder.location || selectedOrder.customer_city || selectedOrder.customer_state || selectedOrder.customer_address) && (
+                <div className="bg-indigo-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm text-gray-700">Location (Place of Purchase)</h3>
+                    {selectedOrder.location && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
+                        {selectedOrder.location}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {selectedOrder.customer_address && (
+                      <div className="col-span-2">
+                        <span className="text-gray-600">Address:</span>
+                        <p className="font-medium">{selectedOrder.customer_address}</p>
+                      </div>
+                    )}
+                    {selectedOrder.customer_city && (
+                      <div>
+                        <span className="text-gray-600">City:</span>
+                        <p className="font-medium">{selectedOrder.customer_city}</p>
+                      </div>
+                    )}
+                    {selectedOrder.customer_state && (
+                      <div>
+                        <span className="text-gray-600">State:</span>
+                        <p className="font-medium">{selectedOrder.customer_state}</p>
+                      </div>
+                    )}
+                    {selectedOrder.customer_postcode && (
+                      <div>
+                        <span className="text-gray-600">Postcode:</span>
+                        <p className="font-medium">{selectedOrder.customer_postcode}</p>
+                      </div>
+                    )}
+                    {selectedOrder.customer_country && (
+                      <div>
+                        <span className="text-gray-600">Country:</span>
+                        <p className="font-medium">{selectedOrder.customer_country}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Affiliate Information */}
               {selectedOrder.is_affiliate_purchase && (

@@ -305,7 +305,7 @@ export default function AdminUserManagementPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                          {format(new Date(user.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -380,7 +380,7 @@ export default function AdminUserManagementPage() {
                   <div className="col-span-2">
                     <label className="text-sm font-medium text-gray-600">Member Since</label>
                     <p className="text-sm">
-                      {format(new Date(selectedUser.created_at), 'MMMM dd, yyyy')}
+                      {format(new Date(selectedUser.created_at), 'dd/MM/yyyy')}
                     </p>
                   </div>
                   {selectedUser.is_affiliate && (

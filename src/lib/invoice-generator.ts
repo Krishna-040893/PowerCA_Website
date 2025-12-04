@@ -40,6 +40,11 @@ export interface InvoiceData {
   igstAmount?: number
   totalTax: number
   grandTotal: number
+
+  // Discount Details
+  discountPercentage?: number
+  discountAmount?: number
+  originalAmount?: number
 }
 
 export interface PaymentData {

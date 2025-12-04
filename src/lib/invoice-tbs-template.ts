@@ -336,6 +336,16 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     <!-- Totals -->
     <div class="totals-section">
       <div class="totals-table">
+        ${data.originalAmount && data.discountAmount && data.discountAmount > 0 ? `
+        <div class="totals-row">
+          <span>ORIGINAL AMOUNT:</span>
+          <span style="text-decoration: line-through; color: #999;">${formatCurrency(data.originalAmount)}</span>
+        </div>
+        <div class="totals-row" style="color: #27ae60;">
+          <span>DISCOUNT (${data.discountPercentage || 0}%):</span>
+          <span>-${formatCurrency(data.discountAmount)}</span>
+        </div>
+        ` : ''}
         <div class="totals-row subtotal">
           <span>SUB TOTAL:</span>
           <span>${formatCurrency(data.subtotal)}</span>

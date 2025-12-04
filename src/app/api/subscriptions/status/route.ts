@@ -26,14 +26,12 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching subscriptions:', error)
-
       // If table doesn't exist yet, return empty subscriptions array
-      if (error.code === 'PGRST205') {
-        console.warn('Subscriptions table not found - returning empty array')
+      if (error.code === 'PGRST205' || error.code === '42P01') {
         return NextResponse.json({ subscriptions: [] })
       }
 
+      console.error('Error fetching subscriptions:', error)
       return NextResponse.json(
         { error: 'Failed to fetch subscriptions', details: error.message },
         { status: 500 }
@@ -42,9 +40,18 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({ subscriptions: subscriptions || [] })
   } catch (error) {
+    // Handle network errors gracefully - return empty subscriptions instead of 500
+    const isNetworkError = error instanceof TypeError &&
+      (error.message.includes('fetch failed') || error.message.includes('network'))
+
+    if (isNetworkError) {
+      console.warn('Network error fetching subscriptions - returning empty array')
+      return NextResponse.json({ subscriptions: [] })
+    }
+
     console.error('Unexpected error in subscriptions API:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

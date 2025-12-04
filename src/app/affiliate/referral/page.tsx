@@ -527,293 +527,214 @@ export default function AffiliateAccountPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Main Content */}
-      <div className="max-w-[1600px] mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
-        {/* Header Section - Enhanced */}
-        <div className="relative mb-6 sm:mb-8 overflow-hidden rounded-xl sm:rounded-2xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-90"></div>
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00em0wLTEyYzAtMi4yMS0xLjc5LTQtNC00cy00IDEuNzktNCA0IDEuNzkgNCA0IDQgNC0xLjc5IDQtNHptMTIgMTJjMC0yLjIxLTEuNzktNC00LTRzLTQgMS43OS00IDQgMS43OSA0IDQgNCA0LTEuNzkgNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
-          <div className="relative px-4 sm:px-6 py-4 sm:py-6">
-            <div className="flex flex-col items-center text-center sm:text-left sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                {/* Profile Photo */}
-
-                <div className="text-white w-full sm:w-auto">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">Affiliate Referral</h1>
-                  <p className="text-blue-100 text-xs sm:text-sm">Manage your referrals and track your earnings</p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 sm:gap-4 w-full sm:w-auto">
-                <div className="bg-white/20 backdrop-blur-md border-2 border-white/30 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 rounded-xl sm:rounded-2xl shadow-2xl">
-                  <p className="text-xs sm:text-sm text-blue-100 mb-1 font-medium">Your Affiliate ID</p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-black text-white tracking-wider">{affiliateId}</p>
-                </div>
-
-              </div>
+      <div className="affiliate-1400-container max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
+        {/* Header Section - Highlighted Background */}
+        <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1">Affiliate Referral</h1>
+              <p className="text-purple-100 text-xs sm:text-sm">Manage your referrals and track your earnings</p>
+            </div>
+            <div className="flex items-center bg-white/20 rounded-lg px-3 py-2">
+              <span className="text-xs text-purple-100 font-medium mr-2">Affiliate ID:</span>
+              <span className="text-sm font-bold text-white tracking-wide">{affiliateId}</span>
             </div>
           </div>
+
+          {/* Show referrer information if this affiliate was referred by another affiliate */}
+          {referredBy && (
+            <div className="mt-3 pt-3 border-t border-white/20">
+              <p className="text-xs text-purple-100">
+                <span className="font-medium text-white">Referred by:</span> {referredBy.name} ({referredBy.affiliateId})
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Two Row Layout */}
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-4 sm:space-y-6">
           {/* First Row - Affiliate Dashboard Form */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border-2 border-purple-100 p-4 sm:p-6 lg:p-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-purple-100 p-3 sm:p-4 lg:p-6">
           {error && (
-            <Alert className="mb-6 bg-red-50 border-red-200 rounded-xl">
+            <Alert className="mb-4 bg-red-50 border-red-200 rounded-lg">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-700">{error}</AlertDescription>
             </Alert>
           )}
 
           {success && (
-            <Alert className="mb-6 bg-green-50 border-green-200 rounded-xl">
+            <Alert className="mb-4 bg-green-50 border-green-200 rounded-lg">
               <AlertCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-700">{success}</AlertDescription>
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* User Information (Read-only) */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-xl border-2 border-purple-200/50 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">Affiliate Information</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white/70 backdrop-blur-sm p-3 rounded-lg">
-                  <span className="text-xs text-gray-500 font-medium">Name</span>
-                  <p className="text-sm font-semibold text-gray-900 mt-1">{session.user.name}</p>
-                </div>
-                <div className="bg-white/70 backdrop-blur-sm p-3 rounded-lg">
-                  <span className="text-xs text-gray-500 font-medium">Email</span>
-                  <p className="text-sm font-semibold text-gray-900 mt-1">{session.user.email}</p>
-                </div>
-              </div>
-
-              {/* Show referrer information if this affiliate was referred by another affiliate */}
-              {referredBy && (
-                <div className="mt-6 pt-4 border-t-2 border-purple-200">
-                  <h4 className="text-sm font-bold text-purple-700 mb-3 flex items-center gap-2">
-                    👥 Referred By
-                  </h4>
-                  <div className="bg-gradient-to-br from-purple-100 to-indigo-100 p-4 rounded-xl border-2 border-purple-300 shadow-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="bg-white/80 p-2 rounded-lg">
-                        <span className="text-xs text-gray-500">Affiliate Name</span>
-                        <p className="font-bold text-purple-700">{referredBy.name}</p>
-                      </div>
-                      <div className="bg-white/80 p-2 rounded-lg">
-                        <span className="text-xs text-gray-500">Affiliate ID</span>
-                        <p className="font-mono font-bold text-purple-700">{referredBy.affiliateId}</p>
-                      </div>
-                      <div className="bg-white/80 p-2 rounded-lg md:col-span-2">
-                        <span className="text-xs text-gray-500">Email</span>
-                        <p className="font-semibold text-purple-700">{referredBy.email}</p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-purple-700 mt-3 bg-white/50 p-2 rounded-lg">
-                      💡 You joined PowerCA Affiliate Program through {referredBy.name}'s referral
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Default URLs (Read-only) */}
-
-
-            {/* Customer Referral Information */}
-            <div className="border-t-2 border-gray-200 pt-8">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
+          <form onSubmit={handleSubmit} className="space-y-4">
+           {/* Customer Referral Information - Two Column Layout */}
+            <div>
+              <div className="mb-3">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-md bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <User className="h-3.5 w-3.5 text-white" />
                   </div>
                   Customer Referral Details
                 </h3>
-                {/* <p className="text-sm text-gray-600 ml-10">Enter the details of the customer you are referring to PowerCA</p> */}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Customer Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="Customer Full Name"
-                    required
-                    disabled={loading}
-                  />
-                  {/* <p className="text-xs text-gray-500 mt-2 ml-1">
-                    Enter the full name of the customer you're referring
-                  </p> */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Left Side - Customer Name & Email side by side, Create button below */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Customer Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.contactPerson}
+                        onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                        placeholder="Enter Name"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Customer Email <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.contactEmail}
+                        onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                        placeholder="Enter Email ID"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Create Referral Button */}
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 sm:px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-sm shadow-md hover:shadow-lg disabled:shadow-none"
+                    >
+                      <Save className="w-4 h-4" />
+                      {loading ? 'Creating...' : 'Create Referral'}
+                    </button>
+                  </div>
                 </div>
 
+                {/* Right Side - Only Referral Link */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Customer Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="customer@example.com"
-                    required
-                    disabled={loading}
-                  />
-                  {/* <p className="text-xs text-gray-500 mt-2 ml-1">
-                    Referral link will be sent automatically to this email address
-                  </p> */}
+                  {latestReferralCode && (
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 h-full flex flex-col justify-center">
+                      <h4 className="text-lg font-bold text-gray-700 mb-1.5 flex items-center gap-1">
+                        🔗 {latestCustomerId ? 'Latest Referral Link' : 'Your Referral Link'}
+                      </h4>
+                      <input
+                        type="text"
+                        value={latestCustomerId
+                          ? `${window.location.origin}/pricing?ref=${latestReferralCode}&cus=${latestCustomerId}`
+                          : `${window.location.origin}/pricing?ref=${latestReferralCode}`
+                        }
+                        readOnly
+                        className="w-full px-2 py-1.5 text-[15px] border border-gray-300 rounded bg-white font-mono focus:outline-none"
+                      />
+                      <p className="text-[9px] text-gray-500 mt-1">
+                        {latestCustomerId
+                          ? `Customer: ${latestCustomerId}`
+                          : 'Share with customers'
+                        }
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Referral Statistics */}
-            <div className="border-t-2 border-gray-200">
-              {referralStatus.referralCount > 0 && (
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-green-200 shadow-sm">
-                  <h4 className="text-base sm:text-lg font-bold text-green-800 mb-3 sm:mb-4 flex items-center gap-2">
+            {referralStatus.referralCount > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                  <h4 className="text-sm font-bold text-green-800 mb-2 flex items-center gap-1">
                     🎉 Referral Statistics
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <div className="bg-white p-4 sm:p-5 rounded-xl text-center border-2 border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p className="text-2xl sm:text-3xl font-black text-blue-600 mb-1">{referralStatus.referralCount}</p>
-                      <p className="text-xs sm:text-sm font-semibold text-gray-600">Total Referrals</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-white p-2 rounded-lg text-center border border-blue-200">
+                      <p className="text-lg font-black text-blue-600">{referralStatus.referralCount}</p>
+                      <p className="text-[10px] font-medium text-gray-600">Total</p>
                     </div>
-                    <div className="bg-white p-4 sm:p-5 rounded-xl text-center border-2 border-yellow-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p className="text-2xl sm:text-3xl font-black text-yellow-600 mb-1">{referralStatus.pendingCount}</p>
-                      <p className="text-xs sm:text-sm font-semibold text-gray-600">Pending</p>
+                    <div className="bg-white p-2 rounded-lg text-center border border-yellow-200">
+                      <p className="text-lg font-black text-yellow-600">{referralStatus.pendingCount}</p>
+                      <p className="text-[10px] font-medium text-gray-600">Pending</p>
                     </div>
-                    <div className="bg-white p-4 sm:p-5 rounded-xl text-center border-2 border-green-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p className="text-2xl sm:text-3xl font-black text-green-600 mb-1">{referralStatus.completedCount}</p>
-                      <p className="text-xs sm:text-sm font-semibold text-gray-600">Completed</p>
+                    <div className="bg-white p-2 rounded-lg text-center border border-green-200">
+                      <p className="text-lg font-black text-green-600">{referralStatus.completedCount}</p>
+                      <p className="text-[10px] font-medium text-gray-600">Completed</p>
                     </div>
                   </div>
-                  <div className="bg-green-100/70 p-3 rounded-xl">
-                    <p className="text-xs sm:text-sm text-green-800 font-medium leading-relaxed">
-                      💡 Each referral gets a unique customer ID. Click "Create Referral" to generate a new referral link for your next customer.
-                    </p>
-                  </div>
                 </div>
-              )}
-
-              {/* Always show referral link if we have a code */}
-              {latestReferralCode && (
-                <div className="mt-4 sm:mt-6 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-gray-200 shadow-md">
-                  <h4 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                    🔗 {latestCustomerId ? 'Latest Customer Referral Link' : 'Your Referral Link'}
-                  </h4>
-                  <input
-                    type="text"
-                    value={latestCustomerId
-                      ? `${window.location.origin}/pricing?ref=${latestReferralCode}&cus=${latestCustomerId}`
-                      : `${window.location.origin}/pricing?ref=${latestReferralCode}`
-                    }
-                    readOnly
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border-2 border-gray-300 rounded-xl bg-gray-50 font-mono focus:outline-none shadow-sm"
-                  />
-                  {latestCustomerId ? (
-                    <div className="mt-3 sm:mt-4 space-y-2">
-                      <p className="text-xs sm:text-sm text-gray-700 flex items-start leading-relaxed">
-                        <span className="mr-2 flex-shrink-0">•</span>
-                        <span>This link is for your latest customer ({latestCustomerId}). Create a new referral above for the next customer.</span>
-                      </p>
-                      <p className="text-xs sm:text-sm text-gray-700 flex items-start leading-relaxed">
-                        <span className="mr-2 flex-shrink-0">•</span>
-                        <span>Your referral code stays the same for all customers. Each customer gets a unique ID.</span>
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-3 sm:mt-4 space-y-2">
-                      <p className="text-xs sm:text-sm text-gray-700 flex items-start leading-relaxed">
-                        <span className="mr-2 flex-shrink-0">•</span>
-                        <span>Share this link with your customers. Each referral will be tracked automatically.</span>
-                      </p>
-                      <p className="text-xs sm:text-sm text-gray-700 flex items-start leading-relaxed">
-                        <span className="mr-2 flex-shrink-0">•</span>
-                        <span>Your referral code stays the same for all customers. Each customer gets a unique ID.</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-center sm:justify-end gap-4 pt-4 sm:pt-6 border-t-2 border-gray-200 mt-6 sm:mt-8">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl sm:rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none"
-              >
-                <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-                {loading
-                  ? 'Creating Referral...'
-                  : 'Create Referral'
-                }
-              </button>
-            </div>
+              </div>
+            )}
           </form>
           </div>
 
           {/* Second Row - Referral Details Table */}
           {referralDetails.length > 0 ? (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border-2 border-indigo-100 p-4 sm:p-6 lg:p-8 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-            <div className="mb-6 sm:mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-indigo-100 p-3 sm:p-4 lg:p-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+            <div className="mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                  <Building2 className="h-3.5 w-3.5 text-white" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Referral Details</h2>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Referral Details</h2>
               </div>
-              {/* <p className="text-gray-600 ml-13">Track all your referrals, payment status, and commission earnings</p> */}
             </div>
 
             {/* Summary Cards */}
             {referralSummary && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 border-blue-200 shadow-md hover:shadow-lg transition-shadow">
-                  <p className="text-[10px] sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">Total Referrals</p>
-                  <p className="text-2xl sm:text-4xl font-black text-blue-600">{referralSummary.total_referrals}</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-2 sm:p-3 rounded-lg border border-blue-200">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Total Referrals</p>
+                  <p className="text-lg sm:text-2xl font-black text-blue-600">{referralSummary.total_referrals}</p>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 border-green-200 shadow-md hover:shadow-lg transition-shadow">
-                  <p className="text-[10px] sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">Paid Customers</p>
-                  <p className="text-2xl sm:text-4xl font-black text-green-600">{referralSummary.paid_referrals}</p>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-2 sm:p-3 rounded-lg border border-green-200">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Paid</p>
+                  <p className="text-lg sm:text-2xl font-black text-green-600">{referralSummary.paid_referrals}</p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 border-purple-200 shadow-md hover:shadow-lg transition-shadow">
-                  <p className="text-[10px] sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">Total Commission</p>
-                  <p className="text-xl sm:text-3xl font-black text-purple-600">₹{referralSummary.total_commission_earned}</p>
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-2 sm:p-3 rounded-lg border border-purple-200">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Total Commission</p>
+                  <p className="text-base sm:text-xl font-black text-purple-600">₹{referralSummary.total_commission_earned}</p>
                 </div>
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border-2 border-orange-200 shadow-md hover:shadow-lg transition-shadow">
-                  <p className="text-[10px] sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">Pending Commission</p>
-                  <p className="text-xl sm:text-3xl font-black text-orange-600">₹{referralSummary.pending_commission}</p>
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-2 sm:p-3 rounded-lg border border-orange-200">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Pending</p>
+                  <p className="text-base sm:text-xl font-black text-orange-600">₹{referralSummary.pending_commission}</p>
                 </div>
               </div>
             )}
 
             {/* Referral Table */}
-            <div className="overflow-x-auto rounded-xl sm:rounded-2xl border-2 border-gray-200 shadow-inner -mx-4 sm:mx-0">
+            <div className="overflow-x-auto rounded-lg border border-gray-200 -mx-3 sm:mx-0">
               {loadingDetails ? (
-                <div className="text-center py-8 sm:py-12 bg-gray-50">
-                  <div className="animate-spin rounded-full h-10 w-10 sm:h-14 sm:w-14 border-t-4 border-b-4 border-purple-500 mx-auto"></div>
-                  <p className="mt-4 text-sm sm:text-base text-gray-600 font-semibold">Loading referral details...</p>
+                <div className="text-center py-6 bg-gray-50">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+                  <p className="mt-2 text-xs text-gray-600 font-medium">Loading...</p>
                 </div>
               ) : (
                 <table className="min-w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-purple-100 to-blue-100 border-b-2 border-purple-200">
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Customer ID</th>
-                      <th className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Customer Details</th>
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Date</th>
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Payment Status</th>
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Payment Amount</th>
-                      <th className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 uppercase tracking-wider whitespace-nowrap">Commission</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer ID</th>
+                      <th className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer Details</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Date</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Status</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Amount</th>
+                      <th className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
@@ -825,21 +746,21 @@ export default function AffiliateAccountPage() {
                       return paginatedReferrals.map((referral) => (
                         <tr key={referral.id} className="hover:bg-purple-50/50 transition-colors">
                           <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                            <span className="font-mono text-[10px] sm:text-sm font-bold text-blue-700 bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            <span className="font-mono text-[11px] sm:text-[13px] font-bold text-blue-700 bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                               {referral.customer_id || 'N/A'}
                             </span>
                           </td>
                           <td className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4">
-                            <div className="text-xs sm:text-sm">
+                            <div className="text-[11px] sm:text-[13px]">
                               <p className="font-bold text-gray-900 truncate max-w-[150px] sm:max-w-none">{referral.referred_name || 'N/A'}</p>
-                              <p className="text-gray-600 font-medium truncate max-w-[150px] sm:max-w-none text-[10px] sm:text-sm">{referral.referred_email}</p>
+                              <p className="text-gray-600 font-medium truncate max-w-[150px] sm:max-w-none">{referral.referred_email}</p>
                               {referral.referred_phone && (
                                 <p className="text-gray-500 text-[10px] sm:text-xs mt-1">{referral.referred_phone}</p>
                               )}
                             </div>
                           </td>
                           <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                            <div className="text-[10px] sm:text-sm font-semibold text-gray-700">
+                            <div className="text-[11px] sm:text-[13px] font-semibold text-gray-700">
                               {new Date(referral.created_at).toLocaleDateString('en-IN', {
                                 day: '2-digit',
                                 month: 'short',
@@ -850,7 +771,7 @@ export default function AffiliateAccountPage() {
                           <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
                             {referral.payment_info ? (
                               <span
-                                className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold shadow-sm ${
+                                className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm ${
                                   referral.payment_info.payment_status === 'completed'
                                     ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300'
                                     : referral.payment_info.payment_status === 'pending'
@@ -861,23 +782,23 @@ export default function AffiliateAccountPage() {
                                 {referral.payment_info.payment_status === 'completed' ? '✓ Paid' : 'Pending'}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold bg-gray-100 text-gray-800 border border-gray-300 shadow-sm">
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold bg-gray-100 text-gray-800 border border-gray-300 shadow-sm">
                                 Pending
                               </span>
                             )}
                           </td>
                           <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
-                            <div className="text-xs sm:text-sm font-bold text-gray-900">
+                            <div className="text-[11px] sm:text-[13px] font-bold text-gray-900">
                               {referral.payment_info
                                 ? `₹${parseFloat(referral.payment_info.payment_amount || '0').toFixed(2)}`
                                 : '-'}
                             </div>
                           </td>
                           <td className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
-                            <div className="text-xs sm:text-sm">
+                            <div className="text-[11px] sm:text-[13px]">
                               {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
                                 <>
-                                  <p className="font-black text-green-700 text-sm sm:text-base mb-1">
+                                  <p className="font-black text-green-700 text-[13px] sm:text-sm mb-1">
                                     ₹{parseFloat(referral.payment_info.commission_amount || '0').toFixed(2)}
                                   </p>
                                   {referral.payment_info.commission_paid ? (
@@ -1008,13 +929,13 @@ export default function AffiliateAccountPage() {
             )}
             </div>
           ) : (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border-2 border-indigo-100 p-8 flex items-center justify-center min-h-[400px]">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border border-indigo-100 p-6 flex items-center justify-center min-h-[200px]">
               <div className="text-center">
-                <div className="h-20 w-20 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="h-10 w-10 text-indigo-600" />
+                <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mx-auto mb-3">
+                  <Building2 className="h-6 w-6 text-indigo-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Referrals Yet</h3>
-                <p className="text-gray-600">Create your first referral using the form to see your referral details here</p>
+                <h3 className="text-base font-bold text-gray-900 mb-1">No Referrals Yet</h3>
+                <p className="text-sm text-gray-600">Create your first referral to see details here</p>
               </div>
             </div>
           )}

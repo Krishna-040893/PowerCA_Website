@@ -107,6 +107,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if the referred email is already registered as a client
+    if (body.contactEmail) {
+      const { data: existingClient } = await supabase
+        .from(REGISTRATION_FORMS_TABLE)
+        .select('id, email')
+        .eq('email', body.contactEmail.toLowerCase())
+        .maybeSingle()
+
+      if (existingClient) {
+        return NextResponse.json(
+          { error: 'This email is already registered. Please try another referral email address.' },
+          { status: 400 }
+        )
+      }
+    }
+
     // For new affiliates (using affiliate_registrations), use email to find profile
     // For old affiliates (using registration_forms), use user_id
     let profileLookupQuery = supabase

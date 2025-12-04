@@ -278,7 +278,7 @@ export default function AdminUsersPage() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                          {format(new Date(user.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
                           {updatingUsers.has(user.id) && (

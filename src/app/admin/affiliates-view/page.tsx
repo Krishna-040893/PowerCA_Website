@@ -132,7 +132,7 @@ export default function AdminAffiliatesViewPage() {
         a.contact_phone || '',
         a.total_referrals || a.referrals?.length || 0,
         a.status,
-        new Date(a.created_at).toLocaleDateString()
+        new Date(a.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
       ])
     ].map(row => row.join(',')).join('\n')
 
@@ -339,7 +339,7 @@ export default function AdminAffiliatesViewPage() {
                                           </span>
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-500">
-                                          {new Date(referral.converted_at || referral.created_at).toLocaleDateString()}
+                                          {new Date(referral.converted_at || referral.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                         </td>
                                       </tr>
                                     ))}

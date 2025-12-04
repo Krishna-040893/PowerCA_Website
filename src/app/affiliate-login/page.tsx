@@ -21,13 +21,38 @@ function AffiliateLoginContent() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/affiliate/referral'
+
+  // Email validation function
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  // Validate email on blur
+  const handleEmailBlur = () => {
+    if (email && !isValidEmail(email)) {
+      setEmailError('Enter valid email address')
+    } else {
+      setEmailError('')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+
+    let hasError = false
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      setError('Enter valid email address')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const result = await signIn('credentials', {
@@ -76,7 +101,7 @@ function AffiliateLoginContent() {
           await signOut({ redirect: false })
 
           setError('You are not an affiliate partner. Please use the Client Login page.')
-          setIsLoading(false)
+          hasError = true
 
           // Redirect to client login after 2 seconds
           setTimeout(() => {
@@ -90,16 +115,17 @@ function AffiliateLoginContent() {
         window.location.href = callbackUrl
       } else {
         setError(result?.error || 'Invalid email or password. Please try again.')
+        hasError = true
       }
     } catch {
       setError('An unexpected error occurred. Please try again.')
+      hasError = true
     } finally {
       // Don't set loading to false if redirect is happening
-      if (!error) {
-        // Keep loading state if successful
-      } else {
+      if (hasError) {
         setIsLoading(false)
       }
+      // Keep loading state if successful to avoid flicker before redirect
     }
   }
 
@@ -195,12 +221,25 @@ function AffiliateLoginContent() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (emailError) {
+                      setEmailError('')
+                    }
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
+                  onBlur={handleEmailBlur}
                   placeholder="Enter Your Email"
-                  className="pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
+                  className={`pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl ${emailError ? 'border-red-500' : ''}`}
                   required
                 />
               </div>
+              {emailError && (
+                <p className="text-sm text-red-600 mt-1">{emailError}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -216,7 +255,13 @@ function AffiliateLoginContent() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (error) {
+                      setError('')
+                      setIsLoading(false)
+                    }
+                  }}
                   placeholder="Enter Your Password"
                   className="pl-10 pr-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
                   required
