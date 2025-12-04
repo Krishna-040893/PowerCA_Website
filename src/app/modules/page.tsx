@@ -122,7 +122,7 @@ export default function ModulesPage() {
       {/* Hero Section */}
       <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-12">
+        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
             className="w-full h-full rounded-2xl"
             style={{
@@ -134,7 +134,7 @@ export default function ModulesPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
           <div className="max-w-6xl mx-auto text-center">
             {/* Badge */}
             <div className="mb-6 sm:mb-8">
@@ -163,7 +163,7 @@ export default function ModulesPage() {
 
       {/* Modules Section */}
       <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="grid lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-start mb-8 sm:mb-10 md:mb-12 lg:mb-16">
             {/* Left Content - Title */}
             <div className="lg:col-span-2">

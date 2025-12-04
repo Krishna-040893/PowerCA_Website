@@ -217,7 +217,7 @@ export default function BlogPageClient() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mx-2 sm:mx-4 md:mx-6 lg:mx-12">
+      <section className="relative overflow-hidden mx-3 sm:mx-4 md:mx-6 lg:mx-6">
         <div
           className="relative bg-cover bg-center bg-no-repeat rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12 lg:py-16"
           style={{
@@ -359,7 +359,7 @@ export default function BlogPageClient() {
 
       {/* Content Section */}
       <section className="py-0">
-        <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6 max-w-7xl">
           {/* Categories */}
           <div className="mb-8 sm:mb-12 pt-12 sm:pt-20 pb-4 sm:pb-5">
             <h2 className="text-xl sm:text-3xl font-semibold text-gray-900 mb-4 sm:mb-8 text-center leading-normal px-2">
