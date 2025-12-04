@@ -205,31 +205,29 @@ export default function AdminPage() {
           disabled={refreshing}
         >
           {refreshing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          <RefreshCw className="mr-2 h-4 w-4" />
+          <RefreshCw className="mr-2 h-2 w-2" />
           Refresh
         </Button>
       }
     >
-
         {/* Comprehensive Platform Statistics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             {/* Registrations Card */}
             <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4 text-blue-600" />
                   Registrations
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-3">
                 <div className="text-3xl font-bold text-blue-900">{allStats.registrations}</div>
-                <div className="mt-2 space-y-1">
+                <div className="mt-1 space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-blue-700">Professionals</span>
                     <span className="font-semibold text-blue-900">{allStats.professionals}</span>
@@ -244,15 +242,15 @@ export default function AdminPage() {
 
             {/* Payments Card */}
             <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-green-600" />
                   Payments
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-3">
                 <div className="text-3xl font-bold text-green-900">{allStats.payments}</div>
-                <div className="mt-2">
+                <div className="mt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-green-700">Total Revenue</span>
                     <span className="font-semibold text-green-900">₹{allStats.totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
@@ -263,15 +261,15 @@ export default function AdminPage() {
 
             {/* Affiliates Card */}
             <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-purple-600" />
                   Affiliates
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-3">
                 <div className="text-3xl font-bold text-purple-900">{allStats.affiliates}</div>
-                <div className="mt-2 space-y-1">
+                <div className="mt-1 space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-purple-700">Approved</span>
                     <span className="font-semibold text-purple-900">{allStats.approvedAffiliates}</span>
@@ -286,15 +284,15 @@ export default function AdminPage() {
 
             {/* Content Card */}
             <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <FileText className="h-4 w-4 text-orange-600" />
                   Content
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-3">
                 <div className="text-3xl font-bold text-orange-900">{allStats.blogPosts}</div>
-                <div className="mt-2 space-y-1">
+                <div className="mt-1 space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-orange-700">Blog Posts</span>
                     <span className="font-semibold text-orange-900">{allStats.blogPosts}</span>
@@ -314,19 +312,18 @@ export default function AdminPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Pie Chart - User Distribution */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-base flex items-center gap-2">
                   <PieChartIcon className="h-4 w-4 text-blue-600" />
                   User Distribution
                 </CardTitle>
                 <CardDescription className="text-xs">Registration breakdown</CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-0">
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -353,14 +350,14 @@ export default function AdminPage() {
 
             {/* Gauge Chart - Affiliate Approval Rate */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-1 pt-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Activity className="h-4 w-4 text-green-600" />
                   Approval Rate
                 </CardTitle>
                 <CardDescription className="text-xs">Affiliate approval %</CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-1 pb-2">
                 <div className="h-[280px] flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
@@ -403,14 +400,14 @@ export default function AdminPage() {
 
             {/* Bar Chart - Platform Overview */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-1 pt-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-orange-600" />
                   Platform Metrics
                 </CardTitle>
                 <CardDescription className="text-xs">All metrics comparison</CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-1 pb-2">
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barChartData}>
@@ -436,18 +433,18 @@ export default function AdminPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-4"
+          className="mt-2"
         >
           {/* Line Chart - Growth Trends */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 pt-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-purple-600" />
                 Growth Trends
               </CardTitle>
               <CardDescription className="text-xs">Last 6 months - Registrations vs Payments</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-1 pb-2">
               <div className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={lineChartData}>

@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
     if (customerEmail) {
       try {
         if (!resend) {
-          console.warn('Resend not configured, skipping confirmation email')
+          logger.warn('Resend not configured, skipping confirmation email')
           return
         }
         logger.info('Sending payment confirmation email', {

@@ -203,7 +203,7 @@ function CheckoutContent() {
   const discountRate = isFirstAddress ? 0 : 0.10 // Flat 10% for 2nd address onwards
   const discountPercentage = isFirstAddress ? 0 : 10 // For display: 0 for 1st, 10 for 2nd+
 
-  const fullBasePrice = 50000 // ₹50,000 base price
+  const fullBasePrice = 25000 // ₹25,000 base price
   const discountAmount = fullBasePrice * discountRate
   const basePrice = fullBasePrice - discountAmount
   const subtotal = basePrice * quantity
@@ -298,7 +298,8 @@ function CheckoutContent() {
             // Missing ref or cus, clear invalid data
             localStorage.removeItem('affiliate_referral')
           }
-        } catch {
+        } catch (err) {
+          console.error('Error parsing affiliate referral from localStorage:', err)
           localStorage.removeItem('affiliate_referral')
         }
       }
@@ -365,8 +366,9 @@ function CheckoutContent() {
               company: result.orderData.company || prev.company,
             }))
           }
-        } catch {
+        } catch (err) {
           // Continue without auto-fill if there's an error
+          console.error('Error fetching last order for auto-fill:', err)
         }
       }
 

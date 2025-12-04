@@ -41,9 +41,9 @@ export default function ProfilePhotoUpload({
 
   // Size configurations
   const sizeConfig = {
-    sm: { container: 'w-16 h-16', text: 'text-xs', button: 'w-8 h-8', icon: 14 },
-    md: { container: 'w-24 h-24', text: 'text-sm', button: 'w-10 h-10', icon: 16 },
-    lg: { container: 'w-32 h-32', text: 'text-base', button: 'w-12 h-12', icon: 18 },
+    sm: { container: 'w-20 h-20', text: 'text-xs', button: 'w-9 h-9', icon: 16 },
+    md: { container: 'w-28 h-28', text: 'text-sm', button: 'w-11 h-11', icon: 18 },
+    lg: { container: 'w-36 h-36', text: 'text-base', button: 'w-14 h-14', icon: 20 },
   }
 
   const currentSize = sizeConfig[size]

@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 export async function GET(req: NextRequest) {
   try {
@@ -124,7 +125,7 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error checking referrals:', error)
+    logger.error('Error checking referrals', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       {

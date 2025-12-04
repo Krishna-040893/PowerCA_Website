@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating subscription:', error)
+      logger.error('Error creating subscription', error)
       return NextResponse.json(
         { error: 'Failed to create subscription' },
         { status: 500 }
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Subscription creation error:', error)
+    logger.error('Subscription creation error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

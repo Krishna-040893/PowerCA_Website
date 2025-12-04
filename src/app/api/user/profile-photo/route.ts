@@ -13,6 +13,7 @@ import {
   validateImageFile,
 } from '@/lib/image-upload'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/user/profile-photo
@@ -51,7 +52,7 @@ export async function GET() {
       .single()
 
     if (error) {
-      console.error('Error fetching profile photo URL:', error)
+      logger.error('Error fetching profile photo URL', error)
       return NextResponse.json(
         { photoUrl: null },
         { status: 200 }
@@ -62,7 +63,7 @@ export async function GET() {
       photoUrl: data?.profile_photo_url || null
     })
   } catch (error) {
-    console.error('Profile photo fetch error:', error)
+    logger.error('Profile photo fetch error', error)
     return NextResponse.json(
       { photoUrl: null },
       { status: 200 }
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
     if (oldPhotoUrl) {
       // Don't wait for deletion, just fire and forget
       deleteProfilePhoto(oldPhotoUrl).catch((error) => {
-        console.error('Failed to delete old photo:', error)
+        logger.error('Failed to delete old photo', error)
       })
     }
 
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
       message: 'Profile photo updated successfully'
     })
   } catch (error) {
-    console.error('Profile photo upload error:', error)
+    logger.error('Profile photo upload error', error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Internal server error'
@@ -225,7 +226,7 @@ export async function DELETE(request: NextRequest) {
       message: 'Profile photo deleted successfully'
     })
   } catch (error) {
-    console.error('Profile photo delete error:', error)
+    logger.error('Profile photo delete error', error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Internal server error'

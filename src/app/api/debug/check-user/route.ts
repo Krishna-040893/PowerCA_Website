@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import bcrypt from 'bcryptjs'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Debug error:', error)
+    logger.error('Debug error', error)
     return NextResponse.json(
       { error: 'Debug check failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

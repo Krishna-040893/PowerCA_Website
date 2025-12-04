@@ -2,7 +2,7 @@
 
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Card, CardContent, CardHeader } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Dia
 import {toast  } from 'sonner'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { formatPhone } from '@/lib/utils'
 
 interface AffiliateApplication {
   id: string
@@ -325,7 +326,7 @@ export default function AdminAffiliatesPage() {
                           {application.name}
                         </TableCell>
                         <TableCell>{application.email}</TableCell>
-                        <TableCell>{application.phone}</TableCell>
+                        <TableCell>{formatPhone(application.phone)}</TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(application.status)}>
                             <div className="flex items-center gap-1">
@@ -385,7 +386,7 @@ export default function AdminAffiliatesPage() {
                                       </div>
                                       <div>
                                         <label className="text-xs font-medium text-gray-500">Phone</label>
-                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
+                                        <p className="text-sm text-gray-900 mt-1">{formatPhone(selectedApp.phone)}</p>
                                       </div>
                                       <div>
                                         <label className="text-xs font-medium text-gray-500">Location</label>
@@ -567,7 +568,7 @@ export default function AdminAffiliatesPage() {
                           <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Phone:</span>
-                              <span className="text-gray-700 font-medium">{application.phone}</span>
+                              <span className="text-gray-700 font-medium">{formatPhone(application.phone)}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Location:</span>
@@ -630,7 +631,7 @@ export default function AdminAffiliatesPage() {
                                       </div>
                                       <div>
                                         <label className="text-xs font-medium text-gray-500">Phone</label>
-                                        <p className="text-sm text-gray-900 mt-1">{selectedApp.phone}</p>
+                                        <p className="text-sm text-gray-900 mt-1">{formatPhone(selectedApp.phone)}</p>
                                       </div>
                                       <div>
                                         <label className="text-xs font-medium text-gray-500">Location</label>

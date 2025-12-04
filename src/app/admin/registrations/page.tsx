@@ -3,16 +3,17 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
-import {Loader2, RefreshCw, Download, Users, UserCheck, TrendingUp, Search, Eye, GraduationCap, User, Mail, Phone  } from 'lucide-react'
+import {Loader2, RefreshCw, Download, Users, UserCheck, Search, Eye, GraduationCap, User, Mail, Phone  } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { formatPhone } from '@/lib/utils'
 
 interface Registration {
   id: string
@@ -306,7 +307,7 @@ export default function AdminRegistrationsPage() {
                         <TableRow key={registration.id}>
                           <TableCell className="font-medium">{registration.name || '-'}</TableCell>
                           <TableCell>{registration.email || '-'}</TableCell>
-                          <TableCell>{registration.phone || '-'}</TableCell>
+                          <TableCell>{formatPhone(registration.phone)}</TableCell>
                           <TableCell>
                             <Badge variant={registration.role === 'Professional' ? 'default' : registration.role === 'Student' ? 'secondary' : 'outline'}>
                               {registration.role || '-'}
@@ -463,7 +464,7 @@ export default function AdminRegistrationsPage() {
                             {registration.phone && (
                               <div className="flex items-center gap-2">
                                 <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                                <span className="text-xs text-gray-700">{registration.phone}</span>
+                                <span className="text-xs text-gray-700">{formatPhone(registration.phone)}</span>
                               </div>
                             )}
                           </div>

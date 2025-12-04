@@ -2,6 +2,7 @@ import {NextRequest, NextResponse  } from 'next/server'
 import {createAdminClient  } from '@/lib/supabase/admin'
 import {Resend  } from 'resend'
 import type { Booking } from '@/types/booking'
+import { logger } from '@/lib/logger'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -86,13 +87,7 @@ export async function POST(request: NextRequest) {
         }
       } else {
         booking = data
-        console.log('✅ Booking created in database:', {
-          id: data.id,
-          name: data.name,
-          firm_name: (data as any).firm_name,
-          firmName: (data as any).firmName,
-          allKeys: Object.keys(data)
-        })
+        logger.info('Booking created in database', { bookingId: data.id, name: data.name })
       }
     } catch {
       // Fall back to simple storage if network fails
@@ -200,14 +195,7 @@ async function sendConfirmationEmail(booking: Booking) {
     const firmName = (booking as any).firmName || (booking as any).firm_name
     const message = booking.message
 
-    // Debug log to verify firm name is captured
-    console.log('📧 Email data:', {
-      bookingId: booking.id,
-      firmName: firmName,
-      firm_name_raw: (booking as any).firm_name,
-      firmName_raw: (booking as any).firmName,
-      message: message
-    })
+    logger.info('Sending booking confirmation email', { bookingId: booking.id, firmName })
 
     // HTML email template for customer
     const customerEmailHtml = `
@@ -278,7 +266,7 @@ async function sendConfirmationEmail(booking: Booking) {
       } catch (customerEmailError) {
         // IMPORTANT: Never retry or fallback to contact@powerca.in
         // Just log the error and continue
-        console.error('Failed to send customer confirmation email - no retry:', customerEmailError)
+        logger.error('Failed to send customer confirmation email - no retry', customerEmailError)
         // Silently fail - team will still get notification
       }
     }

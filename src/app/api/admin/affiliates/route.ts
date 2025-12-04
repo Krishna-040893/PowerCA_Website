@@ -4,6 +4,34 @@ import {createClient  } from '@supabase/supabase-js'
 import {sendAffiliateApprovalEmail  } from '@/lib/resend'
 import {logger  } from '@/lib/logger'
 
+// Helper function to create timeout signal (Safari < 16.4 compatible)
+function createTimeoutSignal(timeoutMs: number): AbortSignal {
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), timeoutMs)
+  return controller.signal
+}
+
+// Helper function to retry database operations
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delay: number = 1000
+): Promise<T> {
+  let lastError: Error | null = null
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error as Error
+      logger.warn(`Database operation attempt ${attempt} failed`, { error: lastError.message })
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, delay * attempt))
+      }
+    }
+  }
+  throw lastError
+}
+
 // Get all affiliate applications (Admin only)
 export async function GET(_request: NextRequest) {
   try {
@@ -53,19 +81,33 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json(sampleApplications)
     }
 
-    // Create Supabase admin client
+    // Create Supabase admin client with timeout
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+      },
+      global: {
+        fetch: (url, options) => {
+          return fetch(url, {
+            ...options,
+            signal: createTimeoutSignal(15000) // 15 second timeout (Safari compatible)
+          })
+        }
       }
     })
 
-    // Fetch affiliate registrations with user info
-    const { data: applications, error } = await supabase
-      .from('affiliate_registrations')
-      .select('*')
-      .order('created_at', { ascending: false })
+    // Fetch affiliate registrations with retry logic
+    const { data: applications, error } = await withRetry(async () => {
+      const result = await supabase
+        .from('affiliate_registrations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (result.error && result.error.message?.includes('fetch failed')) {
+        throw new Error(result.error.message)
+      }
+      return result
+    })
 
     // Generate username from email for display (no registration_forms dependency)
     let enrichedApplications = applications || []

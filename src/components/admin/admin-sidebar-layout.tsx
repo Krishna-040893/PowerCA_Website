@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -29,7 +29,8 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements'
+  subItems?: { title: string; href: string }[]
 }
 
 interface NavSection {
@@ -42,12 +43,14 @@ interface Counts {
   registrations: number
   affiliates: number
   pendingApprovals: number
+  approvedAffiliates: number
   referrals: number
   pendingPayments: number
   payments: number
   paymentOrders: number
   newsletterSubscribers: number
   blogPosts: number
+  agreements: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -62,6 +65,17 @@ const getBaseNavigation = (): NavSection[] => [
     items: [
       { title: 'Bookings', href: '/admin/bookings', icon: Calendar, countKey: 'bookings', badgeVariant: 'default' },
       { title: 'Registrations', href: '/admin/registrations', icon: FileText, countKey: 'registrations', badgeVariant: 'default' },
+      {
+        title: 'Agreements',
+        href: '/admin/agreements',
+        icon: FileSignature,
+        countKey: 'agreements',
+        badgeVariant: 'default',
+        subItems: [
+          { title: 'Client Agreement', href: '/admin/agreements' },
+          { title: 'Affiliate Agreement', href: '/admin/agreements/affiliate' }
+        ]
+      },
       { title: 'Newsletter Subscribers', href: '/admin/newsletter-subscribers', icon: Mail, countKey: 'newsletterSubscribers', badgeVariant: 'default' },
     ]
   },
@@ -82,7 +96,7 @@ const getBaseNavigation = (): NavSection[] => [
     title: 'Affiliates',
     items: [
       { title: 'All Affiliates', href: '/admin/affiliates', icon: Handshake, countKey: 'affiliates', badgeVariant: 'default' },
-      { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'pendingApprovals', badgeVariant: 'destructive' },
+      { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'approvedAffiliates', badgeVariant: 'default' },
       { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
       { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Wallet, countKey: 'pendingPayments', badgeVariant: 'default' },
     ]
@@ -93,6 +107,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
   const { isAuthenticated, isLoading, adminUser, handleLogout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Agreements']) // Default expanded
 
   // Initialize counts from localStorage if available
   const [counts, setCounts] = useState<Counts>(() => {
@@ -111,12 +126,14 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       registrations: 0,
       affiliates: 0,
       pendingApprovals: 0,
+      approvedAffiliates: 0,
       referrals: 0,
       pendingPayments: 0,
       payments: 0,
       paymentOrders: 0,
       newsletterSubscribers: 0,
-      blogPosts: 0
+      blogPosts: 0,
+      agreements: 0
     }
   })
   const pathname = usePathname()
@@ -287,7 +304,72 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
               )}
               <div className="space-y-1.5">
                 {section.items.map((item) => {
-                  const isActive = pathname === item.href
+                  const isActive = pathname === item.href || (item.subItems && item.subItems.some(sub => pathname === sub.href))
+                  const isExpanded = expandedMenus.includes(item.title)
+                  const hasSubItems = item.subItems && item.subItems.length > 0
+
+                  // If item has sub-items, render as expandable menu
+                  if (hasSubItems) {
+                    return (
+                      <div key={item.href}>
+                        <button
+                          onClick={() => {
+                            setExpandedMenus(prev =>
+                              prev.includes(item.title)
+                                ? prev.filter(t => t !== item.title)
+                                : [...prev, item.title]
+                            )
+                          }}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-2.5 sm:py-2.5 rounded-xl transition-all duration-300 group relative',
+                            isActive
+                              ? 'bg-slate-800/80 text-white'
+                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                          )}
+                        >
+                          <item.icon className={cn(
+                            'h-5 w-5 flex-shrink-0 transition-transform duration-300',
+                            isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                          )} />
+                          {(!collapsed || sidebarOpen) && (
+                            <>
+                              <span className="flex-1 text-sm font-medium text-left">{item.title}</span>
+                              <ChevronDown className={cn(
+                                'h-4 w-4 transition-transform duration-300',
+                                isExpanded && 'rotate-180'
+                              )} />
+                            </>
+                          )}
+                        </button>
+                        {/* Sub-items */}
+                        {isExpanded && (!collapsed || sidebarOpen) && (
+                          <div className="ml-4 mt-1 space-y-1 border-l border-slate-700 pl-3">
+                            {item.subItems!.map((subItem) => {
+                              const isSubActive = pathname === subItem.href
+                              return (
+                                <Link
+                                  key={subItem.href}
+                                  href={subItem.href}
+                                  onClick={() => setSidebarOpen(false)}
+                                  className={cn(
+                                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200',
+                                    isSubActive
+                                      ? 'bg-blue-600 text-white'
+                                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+                                  )}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                  {subItem.title}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // Regular menu item without sub-items
                   return (
                     <Link
                       key={item.href}
@@ -398,7 +480,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
         </header>
 
         {/* Page Content - Mobile optimized */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-3 sm:p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-2 sm:p-3">
           {children}
         </main>
       </div>

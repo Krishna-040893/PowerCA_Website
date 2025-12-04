@@ -19,10 +19,10 @@ const handleResetPassword = async (request: NextRequest) => {
     }
 
     // Initialize Supabase inside the route handler (not at module level)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // Environment variables are already validated by isServiceConfigured above
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { token, password, userType } = await request.json()
 

@@ -60,7 +60,7 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
       <div class="pricing-box">
         <div class="pricing-option">
           <div style="color: #666; font-size: 14px; margin-bottom: 10px;">YOUR ANNUAL TURNOVER</div>
-          <div class="price">0.20%</div>
+          <div class="price">0.25%</div>
           <div style="color: #666; font-size: 14px; margin-top: 5px;">+ Applicable Taxes</div>
         </div>
 
@@ -68,7 +68,7 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
 
         <div class="pricing-option">
           <div style="color: #666; font-size: 14px; margin-bottom: 10px;">MINIMUM COST</div>
-          <div class="price">₹10,000</div>
+          <div class="price">₹12,000</div>
           <div style="color: #666; font-size: 14px; margin-top: 5px;">+ Applicable Taxes</div>
         </div>
       </div>
