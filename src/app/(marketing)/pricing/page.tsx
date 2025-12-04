@@ -125,7 +125,7 @@ function PricingContent() {
       )}
 
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-14 md:py-16 lg:py-20">
+      <section className="relative py-8 sm:py-10 md:py-12 lg:py-14">
         <div
           className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-6"
           style={{
@@ -189,10 +189,10 @@ function PricingContent() {
               <div className="relative z-10">
                 {/* Header */}
                 <div className="text-center mb-6 md:mb-8">
-                  <h3 className="text-2xl md:text-3xl font-medium mb-3 md:mb-4">Power CA</h3>
-                  {/* <p className="text-[#f4f7fd] text-base md:text-lg px-2">
-                    Special discount 50% for CAs only – Till 30th Nov 2025
-                  </p> */}
+                  <h3 className="text-2xl md:text-3xl font-medium mb-2 md:mb-3">Power CA</h3>
+                  <p className="text-[#f4f7fd] text-sm md:text-base italic px-2">
+                    Be an Early Bird to Enjoy the Offer
+                  </p>
                 </div>
 
                 {/* Plan Type */}
@@ -231,32 +231,47 @@ function PricingContent() {
                   <div className="text-center">
                     <p className="text-[#f4f7fd] text-xs md:text-sm mb-1 md:mb-2">LAUNCH OFFER</p>
                     <div className="flex items-baseline justify-center gap-1 md:gap-2">
-                      <span className="text-lg md:text-2xl">₹</span>
-                      <span className="text-2xl md:text-4xl font-semibold">25,000</span>
+                      <span className="text-2xl md:text-4xl font-semibold">FREE</span>
                     </div>
-                    <p className="text-[#f4f7fd] text-xs md:text-sm">+ Applicable Taxes</p>
+                    <p className="text-[#f4f7fd] text-xs md:text-sm opacity-0">-</p>
                   </div>
                 </div>
 
-                {/* CTA */}
-                <div className="text-center mb-6 md:mb-8">
-                  <p className="text-lg md:text-2xl font-medium px-2">Be an Early Bird to Enjoy the Offer</p>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-4 mb-8">
-                  {[
-                    'Installation and Demo',
-                    'Required training',
-                    'Ongoing Support & Update'
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-6">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <Check className="w-5 h-5 text-[#306bea]" />
-                      </div>
-                      <span className="text-lg font-medium">{feature}</span>
+                {/* Service Package Card - Professional Design */}
+                <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 shadow-lg">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                    <div>
+                      <h4 className="text-[#001525] text-lg md:text-xl font-semibold">Service Package</h4>
+                      <p className="text-gray-500 text-sm mt-1">One-time implementation fee</p>
                     </div>
-                  ))}
+                    <div className="text-right">
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[#306bea] text-lg">₹</span>
+                        <span className="text-[#306bea] text-2xl md:text-3xl font-bold">25,000</span>
+                      </div>
+                      <p className="text-gray-400 text-xs">+ Applicable Taxes</p>
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="space-y-4">
+                    {[
+                      { title: 'Installation & Demo', desc: 'Complete software setup and walkthrough' },
+                      { title: 'Required Training', desc: 'Comprehensive hands-on team training' },
+                      { title: 'Ongoing Support & Updates', desc: 'Dedicated assistance and regular updates' }
+                    ].map((feature, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-5 h-5 rounded-full bg-[#306bea] flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-[#001525] font-medium text-sm md:text-base">{feature.title}</p>
+                          <p className="text-gray-500 text-xs md:text-sm">{feature.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Button */}
@@ -406,15 +421,30 @@ function PricingContent() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="pb-8 md:pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6">
-          <div className="bg-[rgba(48,107,234,0.1)] border-2 border-[#b6c9f3] rounded-2xl md:rounded-full p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-3 max-w-6xl mx-auto">
-            <p className="text-lg md:text-2xl font-medium text-[#001525] text-center md:text-left">
-              Refer Power CA Pricing Policy Document
-            </p>
-            <button className="bg-[#306bea] text-white px-6 md:px-9 py-3 md:py-4 rounded-full text-base md:text-lg font-medium hover:bg-[#244b9b] transition-colors whitespace-nowrap">
-              View PDF
-            </button>
+      <div className="pb-12 md:pb-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
+          <div className="bg-white border-2 border-[#e5e7eb] rounded-3xl p-5 md:p-6 max-w-2xl mx-auto shadow-md hover:shadow-lg transition-shadow flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-7 h-7 md:w-8 md:h-8" viewBox="0 0 32 32" fill="none">
+                  <path d="M6 4C6 2.89543 6.89543 2 8 2H18L26 10V28C26 29.1046 25.1046 30 24 30H8C6.89543 30 6 29.1046 6 28V4Z" fill="#DC2626"/>
+                  <path d="M18 2L26 10H20C18.8954 10 18 9.10457 18 8V2Z" fill="#FCA5A5"/>
+                  <text x="16" y="22" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold">PDF</text>
+                </svg>
+              </div>
+              <div>
+                <p className="text-[#001525] font-semibold text-sm md:text-base">Power CA Pricing Policy</p>
+                <p className="text-gray-500 text-xs md:text-sm">View complete pricing details</p>
+              </div>
+            </div>
+            <a
+              href="/docs/PowerCA_Pricing_Agreement.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#306bea] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full text-sm font-semibold hover:bg-[#244b9b] transition-all hover:scale-105 whitespace-nowrap shadow-sm inline-block"
+            >
+              View
+            </a>
           </div>
         </div>
       </div>
