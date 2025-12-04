@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { data: posts, error } = await query
 
     if (error) {
-      console.error('Error fetching blog posts:', error)
+      logger.error('Error fetching blog posts', error)
       return NextResponse.json(
         { posts: [], error: error.message },
         { status: 200 }
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Failed to fetch blog posts:', error)
+    logger.error('Failed to fetch blog posts', error)
     return NextResponse.json(
       { posts: [], error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 200 }

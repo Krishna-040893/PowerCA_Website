@@ -3,7 +3,7 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Dia
 import { Loader2, Calendar, Search, Eye, RefreshCw, Phone, Mail, User, Clock } from 'lucide-react'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 import { format } from 'date-fns'
+import { formatPhone } from '@/lib/utils'
 
 interface Booking {
   id: string
@@ -212,7 +213,7 @@ export default function AdminBookingsPage() {
                               </div>
                               <div className="flex items-center gap-1 text-sm">
                                 <Phone className="h-3 w-3" />
-                                {booking.phone}
+                                {formatPhone(booking.phone)}
                               </div>
                             </div>
                           </TableCell>
@@ -327,7 +328,7 @@ export default function AdminBookingsPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                              <span className="text-xs text-gray-700">{booking.phone}</span>
+                              <span className="text-xs text-gray-700">{formatPhone(booking.phone)}</span>
                             </div>
                           </div>
 

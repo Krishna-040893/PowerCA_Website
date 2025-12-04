@@ -71,3 +71,28 @@ export function loadScript(src: string): Promise<boolean> {
     document.body.appendChild(script)
   })
 }
+
+/**
+ * Formats a phone number to include country code
+ *
+ * If the phone number already has a country code (starts with +), returns as-is.
+ * Otherwise, adds +91 prefix for Indian numbers.
+ *
+ * @param phone - Phone number to format
+ * @returns Formatted phone number with country code, or '-' if empty
+ *
+ * @example
+ * ```typescript
+ * formatPhone('9876543210') // Returns: '+919876543210'
+ * formatPhone('+919876543210') // Returns: '+919876543210'
+ * formatPhone('+14155551234') // Returns: '+14155551234'
+ * formatPhone('') // Returns: '-'
+ * ```
+ */
+export function formatPhone(phone: string | null | undefined): string {
+  if (!phone) return '-'
+  // If already has +, return as is (has country code)
+  if (phone.startsWith('+')) return phone
+  // Add +91 prefix for Indian numbers (default)
+  return `+91${phone}`
+}

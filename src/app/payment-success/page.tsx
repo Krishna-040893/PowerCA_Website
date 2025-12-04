@@ -211,7 +211,8 @@ function PaymentSuccessContent() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-    } catch {
+    } catch (err) {
+      console.error('Error downloading invoice:', err)
       alert('Failed to download invoice. Please try again or contact support.')
     } finally {
       setIsDownloading(false)

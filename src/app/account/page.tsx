@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,7 +25,10 @@ import {
   Save,
   Plus,
   Pencil,
-  ChevronDown
+  ChevronDown,
+  FileText,
+  Upload,
+  CheckCircle2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +73,14 @@ interface ReferralInfo {
   affiliateId: string
   status: string
   createdAt: string
+}
+
+interface AgreementStatus {
+  hasDownloaded: boolean
+  downloadedAt: string | null
+  hasUploaded: boolean
+  uploadedAt: string | null
+  filePath: string | null
 }
 
 interface SavedAddress {
@@ -326,6 +337,13 @@ function AccountPageContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 5
 
+  // Agreement document state
+  const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
+  const [isLoadingAgreement, setIsLoadingAgreement] = useState(false)
+  const [isUploadingAgreement, setIsUploadingAgreement] = useState(false)
+  const [signingMethod, setSigningMethod] = useState<'digital' | 'manual' | null>(null)
+  const agreementFileInputRef = useRef<HTMLInputElement>(null)
+
   // Handle tab change - update both state and URL
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -363,6 +381,7 @@ function AccountPageContent() {
       fetchProfilePhoto()
       fetchReferralInfo()
       fetchSavedAddresses()
+      fetchAgreementStatus()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.email])
@@ -473,6 +492,99 @@ function AccountPageContent() {
       }
     } catch (error) {
       console.error('Error fetching referral info:', error)
+    }
+  }
+
+  const fetchAgreementStatus = async () => {
+    setIsLoadingAgreement(true)
+    try {
+      const response = await fetch('/api/user/agreement')
+      const result = await response.json()
+
+      if (result.success) {
+        setAgreementStatus(result.data)
+      }
+    } catch (error) {
+      console.error('Error fetching agreement status:', error)
+    } finally {
+      setIsLoadingAgreement(false)
+    }
+  }
+
+  const handleAgreementDownload = async () => {
+    try {
+      // Record the download action
+      await fetch('/api/user/agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'download' })
+      })
+
+      // Trigger the actual download
+      const link = document.createElement('a')
+      link.href = '/docs/PowerCA-Service-Agreement.pdf'
+      link.download = 'PowerCA-Service-Agreement.pdf'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Refresh agreement status
+      await fetchAgreementStatus()
+      toast.success('Agreement downloaded successfully!')
+    } catch (error) {
+      console.error('Error downloading agreement:', error)
+      toast.error('Failed to download agreement. Please try again.')
+    }
+  }
+
+  const handleAgreementUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast.error('Please upload a PDF file only')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB')
+      return
+    }
+
+    setIsUploadingAgreement(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('signingMethod', signingMethod || 'manual')
+
+      const response = await fetch('/api/user/agreement', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        await fetchAgreementStatus()
+        toast.success('Signed agreement uploaded successfully!')
+      } else {
+        if (result.code === 'DOWNLOAD_REQUIRED') {
+          toast.error('Please download the agreement first before uploading')
+        } else {
+          toast.error(result.error || 'Failed to upload agreement')
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading agreement:', error)
+      toast.error('Failed to upload agreement. Please try again.')
+    } finally {
+      setIsUploadingAgreement(false)
+      // Reset the input
+      if (agreementFileInputRef.current) {
+        agreementFileInputRef.current.value = ''
+      }
     }
   }
 
@@ -716,7 +828,7 @@ function AccountPageContent() {
       </div>
 
       {/* Main Content */}
-      <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-8 ${showAddressForm ? 'max-w-[1400px]' : 'max-w-6xl'}`}>
+      <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-8 ${showAddressForm ? 'max-w-6xl' : 'max-w-5xl'}`}>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-2">
           {/* Individual Spaced Tabs */}
           <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
@@ -779,14 +891,33 @@ function AccountPageContent() {
 
             <Card className="shadow-lg border-0">
               <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                  Account Information
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Your personal details and account information</CardDescription>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                      Account Information
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Your personal details and account information</CardDescription>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs sm:text-sm w-fit">
+                    {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
+                  </Badge>
+                </div>
               </CardHeader>
-              <CardContent className="pt-4 sm:pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <CardContent className="pt-0">
+                {/* Account Status - At the top */}
+                <div className="mb-3 pb-3 border-b border-gray-100">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Account Status</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Your account is active and in good standing</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">Active</Badge>
+                  </div>
+                </div>
+
+                {/* Full Name, Email, Phone - Same row with equal width */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-xs sm:text-sm font-medium text-gray-700">Full Name</Label>
                     <div className="relative">
@@ -825,25 +956,262 @@ function AccountPageContent() {
                       />
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="role" className="text-xs sm:text-sm font-medium text-gray-700">Account Type</Label>
-                    <div className="relative">
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs sm:text-sm">
-                        {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
-                      </Badge>
-                    </div>
-                  </div>
                 </div>
 
-                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-100">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-gray-700">Account Status</p>
-                      <p className="text-xs sm:text-sm text-gray-500">Your account is active and in good standing</p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">Active</Badge>
+                {/* Service Agreement Section - Inside same card */}
+                <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Service Agreement</h3>
                   </div>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-6">
+                    Download, sign, and upload your service agreement document
+                  </p>
+
+                  {isLoadingAgreement ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-purple-600 mr-2" />
+                      <span className="text-gray-600">Loading agreement status...</span>
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Horizontal Progress Steps - 3 Steps */}
+                      <div className="flex items-center justify-center mb-8">
+                        {/* Step 1: Download */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            style={{
+                              backgroundColor: agreementStatus?.hasDownloaded ? '#22c55e' : 'rgb(219, 230, 252)',
+                              borderColor: agreementStatus?.hasDownloaded ? '#22c55e' : '#3b82f6',
+                              color: agreementStatus?.hasDownloaded ? 'white' : '#3b82f6'
+                            }}
+                          >
+                            {agreementStatus?.hasDownloaded ? (
+                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                            ) : (
+                              <Download className="w-5 h-5 sm:w-6 sm:h-6" />
+                            )}
+                          </div>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                            agreementStatus?.hasDownloaded ? 'text-green-600' : 'text-gray-900'
+                          }`}>
+                            Download
+                          </p>
+                        </div>
+
+                        {/* Connecting Line 1 */}
+                        <div
+                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                            agreementStatus?.hasDownloaded ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
+                          style={{ marginBottom: '24px' }}
+                        />
+
+                        {/* Step 2: Upload */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            style={{
+                              backgroundColor: agreementStatus?.hasUploaded
+                                ? '#22c55e'
+                                : agreementStatus?.hasDownloaded
+                                  ? 'rgb(219, 230, 252)'
+                                  : '#f3f4f6',
+                              borderColor: agreementStatus?.hasUploaded
+                                ? '#22c55e'
+                                : agreementStatus?.hasDownloaded
+                                  ? '#3b82f6'
+                                  : '#d1d5db',
+                              color: agreementStatus?.hasUploaded
+                                ? 'white'
+                                : agreementStatus?.hasDownloaded
+                                  ? '#3b82f6'
+                                  : '#9ca3af'
+                            }}
+                          >
+                            {agreementStatus?.hasUploaded ? (
+                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                            ) : (
+                              <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+                            )}
+                          </div>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                            agreementStatus?.hasUploaded
+                              ? 'text-green-600'
+                              : agreementStatus?.hasDownloaded
+                                ? 'text-gray-900'
+                                : 'text-gray-400'
+                          }`}>
+                            Upload
+                          </p>
+                        </div>
+
+                        {/* Connecting Line 2 */}
+                        <div
+                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                            agreementStatus?.hasUploaded ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
+                          style={{ marginBottom: '24px' }}
+                        />
+
+                        {/* Step 3: Completed */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            style={{
+                              backgroundColor: agreementStatus?.hasUploaded ? '#22c55e' : '#f3f4f6',
+                              borderColor: agreementStatus?.hasUploaded ? '#22c55e' : '#d1d5db',
+                              color: agreementStatus?.hasUploaded ? 'white' : '#9ca3af'
+                            }}
+                          >
+                            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                          </div>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                            agreementStatus?.hasUploaded ? 'text-green-600' : 'text-gray-400'
+                          }`}>
+                            Completed
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step Content */}
+                      {!agreementStatus?.hasDownloaded ? (
+                        /* Step 1 Content: Choose & Download */
+                        <div className="text-center">
+                          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-4">
+                            {/* Option 1: Digital Signature */}
+                            <div
+                              onClick={() => setSigningMethod('digital')}
+                              className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
+                              style={{
+                                backgroundColor: signingMethod === 'digital' ? 'rgb(219, 230, 252)' : '#f9fafb',
+                                borderColor: signingMethod === 'digital' ? '#3b82f6' : '#e5e7eb'
+                              }}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <div
+                                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                  style={{
+                                    borderColor: signingMethod === 'digital' ? '#3b82f6' : '#9ca3af',
+                                    backgroundColor: signingMethod === 'digital' ? '#3b82f6' : 'transparent'
+                                  }}
+                                >
+                                  {signingMethod === 'digital' && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                                  )}
+                                </div>
+                                <span className={`text-sm font-medium ${signingMethod === 'digital' ? 'text-blue-700' : 'text-gray-700'}`}>
+                                  Digital Signature
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 text-left ml-6">Use DSC token to sign digitally</p>
+                            </div>
+
+                            {/* Option 2: Manual Signature */}
+                            <div
+                              onClick={() => setSigningMethod('manual')}
+                              className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
+                              style={{
+                                backgroundColor: signingMethod === 'manual' ? 'rgb(219, 230, 252)' : '#f9fafb',
+                                borderColor: signingMethod === 'manual' ? '#3b82f6' : '#e5e7eb'
+                              }}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <div
+                                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                  style={{
+                                    borderColor: signingMethod === 'manual' ? '#3b82f6' : '#9ca3af',
+                                    backgroundColor: signingMethod === 'manual' ? '#3b82f6' : 'transparent'
+                                  }}
+                                >
+                                  {signingMethod === 'manual' && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                                  )}
+                                </div>
+                                <span className={`text-sm font-medium ${signingMethod === 'manual' ? 'text-blue-700' : 'text-gray-700'}`}>
+                                  Manual Signature
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 text-left ml-6">Print, sign & scan as PDF</p>
+                            </div>
+                          </div>
+
+                          {/* Download Button */}
+                          <Button
+                            onClick={handleAgreementDownload}
+                            disabled={!signingMethod}
+                            className={`px-8 ${
+                              signingMethod
+                                ? 'bg-blue-600 hover:bg-blue-700'
+                                : 'bg-gray-400'
+                            } text-white`}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download Agreement
+                          </Button>
+                        </div>
+                      ) : !agreementStatus?.hasUploaded ? (
+                        /* Step 2 Content: Upload signed document */
+                        <div>
+                          {/* File Upload Option */}
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-w-md mx-auto">
+                            <div
+                              className="flex flex-col items-center justify-center h-[100px] border-2 border-dashed border-gray-300 rounded-lg bg-white hover:border-purple-400 transition-colors cursor-pointer"
+                              onClick={() => agreementFileInputRef.current?.click()}
+                            >
+                              <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                              <p className="text-xs text-gray-600">Click to upload signed document</p>
+                              <p className="text-[10px] text-gray-400">PDF only, max 5MB</p>
+                            </div>
+                            <input
+                              ref={agreementFileInputRef}
+                              type="file"
+                              accept="application/pdf"
+                              onChange={handleAgreementUpload}
+                              className="hidden"
+                              id="agreement-upload"
+                            />
+                            <Button
+                              onClick={() => agreementFileInputRef.current?.click()}
+                              disabled={isUploadingAgreement}
+                              className={`w-full mt-3 ${
+                                signingMethod === 'digital'
+                                  ? 'bg-purple-600 hover:bg-purple-700'
+                                  : 'bg-blue-600 hover:bg-blue-700'
+                              } text-white`}
+                              size="sm"
+                            >
+                              {isUploadingAgreement ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Select PDF File
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Step 3 Content: Completed */
+                        <div className="text-center">
+                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300">
+                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                            <div className="text-left">
+                              <p className="font-semibold text-green-800">Agreement Completed</p>
+                              <p className="text-sm text-green-700">
+                                Signed on {formatDate(agreementStatus.uploadedAt || '')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

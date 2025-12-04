@@ -5,6 +5,7 @@ import {createClient  } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 import {toast  } from 'sonner'
 import {REGISTRATION_FORMS_TABLE  } from '@/lib/constants/tables'
+import { formatPhone } from '@/lib/utils'
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -251,7 +252,7 @@ export default function RegistrationsTable() {
                       {registration.username || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {registration.phone || '-'}
+                      {formatPhone(registration.phone)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {registration.professional_type || '-'}

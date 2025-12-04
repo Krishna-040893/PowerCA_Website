@@ -219,7 +219,8 @@ async function sendConfirmationEmail(booking: Booking) {
     })
 
     // Handle both camelCase and snake_case field names from database
-    const firmName = (booking as any).firmName || (booking as any).firm_name
+    const bookingRecord = booking as unknown as Record<string, unknown>
+    const firmName = (bookingRecord.firmName || bookingRecord.firm_name) as string | undefined
     const message = booking.message
 
     // HTML email template for customer
@@ -289,13 +290,14 @@ async function sendConfirmationEmail(booking: Booking) {
           html: customerEmailHtml,
         })
         logger.info('Customer confirmation email sent', { bookingId: booking.id, email: booking.email })
-      } catch (customerEmailError: any) {
+      } catch (customerEmailError) {
         // IMPORTANT: Never retry or fallback to contact@powerca.in
         // Just log the error and continue
+        const emailError = customerEmailError as { statusCode?: number; message?: string }
         logger.error('Failed to send customer confirmation email - no retry', customerEmailError, {
           bookingId: booking.id,
           email: booking.email,
-          errorCode: customerEmailError?.statusCode,
+          errorCode: emailError?.statusCode,
           note: 'Customer confirmation not sent to avoid team inbox duplication'
         })
         // Silently fail - team will still get notification

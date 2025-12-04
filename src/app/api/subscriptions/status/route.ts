@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -26,12 +27,15 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      // If table doesn't exist yet, return empty subscriptions array
-      if (error.code === 'PGRST205' || error.code === '42P01') {
+      // If table doesn't exist yet or relation not found, return empty subscriptions array
+      if (error.code === 'PGRST205' || error.code === '42P01' || error.code === 'PGRST204' || error.message?.includes('does not exist')) {
         return NextResponse.json({ subscriptions: [] })
       }
 
-      console.error('Error fetching subscriptions:', error)
+      // Only log actual errors, not missing table errors
+      if (error.code && !['PGRST116'].includes(error.code)) {
+        logger.error('Error fetching subscriptions', error)
+      }
       return NextResponse.json(
         { error: 'Failed to fetch subscriptions', details: error.message },
         { status: 500 }
@@ -45,11 +49,11 @@ export async function GET(_request: NextRequest) {
       (error.message.includes('fetch failed') || error.message.includes('network'))
 
     if (isNetworkError) {
-      console.warn('Network error fetching subscriptions - returning empty array')
+      logger.warn('Network error fetching subscriptions - returning empty array')
       return NextResponse.json({ subscriptions: [] })
     }
 
-    console.error('Unexpected error in subscriptions API:', error)
+    logger.error('Unexpected error in subscriptions API', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

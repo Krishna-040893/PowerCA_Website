@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 // GET /api/user/purchased-addresses - Get list of address IDs that have been purchased
 export async function GET() {
@@ -25,7 +26,7 @@ export async function GET() {
       .eq('status', 'captured')
 
     if (error) {
-      console.error('Error fetching purchased addresses:', error)
+      logger.error('Error fetching purchased addresses', error)
       return NextResponse.json(
         { success: false, error: 'Failed to fetch purchased addresses' },
         { status: 500 }
@@ -78,7 +79,7 @@ export async function GET() {
       purchasedAddressIds
     })
   } catch (error) {
-    console.error('Error in GET /api/user/purchased-addresses:', error)
+    logger.error('Error in GET /api/user/purchased-addresses', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

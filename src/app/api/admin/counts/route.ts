@@ -21,6 +21,7 @@ export async function GET(_request: NextRequest) {
           registrations: 0,
           affiliates: 0,
           pendingApprovals: 0,
+          approvedAffiliates: 0,
           referrals: 0,
           pendingPayments: 0,
           payments: 0,
@@ -45,6 +46,7 @@ export async function GET(_request: NextRequest) {
       registrationsResult,
       affiliatesResult,
       pendingApprovalsResult,
+      approvedAffiliatesResult,
       referralsResult,
       pendingPaymentsResult,
       paymentsResult,
@@ -72,6 +74,12 @@ export async function GET(_request: NextRequest) {
         .from('affiliate_registrations')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending'),
+
+      // Approved affiliates count
+      supabase
+        .from('affiliate_registrations')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'approved'),
 
       // Total affiliate referrals count
       supabase
@@ -111,6 +119,7 @@ export async function GET(_request: NextRequest) {
       registrations: registrationsResult.status === 'fulfilled' ? (registrationsResult.value.count || 0) : 0,
       affiliates: affiliatesResult.status === 'fulfilled' ? (affiliatesResult.value.count || 0) : 0,
       pendingApprovals: pendingApprovalsResult.status === 'fulfilled' ? (pendingApprovalsResult.value.count || 0) : 0,
+      approvedAffiliates: approvedAffiliatesResult.status === 'fulfilled' ? (approvedAffiliatesResult.value.count || 0) : 0,
       referrals: referralsResult.status === 'fulfilled' ? (referralsResult.value.count || 0) : 0,
       pendingPayments: pendingPaymentsResult.status === 'fulfilled' ? (pendingPaymentsResult.value.count || 0) : 0,
       payments: paymentsResult.status === 'fulfilled' ? (paymentsResult.value.count || 0) : 0,
@@ -129,6 +138,7 @@ export async function GET(_request: NextRequest) {
         registrations: 0,
         affiliates: 0,
         pendingApprovals: 0,
+        approvedAffiliates: 0,
         referrals: 0,
         pendingPayments: 0,
         payments: 0,

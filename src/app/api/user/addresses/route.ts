@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 // Common spelling corrections for Indian cities
 const citySpellingCorrections: Record<string, string> = {
@@ -68,7 +69,7 @@ export async function GET() {
       .order('created_at', { ascending: true })
 
     if (error) {
-      console.error('Error fetching addresses:', error)
+      logger.error('Error fetching addresses', error)
       return NextResponse.json(
         { success: false, error: 'Failed to fetch addresses' },
         { status: 500 }
@@ -80,7 +81,7 @@ export async function GET() {
       addresses: addresses || []
     })
   } catch (error) {
-    console.error('Error in GET /api/user/addresses:', error)
+    logger.error('Error in GET /api/user/addresses', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -155,7 +156,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating address:', error)
+      logger.error('Error creating address', error)
       return NextResponse.json(
         { success: false, error: 'Failed to create address' },
         { status: 500 }
@@ -167,7 +168,7 @@ export async function POST(request: Request) {
       address: newAddress
     })
   } catch (error) {
-    console.error('Error in POST /api/user/addresses:', error)
+    logger.error('Error in POST /api/user/addresses', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

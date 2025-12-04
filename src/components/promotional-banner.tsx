@@ -36,9 +36,8 @@ export default function PromotionalBanner() {
           {/* Promotional text - responsive */}
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
             <span className="text-white font-medium text-[11px] sm:text-sm">
-              Special discount 50% off CAs
+              Launch Offer – Free for CAs
             </span>
-            <span className="text-slate-300 italic text-[10px] hidden sm:inline">(Till 30th Nov 2025)</span>
           </div>
 
           {/* Click Here button - compact on mobile */}

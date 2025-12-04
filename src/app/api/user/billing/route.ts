@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 /**
  * PUT /api/user/billing
@@ -62,7 +63,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error updating billing information:', error)
+      logger.error('Error updating billing information', error)
       return NextResponse.json(
         { error: 'Failed to update billing information' },
         { status: 500 }
@@ -83,7 +84,7 @@ export async function PUT(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Billing update error:', error)
+    logger.error('Billing update error', error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Internal server error'

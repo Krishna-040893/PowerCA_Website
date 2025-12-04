@@ -25,25 +25,25 @@ export function AdminPageWrapper({
 }: AdminPageWrapperProps) {
   return (
     <AdminSidebarLayout>
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-2">
         {/* Page Header - Mobile optimized */}
         {(title || description || actions || stats) && (
-          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow-sm p-2 sm:p-3">
             {/* Header Row - Title & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${stats && stats.length > 0 ? 'mb-2' : ''}`}>
               {/* Title & Description */}
               <div className="text-center sm:text-left">
                 {title && (
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h1>
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">{title}</h1>
                 )}
                 {description && (
-                  <p className="mt-1 text-xs sm:text-sm text-gray-600">{description}</p>
+                  <p className="text-xs text-gray-600">{description}</p>
                 )}
               </div>
 
               {/* Actions */}
               {actions && (
-                <div className="flex items-center justify-center sm:justify-end space-x-2 sm:space-x-3">
+                <div className="flex items-center justify-center sm:justify-end space-x-2">
                   {actions}
                 </div>
               )}
@@ -51,11 +51,11 @@ export function AdminPageWrapper({
 
             {/* Stats Row - All in one line */}
             {stats && stats.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 {stats.map((stat, index) => (
                   <div
                     key={index}
-                    className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold ${
+                    className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold ${
                       stat.color || 'bg-blue-100 text-blue-800'
                     }`}
                   >

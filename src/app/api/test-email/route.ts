@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -23,8 +24,7 @@ export async function GET() {
       result
     })
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('❌ Test email failed:', error)
+    logger.error('Test email failed', error)
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
