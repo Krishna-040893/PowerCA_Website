@@ -463,7 +463,7 @@ function PaymentSuccessContent() {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-right font-medium">
-                          {invoiceData.discount_info?.original_amount ? (
+                          {invoiceData.discount_info?.original_amount && invoiceData.discount_info.discount_percentage > 0 ? (
                             <div>
                               <span className="text-gray-400 line-through text-sm block">
                                 {formatCurrency(invoiceData.discount_info.original_amount)}

@@ -27,6 +27,7 @@ import { AdminPagination } from '@/components/admin/admin-pagination'
 
 interface AffiliatePayment {
   id: string
+  referral_id?: string
   referral_code: string
   customer_id: string
   affiliate_id: string
@@ -44,7 +45,14 @@ interface AffiliatePayment {
   payment_status: string
   payment_completed_at: string
   created_at: string
-  affiliate_referrals: {
+  payment_count?: number
+  paid_count?: number
+  pending_count?: number
+  paid_commission?: number
+  pending_commission?: number
+  is_partially_paid?: boolean
+  affiliate_referrals?: {
+    id?: string
     referral_code: string
     customer_id: string
     referred_email: string
@@ -131,15 +139,50 @@ export default function AffiliatePaymentsPage() {
 
     try {
       setSubmitting(true)
+
+      // Check if this is an email-matched payment (needs full data to create record)
+      const isEmailMatched = selectedPayment.id.startsWith('email-match-')
+
+      const requestBody: Record<string, unknown> = {
+        paymentId: selectedPayment.id,
+        commissionPaid: true,
+        paymentMode,
+        paymentDate
+      }
+
+      // For email-matched payments or partial payments, send full payment data
+      if (isEmailMatched || (selectedPayment.pending_count && selectedPayment.pending_count > 0)) {
+        // For partial payments (existing record with new pending orders), we need to update
+        const isPartialPayment = selectedPayment.pending_count && selectedPayment.pending_count > 0 && selectedPayment.paid_count && selectedPayment.paid_count > 0
+
+        requestBody.paymentData = {
+          referral_id: selectedPayment.affiliate_referrals?.id || selectedPayment.referral_id,
+          referral_code: selectedPayment.referral_code,
+          affiliate_id: selectedPayment.affiliate_id,
+          customer_id: selectedPayment.customer_id,
+          order_id: selectedPayment.order_id,
+          payment_id: selectedPayment.payment_id,
+          customer_name: selectedPayment.customer_name,
+          customer_email: selectedPayment.customer_email,
+          customer_phone: selectedPayment.customer_phone,
+          customer_firm_name: selectedPayment.customer_firm_name,
+          payment_amount: selectedPayment.payment_amount,
+          // For partial payments, only pay the pending commission
+          commission_amount: isPartialPayment ? selectedPayment.pending_commission : selectedPayment.commission_amount,
+          commission_rate: selectedPayment.commission_rate,
+          payment_completed_at: selectedPayment.payment_completed_at,
+          // For partial payments, add new count to existing
+          payment_count: selectedPayment.payment_count || 1,
+          pending_count: selectedPayment.pending_count || 0,
+          paid_count: selectedPayment.paid_count || 0,
+          is_partial_payment: isPartialPayment
+        }
+      }
+
       const response = await fetch('/api/admin/affiliate-payments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentId: selectedPayment.id,
-          commissionPaid: true,
-          paymentMode,
-          paymentDate
-        })
+        body: JSON.stringify(requestBody)
       })
 
       const data = await response.json()
@@ -221,44 +264,40 @@ export default function AffiliatePaymentsPage() {
       }
     >
       <div>
-        {/* Filters and Actions - Enhanced Mobile */}
-        <Card className="mb-5 shadow-sm border border-gray-100">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search payments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <Select value={statusFilter} onValueChange={(value) => {
-                setStatusFilter(value)
-              }}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200 bg-white">
-                  <SelectValue placeholder="Filter by status">
-                    {statusFilter === 'all' && 'All Statuses'}
-                    {statusFilter === 'completed' && 'Paid'}
-                    {statusFilter === 'pending' && 'Pending'}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-white z-50">
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="completed">Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Payments Table */}
         <Card className="shadow-sm border border-gray-100">
-          <CardContent className="p-0">
+          <CardContent>
+            {/* Filters and Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    type="text"
+                    placeholder="Search payments..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <Select value={statusFilter} onValueChange={(value) => {
+                  setStatusFilter(value)
+                }}>
+                  <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200 bg-white">
+                    <SelectValue placeholder="Filter by status">
+                      {statusFilter === 'all' && 'All Statuses'}
+                      {statusFilter === 'completed' && 'Paid'}
+                      {statusFilter === 'pending' && 'Pending'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50">
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="completed">Paid</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <RefreshCw className="w-6 h-6 animate-spin text-blue-500 mr-2" />
@@ -287,8 +326,8 @@ export default function AffiliatePaymentsPage() {
                   <th className="px-6 py-3 text-left text-base font-bold">
                     Referral Info
                   </th>
-                  <th className="px-6 py-3 text-left text-base font-bold">
-                    Amount
+                  <th className="px-6 py-3 text-center text-base font-bold">
+                    Orders
                   </th>
                   <th className="px-6 py-3 text-left text-base font-bold">
                     Commission
@@ -331,21 +370,53 @@ export default function AffiliatePaymentsPage() {
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {formatCurrency(payment.payment_amount)}
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                            {payment.payment_count || 1}
+                          </span>
+                          {(payment.paid_count !== undefined && payment.pending_count !== undefined && payment.pending_count > 0) && (
+                            <span className="text-xs text-gray-500">
+                              {payment.paid_count} paid + {payment.pending_count} new
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <div>
-                          <p className="font-bold text-green-600">
-                            {formatCurrency(payment.commission_amount)}
-                          </p>
+                        <div className="space-y-1">
+                          {payment.paid_commission !== undefined && payment.paid_commission > 0 && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-green-600" />
+                              <span className="font-bold text-green-600">
+                                {formatCurrency(payment.paid_commission)}
+                              </span>
+                            </div>
+                          )}
+                          {payment.pending_commission !== undefined && payment.pending_commission > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-orange-500" />
+                              <span className="font-bold text-orange-600">
+                                {formatCurrency(payment.pending_commission)}
+                              </span>
+                            </div>
+                          )}
+                          {(!payment.paid_commission && !payment.pending_commission) && (
+                            <p className="font-bold text-green-600">
+                              {formatCurrency(payment.commission_amount)}
+                            </p>
+                          )}
                           <p className="text-xs text-gray-500">
                             ({payment.commission_rate}%)
                           </p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {payment.commission_paid ? (
+                        {payment.pending_count && payment.pending_count > 0 ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {payment.paid_count && payment.paid_count > 0 ? 'Partial' : 'Pending'}
+                          </span>
+                        ) : payment.commission_paid ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Paid
@@ -358,15 +429,17 @@ export default function AffiliatePaymentsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {!payment.commission_paid && (
+                        {(payment.pending_count && payment.pending_count > 0) || !payment.commission_paid ? (
                           <Button
                             size="sm"
                             onClick={() => handleMarkPaidClick(payment)}
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >
-                            Mark Paid
+                            {payment.pending_count && payment.pending_count > 0
+                              ? `Pay ₹${payment.pending_commission?.toLocaleString('en-IN')}`
+                              : 'Mark Paid'}
                           </Button>
-                        )}
+                        ) : null}
                       </td>
                     </tr>
                   ))
@@ -396,7 +469,12 @@ export default function AffiliatePaymentsPage() {
                                 </div>
                               </div>
                             </div>
-                            {payment.commission_paid ? (
+                            {payment.pending_count && payment.pending_count > 0 ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 flex-shrink-0">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {payment.paid_count && payment.paid_count > 0 ? 'Partial' : 'Pending'}
+                              </span>
+                            ) : payment.commission_paid ? (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 flex-shrink-0">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Paid
@@ -412,13 +490,36 @@ export default function AffiliatePaymentsPage() {
                           {/* Payment Info - Compact */}
                           <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-500">Payment Amount:</span>
-                              <span className="text-gray-900 font-bold">{formatCurrency(payment.payment_amount)}</span>
+                              <span className="text-gray-500">Orders:</span>
+                              <div className="flex flex-col items-end">
+                                <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                                  {payment.payment_count || 1}
+                                </span>
+                                {(payment.paid_count !== undefined && payment.pending_count !== undefined && payment.pending_count > 0) && (
+                                  <span className="text-[10px] text-gray-500 mt-0.5">
+                                    {payment.paid_count} paid + {payment.pending_count} new
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-500">Commission ({payment.commission_rate}%):</span>
-                              <span className="text-green-700 font-bold">{formatCurrency(payment.commission_amount)}</span>
-                            </div>
+                            {payment.paid_commission !== undefined && payment.paid_commission > 0 && (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Paid Commission:</span>
+                                <span className="text-green-700 font-bold">{formatCurrency(payment.paid_commission)}</span>
+                              </div>
+                            )}
+                            {payment.pending_commission !== undefined && payment.pending_commission > 0 && (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Pending Commission:</span>
+                                <span className="text-orange-600 font-bold">{formatCurrency(payment.pending_commission)}</span>
+                              </div>
+                            )}
+                            {(!payment.paid_commission && !payment.pending_commission) && (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Commission ({payment.commission_rate}%):</span>
+                                <span className="text-green-700 font-bold">{formatCurrency(payment.commission_amount)}</span>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Affiliate ID:</span>
                               <code className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-mono">
@@ -440,14 +541,16 @@ export default function AffiliatePaymentsPage() {
                           </div>
 
                           {/* Mark Paid Button */}
-                          {!payment.commission_paid && (
+                          {((payment.pending_count && payment.pending_count > 0) || !payment.commission_paid) && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkPaidClick(payment)}
                               className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              Mark as Paid
+                              {payment.pending_count && payment.pending_count > 0
+                                ? `Pay ₹${payment.pending_commission?.toLocaleString('en-IN')}`
+                                : 'Mark as Paid'}
                             </Button>
                           )}
                         </div>

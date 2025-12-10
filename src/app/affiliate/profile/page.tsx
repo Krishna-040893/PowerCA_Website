@@ -320,7 +320,7 @@ export default function AffiliateProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-gray-50">
+    <div className="bg-gradient-to-b from-green-50 via-white to-gray-50">
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3">
@@ -366,7 +366,7 @@ export default function AffiliateProfilePage() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 max-w-6xl">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-8 pt-4 sm:pt-8 pb-2 sm:pb-4 max-w-6xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
           {/* Individual Spaced Tabs - responsive */}
           <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
@@ -430,7 +430,7 @@ export default function AffiliateProfilePage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {/* Full Name */}
                   <div className="space-y-1">
                     <Label className="text-sm font-medium text-gray-700">Full Name</Label>
@@ -636,8 +636,8 @@ export default function AffiliateProfilePage() {
                     )}
                   </div>
 
-                  {/* Promotion Method & Target Audience - Same Line */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {/* Promotion Method, Target Audience & Monthly Leads - 3 Columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Promotion Method */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">Promotion Method</Label>
@@ -671,19 +671,22 @@ export default function AffiliateProfilePage() {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Monthly Leads */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Expected Monthly Referrals</Label>
-                    <div className="relative">
-                      <TrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                        value={isEditingAffiliate ? editedData?.monthly_leads || '' : affiliateData.monthly_leads || 'N/A'}
-                        onChange={(e) => setEditedData(prev => prev ? { ...prev, monthly_leads: e.target.value } : null)}
-                        disabled={!isEditingAffiliate}
-                        className={`pl-10 ${isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'}`}
-                      />
+                    {/* Monthly Leads */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">Expected Monthly Referrals</Label>
+                      <div className="relative">
+                        <TrendingUp className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                        <textarea
+                          value={isEditingAffiliate ? editedData?.monthly_leads || '' : affiliateData.monthly_leads || 'N/A'}
+                          onChange={(e) => setEditedData(prev => prev ? { ...prev, monthly_leads: e.target.value } : null)}
+                          disabled={!isEditingAffiliate}
+                          rows={4}
+                          className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${
+                            isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

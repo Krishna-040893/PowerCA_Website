@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/pagination"
 import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, Clock, XCircle, User, Mail } from 'lucide-react'
 
-interface PaymentOrder {
+interface IndividualOrder {
   id: string
   order_id: string
   amount: number
@@ -48,17 +48,40 @@ interface PaymentOrder {
   is_affiliate_purchase: boolean
   created_at: string
   updated_at: string
-  // Discount fields
   discount_percentage: number | null
   discount_amount: number | null
   original_amount: number | null
-  // Location fields
-  location: string | null  // Label field from user_addresses (e.g., "Udumalpet, Tamil Nadu")
+  location: string | null
   customer_address: string | null
   customer_city: string | null
   customer_state: string | null
   customer_postcode: string | null
   customer_country: string | null
+}
+
+interface PaymentOrder {
+  id: string
+  customer_email: string | null
+  customer_name: string | null
+  customer_phone: string | null
+  company: string | null
+  firm_names: string[]
+  gst_number: string | null
+  total_amount: number
+  total_orders: number
+  locations: string[]
+  statuses: string[]
+  is_affiliate_purchase: boolean
+  referral_code: string | null
+  latest_order: IndividualOrder
+  all_orders: IndividualOrder[]
+  // Backward compatibility
+  order_id: string
+  amount: number
+  currency: string
+  status: string
+  created_at: string
+  updated_at: string
 }
 
 export default function PaymentOrdersPage() {
@@ -190,10 +213,11 @@ export default function PaymentOrdersPage() {
   }
 
   const stats = {
-    total: filteredOrders.length,
-    paid: orders.filter(o => o.status === 'paid').length,
-    created: orders.filter(o => o.status === 'created').length,
-    totalAmount: filteredOrders.reduce((sum, o) => sum + o.amount, 0),
+    totalCustomers: filteredOrders.length,
+    total: orders.flatMap(o => o.all_orders || []).length,
+    paid: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'paid').length,
+    created: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'created').length,
+    totalAmount: filteredOrders.reduce((sum, o) => sum + o.total_amount, 0),
   }
 
   return (
@@ -201,23 +225,14 @@ export default function PaymentOrdersPage() {
       title="Payment Orders"
       description="Manage and track all payment orders"
       stats={[
-        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
+        { label: 'Customers', value: stats.totalCustomers, color: 'bg-purple-100 text-purple-800' },
+        { label: 'Orders', value: stats.total, color: 'bg-blue-100 text-blue-800' },
         { label: 'Paid', value: stats.paid, color: 'bg-green-100 text-green-800' },
-        { label: 'Created', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
         { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-indigo-100 text-indigo-800' }
       ]}
     >
       {/* Orders Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
-        {/* <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
-            <ShoppingCart className="h-5 w-5" />
-            Payment Orders ({filteredOrders.length})
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm mt-1">
-            All payment orders
-          </CardDescription>
-        </CardHeader> */}
         <CardContent>
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
@@ -242,8 +257,6 @@ export default function PaymentOrdersPage() {
             </Select>
           </div>
 
-        </CardContent>
-        <CardContent>
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -262,14 +275,13 @@ export default function PaymentOrdersPage() {
                 <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="px-6 py-3 text-left text-base font-bold">Order ID</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Customer</th>
-                    <th className="px-6 py-3 text-left text-base font-bold">Firm Name</th>
-                    <th className="px-6 py-3 text-left text-base font-bold">Amount</th>
-                    <th className="px-6 py-3 text-left text-base font-bold">Discount</th>
+                    <th className="px-6 py-3 text-center text-base font-bold">Orders</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Locations</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Total Amount</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Status</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Affiliate</th>
-                    <th className="px-6 py-3 text-left text-base font-bold">Created</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Last Order</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Actions</th>
                   </tr>
                 </thead>
@@ -277,47 +289,34 @@ export default function PaymentOrdersPage() {
                   {currentOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
-                        <div className="text-sm font-mono text-gray-900">{order.order_id}</div>
-                      </td>
-                      <td className="px-4 py-3">
                         <div className="text-sm font-medium text-gray-900">{order.customer_name || 'N/A'}</div>
                         <div className="text-xs text-gray-500">{order.customer_email || 'N/A'}</div>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">{order.firm_name || order.company || 'N/A'}</div>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                          {order.total_orders}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm font-medium text-gray-900 flex items-center">
+                        <p className="text-sm text-blue-600 font-medium max-w-[200px]">
+                          {order.locations && order.locations.length > 0
+                            ? order.locations.join(', ')
+                            : <span className="text-gray-400">-</span>
+                          }
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-bold text-green-600 flex items-center">
                           <IndianRupee className="h-3 w-3" />
-                          {order.amount.toFixed(2)}
+                          {order.total_amount.toFixed(2)}
                         </div>
-                        {order.location && (
-                          <div className="text-xs text-blue-600 font-medium mt-0.5">
-                            {order.location}
-                          </div>
-                        )}
                       </td>
                       <td className="px-4 py-3">
-                        {(order.discount_percentage !== null && order.discount_percentage !== undefined && Number(order.discount_percentage) > 0) ? (
-                          <div>
-                            <div className="text-sm font-medium text-orange-600">
-                              {order.discount_percentage}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              -₹{Number(order.discount_amount || 0).toFixed(2)}
-                            </div>
-                            {order.original_amount && (
-                              <div className="text-xs text-green-600 font-medium">
-                                ₹{(Number(order.original_amount) - Number(order.discount_amount || 0)).toFixed(2)}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {getStatusBadge(order.status)}
+                        <div className="flex flex-wrap gap-1">
+                          {order.statuses && order.statuses.map((status, idx) => (
+                            <span key={idx}>{getStatusBadge(status)}</span>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         {order.is_affiliate_purchase ? (
@@ -347,7 +346,7 @@ export default function PaymentOrdersPage() {
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          View All
                         </Button>
                       </td>
                     </tr>
@@ -362,7 +361,7 @@ export default function PaymentOrdersPage() {
                   <Card key={order.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="space-y-3">
-                        {/* Header: Customer Name, Amount, Status */}
+                        {/* Header: Customer Name, Amount, Orders count */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -371,44 +370,40 @@ export default function PaymentOrdersPage() {
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="font-semibold text-sm text-gray-900 truncate">{order.customer_name || 'N/A'}</p>
-                                {order.firm_name && (
-                                  <p className="text-xs text-gray-500 truncate">{order.firm_name}</p>
-                                )}
+                                <p className="text-xs text-gray-500 truncate mt-0.5">{order.customer_email}</p>
                               </div>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                            <p className="font-bold text-base whitespace-nowrap flex items-center">
+                            <p className="font-bold text-base text-green-600 whitespace-nowrap flex items-center">
                               <IndianRupee className="h-3 w-3" />
-                              {order.amount.toFixed(2)}
+                              {order.total_amount.toFixed(2)}
                             </p>
-                            {getStatusBadge(order.status)}
+                            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                              {order.total_orders} orders
+                            </span>
                           </div>
                         </div>
 
-                        {/* Order ID */}
-                        <div className="bg-gray-50 rounded-lg p-2.5">
-                          <div className="flex items-center gap-2">
-                            <ShoppingCart className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs text-gray-500">Order ID</p>
-                              <p className="text-xs font-mono text-gray-900 truncate">{order.order_id}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Customer Email */}
-                        {order.customer_email && (
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                            <span className="text-xs text-gray-700 truncate">{order.customer_email}</span>
+                        {/* Locations */}
+                        {order.locations && order.locations.length > 0 && (
+                          <div className="bg-gray-50 rounded-lg p-2.5">
+                            <p className="text-xs text-gray-500 mb-1">Locations:</p>
+                            <p className="text-sm text-blue-600 font-medium">{order.locations.join(', ')}</p>
                           </div>
                         )}
+
+                        {/* Statuses */}
+                        <div className="flex flex-wrap gap-1">
+                          {order.statuses && order.statuses.map((status, idx) => (
+                            <span key={idx}>{getStatusBadge(status)}</span>
+                          ))}
+                        </div>
 
                         {/* Date and Affiliate */}
                         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                           <span className="text-xs text-gray-500">
-                            {formatDate(order.created_at)}
+                            Last order: {formatDate(order.created_at)}
                           </span>
                           {order.is_affiliate_purchase && (
                             <Badge variant="outline" className="text-xs text-green-600 border-green-600">
@@ -424,7 +419,7 @@ export default function PaymentOrdersPage() {
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                         >
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          View All Orders
                         </Button>
                       </div>
                     </CardContent>
@@ -492,182 +487,103 @@ export default function PaymentOrdersPage() {
 
       {/* View Details Dialog - Enhanced */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto bg-white rounded-xl">
+        <DialogContent className="max-w-[90vw] sm:max-w-3xl max-h-[80vh] overflow-y-auto bg-white rounded-xl">
           <DialogHeader className="border-b pb-3">
-            <DialogTitle className="text-lg font-bold">Order Details</DialogTitle>
-            <DialogDescription className="text-xs text-gray-500">Complete information about this payment order</DialogDescription>
+            <DialogTitle className="text-lg font-bold">Customer Order Details</DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              {selectedOrder?.customer_name} - {selectedOrder?.customer_email}
+            </DialogDescription>
           </DialogHeader>
 
           {selectedOrder && (
             <div className="space-y-4">
-              {/* Order Information */}
+              {/* Customer Summary */}
               <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-sm text-gray-700 mb-3">Order Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-600">Order ID:</span>
-                    <p className="font-mono font-medium">{selectedOrder.order_id}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Status:</span>
-                    <div className="mt-1">{getStatusBadge(selectedOrder.status)}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Amount:</span>
-                    <p className="font-medium flex items-center">
-                      <IndianRupee className="h-3 w-3" />
-                      {selectedOrder.amount.toFixed(2)} {selectedOrder.currency}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Created:</span>
-                    <p className="font-medium">{formatDate(selectedOrder.created_at)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Customer Information */}
-              <div className="bg-green-50 rounded-lg p-4">
-                <h3 className="font-semibold text-sm text-gray-700 mb-3">Customer Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <h3 className="font-semibold text-sm text-blue-800 mb-3">Customer Summary</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                   <div>
                     <span className="text-gray-600">Name:</span>
                     <p className="font-medium">{selectedOrder.customer_name || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">Email:</span>
-                    <p className="font-medium">{selectedOrder.customer_email || 'N/A'}</p>
+                    <p className="font-medium break-all text-xs">{selectedOrder.customer_email || 'N/A'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Phone:</span>
-                    <p className="font-medium">{selectedOrder.customer_phone || 'N/A'}</p>
+                    <span className="text-gray-600">Total Orders:</span>
+                    <p className="font-bold text-blue-600">{selectedOrder.total_orders}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Customer ID:</span>
-                    <p className="font-medium">{selectedOrder.customer_id || 'N/A'}</p>
+                    <span className="text-gray-600">Total Amount:</span>
+                    <p className="font-bold text-green-600 flex items-center">
+                      <IndianRupee className="h-3 w-3" />
+                      {selectedOrder.total_amount.toFixed(2)}
+                    </p>
                   </div>
+                  {selectedOrder.gst_number && (
+                    <div>
+                      <span className="text-gray-600">GST:</span>
+                      <p className="font-medium font-mono">{selectedOrder.gst_number}</p>
+                    </div>
+                  )}
+                  {selectedOrder.customer_phone && (
+                    <div>
+                      <span className="text-gray-600">Phone:</span>
+                      <p className="font-medium">{selectedOrder.customer_phone}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Business Information */}
-              <div className="bg-purple-50 rounded-lg p-4">
-                <h3 className="font-semibold text-sm text-gray-700 mb-3">Business Information</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-600">Firm Name:</span>
-                    <p className="font-medium">{selectedOrder.firm_name || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">GST Number:</span>
-                    <p className="font-medium font-mono">{selectedOrder.gst_number || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Discount Information */}
-              {(selectedOrder.discount_percentage || selectedOrder.discount_amount) && (
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-sm text-gray-700 mb-3">Discount Information</h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {selectedOrder.discount_percentage && (
-                      <div>
-                        <span className="text-gray-600">Discount Percentage:</span>
-                        <p className="font-medium text-orange-600">{selectedOrder.discount_percentage}%</p>
-                      </div>
-                    )}
-                    {selectedOrder.original_amount && (
-                      <div>
-                        <span className="text-gray-600">Original Price:</span>
-                        <p className="font-medium flex items-center">
-                          <IndianRupee className="h-3 w-3" />
-                          {selectedOrder.original_amount.toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-                    {selectedOrder.discount_amount && (
-                      <div>
-                        <span className="text-gray-600">Discount Amount:</span>
-                        <p className="font-medium text-red-600 flex items-center">
-                          -<IndianRupee className="h-3 w-3" />
-                          {selectedOrder.discount_amount.toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-                    {selectedOrder.original_amount && selectedOrder.discount_amount && (
-                      <div>
-                        <span className="text-gray-600">Discounted Price:</span>
-                        <p className="font-bold text-green-600 flex items-center">
-                          <IndianRupee className="h-3 w-3" />
-                          {(selectedOrder.original_amount - selectedOrder.discount_amount).toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Location Information */}
-              {(selectedOrder.location || selectedOrder.customer_city || selectedOrder.customer_state || selectedOrder.customer_address) && (
-                <div className="bg-indigo-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-sm text-gray-700">Location (Place of Purchase)</h3>
-                    {selectedOrder.location && (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500 text-white">
-                        {selectedOrder.location}
-                      </span>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {selectedOrder.customer_address && (
-                      <div className="col-span-2">
-                        <span className="text-gray-600">Address:</span>
-                        <p className="font-medium">{selectedOrder.customer_address}</p>
-                      </div>
-                    )}
-                    {selectedOrder.customer_city && (
-                      <div>
-                        <span className="text-gray-600">City:</span>
-                        <p className="font-medium">{selectedOrder.customer_city}</p>
-                      </div>
-                    )}
-                    {selectedOrder.customer_state && (
-                      <div>
-                        <span className="text-gray-600">State:</span>
-                        <p className="font-medium">{selectedOrder.customer_state}</p>
-                      </div>
-                    )}
-                    {selectedOrder.customer_postcode && (
-                      <div>
-                        <span className="text-gray-600">Postcode:</span>
-                        <p className="font-medium">{selectedOrder.customer_postcode}</p>
-                      </div>
-                    )}
-                    {selectedOrder.customer_country && (
-                      <div>
-                        <span className="text-gray-600">Country:</span>
-                        <p className="font-medium">{selectedOrder.customer_country}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Affiliate Information */}
+              {/* Affiliate Info */}
               {selectedOrder.is_affiliate_purchase && (
-                <div className="bg-yellow-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-sm text-gray-700 mb-3">Affiliate Information</h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-gray-600">Affiliate Purchase:</span>
-                      <p className="font-medium text-green-600">Yes</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Referral Code:</span>
-                      <p className="font-medium font-mono">{selectedOrder.referral_code || 'N/A'}</p>
-                    </div>
+                <div className="bg-yellow-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-green-600 border-green-600">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Affiliate Purchase
+                    </Badge>
+                    {selectedOrder.referral_code && (
+                      <span className="text-xs text-gray-600">Referral Code: <span className="font-mono font-medium">{selectedOrder.referral_code}</span></span>
+                    )}
                   </div>
                 </div>
               )}
+
+              {/* All Orders List */}
+              <div className="border rounded-lg">
+                <h4 className="font-medium p-3 bg-gray-50 border-b">All Orders ({selectedOrder.all_orders?.length || 0})</h4>
+                <div className="divide-y max-h-[300px] overflow-y-auto">
+                  {selectedOrder.all_orders?.map((o, idx) => (
+                    <div key={idx} className="p-3 hover:bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-mono text-xs text-gray-600">{o.order_id}</p>
+                          {o.firm_name && (
+                            <p className="text-sm font-medium text-gray-900">{o.firm_name}</p>
+                          )}
+                          {o.location && (
+                            <p className="text-sm text-blue-600">{o.location}</p>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold flex items-center justify-end">
+                            <IndianRupee className="h-3 w-3" />
+                            {o.amount.toFixed(2)}
+                          </p>
+                          {getStatusBadge(o.status)}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                        <span>{new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                        {o.discount_percentage && Number(o.discount_percentage) > 0 && (
+                          <span className="text-orange-600">{o.discount_percentage}% off</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>

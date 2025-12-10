@@ -81,6 +81,7 @@ interface AgreementStatus {
   hasUploaded: boolean
   uploadedAt: string | null
   filePath: string | null
+  signingMethod: 'digital' | 'manual' | null
 }
 
 interface SavedAddress {
@@ -503,6 +504,10 @@ function AccountPageContent() {
 
       if (result.success) {
         setAgreementStatus(result.data)
+        // Restore the signing method if user has already downloaded
+        if (result.data.signingMethod) {
+          setSigningMethod(result.data.signingMethod)
+        }
       }
     } catch (error) {
       console.error('Error fetching agreement status:', error)
@@ -512,18 +517,32 @@ function AccountPageContent() {
   }
 
   const handleAgreementDownload = async () => {
+    if (!signingMethod) {
+      toast.error('Please select a signing method first')
+      return
+    }
+
     try {
-      // Record the download action
+      // Record the download action with signing method
       await fetch('/api/user/agreement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'download' })
+        body: JSON.stringify({ action: 'download', signingMethod })
       })
+
+      // Determine which document to download based on signing method
+      const documentPath = signingMethod === 'digital'
+        ? '/docs/PowerCA_Pricing_Agreement_DSC.pdf'
+        : '/docs/PowerCA_Pricing_Agreement.pdf'
+
+      const documentName = signingMethod === 'digital'
+        ? 'PowerCA_Pricing_Agreement_DSC.pdf'
+        : 'PowerCA_Pricing_Agreement.pdf'
 
       // Trigger the actual download
       const link = document.createElement('a')
-      link.href = '/docs/PowerCA-Service-Agreement.pdf'
-      link.download = 'PowerCA-Service-Agreement.pdf'
+      link.href = documentPath
+      link.download = documentName
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -890,16 +909,16 @@ function AccountPageContent() {
             )}
 
             <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <User className="h-4 w-4 text-blue-600" />
                       Account Information
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Your personal details and account information</CardDescription>
+                    <CardDescription className="text-xs">Your personal details and account information</CardDescription>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs sm:text-sm w-fit">
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs w-fit">
                     {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
                   </Badge>
                 </div>
@@ -1245,8 +1264,9 @@ function AccountPageContent() {
               }
             `}</style>
 
-            <div className={`grid gap-6 ${showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-              {/* Left Column - Saved Addresses */}
+            <div className={`grid gap-6 ${savedAddresses.length === 0 ? 'grid-cols-1' : showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Left Column - Saved Addresses (only show if user has addresses) */}
+              {savedAddresses.length > 0 && (
               <Card className="shadow-lg border-0 h-fit">
                 <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
                   <div className="flex items-start justify-between gap-4">
@@ -1275,7 +1295,7 @@ function AccountPageContent() {
                       className="bg-blue-600 hover:bg-blue-700 text-white text-sm shrink-0"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Add billing address
+                      Add Billing Address
                     </Button>
                   </div>
                 </CardHeader>
@@ -1370,10 +1390,10 @@ function AccountPageContent() {
                                             )
                                           }}
                                         >
-                                          <div className="flex-1 min-w-0">
+                                          <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
                                             <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
                                             {address.gst_no && (
-                                              <p className="text-gray-600 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
+                                              <p className="text-gray-400 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
                                             )}
                                           </div>
                                           <div className="flex items-center gap-2 shrink-0">
@@ -1390,8 +1410,8 @@ function AccountPageContent() {
                                         {isExpanded && (
                                           <div className="px-4 pb-4 pt-2">
                                             <div className="flex items-start gap-2">
-                                              <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
-                                                <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                              <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
+                                                <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                               </div>
                                               {!isOrdered && (
                                                 <button
@@ -1450,12 +1470,12 @@ function AccountPageContent() {
                                       }`}
                                     >
                                       <div className="flex items-start gap-2">
-                                        <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                                        <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
                                           <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
                                           {address.gst_no && (
-                                            <p className="text-gray-600">GST: {address.gst_no}</p>
+                                            <p className="text-gray-400" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
                                           )}
-                                          <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                          <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
                                           {isOrdered && (
@@ -1516,11 +1536,12 @@ function AccountPageContent() {
                   )}
                 </CardContent>
               </Card>
+              )}
 
               {/* Right Column - Add/Edit Form */}
               {(showAddressForm || savedAddresses.length === 0) && (
               <Card className="shadow-lg border-0 billing-form h-fit">
-                <CardHeader className="bg-blue-600/15 border-b py-3 sm:py-4">
+                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -1587,7 +1608,7 @@ function AccountPageContent() {
                       {/* GST No */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          GST No <span className="text-gray-400 text-xs">(Optional)</span>
+                          GST No <span className="text-red-400 text-xs">*</span>
                         </Label>
                         <Input
                             value={billingForm.gstNo}
@@ -1741,17 +1762,17 @@ function AccountPageContent() {
           {/* Order History Tab */}
           <TabsContent value="orders" className="space-y-6">
             <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <ShoppingBag className="h-4 w-4 text-green-600" />
                       Order History
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">View and download your invoices</CardDescription>
+                    <CardDescription className="text-xs">View and download your invoices</CardDescription>
                   </div>
                   {userData && userData.totalOrders > 0 && (
-                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                       {userData.totalOrders} {userData.totalOrders === 1 ? 'Order' : 'Orders'}
                     </Badge>
                   )}

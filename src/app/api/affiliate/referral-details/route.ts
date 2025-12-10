@@ -68,55 +68,209 @@ export async function GET(_request: NextRequest) {
           .eq('referral_id', referral.id)
           .maybeSingle()
 
-        // If no payment in affiliate_referral_payments, check payment_orders
+        // Check payment_orders/payments table to get current total payment count
         let paymentInfo = null
+        let totalActualPayments = 0
+
+        // First, get all payments from payments table for this email
+        if (referral.referred_email) {
+          const { data: paymentsFromTable } = await supabase
+            .from('payments')
+            .select('order_id')
+            .eq('email', referral.referred_email)
+
+          // Deduplicate by order_id
+          const uniqueOrderIds = new Set<string>()
+          paymentsFromTable?.forEach(p => {
+            if (p.order_id) uniqueOrderIds.add(p.order_id)
+          })
+          totalActualPayments = uniqueOrderIds.size
+        }
+
         if (paymentData) {
-          paymentInfo = {
-            payment_id: paymentData.payment_id,
-            order_id: paymentData.order_id,
-            payment_amount: paymentData.payment_amount,
-            total_amount: paymentData.total_amount,
-            commission_amount: paymentData.commission_amount,
-            commission_rate: paymentData.commission_rate,
-            commission_paid: paymentData.commission_paid,
-            payment_status: paymentData.payment_status,
-            payment_completed_at: paymentData.payment_completed_at,
-            customer_firm_name: paymentData.customer_firm_name,
-            created_at: paymentData.created_at
-          }
-        } else if (referral.customer_id) {
-          // Fallback: Check payment_orders table for this customer
-          const { data: orderData } = await supabase
-            .from('payment_orders')
-            .select('*')
-            .eq('customer_id', referral.customer_id)
-            .eq('referral_code', affiliateReg.referral_code)
-            .maybeSingle()
+          // There's an existing payment record - check if there are NEW payments
+          const paidCount = paymentData.payment_count || 0
+          const newPaymentsCount = totalActualPayments - paidCount
 
-          if (orderData) {
-            // orderData.amount is TOTAL (including GST)
-            // Calculate base amount: base = total / 1.18
-            const totalAmount = parseFloat(orderData.amount)
-            const baseAmount = parseFloat((totalAmount / 1.18).toFixed(2))
-            const gstAmount = parseFloat((totalAmount - baseAmount).toFixed(2))
-
-            // Calculate commission on BASE amount (10% by default)
-            const commissionRate = affiliateProfile?.commission_rate || 10.00
-            const commissionAmount = parseFloat((baseAmount * (commissionRate / 100)).toFixed(2))
+          if (newPaymentsCount > 0) {
+            // There are new unpaid payments - show both paid and pending info
+            const BASE_PRICE_PER_ADDRESS = 25000
+            const commissionRate = paymentData.commission_rate || 10
 
             paymentInfo = {
-              payment_id: null,
-              order_id: orderData.order_id,
-              payment_amount: baseAmount,           // Base amount (excluding GST)
-              gst_amount: gstAmount,                // 18% GST
-              total_amount: totalAmount,            // Total (including GST)
-              commission_amount: commissionAmount,   // 10% of base amount
+              payment_id: paymentData.payment_id,
+              order_id: paymentData.order_id,
+              payment_amount: paymentData.payment_amount,
+              total_amount: paymentData.total_amount,
+              commission_amount: paymentData.commission_amount,
+              commission_rate: commissionRate,
+              commission_paid: paymentData.commission_paid,
+              payment_status: paymentData.payment_status,
+              payment_completed_at: paymentData.payment_completed_at,
+              customer_firm_name: paymentData.customer_firm_name,
+              created_at: paymentData.created_at,
+              payment_count: paidCount,
+              // Additional info for new unpaid payments
+              total_payment_count: totalActualPayments,
+              new_payments_count: newPaymentsCount,
+              pending_commission_amount: BASE_PRICE_PER_ADDRESS * newPaymentsCount * (commissionRate / 100),
+              total_commission_amount: BASE_PRICE_PER_ADDRESS * totalActualPayments * (commissionRate / 100)
+            }
+          } else {
+            // All payments have been paid commission
+            paymentInfo = {
+              payment_id: paymentData.payment_id,
+              order_id: paymentData.order_id,
+              payment_amount: paymentData.payment_amount,
+              total_amount: paymentData.total_amount,
+              commission_amount: paymentData.commission_amount,
+              commission_rate: paymentData.commission_rate,
+              commission_paid: paymentData.commission_paid,
+              payment_status: paymentData.payment_status,
+              payment_completed_at: paymentData.payment_completed_at,
+              customer_firm_name: paymentData.customer_firm_name,
+              created_at: paymentData.created_at,
+              payment_count: paidCount,
+              total_payment_count: totalActualPayments
+            }
+          }
+        } else {
+          // Fallback: Check payment_orders table for ALL paid orders (multiple address purchases)
+          let ordersList: Record<string, unknown>[] = []
+
+          // Method 1: Try by customer_id + referral_code
+          if (referral.customer_id) {
+            const { data: ordersByCustomerId } = await supabase
+              .from('payment_orders')
+              .select('*')
+              .eq('customer_id', referral.customer_id)
+              .eq('referral_code', affiliateReg.referral_code)
+              .eq('status', 'paid')
+              .order('created_at', { ascending: false })
+
+            if (ordersByCustomerId && ordersByCustomerId.length > 0) {
+              ordersList = ordersByCustomerId
+            }
+          }
+
+          // Method 2: Try by email + referral_code
+          if (ordersList.length === 0 && referral.referred_email) {
+            const { data: ordersByEmailAndCode } = await supabase
+              .from('payment_orders')
+              .select('*')
+              .eq('customer_email', referral.referred_email)
+              .eq('referral_code', affiliateReg.referral_code)
+              .eq('status', 'paid')
+              .order('created_at', { ascending: false })
+
+            if (ordersByEmailAndCode && ordersByEmailAndCode.length > 0) {
+              ordersList = ordersByEmailAndCode
+            }
+          }
+
+          // Method 3: Try by email only (for payments made without referral link)
+          // This catches cases where the customer paid without using the ?ref=XXX&cus=YYY link
+          if (ordersList.length === 0 && referral.referred_email) {
+            const { data: ordersByEmailOnly } = await supabase
+              .from('payment_orders')
+              .select('*')
+              .eq('customer_email', referral.referred_email)
+              .eq('status', 'paid')
+              .order('created_at', { ascending: false })
+
+            if (ordersByEmailOnly && ordersByEmailOnly.length > 0) {
+              ordersList = ordersByEmailOnly
+            }
+          }
+
+          // Method 4: FALLBACK - Check payments table directly (for cases where payment_orders is empty)
+          // The payments table stores successful payments with email from payment verification
+          if (ordersList.length === 0 && referral.referred_email) {
+            const { data: paymentsFromTable } = await supabase
+              .from('payments')
+              .select('*')
+              .eq('email', referral.referred_email)
+              .order('created_at', { ascending: false })
+
+            if (paymentsFromTable && paymentsFromTable.length > 0) {
+              // Convert payments table format to ordersList format
+              ordersList = paymentsFromTable.map(payment => ({
+                order_id: payment.order_id,
+                payment_id: payment.id,
+                customer_email: payment.email,
+                amount: payment.amount,
+                status: 'paid', // Treat all records in payments table as paid
+                firm_name: payment.firm_name,
+                company: payment.company,
+                discount_percentage: 0,
+                discount_amount: 0,
+                address_id: null,
+                created_at: payment.created_at,
+                updated_at: payment.created_at
+              }))
+            }
+          }
+
+          if (ordersList.length > 0) {
+            // Sum up ALL paid orders for this customer
+            let totalBaseAmount = 0
+            let totalGstAmount = 0
+            let totalAmountSum = 0
+            const allPayments: Record<string, unknown>[] = []
+
+            // Fixed base price for commission calculation (₹25,000 per address)
+            // Commission is always calculated on the base price, not discounted amount
+            const BASE_PRICE_PER_ADDRESS = 25000
+
+            ordersList.forEach(orderData => {
+              // orderData.amount is TOTAL (including GST)
+              // Calculate base amount: base = total / 1.18
+              const orderTotal = parseFloat(orderData.amount as string)
+              const orderBase = parseFloat((orderTotal / 1.18).toFixed(2))
+              const orderGst = parseFloat((orderTotal - orderBase).toFixed(2))
+
+              totalBaseAmount += orderBase
+              totalGstAmount += orderGst
+              totalAmountSum += orderTotal
+
+              allPayments.push({
+                order_id: orderData.order_id,
+                payment_id: orderData.payment_id || null,
+                amount: orderTotal,
+                base_amount: orderBase,
+                gst_amount: orderGst,
+                discount_percentage: orderData.discount_percentage || 0,
+                discount_amount: orderData.discount_amount || 0,
+                address_id: orderData.address_id,
+                created_at: orderData.created_at
+              })
+            })
+
+            // Calculate commission on FIXED BASE PRICE (₹25,000 per address), not discounted amount
+            // This ensures affiliate gets same commission regardless of customer discounts
+            const commissionRate = affiliateProfile?.commission_rate || 10.00
+            const commissionBaseAmount = BASE_PRICE_PER_ADDRESS * ordersList.length // ₹25,000 per paid order
+            const totalCommissionAmount = parseFloat((commissionBaseAmount * (commissionRate / 100)).toFixed(2))
+
+            // Use the first (most recent) order for primary display
+            const firstOrder = ordersList[0]
+
+            paymentInfo = {
+              payment_id: firstOrder.payment_id || null,
+              order_id: firstOrder.order_id,
+              payment_amount: totalBaseAmount,           // Total base amount (excluding GST)
+              gst_amount: totalGstAmount,                // Total 18% GST
+              total_amount: totalAmountSum,              // Grand total (including GST)
+              commission_amount: totalCommissionAmount,  // 10% of total base amount
               commission_rate: commissionRate,
               commission_paid: false,
-              payment_status: orderData.status === 'paid' ? 'completed' : orderData.status,
-              payment_completed_at: orderData.status === 'paid' ? orderData.updated_at : null,
-              customer_firm_name: orderData.firm_name || orderData.company,
-              created_at: orderData.created_at
+              payment_status: 'completed',
+              payment_completed_at: firstOrder.updated_at,
+              customer_firm_name: firstOrder.firm_name || firstOrder.company,
+              created_at: firstOrder.created_at,
+              // Additional info for multiple purchases
+              payment_count: ordersList.length,
+              all_payments: allPayments
             }
           }
         }

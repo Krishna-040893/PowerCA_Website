@@ -40,12 +40,12 @@ export default function PromotionalBanner() {
             </span>
           </div>
 
-          {/* Click Here button - compact on mobile */}
+          {/* View Pricing button - compact on mobile */}
           <a
             href="/pricing"
             className="inline-flex items-center px-2 sm:px-4 py-1 sm:py-1.5 bg-white text-slate-900 text-[10px] sm:text-xs font-bold rounded-full hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-sm whitespace-nowrap"
           >
-            Click Here
+            View Pricing
           </a>
         </div>
       </div>

@@ -22,7 +22,7 @@ export async function GET() {
 
     const { data: user, error } = await supabase
       .from('registration_forms')
-      .select('agreement_downloaded_at, agreement_uploaded_at, agreement_file_path')
+      .select('agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, agreement_signing_method')
       .eq('email', session.user.email)
       .single()
 
@@ -38,7 +38,8 @@ export async function GET() {
         downloadedAt: user?.agreement_downloaded_at,
         hasUploaded: !!user?.agreement_uploaded_at,
         uploadedAt: user?.agreement_uploaded_at,
-        filePath: user?.agreement_file_path
+        filePath: user?.agreement_file_path,
+        signingMethod: user?.agreement_signing_method
       }
     })
   } catch (error) {
@@ -63,9 +64,13 @@ export async function POST(request: NextRequest) {
       const body = await request.json()
 
       if (body.action === 'download') {
+        const signingMethod = body.signingMethod || 'manual'
         const { error } = await supabase
           .from('registration_forms')
-          .update({ agreement_downloaded_at: new Date().toISOString() })
+          .update({
+            agreement_downloaded_at: new Date().toISOString(),
+            agreement_signing_method: signingMethod
+          })
           .eq('email', session.user.email)
 
         if (error) {
@@ -73,7 +78,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Failed to update download status' }, { status: 500 })
         }
 
-        return NextResponse.json({ success: true, message: 'Download recorded' })
+        return NextResponse.json({ success: true, message: 'Download recorded', signingMethod })
       }
 
       // Handle digital signature submission
@@ -186,10 +191,20 @@ export async function POST(request: NextRequest) {
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-')
 
-      // Create filename: {documentname}-{username}-signed.pdf
+      // Format as DDsigned (e.g., 10signed)
+      const uploadDate = new Date()
+      const day = uploadDate.getDate()
+      const dateString = `${day}signed`
+
+      // Create filename: {documentname}-{username}-{date}signed.pdf
+      // Remove any existing "-signed" suffix to avoid duplication like "signed-signed"
       const originalFileName = file.name
-      const fileNameWithoutExt = originalFileName.replace(/\.pdf$/i, '')
-      const signedFileName = `${fileNameWithoutExt}-${userName}-signed.pdf`
+      const fileNameWithoutExt = originalFileName
+        .replace(/\.pdf$/i, '')
+        .replace(/-signed$/i, '')  // Remove existing -signed suffix if present
+        .replace(/_signed$/i, '')  // Remove existing _signed suffix if present
+
+      const signedFileName = `${fileNameWithoutExt}-${userName}-${dateString}.pdf`
 
       // Store in local project folder: uploads/client-signed-agreements/{filename}
       const uploadsDir = path.join(process.cwd(), 'uploads', 'client-signed-agreements')

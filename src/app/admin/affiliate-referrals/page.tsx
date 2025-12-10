@@ -45,6 +45,7 @@ interface Referral {
   payment_amount: number | null
   order_id: string | null
   payment_id: string | null
+  payment_count: number
 }
 
 interface AffiliateReferralGroup {
@@ -141,15 +142,6 @@ export default function AffiliateReferralsPage() {
     })
   }
 
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return 'N/A'
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
   // Calculate totals
   const totalStats = data.reduce(
     (acc, group) => ({
@@ -220,10 +212,11 @@ export default function AffiliateReferralsPage() {
       }
     >
       <div>
-        {/* Filters - Enhanced Mobile */}
-        <Card className="mb-5 shadow-sm border border-gray-100">
-          <CardContent className="p-4">
-            <div className="flex gap-2">
+        {/* Main Content */}
+        <Card className="shadow-sm border border-gray-100">
+          <CardContent>
+            {/* Search Filter */}
+            <div className="flex gap-2 mb-5">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -235,18 +228,7 @@ export default function AffiliateReferralsPage() {
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Main Content */}
-        <Card className="shadow-sm border border-gray-100">
-          {/* <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-bold">Affiliate Referrals</CardTitle>
-            <CardDescription className="text-xs sm:text-sm mt-1">
-              Click on an affiliate to view their referral customers
-            </CardDescription>
-          </CardHeader> */}
-          <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <RefreshCw className="w-6 h-6 animate-spin text-blue-500 mr-2" />
@@ -332,7 +314,7 @@ export default function AffiliateReferralsPage() {
                               <TableHead className="text-base font-bold">Email</TableHead>
                               <TableHead className="text-base font-bold">Phone</TableHead>
                               <TableHead className="text-base font-bold">Status</TableHead>
-                              <TableHead className="text-base font-bold">Payment</TableHead>
+                              <TableHead className="text-base font-bold text-center">Payment Count</TableHead>
                               <TableHead className="text-base font-bold">Created</TableHead>
                               <TableHead className="text-base font-bold">Actions</TableHead>
                             </TableRow>
@@ -359,20 +341,13 @@ export default function AffiliateReferralsPage() {
                                   </span>
                                 </TableCell>
                                 <TableCell>{getStatusBadge(referral.status)}</TableCell>
-                                <TableCell>
-                                  {referral.payment_amount ? (
-                                    <div>
-                                      <p className="font-semibold text-green-600">
-                                        {formatCurrency(referral.payment_amount)}
-                                      </p>
-                                      {referral.converted_at && (
-                                        <p className="text-xs text-gray-500">
-                                          {formatDate(referral.converted_at)}
-                                        </p>
-                                      )}
-                                    </div>
+                                <TableCell className="text-center">
+                                  {referral.payment_count > 0 ? (
+                                    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                                      {referral.payment_count}
+                                    </span>
                                   ) : (
-                                    <span className="text-gray-400 text-sm">No payment</span>
+                                    <span className="text-gray-400">0</span>
                                   )}
                                 </TableCell>
                                 <TableCell>

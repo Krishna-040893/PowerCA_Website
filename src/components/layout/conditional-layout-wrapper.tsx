@@ -20,11 +20,15 @@ export function ConditionalLayoutWrapper({ children }: ConditionalLayoutWrapperP
     return <div className="min-h-screen">{children}</div>
   }
 
+  // Pages that should not have min-h-screen on main (to avoid extra space before footer)
+  const noMinHeightPages = ['/affiliate/referral']
+  const shouldSkipMinHeight = noMinHeightPages.some(page => pathname.startsWith(page))
+
   return (
     <>
       <PromotionalBanner />
       <Header />
-      <main className="min-h-screen" style={{ paddingTop: 'var(--content-padding-top, 128px)' }}>
+      <main className={shouldSkipMinHeight ? '' : 'min-h-screen'} style={{ paddingTop: 'var(--content-padding-top, 128px)' }}>
         {children}
       </main>
       <Footer />

@@ -278,6 +278,7 @@ export default function AdminAgreementsPage() {
                       <TableHead className="text-base font-bold">User</TableHead>
                       <TableHead className="text-base font-bold">Contact</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Signing Method</TableHead>
                       <TableHead className="text-base font-bold">Downloaded</TableHead>
                       <TableHead className="text-base font-bold">Uploaded</TableHead>
                       <TableHead className="text-base font-bold">Actions</TableHead>
@@ -318,6 +319,15 @@ export default function AdminAgreementsPage() {
                             {getStatusIcon(agreement.status)}
                             {getStatusBadge(agreement.status)}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {agreement.signingMethod ? (
+                            <Badge className={agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}>
+                              {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {agreement.downloadedAt ? (
@@ -396,8 +406,18 @@ export default function AdminAgreementsPage() {
                           )}
                         </div>
 
-                        {/* Dates */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        {/* Signing Method & Dates */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-500">Signing:</span>
+                            <p className="text-gray-700">
+                              {agreement.signingMethod ? (
+                                <Badge className={`text-[10px] ${agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}`}>
+                                  {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                                </Badge>
+                              ) : '-'}
+                            </p>
+                          </div>
                           <div>
                             <span className="text-gray-500">Downloaded:</span>
                             <p className="text-gray-700">

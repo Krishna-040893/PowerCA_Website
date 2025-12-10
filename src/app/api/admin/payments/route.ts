@@ -95,8 +95,8 @@ export async function GET(_request: NextRequest) {
             ? addresses[0]
             : null
           acc[order.order_id] = {
-            // Use label from user_addresses for location, or fall back to customer_city/state
-            location: addressData?.label || (order.customer_city && order.customer_state ? `${order.customer_city}, ${order.customer_state}` : null),
+            // Use label from user_addresses for location, or fall back to customer_city only
+            location: addressData?.label || order.customer_city || addressData?.city || null,
             city: order.customer_city || addressData?.city || null,
             state: order.customer_state || addressData?.state || null,
             postcode: order.customer_postcode || addressData?.postcode || null,
@@ -128,9 +128,97 @@ export async function GET(_request: NextRequest) {
       }
     })
 
+    // Group payments by email
+    const groupedByEmail = new Map<string, {
+      email: string;
+      name: string;
+      firm_names: string[];
+      phone: string | null;
+      company: string | null;
+      total_amount: number;
+      total_orders: number;
+      locations: string[];
+      statuses: string[];
+      latest_payment: typeof mappedPayments[0];
+      all_payments: typeof mappedPayments;
+    }>()
+
+    mappedPayments.forEach(payment => {
+      const emailKey = (payment.email || 'unknown').toLowerCase()
+
+      if (!groupedByEmail.has(emailKey)) {
+        groupedByEmail.set(emailKey, {
+          email: payment.email,
+          name: payment.name,
+          firm_names: [],
+          phone: payment.phone,
+          company: payment.company,
+          total_amount: 0,
+          total_orders: 0,
+          locations: [],
+          statuses: [],
+          latest_payment: payment,
+          all_payments: []
+        })
+      }
+
+      const group = groupedByEmail.get(emailKey)!
+      group.total_amount += payment.amount || 0
+      group.total_orders += 1
+      group.all_payments.push(payment)
+
+      // Collect unique locations
+      if (payment.location && !group.locations.includes(payment.location)) {
+        group.locations.push(payment.location)
+      }
+
+      // Collect unique firm names
+      if (payment.firm_name && !group.firm_names.includes(payment.firm_name)) {
+        group.firm_names.push(payment.firm_name)
+      }
+
+      // Collect statuses
+      if (payment.status && !group.statuses.includes(payment.status)) {
+        group.statuses.push(payment.status)
+      }
+
+      // Update name from most recent if available
+      if (payment.name) group.name = payment.name
+      if (payment.phone) group.phone = payment.phone
+      if (payment.company) group.company = payment.company
+    })
+
+    // Convert to array and sort by latest payment date
+    const groupedPayments = Array.from(groupedByEmail.values())
+      .sort((a, b) => new Date(b.latest_payment.created_at).getTime() - new Date(a.latest_payment.created_at).getTime())
+      .map(group => ({
+        id: group.latest_payment.id,
+        email: group.email,
+        name: group.name,
+        firm_names: group.firm_names,
+        phone: group.phone,
+        company: group.company,
+        total_amount: group.total_amount,
+        total_orders: group.total_orders,
+        locations: group.locations,
+        statuses: group.statuses,
+        latest_payment: group.latest_payment,
+        all_payments: group.all_payments,
+        // Keep some fields from latest payment for backward compatibility
+        order_id: group.latest_payment.order_id,
+        payment_id: group.latest_payment.payment_id,
+        status: group.latest_payment.status,
+        created_at: group.latest_payment.created_at,
+        updated_at: group.latest_payment.updated_at,
+        amount: group.total_amount,
+        currency: group.latest_payment.currency,
+        plan: group.latest_payment.plan,
+      }))
+
     return NextResponse.json({
-      payments: mappedPayments,
-      total: mappedPayments.length
+      payments: groupedPayments,
+      total: groupedPayments.length,
+      totalRecords: mappedPayments.length
     })
 
   } catch (error) {

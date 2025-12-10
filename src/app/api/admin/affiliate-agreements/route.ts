@@ -13,14 +13,23 @@ export async function GET() {
     const supabase = createAdminClient()
 
     // Fetch only affiliates who have downloaded the agreement (exclude "not started")
+    // Using affiliate_registrations table with agreement columns
     const { data: agreements, error } = await supabase
-      .from('affiliate_applications')
-      .select('id, name, email, phone, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, created_at')
+      .from('affiliate_registrations')
+      .select('id, full_name, email, phone, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, created_at')
       .not('agreement_downloaded_at', 'is', null)
       .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching affiliate agreements:', error)
+      // If agreement columns don't exist yet, return empty array
+      if (error.message?.includes('agreement_downloaded_at') || error.code === '42703') {
+        return NextResponse.json({
+          success: true,
+          agreements: [],
+          stats: { total: 0, draft: 0, signed: 0 }
+        })
+      }
       return NextResponse.json({ error: 'Failed to fetch agreements' }, { status: 500 })
     }
 
@@ -34,7 +43,7 @@ export async function GET() {
 
       return {
         id: affiliate.id,
-        name: affiliate.name || '',
+        name: affiliate.full_name || '',
         email: affiliate.email || '',
         phone: affiliate.phone || '',
         role: 'affiliate',

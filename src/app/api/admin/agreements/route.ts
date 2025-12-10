@@ -15,7 +15,7 @@ export async function GET() {
     // Fetch only users who have downloaded the agreement (exclude "not started")
     const { data: agreements, error } = await supabase
       .from('registration_forms')
-      .select('id, name, email, phone, role, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, created_at')
+      .select('id, name, email, phone, role, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, agreement_signing_method, created_at')
       .not('agreement_downloaded_at', 'is', null)
       .order('created_at', { ascending: false })
 
@@ -44,7 +44,7 @@ export async function GET() {
         downloadedAt: user.agreement_downloaded_at,
         uploadedAt: user.agreement_uploaded_at,
         filePath: user.agreement_file_path,
-        signingMethod: null,
+        signingMethod: user.agreement_signing_method || null,
         createdAt: user.created_at
       }
     })

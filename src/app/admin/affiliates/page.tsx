@@ -2,11 +2,10 @@
 
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
-import {Card, CardContent, CardHeader } from '@/components/ui/card'
+import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
-import {Textarea  } from '@/components/ui/textarea'
 import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Search  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
@@ -83,7 +82,6 @@ export default function AdminAffiliatesPage() {
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
-  const [adminNotes, setAdminNotes] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const ITEMS_PER_PAGE = 10
@@ -130,7 +128,6 @@ export default function AdminAffiliatesPage() {
         body: JSON.stringify({
           applicationId,
           status,
-          adminNotes,
           approvedBy: adminUser?.username || 'Admin'
         }),
       })
@@ -144,13 +141,11 @@ export default function AdminAffiliatesPage() {
             ? {
                 ...app,
                 status,
-                admin_notes: adminNotes,
                 referral_code: result.referral_code || app.referral_code
               }
             : app
         ))
         setSelectedApp(null)
-        setAdminNotes('')
 
         if (status === 'approved' && result.referral_code) {
           const appUrl = window.location.origin
@@ -262,15 +257,10 @@ export default function AdminAffiliatesPage() {
     >
         {/* Main Content Card */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              {/* <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">All Affiliates</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">
-                  Review affiliate applications and approve or reject them
-                </CardDescription>
-              </div> */}
-              <div className="relative w-full sm:w-64">
+          <CardContent>
+            {/* Search Filter */}
+            <div className="flex gap-2 mb-5">
+              <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
@@ -280,12 +270,11 @@ export default function AdminAffiliatesPage() {
                     setSearchTerm(e.target.value)
                     setCurrentPage(1) // Reset to first page on search
                   }}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 text-sm h-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
@@ -352,10 +341,7 @@ export default function AdminAffiliatesPage() {
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedApp(application)
-                                  setAdminNotes(application.admin_notes || '')
-                                }}
+                                onClick={() => setSelectedApp(application)}
                                 className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -490,18 +476,6 @@ export default function AdminAffiliatesPage() {
                                     </div>
                                   )}
 
-                                  {/* Admin Notes */}
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
-                                    <Textarea
-                                      value={adminNotes}
-                                      onChange={(e) => setAdminNotes(e.target.value)}
-                                      placeholder="Add notes about this application..."
-                                      rows={3}
-                                      className="mt-2"
-                                    />
-                                  </div>
-
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (
                                     <div className="flex justify-end gap-2 pt-4 border-t">
@@ -597,10 +571,7 @@ export default function AdminAffiliatesPage() {
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedApp(application)
-                                  setAdminNotes(application.admin_notes || '')
-                                }}
+                                onClick={() => setSelectedApp(application)}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -734,18 +705,6 @@ export default function AdminAffiliatesPage() {
                                       </code>
                                     </div>
                                   )}
-
-                                  {/* Admin Notes */}
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
-                                    <Textarea
-                                      value={adminNotes}
-                                      onChange={(e) => setAdminNotes(e.target.value)}
-                                      placeholder="Add notes about this application..."
-                                      rows={3}
-                                      className="mt-2"
-                                    />
-                                  </div>
 
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (

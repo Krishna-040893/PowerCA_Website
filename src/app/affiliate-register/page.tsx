@@ -293,17 +293,17 @@ export default function AffiliateRegisterPage() {
           className="w-full max-w-5xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-purple-100 overflow-hidden"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 sm:p-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-5">
+            <h1 className="text-xl sm:text-2xl font-bold text-center mb-1">
               Join PowerCA Affiliate Program
             </h1>
-            <p className="text-center text-purple-100 text-sm sm:text-base">
+            <p className="text-center text-purple-100 text-xs sm:text-sm">
               Complete the registration to start earning 10% commission on every referral
             </p>
           </div>
 
           {/* Progress Steps */}
-          <div className="bg-white px-4 sm:px-8 py-6 border-b">
+          <div className="bg-white px-4 sm:px-8 py-4 border-b">
             <div className="flex items-center justify-between sm:justify-center max-w-3xl mx-auto">
               {steps.map((step, index) => (
                 <div key={step.number} className="flex items-center">
@@ -362,10 +362,10 @@ export default function AffiliateRegisterPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="space-y-4"
                   >
-                    <div className="mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                    <div className="mb-4">
+                      <h2 className="text-xl sm:text-1xl font-bold text-gray-900 mb-1">
                         Affiliate Details
                       </h2>
                       <p className="text-gray-600 text-sm sm:text-base">
@@ -373,7 +373,7 @@ export default function AffiliateRegisterPage() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <RequiredLabel htmlFor="fullName">Full Name</RequiredLabel>
                         <Input
@@ -381,7 +381,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.fullName}
                           onChange={(e) => handleInputChange('fullName', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter your full name"
                         />
                         {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
@@ -394,7 +394,7 @@ export default function AffiliateRegisterPage() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="your@email.com"
                         />
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -408,7 +408,7 @@ export default function AffiliateRegisterPage() {
                             defaultCountry="IN"
                             value={formData.phone}
                             onChange={(value) => handleInputChange('phone', value || '')}
-                            className="flex gap-0 [&>input]:h-12 [&>input]:bg-purple-50 [&>input]:border-2 [&>input]:border-purple-200 [&>input]:rounded-r-xl [&>input]:focus:border-purple-400 [&>input]:placeholder:text-gray-400 [&>input]:caret-purple-600 [&>input]:selection:bg-purple-200 [&>input]:selection:text-purple-900 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-purple-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+                            className="flex gap-0 [&>input]:h-12 [&>input]:bg-purple-50 [&>input]:border-2 [&>input]:border-purple-200 [&>input]:rounded-r-xl [&>input]:focus:border-purple-400 [&>input]:placeholder:text-gray-400 placeholder:text-sm [&>input]:caret-purple-600 [&>input]:selection:bg-purple-200 [&>input]:selection:text-purple-900 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-purple-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
                             numberInputProps={{
                               className: "flex-1"
                             }}
@@ -426,7 +426,7 @@ export default function AffiliateRegisterPage() {
                             type={showPassword ? 'text' : 'password'}
                             value={formData.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
-                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Minimum 8 characters"
                           />
                           <button
@@ -449,7 +449,7 @@ export default function AffiliateRegisterPage() {
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={formData.confirmPassword}
                             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Re-enter password"
                           />
                           <button
@@ -470,7 +470,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Your city"
                         />
                         {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
@@ -483,7 +483,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.state}
                           onChange={(e) => handleInputChange('state', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Your state"
                         />
                         {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
@@ -500,10 +500,10 @@ export default function AffiliateRegisterPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="space-y-4"
                   >
-                    <div className="mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                    <div className="mb-4">
+                      <h2 className="text-xl sm:text-1xl font-bold text-gray-900 mb-1">
                         Business Information
                       </h2>
                       <p className="text-gray-600 text-sm sm:text-base">
@@ -511,7 +511,7 @@ export default function AffiliateRegisterPage() {
                       </p>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {/* Business Type - Full Width */}
                       <div>
                         <Label className="text-gray-900 text-sm sm:text-base font-medium">
@@ -520,7 +520,7 @@ export default function AffiliateRegisterPage() {
                         <RadioGroup
                           value={formData.businessType}
                           onValueChange={(value) => handleInputChange('businessType', value)}
-                          className="mt-3 flex flex-col sm:flex-row gap-4 sm:gap-6"
+                          className="mt-2 flex flex-col sm:flex-row gap-3 sm:gap-5"
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="individual" id="individual" />
@@ -538,7 +538,7 @@ export default function AffiliateRegisterPage() {
                       </div>
 
                       {/* 2x2 Grid Layout for 4 fields */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Row 1, Col 1: Company Name (only for company) OR Designation */}
                         {formData.businessType === 'company' && (
                           <div>
@@ -548,7 +548,7 @@ export default function AffiliateRegisterPage() {
                               type="text"
                               value={formData.companyName}
                               onChange={(e) => handleInputChange('companyName', e.target.value)}
-                              className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                              className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                               placeholder="Your company name"
                             />
                             {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
@@ -564,7 +564,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.designation}
                             onChange={(e) => handleInputChange('designation', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Your role/designation"
                           />
                         </div>
@@ -579,7 +579,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.experience}
                             onChange={(e) => handleInputChange('experience', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="e.g., 5 years"
                           />
                         </div>
@@ -594,7 +594,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.monthlyLeads}
                             onChange={(e) => handleInputChange('monthlyLeads', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="e.g., 10-15 referrals"
                           />
                         </div>
@@ -607,7 +607,7 @@ export default function AffiliateRegisterPage() {
                           id="promotionMethod"
                           value={formData.promotionMethod}
                           onChange={(e) => handleInputChange('promotionMethod', e.target.value)}
-                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           rows={4}
                           placeholder="Describe your promotion strategy (min 50 characters)..."
                         />
@@ -624,7 +624,7 @@ export default function AffiliateRegisterPage() {
                           id="targetAudience"
                           value={formData.targetAudience}
                           onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           rows={4}
                           placeholder="Describe your target audience..."
                         />
@@ -642,10 +642,10 @@ export default function AffiliateRegisterPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="space-y-4"
                   >
-                    <div className="mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                    <div className="mb-4">
+                      <h2 className="text-xl sm:text-1xl font-bold text-gray-900 mb-1">
                         Payment Information
                       </h2>
                       <p className="text-gray-600 text-sm sm:text-base">
@@ -653,7 +653,7 @@ export default function AffiliateRegisterPage() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="accountNumber" className="text-gray-900 text-sm sm:text-base font-medium">
                           Bank Account Number <span className="text-red-500">*</span>
@@ -663,7 +663,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.accountNumber}
                           onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter account number"
                           maxLength={18}
                         />
@@ -679,7 +679,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.ifscCode}
                           onChange={(e) => handleInputChange('ifscCode', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter IFSC code"
                           maxLength={11}
                         />
@@ -695,7 +695,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.panNumber}
                           onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter PAN number"
                           maxLength={10}
                         />
@@ -710,7 +710,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.gstNumber}
                           onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter GST number"
                           maxLength={15}
                         />
@@ -763,7 +763,7 @@ export default function AffiliateRegisterPage() {
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex flex-row justify-between gap-2 sm:gap-4 mt-8 pt-6 border-t">
+              <div className="flex flex-row justify-between gap-2 sm:gap-4 mt-4 pt-4 border-t">
                 <button
                   type="button"
                   onClick={handleBack}

@@ -525,9 +525,9 @@ export default function AffiliateAccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Main Content */}
-      <div className="affiliate-1400-container max-w-[1600px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
+      <div className="affiliate-1400-container max-w-[1400px] mx-auto py-3 sm:py-4 lg:py-6 px-3 sm:px-4 lg:px-8">
         {/* Header Section - Highlighted Background */}
         <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -733,7 +733,7 @@ export default function AffiliateAccountPage() {
                       <th className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer Details</th>
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Date</th>
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Status</th>
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Amount</th>
+                      <th className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Count</th>
                       <th className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission</th>
                     </tr>
                   </thead>
@@ -787,12 +787,14 @@ export default function AffiliateAccountPage() {
                               </span>
                             )}
                           </td>
-                          <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
-                            <div className="text-[11px] sm:text-[13px] font-bold text-gray-900">
-                              {referral.payment_info
-                                ? `₹${parseFloat(referral.payment_info.payment_amount || '0').toFixed(2)}`
-                                : '-'}
-                            </div>
+                          <td className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center whitespace-nowrap">
+                            {referral.payment_info && referral.payment_info.payment_count > 0 ? (
+                              <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-[12px] sm:text-[13px] font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                                {referral.payment_info.payment_count}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 font-medium">0</span>
+                            )}
                           </td>
                           <td className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
                             <div className="text-[11px] sm:text-[13px]">

@@ -146,10 +146,10 @@ export default function AdminAffiliateApprovalPage() {
     >
         {/* Applications Table */}
         <Card className="shadow-sm border border-gray-100">
-          <CardContent className="pt-6">
+          <CardContent>
             {/* Search Filter */}
-            <div className="mb-5">
-              <div className="relative">
+            <div className="flex gap-2 mb-5">
+              <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search by name, email, phone, company, city, state, or referral code..."
@@ -355,25 +355,6 @@ export default function AdminAffiliateApprovalPage() {
                     <div>
                       <label className="text-xs font-medium text-gray-500">Business Type</label>
                       <p className="text-sm text-gray-900 mt-1 capitalize">{selectedApplication.business_type || 'Individual'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Marketing Strategy */}
-                <div className="bg-purple-50 p-4 rounded-xl">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Marketing Strategy</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">Promotion Method</label>
-                      <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
-                        {selectedApplication.promotion_method}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">Target Audience</label>
-                      <p className="text-sm text-gray-900 mt-1 p-3 bg-white rounded border">
-                        {selectedApplication.target_audience}
-                      </p>
                     </div>
                   </div>
                 </div>
