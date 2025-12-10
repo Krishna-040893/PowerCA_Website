@@ -159,7 +159,7 @@ export default function AdminPaymentsPage() {
         payment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.payment_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.firm_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        payment.firm_names?.some(name => name?.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
 

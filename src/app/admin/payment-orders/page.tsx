@@ -135,7 +135,7 @@ export default function PaymentOrdersPage() {
         order.order_id?.toLowerCase().includes(search) ||
         order.customer_name?.toLowerCase().includes(search) ||
         order.customer_email?.toLowerCase().includes(search) ||
-        order.firm_name?.toLowerCase().includes(search) ||
+        order.firm_names?.some(name => name?.toLowerCase().includes(search)) ||
         order.customer_phone?.toLowerCase().includes(search)
       )
     }
