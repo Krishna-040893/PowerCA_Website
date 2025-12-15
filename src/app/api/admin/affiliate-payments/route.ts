@@ -62,10 +62,11 @@ export async function GET(req: NextRequest) {
       .from('affiliate_referrals')
       .select('id, referral_code, affiliate_id, customer_id, referred_email, referred_name, referred_phone')
 
-    // Get all payments from payments table
+    // Get all PAID payments from payments table (only captured/paid status)
     const { data: allPayments } = await supabase
       .from('payments')
       .select('*')
+      .in('status', ['captured', 'paid', 'authorized', 'success'])
       .order('created_at', { ascending: false })
 
     // Create a map of existing referral_id -> payment record (to check payment_count)
@@ -127,6 +128,13 @@ export async function GET(req: NextRequest) {
         const totalPaymentAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
         const firstPayment = payments[0]
 
+        // Get all unique firm names from paid payments
+        const allFirmNames = [...new Set(payments
+          .map(p => p.firm_name || p.company)
+          .filter(Boolean)
+        )]
+        const firmNamesDisplay = allFirmNames.join(', ') || ''
+
         if (!existingRecord) {
           // No existing record - all payments are pending
           const commissionAmount = BASE_PRICE * totalPaymentCount * (commissionRate / 100)
@@ -142,7 +150,7 @@ export async function GET(req: NextRequest) {
             customer_name: referral.referred_name,
             customer_email: referral.referred_email,
             customer_phone: referral.referred_phone,
-            customer_firm_name: firstPayment.firm_name || firstPayment.company || '',
+            customer_firm_name: firmNamesDisplay,
             payment_amount: totalPaymentAmount,
             commission_amount: commissionAmount,
             commission_rate: commissionRate,
@@ -179,6 +187,7 @@ export async function GET(req: NextRequest) {
 
           mergedPayments.push({
             ...existingRecord,
+            customer_firm_name: firmNamesDisplay || existingRecord.customer_firm_name,
             payment_amount: totalPaymentAmount,
             commission_amount: totalCommission,
             commission_paid: allPaid ? existingRecord.commission_paid : false,
@@ -239,12 +248,17 @@ export async function GET(req: NextRequest) {
     allAffiliatePayments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
     // Calculate summary statistics
+    // Use pending_commission and paid_commission fields for accurate totals
     const summary = {
       totalPayments: allAffiliatePayments.length,
       totalAmount: allAffiliatePayments.reduce((sum, p) => sum + (Number(p.payment_amount) || 0), 0),
-      totalCommission: allAffiliatePayments.reduce((sum, p) => sum + (Number(p.commission_amount) || 0), 0),
-      pendingCommission: allAffiliatePayments.filter(p => !p.commission_paid).reduce((sum, p) => sum + (Number(p.commission_amount) || 0), 0),
-      paidCommission: allAffiliatePayments.filter(p => p.commission_paid).reduce((sum, p) => sum + (Number(p.commission_amount) || 0), 0),
+      totalCommission: allAffiliatePayments.reduce((sum, p) => {
+        const pending = Number(p.pending_commission) || 0
+        const paid = Number(p.paid_commission) || 0
+        return sum + pending + paid
+      }, 0),
+      pendingCommission: allAffiliatePayments.reduce((sum, p) => sum + (Number(p.pending_commission) || 0), 0),
+      paidCommission: allAffiliatePayments.reduce((sum, p) => sum + (Number(p.paid_commission) || 0), 0),
     }
 
     return NextResponse.json({

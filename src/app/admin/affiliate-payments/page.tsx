@@ -351,7 +351,6 @@ export default function AffiliatePaymentsPage() {
                       <td className="px-6 py-4 text-sm">
                         <div>
                           <p className="font-medium text-gray-900">{payment.customer_name}</p>
-                          <p className="text-gray-500 text-xs">{payment.customer_firm_name}</p>
                           <p className="text-gray-400 text-xs">{payment.customer_email}</p>
                         </div>
                       </td>
@@ -465,7 +464,7 @@ export default function AffiliatePaymentsPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="font-semibold text-sm text-gray-900 truncate">{payment.customer_name}</p>
-                                  <p className="text-xs text-gray-500 truncate">{payment.customer_firm_name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{payment.customer_email}</p>
                                 </div>
                               </div>
                             </div>
@@ -597,7 +596,11 @@ export default function AffiliatePaymentsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Commission Amount:</span>
                     <span className="text-sm font-bold text-green-600">
-                      {formatCurrency(selectedPayment.commission_amount)}
+                      {formatCurrency(
+                        selectedPayment.pending_commission && selectedPayment.pending_commission > 0
+                          ? selectedPayment.pending_commission
+                          : selectedPayment.commission_amount
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">

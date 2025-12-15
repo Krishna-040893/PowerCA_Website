@@ -80,7 +80,6 @@ export default function AffiliateProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
-  const [signingMethod, setSigningMethod] = useState<'digital' | 'manual' | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const agreementFileInputRef = useRef<HTMLInputElement>(null)
@@ -216,15 +215,13 @@ export default function AffiliateProfilePage() {
 
   // Handle agreement download
   const handleAgreementDownload = async () => {
-    if (!signingMethod) return
-
     setIsDownloading(true)
     try {
       // Record download
       await fetch('/api/affiliate/agreement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'download', signingMethod })
+        body: JSON.stringify({ action: 'download' })
       })
 
       // Download the PDF
@@ -868,7 +865,7 @@ export default function AffiliateProfilePage() {
                     <FileText className="h-4 w-4 text-blue-600" />
                     Affiliate Agreement
                   </CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Download, sign, and upload your affiliate agreement document</CardDescription>
+                  <CardDescription className="text-xs mt-0.5">Download, Sign and Upload your Affiliate Agreement Document</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
@@ -985,75 +982,16 @@ export default function AffiliateProfilePage() {
 
                     {/* Step Content */}
                     {!agreementStatus?.hasDownloaded ? (
-                      /* Step 1 Content: Choose & Download */
+                      /* Step 1 Content: Download */
                       <div className="text-center">
-                        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-4">
-                          {/* Option 1: Digital Signature */}
-                          <div
-                            onClick={() => setSigningMethod('digital')}
-                            className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
-                            style={{
-                              backgroundColor: signingMethod === 'digital' ? 'rgb(219, 230, 252)' : '#f9fafb',
-                              borderColor: signingMethod === 'digital' ? '#3b82f6' : '#e5e7eb'
-                            }}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div
-                                className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                                style={{
-                                  borderColor: signingMethod === 'digital' ? '#3b82f6' : '#9ca3af',
-                                  backgroundColor: signingMethod === 'digital' ? '#3b82f6' : 'transparent'
-                                }}
-                              >
-                                {signingMethod === 'digital' && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                              <span className={`text-sm font-medium ${signingMethod === 'digital' ? 'text-blue-700' : 'text-gray-700'}`}>
-                                Digital Signature
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 text-left ml-6">Use DSC token to sign digitally</p>
-                          </div>
-
-                          {/* Option 2: Manual Signature */}
-                          <div
-                            onClick={() => setSigningMethod('manual')}
-                            className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
-                            style={{
-                              backgroundColor: signingMethod === 'manual' ? 'rgb(219, 230, 252)' : '#f9fafb',
-                              borderColor: signingMethod === 'manual' ? '#3b82f6' : '#e5e7eb'
-                            }}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div
-                                className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                                style={{
-                                  borderColor: signingMethod === 'manual' ? '#3b82f6' : '#9ca3af',
-                                  backgroundColor: signingMethod === 'manual' ? '#3b82f6' : 'transparent'
-                                }}
-                              >
-                                {signingMethod === 'manual' && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                              <span className={`text-sm font-medium ${signingMethod === 'manual' ? 'text-blue-700' : 'text-gray-700'}`}>
-                                Manual Signature
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 text-left ml-6">Print, sign & scan as PDF</p>
-                          </div>
-                        </div>
-
+                        <p className="text-sm text-gray-600 mb-4">
+                          Click the link to download the agreement
+                        </p>
                         {/* Download Button */}
                         <Button
                           onClick={handleAgreementDownload}
-                          disabled={!signingMethod || isDownloading}
-                          className={`px-8 ${
-                            signingMethod
-                              ? 'bg-blue-600 hover:bg-blue-700'
-                              : 'bg-gray-400'
-                          } text-white`}
+                          disabled={isDownloading}
+                          className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           {isDownloading ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

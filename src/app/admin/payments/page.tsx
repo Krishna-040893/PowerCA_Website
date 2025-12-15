@@ -83,6 +83,7 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
+  const [dialogSearchTerm, setDialogSearchTerm] = useState('')
   const [syncingPayment, setSyncingPayment] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -154,13 +155,25 @@ export default function AdminPaymentsPage() {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(payment =>
-        payment.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.payment_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.firm_names?.some(name => name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      const search = searchTerm.toLowerCase()
+      // Check if search term is a number (for order count exact match)
+      const isNumberSearch = /^\d+$/.test(search.trim())
+
+      filtered = filtered.filter(payment => {
+        // If searching for a number, check for exact order count match first
+        if (isNumberSearch && payment.total_orders?.toString() === search.trim()) {
+          return true
+        }
+        // Otherwise search in text fields
+        return (
+          payment.name?.toLowerCase().includes(search) ||
+          payment.email?.toLowerCase().includes(search) ||
+          payment.order_id?.toLowerCase().includes(search) ||
+          payment.payment_id?.toLowerCase().includes(search) ||
+          payment.firm_names?.some(name => name?.toLowerCase().includes(search)) ||
+          payment.locations?.some(loc => loc?.toLowerCase().includes(search))
+        )
+      })
     }
 
     setFilteredPayments(filtered)
@@ -212,6 +225,27 @@ export default function AdminPaymentsPage() {
       default:
         return <Badge variant="outline">{status}</Badge>
     }
+  }
+
+  // Filter payments inside dialog
+  const getFilteredDialogPayments = () => {
+    if (!selectedPayment?.all_payments) return []
+    if (!dialogSearchTerm) return selectedPayment.all_payments
+
+    const search = dialogSearchTerm.toLowerCase()
+    return selectedPayment.all_payments.filter(p =>
+      p.order_id?.toLowerCase().includes(search) ||
+      p.payment_id?.toLowerCase().includes(search) ||
+      p.firm_name?.toLowerCase().includes(search) ||
+      p.location?.toLowerCase().includes(search) ||
+      p.status?.toLowerCase().includes(search) ||
+      p.amount?.toString().includes(search)
+    )
+  }
+
+  const handleOpenPaymentDialog = (payment: Payment) => {
+    setSelectedPayment(payment)
+    setDialogSearchTerm('')  // Reset search when opening dialog
   }
 
   const getStats = () => {
@@ -305,7 +339,7 @@ export default function AdminPaymentsPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by name, email, order ID..."
+                placeholder="Search by name, email, order ID, firm, location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -391,7 +425,7 @@ export default function AdminPaymentsPage() {
                               <DialogTrigger asChild>
                                 <Button
                                   size="sm"
-                                  onClick={() => setSelectedPayment(payment)}
+                                  onClick={() => handleOpenPaymentDialog(payment)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                   <Eye className="h-4 w-4 mr-1" />
@@ -438,33 +472,58 @@ export default function AdminPaymentsPage() {
 
                                     {/* All Payments List */}
                                     <div className="border rounded-lg">
-                                      <h4 className="font-medium p-3 bg-gray-50 border-b">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
-                                      <div className="divide-y max-h-[300px] overflow-y-auto">
-                                        {selectedPayment.all_payments?.map((p, idx) => (
-                                          <div key={idx} className="p-3 hover:bg-gray-50">
-                                            <div className="flex items-start justify-between gap-2">
-                                              <div className="flex-1 min-w-0">
-                                                <p className="font-mono text-xs text-gray-600">{p.order_id}</p>
-                                                {p.firm_name && (
-                                                  <p className="text-sm font-medium text-gray-900">{p.firm_name}</p>
-                                                )}
-                                                {p.location && (
-                                                  <p className="text-xs text-blue-600">{p.location}</p>
-                                                )}
-                                              </div>
-                                              <div className="text-right flex-shrink-0">
-                                                <p className="font-bold">₹{p.amount.toFixed(2)}</p>
-                                                {getStatusBadge(p.status)}
-                                              </div>
-                                            </div>
-                                            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                                              <span>{new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                                              {p.payment_id && (
-                                                <span className="font-mono truncate max-w-[150px]">{p.payment_id}</span>
-                                              )}
-                                            </div>
+                                      <div className="p-3 bg-gray-50 border-b">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                          <h4 className="font-medium">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
+                                          {/* Search inside dialog */}
+                                          <div className="relative">
+                                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
+                                            <Input
+                                              placeholder="Search payments..."
+                                              value={dialogSearchTerm}
+                                              onChange={(e) => setDialogSearchTerm(e.target.value)}
+                                              className="pl-8 h-8 text-xs w-full sm:w-[200px] border-gray-200"
+                                            />
                                           </div>
-                                        ))}
+                                        </div>
+                                        {dialogSearchTerm && (
+                                          <p className="text-xs text-gray-500 mt-2">
+                                            Found {getFilteredDialogPayments().length} of {selectedPayment.all_payments?.length || 0} payments
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="divide-y max-h-[300px] overflow-y-auto">
+                                        {getFilteredDialogPayments().length === 0 ? (
+                                          <div className="p-6 text-center text-gray-500">
+                                            <p className="text-sm">No payments found matching &quot;{dialogSearchTerm}&quot;</p>
+                                          </div>
+                                        ) : (
+                                          getFilteredDialogPayments().map((p, idx) => (
+                                            <div key={idx} className="p-3 hover:bg-gray-50">
+                                              <div className="flex items-start justify-between gap-2">
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="font-mono text-xs text-gray-600">{p.order_id}</p>
+                                                  {p.firm_name && (
+                                                    <p className="text-sm font-medium text-gray-900">{p.firm_name}</p>
+                                                  )}
+                                                  {p.location && (
+                                                    <p className="text-xs text-blue-600">{p.location}</p>
+                                                  )}
+                                                </div>
+                                                <div className="text-right flex-shrink-0">
+                                                  <p className="font-bold">₹{p.amount.toFixed(2)}</p>
+                                                  {getStatusBadge(p.status)}
+                                                </div>
+                                              </div>
+                                              <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                                <span>{new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                {p.payment_id && (
+                                                  <span className="font-mono truncate max-w-[150px]">{p.payment_id}</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          ))
+                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -537,7 +596,7 @@ export default function AdminPaymentsPage() {
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
-                                onClick={() => setSelectedPayment(payment)}
+                                onClick={() => handleOpenPaymentDialog(payment)}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -578,27 +637,55 @@ export default function AdminPaymentsPage() {
 
                                   {/* All Payments List */}
                                   <div className="border rounded-lg">
-                                    <h4 className="font-medium p-3 bg-gray-50 border-b">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
-                                    <div className="divide-y max-h-[250px] overflow-y-auto">
-                                      {selectedPayment.all_payments?.map((p, idx) => (
-                                        <div key={idx} className="p-3 hover:bg-gray-50">
-                                          <div className="flex items-start justify-between gap-2">
-                                            <div className="flex-1 min-w-0">
-                                              <p className="font-mono text-xs text-gray-600 truncate">{p.order_id}</p>
-                                              {p.location && (
-                                                <p className="text-sm text-blue-600 font-medium">{p.location}</p>
-                                              )}
-                                            </div>
-                                            <div className="text-right flex-shrink-0">
-                                              <p className="font-bold">₹{p.amount.toFixed(2)}</p>
-                                              {getStatusBadge(p.status)}
-                                            </div>
-                                          </div>
-                                          <div className="mt-2 text-xs text-gray-500">
-                                            {new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                          </div>
+                                    <div className="p-3 bg-gray-50 border-b">
+                                      <div className="flex flex-col gap-2">
+                                        <h4 className="font-medium">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
+                                        {/* Search inside dialog */}
+                                        <div className="relative">
+                                          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
+                                          <Input
+                                            placeholder="Search payments..."
+                                            value={dialogSearchTerm}
+                                            onChange={(e) => setDialogSearchTerm(e.target.value)}
+                                            className="pl-8 h-8 text-xs w-full border-gray-200"
+                                          />
                                         </div>
-                                      ))}
+                                      </div>
+                                      {dialogSearchTerm && (
+                                        <p className="text-xs text-gray-500 mt-2">
+                                          Found {getFilteredDialogPayments().length} of {selectedPayment.all_payments?.length || 0} payments
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="divide-y max-h-[250px] overflow-y-auto">
+                                      {getFilteredDialogPayments().length === 0 ? (
+                                        <div className="p-6 text-center text-gray-500">
+                                          <p className="text-sm">No payments found matching &quot;{dialogSearchTerm}&quot;</p>
+                                        </div>
+                                      ) : (
+                                        getFilteredDialogPayments().map((p, idx) => (
+                                          <div key={idx} className="p-3 hover:bg-gray-50">
+                                            <div className="flex items-start justify-between gap-2">
+                                              <div className="flex-1 min-w-0">
+                                                <p className="font-mono text-xs text-gray-600 truncate">{p.order_id}</p>
+                                                {p.firm_name && (
+                                                  <p className="text-sm font-medium text-gray-900">{p.firm_name}</p>
+                                                )}
+                                                {p.location && (
+                                                  <p className="text-sm text-blue-600 font-medium">{p.location}</p>
+                                                )}
+                                              </div>
+                                              <div className="text-right flex-shrink-0">
+                                                <p className="font-bold">₹{p.amount.toFixed(2)}</p>
+                                                {getStatusBadge(p.status)}
+                                              </div>
+                                            </div>
+                                            <div className="mt-2 text-xs text-gray-500">
+                                              {new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                            </div>
+                                          </div>
+                                        ))
+                                      )}
                                     </div>
                                   </div>
                                 </div>

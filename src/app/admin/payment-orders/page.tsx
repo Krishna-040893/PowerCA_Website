@@ -92,6 +92,7 @@ export default function PaymentOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState<PaymentOrder | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogSearchTerm, setDialogSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -131,13 +132,24 @@ export default function PaymentOrdersPage() {
     // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
-      filtered = filtered.filter(order =>
-        order.order_id?.toLowerCase().includes(search) ||
-        order.customer_name?.toLowerCase().includes(search) ||
-        order.customer_email?.toLowerCase().includes(search) ||
-        order.firm_names?.some(name => name?.toLowerCase().includes(search)) ||
-        order.customer_phone?.toLowerCase().includes(search)
-      )
+      // Check if search term is a number (for order count exact match)
+      const isNumberSearch = /^\d+$/.test(search.trim())
+
+      filtered = filtered.filter(order => {
+        // If searching for a number, check for exact order count match first
+        if (isNumberSearch && order.total_orders?.toString() === search.trim()) {
+          return true
+        }
+        // Otherwise search in text fields
+        return (
+          order.order_id?.toLowerCase().includes(search) ||
+          order.customer_name?.toLowerCase().includes(search) ||
+          order.customer_email?.toLowerCase().includes(search) ||
+          order.firm_names?.some(name => name?.toLowerCase().includes(search)) ||
+          order.customer_phone?.toLowerCase().includes(search) ||
+          order.locations?.some(loc => loc?.toLowerCase().includes(search))
+        )
+      })
     }
 
     setFilteredOrders(filtered)
@@ -209,7 +221,23 @@ export default function PaymentOrdersPage() {
 
   const handleViewDetails = (order: PaymentOrder) => {
     setSelectedOrder(order)
+    setDialogSearchTerm('')  // Reset search when opening dialog
     setDialogOpen(true)
+  }
+
+  // Filter orders inside dialog
+  const getFilteredDialogOrders = () => {
+    if (!selectedOrder?.all_orders) return []
+    if (!dialogSearchTerm) return selectedOrder.all_orders
+
+    const search = dialogSearchTerm.toLowerCase()
+    return selectedOrder.all_orders.filter(o =>
+      o.order_id?.toLowerCase().includes(search) ||
+      o.firm_name?.toLowerCase().includes(search) ||
+      o.location?.toLowerCase().includes(search) ||
+      o.status?.toLowerCase().includes(search) ||
+      o.amount?.toString().includes(search)
+    )
   }
 
   const stats = {
@@ -239,7 +267,7 @@ export default function PaymentOrdersPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by order ID, name, email, phone, or firm..."
+                placeholder="Search by name, email, order ID, firm, location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -552,36 +580,61 @@ export default function PaymentOrdersPage() {
 
               {/* All Orders List */}
               <div className="border rounded-lg">
-                <h4 className="font-medium p-3 bg-gray-50 border-b">All Orders ({selectedOrder.all_orders?.length || 0})</h4>
-                <div className="divide-y max-h-[300px] overflow-y-auto">
-                  {selectedOrder.all_orders?.map((o, idx) => (
-                    <div key={idx} className="p-3 hover:bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-mono text-xs text-gray-600">{o.order_id}</p>
-                          {o.firm_name && (
-                            <p className="text-sm font-medium text-gray-900">{o.firm_name}</p>
-                          )}
-                          {o.location && (
-                            <p className="text-sm text-blue-600">{o.location}</p>
-                          )}
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-bold flex items-center justify-end">
-                            <IndianRupee className="h-3 w-3" />
-                            {o.amount.toFixed(2)}
-                          </p>
-                          {getStatusBadge(o.status)}
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                        <span>{new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                        {o.discount_percentage && Number(o.discount_percentage) > 0 && (
-                          <span className="text-orange-600">{o.discount_percentage}% off</span>
-                        )}
-                      </div>
+                <div className="p-3 bg-gray-50 border-b">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h4 className="font-medium">All Orders ({selectedOrder.all_orders?.length || 0})</h4>
+                    {/* Search inside dialog */}
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
+                      <Input
+                        placeholder="Search orders..."
+                        value={dialogSearchTerm}
+                        onChange={(e) => setDialogSearchTerm(e.target.value)}
+                        className="pl-8 h-8 text-xs w-full sm:w-[200px] border-gray-200"
+                      />
                     </div>
-                  ))}
+                  </div>
+                  {dialogSearchTerm && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Found {getFilteredDialogOrders().length} of {selectedOrder.all_orders?.length || 0} orders
+                    </p>
+                  )}
+                </div>
+                <div className="divide-y max-h-[300px] overflow-y-auto">
+                  {getFilteredDialogOrders().length === 0 ? (
+                    <div className="p-6 text-center text-gray-500">
+                      <p className="text-sm">No orders found matching &quot;{dialogSearchTerm}&quot;</p>
+                    </div>
+                  ) : (
+                    getFilteredDialogOrders().map((o, idx) => (
+                      <div key={idx} className="p-3 hover:bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-mono text-xs text-gray-600">{o.order_id}</p>
+                            {o.firm_name && (
+                              <p className="text-sm font-medium text-gray-900">{o.firm_name}</p>
+                            )}
+                            {o.location && (
+                              <p className="text-sm text-blue-600">{o.location}</p>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="font-bold flex items-center justify-end">
+                              <IndianRupee className="h-3 w-3" />
+                              {o.amount.toFixed(2)}
+                            </p>
+                            {getStatusBadge(o.status)}
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                          <span>{new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                          {o.discount_percentage && Number(o.discount_percentage) > 0 && (
+                            <span className="text-orange-600">{o.discount_percentage}% off</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

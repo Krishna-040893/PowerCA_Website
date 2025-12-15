@@ -981,10 +981,10 @@ function AccountPageContent() {
                 <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Service Agreement</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Pricing Agreement</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-500 mb-6">
-                    Download, sign, and upload your service agreement document
+                    Download, Sign and Upload your Pricing Agreement Document
                   </p>
 
                   {isLoadingAgreement ? (
