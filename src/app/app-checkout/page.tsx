@@ -375,7 +375,7 @@ function AppCheckoutContent() {
                   ) : (
                     <>
                       <Shield className="w-5 h-5 mr-2" />
-                      Place order
+                      Place Order
                     </>
                   )}
                 </Button>
