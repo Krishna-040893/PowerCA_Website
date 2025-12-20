@@ -49,13 +49,12 @@ export default function PromotionalBanner() {
           <span className="hidden sm:block w-px h-4 bg-slate-600"></span>
 
           {/* Download Demo Version - animated highlight */}
-          <Link href="/app-download" className="relative group">
+          <Link href="/app-download" className="relative group inline-flex">
             {/* Pulsing glow effect */}
             <motion.div
-              className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 blur-md"
+              className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-40 blur-sm"
               animate={{
-                opacity: [0.3, 0.6, 0.3],
-                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.5, 0.3],
               }}
               transition={{
                 duration: 2,
@@ -65,17 +64,16 @@ export default function PromotionalBanner() {
             />
             <motion.div
               className="relative inline-flex items-center gap-1.5 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-md hover:shadow-lg transition-shadow"
-              animate={{
-                scale: [1, 1.03, 1],
-              }}
-              whileHover={{ scale: 1.08 }}
+              whileHover={{ scale: 1.05 }}
               transition={{
-                scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+                type: "spring",
+                stiffness: 400,
+                damping: 20,
               }}
             >
               <motion.span
-                animate={{ rotate: [0, -15, 15, 0] }}
-                transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 className="text-xs sm:text-sm"
               >
                 🎁
