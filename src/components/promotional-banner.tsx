@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 export default function PromotionalBanner() {
@@ -50,36 +49,12 @@ export default function PromotionalBanner() {
 
           {/* Download Demo Version - animated highlight */}
           <Link href="/app-download" className="relative group inline-flex">
-            {/* Pulsing glow effect */}
-            <motion.div
-              className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-40 blur-sm"
-              animate={{
-                opacity: [0.3, 0.5, 0.3],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <motion.div
-              className="relative inline-flex items-center gap-1.5 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-md hover:shadow-lg transition-shadow"
-              whileHover={{ scale: 1.05 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 20,
-              }}
-            >
-              <motion.span
-                animate={{ rotate: [0, -10, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="text-xs sm:text-sm"
-              >
-                🎁
-              </motion.span>
+            {/* Subtle glow effect */}
+            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 blur-sm group-hover:opacity-50 transition-opacity duration-300" />
+            <div className="relative inline-flex items-center gap-1.5 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-200">
+              <span className="text-xs sm:text-sm">🎁</span>
               <span>Download Demo Version</span>
-            </motion.div>
+            </div>
           </Link>
         </div>
       </div>
