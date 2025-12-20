@@ -109,18 +109,23 @@ function LoginContent() {
         }
 
         // Check if user has a pending affiliate referral
-        try {
-          const referralResponse = await fetch('/api/user/referral-info')
-          const referralData = await referralResponse.json()
+        // Skip referral redirect if user is going to app-checkout
+        const isAppCheckout = callbackUrl.includes('/app-checkout')
 
-          if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
-            // Referral user - redirect to account page with billing tab
-            window.location.href = '/account?tab=billing'
-            return
+        if (!isAppCheckout) {
+          try {
+            const referralResponse = await fetch('/api/user/referral-info')
+            const referralData = await referralResponse.json()
+
+            if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
+              // Referral user - redirect to account page with billing tab
+              window.location.href = '/account?tab=billing'
+              return
+            }
+          } catch (referralError) {
+            console.error('Error checking referral info:', referralError)
+            // Continue with normal redirect if referral check fails
           }
-        } catch (referralError) {
-          console.error('Error checking referral info:', referralError)
-          // Continue with normal redirect if referral check fails
         }
 
         // Use window.location.href for full page reload to ensure session is established
@@ -327,7 +332,7 @@ function LoginContent() {
               <p className="text-gray-600">
                 Don't have an Account?{' '}
                 <Link
-                  href={callbackUrl && callbackUrl !== '/account' ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
+                  href={callbackUrl && callbackUrl !== '/account?tab=billing' ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
                   className="text-blue-600 hover:text-blue-800 font-medium underline"
                 >
                   Sign Up

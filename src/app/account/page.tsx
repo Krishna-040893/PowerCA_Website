@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   User,
   Mail,
@@ -82,6 +83,20 @@ interface AgreementStatus {
   uploadedAt: string | null
   filePath: string | null
   signingMethod: 'digital' | 'manual' | null
+}
+
+interface AppDownload {
+  id: string
+  orderId: string
+  paymentId: string
+  productName: string
+  amount: number
+  downloadCount: number
+  maxDownloads: number
+  isDownloaded: boolean
+  downloadedAt: string | null
+  purchasedAt: string
+  status: string
 }
 
 interface SavedAddress {
@@ -321,10 +336,12 @@ function AccountPageContent() {
   const [activeTab, setActiveTab] = useState(() => {
     // Check URL param for initial tab
     const tabParam = searchParams.get('tab')
-    return tabParam && ['profile', 'billing', 'orders'].includes(tabParam)
+    return tabParam && ['profile', 'billing', 'orders', 'downloads'].includes(tabParam)
       ? tabParam
       : 'profile'
   })
+  const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
+  const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
@@ -383,6 +400,7 @@ function AccountPageContent() {
       fetchReferralInfo()
       fetchSavedAddresses()
       fetchAgreementStatus()
+      fetchAppDownloads()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.email])
@@ -513,6 +531,22 @@ function AccountPageContent() {
       console.error('Error fetching agreement status:', error)
     } finally {
       setIsLoadingAgreement(false)
+    }
+  }
+
+  const fetchAppDownloads = async () => {
+    setIsLoadingDownloads(true)
+    try {
+      const response = await fetch('/api/user/app-downloads')
+      const result = await response.json()
+
+      if (result.success) {
+        setAppDownloads(result.downloads || [])
+      }
+    } catch (error) {
+      console.error('Error fetching app downloads:', error)
+    } finally {
+      setIsLoadingDownloads(false)
     }
   }
 
@@ -874,6 +908,14 @@ function AccountPageContent() {
               <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Order History</span>
               <span className="sm:hidden">Orders</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="downloads"
+              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
+            >
+              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Demo Version</span>
+              <span className="sm:hidden">Demo</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1965,6 +2007,97 @@ function AccountPageContent() {
                     <p className="text-xs sm:text-sm text-gray-500 mb-4">Your purchase history will appear here</p>
                     <Button asChild variant="outline" className="border-green-200 text-green-600 hover:bg-green-50 text-sm">
                       <Link href="/pricing">Browse Pricing</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Downloads Tab - Demo Version */}
+          <TabsContent value="downloads" className="space-y-6">
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-blue-600\15 border-b py-2 sm:py-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Download className="h-4 w-4 text-green-600" />
+                    Demo Version Downloads
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Manage your Demo Version purchases and downloads
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {isLoadingDownloads ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  </div>
+                ) : appDownloads.length > 0 ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="font-semibold">Order ID</TableHead>
+                          <TableHead className="font-semibold">Amount Paid</TableHead>
+                          <TableHead className="font-semibold">Date</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {appDownloads.map((download) => (
+                          <TableRow key={download.id}>
+                            <TableCell className="font-mono text-sm">{download.orderId}</TableCell>
+                            <TableCell className="font-semibold">₹{download.amount.toLocaleString('en-IN')}</TableCell>
+                            <TableCell className="text-sm">
+                              {new Date(download.purchasedAt).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              {download.isDownloaded ? (
+                                <div className="flex flex-col gap-1">
+                                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 w-fit">
+                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                    Downloaded
+                                  </Badge>
+                                  {download.downloadedAt && (
+                                    <p className="text-xs text-gray-500">
+                                      {new Date(download.downloadedAt).toLocaleDateString('en-IN', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 w-fit">
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Ready to Download
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 sm:py-12">
+                    <Download className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">No Demo Version Purchased</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-4">
+                      Purchase the Demo Version to get access to PowerCA training content for one month.
+                    </p>
+                    <Button asChild variant="outline" className="border-green-200 text-green-600 hover:bg-green-50 text-sm">
+                      <Link href="/app-download">
+                        Get Demo Version
+                      </Link>
                     </Button>
                   </div>
                 )}

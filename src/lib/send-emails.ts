@@ -82,13 +82,13 @@ export async function sendAdminRegistrationNotification(data: AdminRegistrationN
     // Use noreply@ address to avoid FROM and TO being the same
     // This prevents email delivery issues with Resend and other email services
     const fromAddress = process.env.EMAIL_FROM || 'PowerCA Notifications <noreply@powerca.in>'
-    const toAddress = process.env.CONTACT_EMAIL || 'contact@powerca.in'
+    const toAddresses = ['contact@powerca.in', 'tbsindiaudt@gmail.com']
 
-    console.log('Sending admin notification email:', { from: fromAddress, to: toAddress })
+    console.log('Sending admin notification email:', { from: fromAddress, to: toAddresses })
 
     const result = await resend.emails.send({
       from: fromAddress,
-      to: toAddress,
+      to: toAddresses,
       subject: `🎉 New Registration: ${data.userName} (${data.userRole || 'User'})`,
       react: AdminRegistrationNotification({
         userName: data.userName,

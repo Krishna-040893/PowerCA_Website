@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Download, Package } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'appDownloads' | 'appDownloadOrders'
   subItems?: { title: string; href: string }[]
 }
 
@@ -51,6 +51,8 @@ interface Counts {
   newsletterSubscribers: number
   blogPosts: number
   agreements: number
+  appDownloads: number
+  appDownloadOrders: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -90,6 +92,12 @@ const getBaseNavigation = (): NavSection[] => [
     items: [
       { title: 'Payments', href: '/admin/payments', icon: CreditCard, countKey: 'payments', badgeVariant: 'default' },
       { title: 'Payment Orders', href: '/admin/payment-orders', icon: ShoppingCart, countKey: 'paymentOrders', badgeVariant: 'default' },
+    ]
+  },
+  {
+    title: 'App Downloads',
+    items: [
+      { title: 'Demo Downloads', href: '/admin/app-downloads', icon: Download, countKey: 'appDownloads', badgeVariant: 'default' },
     ]
   },
   {
@@ -133,7 +141,9 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       paymentOrders: 0,
       newsletterSubscribers: 0,
       blogPosts: 0,
-      agreements: 0
+      agreements: 0,
+      appDownloads: 0,
+      appDownloadOrders: 0
     }
   })
   const pathname = usePathname()

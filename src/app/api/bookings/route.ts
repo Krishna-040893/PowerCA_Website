@@ -335,10 +335,10 @@ async function sendConfirmationEmail(booking: Booking) {
       </html>
     `
 
-    // Send separate notification to team
+    // Send separate notification to team (multiple recipients)
     await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
-      to: 'contact@powerca.in',
+      to: ['contact@powerca.in', 'tbsindiaudt@gmail.com'],
       subject: `[TEAM] New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
       html: teamEmailHtml,
     })

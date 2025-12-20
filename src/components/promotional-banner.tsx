@@ -1,6 +1,8 @@
 'use client'
 
-import {useState, useEffect  } from 'react'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 export default function PromotionalBanner() {
   const [isVisible, setIsVisible] = useState(true)
@@ -27,12 +29,7 @@ export default function PromotionalBanner() {
   return (
     <div className="fixed top-0 w-full bg-slate-900 text-white py-2.5 px-4 text-center text-sm z-50">
       <div className="container mx-auto">
-        <div className="flex items-center justify-center gap-1 sm:gap-3 flex-wrap">
-          {/* NEW badge - smaller on mobile */}
-          <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-blue-600 text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wide">
-            NEW
-          </span>
-
+        <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
           {/* Promotional text - responsive */}
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
             <span className="text-white font-medium text-[11px] sm:text-sm">
@@ -47,6 +44,45 @@ export default function PromotionalBanner() {
           >
             View Pricing
           </a>
+
+          {/* Separator */}
+          <span className="hidden sm:block w-px h-4 bg-slate-600"></span>
+
+          {/* Download Demo Version - animated highlight */}
+          <Link href="/app-download" className="relative group">
+            {/* Pulsing glow effect */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 blur-md"
+              animate={{
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="relative inline-flex items-center gap-1.5 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-md hover:shadow-lg transition-shadow"
+              animate={{
+                scale: [1, 1.03, 1],
+              }}
+              whileHover={{ scale: 1.08 }}
+              transition={{
+                scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+              }}
+            >
+              <motion.span
+                animate={{ rotate: [0, -15, 15, 0] }}
+                transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                className="text-xs sm:text-sm"
+              >
+                🎁
+              </motion.span>
+              <span>Download Demo Version</span>
+            </motion.div>
+          </Link>
         </div>
       </div>
 

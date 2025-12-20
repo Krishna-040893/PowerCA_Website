@@ -27,7 +27,9 @@ export async function GET(_request: NextRequest) {
           payments: 0,
           paymentOrders: 0,
           newsletterSubscribers: 0,
-          blogPosts: 0
+          blogPosts: 0,
+          appDownloads: 0,
+          appDownloadOrders: 0
         },
         { status: 200 }
       )
@@ -52,7 +54,9 @@ export async function GET(_request: NextRequest) {
       paymentsResult,
       paymentOrdersResult,
       newsletterSubscribersResult,
-      blogPostsResult
+      blogPostsResult,
+      appDownloadsResult,
+      appDownloadOrdersResult
     ] = await Promise.allSettled([
       // Total bookings count
       supabase
@@ -111,6 +115,16 @@ export async function GET(_request: NextRequest) {
       // Total blog posts count
       supabase
         .from('blog_posts')
+        .select('id', { count: 'exact', head: true }),
+
+      // Total app download payments count
+      supabase
+        .from('app_download_payments')
+        .select('id', { count: 'exact', head: true }),
+
+      // Total app download orders count
+      supabase
+        .from('app_download_orders')
         .select('id', { count: 'exact', head: true })
     ])
 
@@ -126,6 +140,8 @@ export async function GET(_request: NextRequest) {
       paymentOrders: paymentOrdersResult.status === 'fulfilled' ? (paymentOrdersResult.value.count || 0) : 0,
       newsletterSubscribers: newsletterSubscribersResult.status === 'fulfilled' ? (newsletterSubscribersResult.value.count || 0) : 0,
       blogPosts: blogPostsResult.status === 'fulfilled' ? (blogPostsResult.value.count || 0) : 0,
+      appDownloads: appDownloadsResult.status === 'fulfilled' ? (appDownloadsResult.value.count || 0) : 0,
+      appDownloadOrders: appDownloadOrdersResult.status === 'fulfilled' ? (appDownloadOrdersResult.value.count || 0) : 0,
     }
 
     return NextResponse.json(counts)
@@ -144,7 +160,9 @@ export async function GET(_request: NextRequest) {
         payments: 0,
         paymentOrders: 0,
         newsletterSubscribers: 0,
-        blogPosts: 0
+        blogPosts: 0,
+        appDownloads: 0,
+        appDownloadOrders: 0
       },
       { status: 200 }
     )
