@@ -109,10 +109,10 @@ function LoginContent() {
         }
 
         // Check if user has a pending affiliate referral
-        // Skip referral redirect if user is going to app-checkout
-        const isAppCheckout = callbackUrl.includes('/app-checkout')
+        // Skip referral redirect if user is going to app-checkout or app-download flow
+        const isAppDownloadFlow = callbackUrl.includes('/app-checkout') || callbackUrl.includes('/app-download')
 
-        if (!isAppCheckout) {
+        if (!isAppDownloadFlow) {
           try {
             const referralResponse = await fetch('/api/user/referral-info')
             const referralData = await referralResponse.json()
@@ -345,7 +345,7 @@ function LoginContent() {
               <p className="text-gray-600 text-sm">
                 Are you an Affiliate Partner?{' '}
                 <Link
-                  href="/affiliate-login"
+                  href={callbackUrl && callbackUrl !== '/account?tab=billing' ? `/affiliate-login?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/affiliate-login'}
                   className="text-purple-600 hover:text-purple-800 font-medium underline"
                 >
                   Login Here

@@ -45,7 +45,9 @@ export async function GET() {
       isDownloaded: download.download_count > 0,
       downloadedAt: download.last_download_at,
       purchasedAt: download.created_at,
-      status: download.status
+      status: download.status,
+      downloadToken: download.download_token,
+      downloadLinkExpiry: download.download_link_expiry
     }))
 
     return NextResponse.json({

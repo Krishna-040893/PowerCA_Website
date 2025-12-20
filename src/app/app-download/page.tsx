@@ -88,7 +88,16 @@ export default function AppDownloadPage() {
   }, [session, status])
 
   const handleBuyNow = (productId: string) => {
-    // Redirect to checkout with product info
+    // Wait for session to load
+    if (status === 'loading') return
+
+    // Check if user is logged in
+    if (!session) {
+      // Redirect to login with callback to this page
+      window.location.href = `/login?callbackUrl=${encodeURIComponent('/app-download')}`
+      return
+    }
+    // User is logged in, redirect to checkout with product info
     window.location.href = `/app-checkout?product=${productId}`
   }
 

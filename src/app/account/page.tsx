@@ -97,6 +97,8 @@ interface AppDownload {
   downloadedAt: string | null
   purchasedAt: string
   status: string
+  downloadToken: string | null
+  downloadLinkExpiry: string | null
 }
 
 interface SavedAddress {
@@ -342,6 +344,7 @@ function AccountPageContent() {
   })
   const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
@@ -547,6 +550,35 @@ function AccountPageContent() {
       console.error('Error fetching app downloads:', error)
     } finally {
       setIsLoadingDownloads(false)
+    }
+  }
+
+  const handleAppDownload = async (download: AppDownload) => {
+    if (!download.downloadToken) {
+      toast.error('Download link not available. Please contact support.')
+      return
+    }
+
+    // Check if link is expired
+    if (download.downloadLinkExpiry && new Date(download.downloadLinkExpiry) < new Date()) {
+      toast.error('Download link has expired. Please contact support.')
+      return
+    }
+
+    setDownloadingId(download.id)
+    try {
+      // Open download in new tab/trigger download
+      window.location.href = `/api/download/app?token=${download.downloadToken}`
+
+      // Wait a moment then refresh the list to show updated status
+      setTimeout(() => {
+        fetchAppDownloads()
+        setDownloadingId(null)
+      }, 2000)
+    } catch (error) {
+      console.error('Error downloading app:', error)
+      toast.error('Failed to start download. Please try again.')
+      setDownloadingId(null)
     }
   }
 
@@ -2042,6 +2074,7 @@ function AccountPageContent() {
                           <TableHead className="font-semibold">Amount Paid</TableHead>
                           <TableHead className="font-semibold">Date</TableHead>
                           <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -2080,6 +2113,30 @@ function AccountPageContent() {
                                   <Download className="h-3 w-3 mr-1" />
                                   Ready to Download
                                 </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {download.isDownloaded ? (
+                                <span className="text-xs text-gray-400">-</span>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAppDownload(download)}
+                                  disabled={downloadingId === download.id}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-8"
+                                >
+                                  {downloadingId === download.id ? (
+                                    <>
+                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                      Downloading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download className="h-3 w-3 mr-1" />
+                                      Download
+                                    </>
+                                  )}
+                                </Button>
                               )}
                             </TableCell>
                           </TableRow>
