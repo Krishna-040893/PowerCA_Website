@@ -94,6 +94,8 @@ export async function GET(_request: NextRequest) {
       customer_phone: string | null;
       gst_number: string | null;
       total_amount: number;
+      paid_amount: number;
+      pending_amount: number;
       total_orders: number;
       locations: string[];
       statuses: string[];
@@ -115,6 +117,8 @@ export async function GET(_request: NextRequest) {
           customer_phone: order.customer_phone,
           gst_number: order.gst_number,
           total_amount: 0,
+          paid_amount: 0,
+          pending_amount: 0,
           total_orders: 0,
           locations: [],
           statuses: [],
@@ -126,9 +130,17 @@ export async function GET(_request: NextRequest) {
       }
 
       const group = groupedByEmail.get(emailKey)!
-      group.total_amount += order.amount || 0
+      const orderAmount = order.amount || 0
+      group.total_amount += orderAmount
       group.total_orders += 1
       group.all_orders.push(order)
+
+      // Track paid vs pending amounts
+      if (order.status === 'paid') {
+        group.paid_amount += orderAmount
+      } else {
+        group.pending_amount += orderAmount
+      }
 
       // Collect unique locations
       if (order.location && !group.locations.includes(order.location)) {
@@ -170,6 +182,8 @@ export async function GET(_request: NextRequest) {
         customer_phone: group.customer_phone,
         gst_number: group.gst_number,
         total_amount: group.total_amount,
+        paid_amount: group.paid_amount,
+        pending_amount: group.pending_amount,
         total_orders: group.total_orders,
         locations: group.locations,
         statuses: group.statuses,

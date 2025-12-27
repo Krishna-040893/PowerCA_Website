@@ -150,7 +150,7 @@ export const AppDownloadEmail = ({
 
       <!-- Download Button -->
       <div class="download-box">
-        <p style="color: white; margin: 0 0 20px 0; font-size: 14px;">Click the button below to download demo version</p>
+        <p style="color: white; margin: 0 0 20px 0; font-size: 14px;">Click the button below to download Demo Version</p>
         <a href="${downloadLink}" class="download-button">
           Download Now
         </a>

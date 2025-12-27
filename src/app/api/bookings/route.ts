@@ -339,7 +339,7 @@ async function sendConfirmationEmail(booking: Booking) {
     await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: ['contact@powerca.in', 'tbsindiaudt@gmail.com'],
-      subject: `[TEAM] New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
+      subject: `New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 

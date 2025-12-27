@@ -50,6 +50,8 @@ interface IndividualPayment {
   state?: string
   postcode?: string
   country?: string
+  // Payment type
+  payment_type?: string
 }
 
 interface Payment {
@@ -225,6 +227,74 @@ export default function AdminPaymentsPage() {
       default:
         return <Badge variant="outline">{status}</Badge>
     }
+  }
+
+  const getPaymentTypeBadge = (paymentType: string | undefined, status: string) => {
+    const isPaid = ['paid', 'captured', 'authorized', 'success'].includes(status.toLowerCase())
+
+    if (paymentType === 'final_settlement') {
+      return (
+        <Badge className={`text-xs ${isPaid ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
+          Final Settlement {isPaid ? '✓' : '- Pending'}
+        </Badge>
+      )
+    }
+    // Installation & Support - only show paid status, no "Pending" label
+    return (
+      <Badge className={`text-xs ${isPaid ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+        Installation & Support {isPaid ? '✓' : ''}
+      </Badge>
+    )
+  }
+
+  // Group payments by location for popup display
+  interface LocationGroup {
+    location: string
+    firmName: string | null
+    initialPayment: IndividualPayment | null
+    finalSettlement: IndividualPayment | null
+    totalAmount: number
+  }
+
+  const getPaymentsGroupedByLocation = (payments: IndividualPayment[]): LocationGroup[] => {
+    const locationMap = new Map<string, LocationGroup>()
+
+    // Sort payments by created_at ascending (oldest first)
+    const sortedPayments = [...payments].sort((a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+    sortedPayments.forEach(payment => {
+      const locationKey = payment.location || 'No Location'
+
+      if (!locationMap.has(locationKey)) {
+        locationMap.set(locationKey, {
+          location: locationKey,
+          firmName: payment.firm_name || null,
+          initialPayment: null,
+          finalSettlement: null,
+          totalAmount: 0
+        })
+      }
+
+      const group = locationMap.get(locationKey)!
+      group.totalAmount += payment.amount || 0
+
+      // First payment for this location = initial payment
+      // Second payment for this location = final settlement
+      if (!group.initialPayment) {
+        group.initialPayment = payment
+      } else if (!group.finalSettlement) {
+        group.finalSettlement = payment
+      }
+
+      // Update firm name if available
+      if (payment.firm_name) {
+        group.firmName = payment.firm_name
+      }
+    })
+
+    return Array.from(locationMap.values())
   }
 
   // Filter payments inside dialog
@@ -470,60 +540,74 @@ export default function AdminPaymentsPage() {
                                       </div>
                                     </div>
 
-                                    {/* All Payments List */}
+                                    {/* All Payments List - Grouped by Location */}
                                     <div className="border rounded-lg">
                                       <div className="p-3 bg-gray-50 border-b">
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                          <h4 className="font-medium">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
+                                          <h4 className="font-medium">Locations ({getPaymentsGroupedByLocation(selectedPayment.all_payments || []).length})</h4>
                                           {/* Search inside dialog */}
                                           <div className="relative">
                                             <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                                             <Input
-                                              placeholder="Search payments..."
+                                              placeholder="Search locations..."
                                               value={dialogSearchTerm}
                                               onChange={(e) => setDialogSearchTerm(e.target.value)}
                                               className="pl-8 h-8 text-xs w-full sm:w-[200px] border-gray-200"
                                             />
                                           </div>
                                         </div>
-                                        {dialogSearchTerm && (
-                                          <p className="text-xs text-gray-500 mt-2">
-                                            Found {getFilteredDialogPayments().length} of {selectedPayment.all_payments?.length || 0} payments
-                                          </p>
-                                        )}
                                       </div>
                                       <div className="divide-y max-h-[300px] overflow-y-auto">
-                                        {getFilteredDialogPayments().length === 0 ? (
-                                          <div className="p-6 text-center text-gray-500">
-                                            <p className="text-sm">No payments found matching &quot;{dialogSearchTerm}&quot;</p>
-                                          </div>
-                                        ) : (
-                                          getFilteredDialogPayments().map((p, idx) => (
+                                        {getPaymentsGroupedByLocation(selectedPayment.all_payments || [])
+                                          .filter(group =>
+                                            !dialogSearchTerm ||
+                                            group.location.toLowerCase().includes(dialogSearchTerm.toLowerCase()) ||
+                                            (group.firmName && group.firmName.toLowerCase().includes(dialogSearchTerm.toLowerCase()))
+                                          )
+                                          .map((group, idx) => (
                                             <div key={idx} className="p-3 hover:bg-gray-50">
                                               <div className="flex items-start justify-between gap-2">
                                                 <div className="flex-1 min-w-0">
-                                                  <p className="font-mono text-xs text-gray-600">{p.order_id}</p>
-                                                  {p.firm_name && (
-                                                    <p className="text-sm font-medium text-gray-900">{p.firm_name}</p>
+                                                  {group.firmName && (
+                                                    <p className="text-sm font-medium text-gray-900">{group.firmName}</p>
                                                   )}
-                                                  {p.location && (
-                                                    <p className="text-xs text-blue-600">{p.location}</p>
-                                                  )}
+                                                  <p className="text-sm text-blue-600">{group.location}</p>
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
-                                                  <p className="font-bold">₹{p.amount.toFixed(2)}</p>
-                                                  {getStatusBadge(p.status)}
+                                                  <p className="font-bold">₹{group.totalAmount.toFixed(2)}</p>
                                                 </div>
                                               </div>
+                                              {/* Payment Status Row */}
+                                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                {/* Installation & Support Status */}
+                                                {group.initialPayment && (
+                                                  <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                                                    Installation & Support {['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? '✓' : ''}
+                                                  </Badge>
+                                                )}
+                                                {/* Final Settlement Status */}
+                                                {group.finalSettlement ? (
+                                                  <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
+                                                    Final Settlement {['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? '✓' : '- Pending'}
+                                                  </Badge>
+                                                ) : group.initialPayment && ['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? (
+                                                  <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
+                                                    Final Settlement - Not Started
+                                                  </Badge>
+                                                ) : null}
+                                              </div>
+                                              {/* Order dates */}
                                               <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                                                <span>{new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                                                {p.payment_id && (
-                                                  <span className="font-mono truncate max-w-[150px]">{p.payment_id}</span>
+                                                {group.initialPayment && (
+                                                  <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                )}
+                                                {group.finalSettlement && (
+                                                  <span>Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                                 )}
                                               </div>
                                             </div>
                                           ))
-                                        )}
+                                        }
                                       </div>
                                     </div>
                                   </div>
@@ -635,57 +719,71 @@ export default function AdminPaymentsPage() {
                                     </div>
                                   </div>
 
-                                  {/* All Payments List */}
+                                  {/* All Payments List - Grouped by Location */}
                                   <div className="border rounded-lg">
                                     <div className="p-3 bg-gray-50 border-b">
                                       <div className="flex flex-col gap-2">
-                                        <h4 className="font-medium">All Payments ({selectedPayment.all_payments?.length || 0})</h4>
+                                        <h4 className="font-medium">Locations ({getPaymentsGroupedByLocation(selectedPayment.all_payments || []).length})</h4>
                                         {/* Search inside dialog */}
                                         <div className="relative">
                                           <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                                           <Input
-                                            placeholder="Search payments..."
+                                            placeholder="Search locations..."
                                             value={dialogSearchTerm}
                                             onChange={(e) => setDialogSearchTerm(e.target.value)}
                                             className="pl-8 h-8 text-xs w-full border-gray-200"
                                           />
                                         </div>
                                       </div>
-                                      {dialogSearchTerm && (
-                                        <p className="text-xs text-gray-500 mt-2">
-                                          Found {getFilteredDialogPayments().length} of {selectedPayment.all_payments?.length || 0} payments
-                                        </p>
-                                      )}
                                     </div>
                                     <div className="divide-y max-h-[250px] overflow-y-auto">
-                                      {getFilteredDialogPayments().length === 0 ? (
-                                        <div className="p-6 text-center text-gray-500">
-                                          <p className="text-sm">No payments found matching &quot;{dialogSearchTerm}&quot;</p>
-                                        </div>
-                                      ) : (
-                                        getFilteredDialogPayments().map((p, idx) => (
+                                      {getPaymentsGroupedByLocation(selectedPayment.all_payments || [])
+                                        .filter(group =>
+                                          !dialogSearchTerm ||
+                                          group.location.toLowerCase().includes(dialogSearchTerm.toLowerCase()) ||
+                                          (group.firmName && group.firmName.toLowerCase().includes(dialogSearchTerm.toLowerCase()))
+                                        )
+                                        .map((group, idx) => (
                                           <div key={idx} className="p-3 hover:bg-gray-50">
                                             <div className="flex items-start justify-between gap-2">
                                               <div className="flex-1 min-w-0">
-                                                <p className="font-mono text-xs text-gray-600 truncate">{p.order_id}</p>
-                                                {p.firm_name && (
-                                                  <p className="text-sm font-medium text-gray-900">{p.firm_name}</p>
+                                                {group.firmName && (
+                                                  <p className="text-sm font-medium text-gray-900">{group.firmName}</p>
                                                 )}
-                                                {p.location && (
-                                                  <p className="text-sm text-blue-600 font-medium">{p.location}</p>
-                                                )}
+                                                <p className="text-sm text-blue-600">{group.location}</p>
                                               </div>
                                               <div className="text-right flex-shrink-0">
-                                                <p className="font-bold">₹{p.amount.toFixed(2)}</p>
-                                                {getStatusBadge(p.status)}
+                                                <p className="font-bold">₹{group.totalAmount.toFixed(2)}</p>
                                               </div>
                                             </div>
+                                            {/* Payment Status Row */}
+                                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                              {group.initialPayment && (
+                                                <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                                                  Installation & Support {['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? '✓' : ''}
+                                                </Badge>
+                                              )}
+                                              {group.finalSettlement ? (
+                                                <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
+                                                  Final Settlement {['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? '✓' : '- Pending'}
+                                                </Badge>
+                                              ) : group.initialPayment && ['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? (
+                                                <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
+                                                  Final Settlement - Not Started
+                                                </Badge>
+                                              ) : null}
+                                            </div>
                                             <div className="mt-2 text-xs text-gray-500">
-                                              {new Date(p.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                              {group.initialPayment && (
+                                                <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                              )}
+                                              {group.finalSettlement && (
+                                                <span className="ml-3">Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                              )}
                                             </div>
                                           </div>
                                         ))
-                                      )}
+                                      }
                                     </div>
                                   </div>
                                 </div>

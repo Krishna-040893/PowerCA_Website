@@ -11,8 +11,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Loader2, Search, Eye, RefreshCw, CheckCircle, XCircle, Download, Package, CreditCard } from 'lucide-react'
+import { Loader2, Search, Eye, RefreshCw, CheckCircle, XCircle, Download, Package, CreditCard, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import {
   Pagination,
   PaginationContent,
@@ -81,6 +93,10 @@ function AdminAppDownloadsContent() {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'payments')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [selectedPaymentIds, setSelectedPaymentIds] = useState<Set<string>>(new Set())
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 
   // Update active tab when URL changes
   useEffect(() => {
@@ -209,6 +225,144 @@ function AdminAppDownloadsContent() {
     pendingOrders: orders.length
   }
 
+  // Track scroll position for showing/hiding footer action bar
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main.overflow-y-auto')
+
+    const handleScroll = () => {
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop
+        setIsHeaderVisible(scrollTop < 100)
+      }
+    }
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll()
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
+  // Get current page payment IDs (from the flat payments array, not grouped)
+  const currentPagePaymentIds = useMemo(() => {
+    const startIdx = (currentPage - 1) * itemsPerPage
+    const endIdx = currentPage * itemsPerPage
+    // Get payment IDs from paginatedGroupedPayments
+    const currentPageGroups = filteredGroupedPayments.slice(startIdx, endIdx)
+    const ids: string[] = []
+    currentPageGroups.forEach(group => {
+      group.payments.forEach(p => ids.push(p.id))
+    })
+    return ids
+  }, [filteredGroupedPayments, currentPage, itemsPerPage])
+
+  // Get current page order IDs
+  const currentPageOrderIds = useMemo(() => {
+    return paginatedOrders.map(o => o.id)
+  }, [paginatedOrders])
+
+  const allCurrentPagePaymentsSelected = currentPagePaymentIds.length > 0 &&
+    currentPagePaymentIds.every(id => selectedPaymentIds.has(id))
+
+  const allCurrentPageOrdersSelected = currentPageOrderIds.length > 0 &&
+    currentPageOrderIds.every(id => selectedOrderIds.has(id))
+
+  const handleSelectAllPayments = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      setSelectedPaymentIds(new Set(currentPagePaymentIds))
+    } else {
+      setSelectedPaymentIds(new Set())
+    }
+  }
+
+  const handleSelectAllOrders = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      setSelectedOrderIds(new Set(currentPageOrderIds))
+    } else {
+      setSelectedOrderIds(new Set())
+    }
+  }
+
+  const handleSelectOneOrder = (id: string, checked: boolean | 'indeterminate') => {
+    const newSelected = new Set(selectedOrderIds)
+    if (checked === true) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedOrderIds(newSelected)
+  }
+
+  const handleDeleteSelectedPayments = async () => {
+    if (selectedPaymentIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/app-downloads', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids: Array.from(selectedPaymentIds), type: 'payments' })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete payments')
+      }
+
+      toast.success(`Successfully deleted ${selectedPaymentIds.size} payment(s)`)
+      setSelectedPaymentIds(new Set())
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete payments')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleDeleteSelectedOrders = async () => {
+    if (selectedOrderIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/app-downloads', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids: Array.from(selectedOrderIds), type: 'orders' })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete orders')
+      }
+
+      toast.success(`Successfully deleted ${selectedOrderIds.size} order(s)`)
+      setSelectedOrderIds(new Set())
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete orders')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Get currently selected IDs based on active tab
+  const currentSelectedIds = activeTab === 'payments' ? selectedPaymentIds : selectedOrderIds
+  const handleDeleteSelected = activeTab === 'payments' ? handleDeleteSelectedPayments : handleDeleteSelectedOrders
+  const setCurrentSelectedIds = activeTab === 'payments' ? setSelectedPaymentIds : setSelectedOrderIds
+
   if (authLoading || loading) {
     return (
       <AdminPageWrapper title="Demo Downloads">
@@ -231,10 +385,48 @@ function AdminAppDownloadsContent() {
         { label: 'Pending Orders', value: stats.pendingOrders, color: 'bg-orange-100 text-orange-800' }
       ]}
       actions={
-        <Button onClick={fetchData} variant="outline" size="sm">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2 flex-wrap items-center">
+          {currentSelectedIds.size > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({currentSelectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {activeTab === 'payments' ? 'Payments' : 'Orders'}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {currentSelectedIds.size} {activeTab === 'payments' ? 'payment' : 'order'}(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
+          <Button onClick={fetchData} variant="outline" size="sm">
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       }
     >
       <Card className="shadow-sm border border-gray-100">
@@ -280,6 +472,14 @@ function AdminAppDownloadsContent() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={allCurrentPagePaymentsSelected}
+                          onCheckedChange={handleSelectAllPayments}
+                          aria-label="Select all"
+                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        />
+                      </TableHead>
                       <TableHead className="font-semibold">Customer</TableHead>
                       <TableHead className="font-semibold text-center">Purchases</TableHead>
                       <TableHead className="font-semibold">Total Amount</TableHead>
@@ -290,52 +490,74 @@ function AdminAppDownloadsContent() {
                   <TableBody>
                     {paginatedGroupedPayments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                           No payments found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      paginatedGroupedPayments.map((group) => (
-                        <TableRow key={group.email}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{group.customerName}</p>
-                              <p className="text-sm text-gray-500">{group.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="font-bold text-blue-600 text-lg">{group.totalPurchases}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-semibold text-green-600">₹{group.totalAmount?.toLocaleString('en-IN')}</span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              {group.payments.filter(p => p.download_count > 0).length > 0 ? (
-                                <Badge className="bg-green-100 text-green-800 w-fit">
-                                  <Download className="w-3 h-3 mr-1" />
-                                  {group.payments.filter(p => p.download_count > 0).length} Downloaded
-                                </Badge>
-                              ) : null}
-                              {group.payments.filter(p => p.download_count === 0).length > 0 && (
-                                <Badge className="bg-gray-100 text-gray-600 w-fit">
-                                  {group.payments.filter(p => p.download_count === 0).length} Pending
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              onClick={() => setSelectedGroupedPayment(group)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View All
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      paginatedGroupedPayments.map((group) => {
+                        // Check if all payments in this group are selected
+                        const allGroupPaymentsSelected = group.payments.every(p => selectedPaymentIds.has(p.id))
+                        const someGroupPaymentsSelected = group.payments.some(p => selectedPaymentIds.has(p.id))
+
+                        return (
+                          <TableRow key={group.email} className={someGroupPaymentsSelected ? 'bg-blue-50/30' : ''}>
+                            <TableCell>
+                              <Checkbox
+                                checked={allGroupPaymentsSelected}
+                                onCheckedChange={(checked) => {
+                                  const newSelected = new Set(selectedPaymentIds)
+                                  if (checked === true) {
+                                    group.payments.forEach(p => newSelected.add(p.id))
+                                  } else {
+                                    group.payments.forEach(p => newSelected.delete(p.id))
+                                  }
+                                  setSelectedPaymentIds(newSelected)
+                                }}
+                                aria-label={`Select all payments for ${group.customerName}`}
+                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{group.customerName}</p>
+                                <p className="text-sm text-gray-500">{group.email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className="font-bold text-blue-600 text-lg">{group.totalPurchases}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-semibold text-green-600">₹{group.totalAmount?.toLocaleString('en-IN')}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                {group.payments.filter(p => p.download_count > 0).length > 0 ? (
+                                  <Badge className="bg-green-100 text-green-800 w-fit">
+                                    <Download className="w-3 h-3 mr-1" />
+                                    {group.payments.filter(p => p.download_count > 0).length} Downloaded
+                                  </Badge>
+                                ) : null}
+                                {group.payments.filter(p => p.download_count === 0).length > 0 && (
+                                  <Badge className="bg-gray-100 text-gray-600 w-fit">
+                                    {group.payments.filter(p => p.download_count === 0).length} Pending
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                onClick={() => setSelectedGroupedPayment(group)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View All
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
                     )}
                   </TableBody>
                 </Table>
@@ -381,6 +603,14 @@ function AdminAppDownloadsContent() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={allCurrentPageOrdersSelected}
+                          onCheckedChange={handleSelectAllOrders}
+                          aria-label="Select all"
+                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        />
+                      </TableHead>
                       <TableHead className="font-semibold">Customer</TableHead>
                       <TableHead className="font-semibold">Order ID</TableHead>
                       <TableHead className="font-semibold">Product</TableHead>
@@ -393,13 +623,21 @@ function AdminAppDownloadsContent() {
                   <TableBody>
                     {paginatedOrders.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                           No pending orders found
                         </TableCell>
                       </TableRow>
                     ) : (
                       paginatedOrders.map((order) => (
-                        <TableRow key={order.id}>
+                        <TableRow key={order.id} className={selectedOrderIds.has(order.id) ? 'bg-blue-50/30' : ''}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedOrderIds.has(order.id)}
+                              onCheckedChange={(checked) => handleSelectOneOrder(order.id, checked)}
+                              aria-label={`Select ${order.customer_name}`}
+                              className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                            />
+                          </TableCell>
                           <TableCell>
                             <div>
                               <p className="font-medium">{order.customer_name}</p>
@@ -695,6 +933,61 @@ function AdminAppDownloadsContent() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
+      {currentSelectedIds.size > 0 && !isHeaderVisible && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] p-4 z-[9999] lg:left-64">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">
+                {currentSelectedIds.size} item{currentSelectedIds.size > 1 ? 's' : ''} selected
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentSelectedIds(new Set())}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Clear
+              </Button>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({currentSelectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {activeTab === 'payments' ? 'Payments' : 'Orders'}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {currentSelectedIds.size} {activeTab === 'payments' ? 'payment' : 'order'}(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      )}
     </AdminPageWrapper>
   )
 }

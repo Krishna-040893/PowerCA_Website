@@ -57,6 +57,7 @@ interface IndividualOrder {
   customer_state: string | null
   customer_postcode: string | null
   customer_country: string | null
+  payment_type: string | null
 }
 
 interface PaymentOrder {
@@ -68,6 +69,8 @@ interface PaymentOrder {
   firm_names: string[]
   gst_number: string | null
   total_amount: number
+  paid_amount: number
+  pending_amount: number
   total_orders: number
   locations: string[]
   statuses: string[]
@@ -194,6 +197,92 @@ export default function PaymentOrdersPage() {
     }
   }
 
+  const getPaymentTypeBadge = (paymentType: string | null, status: string) => {
+    const isPaid = status === 'paid'
+
+    if (paymentType === 'final_settlement') {
+      return (
+        <Badge className={`text-xs ${isPaid ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
+          Final Settlement {isPaid ? '✓' : '- Pending'}
+        </Badge>
+      )
+    }
+    // Installation & Support - only show paid status, no "Pending" label
+    return (
+      <Badge className={`text-xs ${isPaid ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+        Installation & Support {isPaid ? '✓' : ''}
+      </Badge>
+    )
+  }
+
+  // Determine payment type based on order sequence for same location
+  // First order = Installation & Support, Second order = Final Settlement
+  const getPaymentTypeBySequence = (order: IndividualOrder, allOrders: IndividualOrder[]) => {
+    // Group orders by location (address_id or location)
+    const locationKey = order.location || 'unknown'
+
+    // Get all orders for the same location, sorted by created_at ascending (oldest first)
+    const ordersForLocation = allOrders
+      .filter(o => (o.location || 'unknown') === locationKey)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+
+    // Find the index of current order in the sorted list
+    const orderIndex = ordersForLocation.findIndex(o => o.order_id === order.order_id)
+
+    // First order (index 0) = initial_payment, Second order (index 1) = final_settlement
+    return orderIndex === 0 ? 'initial_payment' : 'final_settlement'
+  }
+
+  // Group orders by location for popup display
+  interface LocationGroup {
+    location: string
+    firmName: string | null
+    initialPayment: IndividualOrder | null
+    finalSettlement: IndividualOrder | null
+    totalAmount: number
+  }
+
+  const getOrdersGroupedByLocation = (orders: IndividualOrder[]): LocationGroup[] => {
+    const locationMap = new Map<string, LocationGroup>()
+
+    // Sort orders by created_at ascending (oldest first)
+    const sortedOrders = [...orders].sort((a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+    sortedOrders.forEach(order => {
+      const locationKey = order.location || 'No Location'
+
+      if (!locationMap.has(locationKey)) {
+        locationMap.set(locationKey, {
+          location: locationKey,
+          firmName: order.firm_name,
+          initialPayment: null,
+          finalSettlement: null,
+          totalAmount: 0
+        })
+      }
+
+      const group = locationMap.get(locationKey)!
+      group.totalAmount += order.amount || 0
+
+      // First order for this location = initial payment
+      // Second order for this location = final settlement
+      if (!group.initialPayment) {
+        group.initialPayment = order
+      } else if (!group.finalSettlement) {
+        group.finalSettlement = order
+      }
+
+      // Update firm name if available
+      if (order.firm_name) {
+        group.firmName = order.firm_name
+      }
+    })
+
+    return Array.from(locationMap.values())
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -306,7 +395,7 @@ export default function PaymentOrdersPage() {
                     <th className="px-6 py-3 text-left text-base font-bold">Customer</th>
                     <th className="px-6 py-3 text-center text-base font-bold">Orders</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Locations</th>
-                    <th className="px-6 py-3 text-left text-base font-bold">Total Amount</th>
+                    <th className="px-6 py-3 text-left text-base font-bold">Amount</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Status</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Affiliate</th>
                     <th className="px-6 py-3 text-left text-base font-bold">Last Order</th>
@@ -334,9 +423,17 @@ export default function PaymentOrdersPage() {
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm font-bold text-green-600 flex items-center">
-                          <IndianRupee className="h-3 w-3" />
-                          {order.total_amount.toFixed(2)}
+                        <div className="flex flex-col gap-1">
+                          <div className="text-sm font-bold text-green-600 flex items-center">
+                            <IndianRupee className="h-3 w-3" />
+                            {(order.paid_amount || 0).toFixed(2)}
+                          </div>
+                          {(order.pending_amount || 0) > 0 && (
+                            <div className="text-xs text-orange-600 flex items-center">
+                              <IndianRupee className="h-2.5 w-2.5" />
+                              {order.pending_amount.toFixed(2)} pending
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -405,8 +502,14 @@ export default function PaymentOrdersPage() {
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
                             <p className="font-bold text-base text-green-600 whitespace-nowrap flex items-center">
                               <IndianRupee className="h-3 w-3" />
-                              {order.total_amount.toFixed(2)}
+                              {(order.paid_amount || 0).toFixed(2)}
                             </p>
+                            {(order.pending_amount || 0) > 0 && (
+                              <p className="text-xs text-orange-600 whitespace-nowrap flex items-center">
+                                <IndianRupee className="h-2.5 w-2.5" />
+                                {order.pending_amount.toFixed(2)} pending
+                              </p>
+                            )}
                             <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
                               {order.total_orders} orders
                             </span>
@@ -516,10 +619,12 @@ export default function PaymentOrdersPage() {
       {/* View Details Dialog - Enhanced */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-[90vw] sm:max-w-3xl max-h-[80vh] overflow-y-auto bg-white rounded-xl">
-          <DialogHeader className="border-b pb-3">
-            <DialogTitle className="text-lg font-bold">Customer Order Details</DialogTitle>
-            <DialogDescription className="text-xs text-gray-500">
-              {selectedOrder?.customer_name} - {selectedOrder?.customer_email}
+          <DialogHeader className="border-b pb-3 mb-2">
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              {selectedOrder?.customer_name || 'Customer'} - Order Details
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-600">
+              {selectedOrder?.customer_email}
             </DialogDescription>
           </DialogHeader>
 
@@ -542,12 +647,21 @@ export default function PaymentOrdersPage() {
                     <p className="font-bold text-blue-600">{selectedOrder.total_orders}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Total Amount:</span>
+                    <span className="text-gray-600">Paid Amount:</span>
                     <p className="font-bold text-green-600 flex items-center">
                       <IndianRupee className="h-3 w-3" />
-                      {selectedOrder.total_amount.toFixed(2)}
+                      {(selectedOrder.paid_amount || 0).toFixed(2)}
                     </p>
                   </div>
+                  {(selectedOrder.pending_amount || 0) > 0 && (
+                    <div>
+                      <span className="text-gray-600">Pending Amount:</span>
+                      <p className="font-bold text-orange-600 flex items-center">
+                        <IndianRupee className="h-3 w-3" />
+                        {selectedOrder.pending_amount.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
                   {selectedOrder.gst_number && (
                     <div>
                       <span className="text-gray-600">GST:</span>
@@ -578,63 +692,77 @@ export default function PaymentOrdersPage() {
                 </div>
               )}
 
-              {/* All Orders List */}
+              {/* All Orders List - Grouped by Location */}
               <div className="border rounded-lg">
                 <div className="p-3 bg-gray-50 border-b">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <h4 className="font-medium">All Orders ({selectedOrder.all_orders?.length || 0})</h4>
+                    <h4 className="font-medium">Locations ({getOrdersGroupedByLocation(selectedOrder.all_orders || []).length})</h4>
                     {/* Search inside dialog */}
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
                       <Input
-                        placeholder="Search orders..."
+                        placeholder="Search locations..."
                         value={dialogSearchTerm}
                         onChange={(e) => setDialogSearchTerm(e.target.value)}
                         className="pl-8 h-8 text-xs w-full sm:w-[200px] border-gray-200"
                       />
                     </div>
                   </div>
-                  {dialogSearchTerm && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Found {getFilteredDialogOrders().length} of {selectedOrder.all_orders?.length || 0} orders
-                    </p>
-                  )}
                 </div>
                 <div className="divide-y max-h-[300px] overflow-y-auto">
-                  {getFilteredDialogOrders().length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
-                      <p className="text-sm">No orders found matching &quot;{dialogSearchTerm}&quot;</p>
-                    </div>
-                  ) : (
-                    getFilteredDialogOrders().map((o, idx) => (
+                  {getOrdersGroupedByLocation(selectedOrder.all_orders || [])
+                    .filter(group =>
+                      !dialogSearchTerm ||
+                      group.location.toLowerCase().includes(dialogSearchTerm.toLowerCase()) ||
+                      (group.firmName && group.firmName.toLowerCase().includes(dialogSearchTerm.toLowerCase()))
+                    )
+                    .map((group, idx) => (
                       <div key={idx} className="p-3 hover:bg-gray-50">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="font-mono text-xs text-gray-600">{o.order_id}</p>
-                            {o.firm_name && (
-                              <p className="text-sm font-medium text-gray-900">{o.firm_name}</p>
+                            {group.firmName && (
+                              <p className="text-sm font-medium text-gray-900">{group.firmName}</p>
                             )}
-                            {o.location && (
-                              <p className="text-sm text-blue-600">{o.location}</p>
-                            )}
+                            <p className="text-sm text-blue-600">{group.location}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="font-bold flex items-center justify-end">
                               <IndianRupee className="h-3 w-3" />
-                              {o.amount.toFixed(2)}
+                              {group.totalAmount.toFixed(2)}
                             </p>
-                            {getStatusBadge(o.status)}
                           </div>
                         </div>
+                        {/* Payment Status Row */}
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {/* Installation & Support Status */}
+                          {group.initialPayment && (
+                            <Badge className={`text-xs ${group.initialPayment.status === 'paid' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                              Installation & Support {group.initialPayment.status === 'paid' ? '✓' : ''}
+                            </Badge>
+                          )}
+                          {/* Final Settlement Status */}
+                          {group.finalSettlement ? (
+                            <Badge className={`text-xs ${group.finalSettlement.status === 'paid' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
+                              Final Settlement {group.finalSettlement.status === 'paid' ? '✓' : '- Pending'}
+                            </Badge>
+                          ) : group.initialPayment?.status === 'paid' ? (
+                            <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
+                              Final Settlement - Not Started
+                            </Badge>
+                          ) : null}
+                        </div>
+                        {/* Order dates */}
                         <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                          <span>{new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                          {o.discount_percentage && Number(o.discount_percentage) > 0 && (
-                            <span className="text-orange-600">{o.discount_percentage}% off</span>
+                          {group.initialPayment && (
+                            <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                          )}
+                          {group.finalSettlement && (
+                            <span>Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                           )}
                         </div>
                       </div>
                     ))
-                  )}
+                  }
                 </div>
               </div>
             </div>

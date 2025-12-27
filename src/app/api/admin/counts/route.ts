@@ -51,11 +51,11 @@ export async function GET(_request: NextRequest) {
       approvedAffiliatesResult,
       referralsResult,
       pendingPaymentsResult,
-      paymentsResult,
-      paymentOrdersResult,
+      paymentEmailsResult,
+      paymentOrderEmailsResult,
       newsletterSubscribersResult,
       blogPostsResult,
-      appDownloadsResult,
+      appDownloadEmailsResult,
       appDownloadOrdersResult
     ] = await Promise.allSettled([
       // Total bookings count
@@ -96,15 +96,15 @@ export async function GET(_request: NextRequest) {
         .select('id', { count: 'exact', head: true })
         .eq('commission_paid', false),
 
-      // Total payments count (from payments table)
+      // Fetch emails from payments table to count unique customers
       supabase
         .from('payments')
-        .select('id', { count: 'exact', head: true }),
+        .select('email'),
 
-      // Total payment orders count (from payment_orders table)
+      // Fetch emails from payment_orders table to count unique customers
       supabase
         .from('payment_orders')
-        .select('id', { count: 'exact', head: true }),
+        .select('customer_email'),
 
       // Total newsletter subscribers count (active subscribers)
       supabase
@@ -117,16 +117,49 @@ export async function GET(_request: NextRequest) {
         .from('blog_posts')
         .select('id', { count: 'exact', head: true }),
 
-      // Total app download payments count
+      // Fetch emails from app_download_payments table to count unique customers
       supabase
         .from('app_download_payments')
-        .select('id', { count: 'exact', head: true }),
+        .select('email'),
 
-      // Total app download orders count
+      // Total pending app download orders count (from app_download_orders table)
       supabase
         .from('app_download_orders')
         .select('id', { count: 'exact', head: true })
     ])
+
+    // Count unique customers for payments (by email)
+    let paymentsUniqueCustomers = 0
+    if (paymentEmailsResult.status === 'fulfilled' && paymentEmailsResult.value.data) {
+      const uniqueEmails = new Set(
+        paymentEmailsResult.value.data
+          .map(p => p.email?.toLowerCase())
+          .filter(Boolean)
+      )
+      paymentsUniqueCustomers = uniqueEmails.size
+    }
+
+    // Count unique customers for payment orders (by customer_email)
+    let paymentOrdersUniqueCustomers = 0
+    if (paymentOrderEmailsResult.status === 'fulfilled' && paymentOrderEmailsResult.value.data) {
+      const uniqueEmails = new Set(
+        paymentOrderEmailsResult.value.data
+          .map(p => p.customer_email?.toLowerCase())
+          .filter(Boolean)
+      )
+      paymentOrdersUniqueCustomers = uniqueEmails.size
+    }
+
+    // Count unique customers for app downloads (by email)
+    let appDownloadsUniqueCustomers = 0
+    if (appDownloadEmailsResult.status === 'fulfilled' && appDownloadEmailsResult.value.data) {
+      const uniqueEmails = new Set(
+        appDownloadEmailsResult.value.data
+          .map(p => p.email?.toLowerCase())
+          .filter(Boolean)
+      )
+      appDownloadsUniqueCustomers = uniqueEmails.size
+    }
 
     const counts = {
       bookings: bookingsResult.status === 'fulfilled' ? (bookingsResult.value.count || 0) : 0,
@@ -136,11 +169,11 @@ export async function GET(_request: NextRequest) {
       approvedAffiliates: approvedAffiliatesResult.status === 'fulfilled' ? (approvedAffiliatesResult.value.count || 0) : 0,
       referrals: referralsResult.status === 'fulfilled' ? (referralsResult.value.count || 0) : 0,
       pendingPayments: pendingPaymentsResult.status === 'fulfilled' ? (pendingPaymentsResult.value.count || 0) : 0,
-      payments: paymentsResult.status === 'fulfilled' ? (paymentsResult.value.count || 0) : 0,
-      paymentOrders: paymentOrdersResult.status === 'fulfilled' ? (paymentOrdersResult.value.count || 0) : 0,
+      payments: paymentsUniqueCustomers,
+      paymentOrders: paymentOrdersUniqueCustomers,
       newsletterSubscribers: newsletterSubscribersResult.status === 'fulfilled' ? (newsletterSubscribersResult.value.count || 0) : 0,
       blogPosts: blogPostsResult.status === 'fulfilled' ? (blogPostsResult.value.count || 0) : 0,
-      appDownloads: appDownloadsResult.status === 'fulfilled' ? (appDownloadsResult.value.count || 0) : 0,
+      appDownloads: appDownloadsUniqueCustomers,
       appDownloadOrders: appDownloadOrdersResult.status === 'fulfilled' ? (appDownloadOrdersResult.value.count || 0) : 0,
     }
 

@@ -162,6 +162,11 @@ function CheckoutContent() {
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
   const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
+
+  // Check if this is a final settlement payment
+  const paymentType = searchParams.get('paymentType')
+  const isFinalSettlement = paymentType === 'final_settlement'
+
   const [formData, setFormData] = useState({
     firstName: '',
     firmName: '',
@@ -200,8 +205,10 @@ function CheckoutContent() {
 
   const addressIndex = getAddressIndex()
   const isFirstAddress = addressIndex === 0
-  const discountRate = isFirstAddress ? 0 : 0.10 // Flat 10% for 2nd address onwards
-  const discountPercentage = isFirstAddress ? 0 : 10 // For display: 0 for 1st, 10 for 2nd+
+
+  // For final settlement, no discounts apply - always ₹25,000
+  const discountRate = isFinalSettlement ? 0 : (isFirstAddress ? 0 : 0.10) // Flat 10% for 2nd address onwards (only for initial payment)
+  const discountPercentage = isFinalSettlement ? 0 : (isFirstAddress ? 0 : 10) // For display: 0 for 1st, 10 for 2nd+
 
   const fullBasePrice = 25000 // ₹25,000 base price
   const discountAmount = fullBasePrice * discountRate
@@ -210,6 +217,12 @@ function CheckoutContent() {
   const gstRate = 0.18 // 18% GST
   const gstAmount = subtotal * gstRate
   const total = subtotal + gstAmount
+
+  // Product name based on payment type
+  const productName = isFinalSettlement ? 'PowerCA Final Settlement' : (product.name || 'PowerCA Implementation')
+  const productDescription = isFinalSettlement
+    ? 'Final settlement payment for PowerCA service'
+    : 'Installation and Ongoing Support & Update'
 
 
   // Enforce authentication - redirect to login if not authenticated
@@ -715,7 +728,8 @@ function CheckoutContent() {
         body: JSON.stringify({
           amount: Math.round(total * 100), // Convert to paise
           productId: product.productId,
-          planType: 'implementation',
+          planType: isFinalSettlement ? 'final_settlement' : 'implementation',
+          paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
           ...formData,
           // Send address fields separately for storage
           country: formData.country,
@@ -777,7 +791,7 @@ function CheckoutContent() {
         currency: orderData.currency,
         order_id: orderData.orderId || orderData.id,
         name: 'PowerCA',
-        description: product.name || 'PowerCA Implementation',
+        description: productName,
         image: '/logo.png',
         prefill: {
           name: formData.firstName,
@@ -803,6 +817,7 @@ function CheckoutContent() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
               customerDetails: {
                 name: formData.firstName,
                 email: formData.email,
@@ -813,7 +828,7 @@ function CheckoutContent() {
                 address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
               },
               productDetails: {
-                name: product.name,
+                name: productName,
                 amount: total,
                 quantity: quantity,
                 gstAmount: gstAmount,
@@ -1125,9 +1140,11 @@ function CheckoutContent() {
                     />
                   </div>
                   <div className="flex-1 w-full sm:w-auto">
-                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-2">Power CA Software</h4>
+                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-2">
+                      {isFinalSettlement ? 'PowerCA Final Settlement' : 'Power CA Software'}
+                    </h4>
                     <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
-                      <span className="text-xs sm:text-sm text-gray-600">Installation and Ongoing Support & Update</span>
+                      <span className="text-xs sm:text-sm text-gray-600">{productDescription}</span>
                       {/* <div className="flex items-center border-2 border-gray-300 rounded-lg shadow-sm">
                         <button
                           type="button"
@@ -1165,11 +1182,18 @@ function CheckoutContent() {
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
-                  {/* Show discount info for second+ address */}
-                  {!isFirstAddress && selectedAddressId && (
+                  {/* Show discount info for second+ address (not for final settlement) */}
+                  {!isFinalSettlement && !isFirstAddress && selectedAddressId && (
                     <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
                       <span className="font-medium">{discountPercentage}% Discount</span>
                       <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {/* Show final settlement info */}
+                  {isFinalSettlement && (
+                    <div className="flex justify-between text-xs sm:text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
+                      <span className="font-medium">Final Settlement Payment</span>
+                      <span className="font-semibold">2nd of 2 payments</span>
                     </div>
                   )}
                   <div className="flex justify-between text-xs sm:text-sm text-gray-700">

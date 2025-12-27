@@ -115,7 +115,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
   const { isAuthenticated, isLoading, adminUser, handleLogout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Agreements']) // Default expanded
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]) // No dropdown expanded by default
 
   // Initialize counts from localStorage if available
   const [counts, setCounts] = useState<Counts>(() => {

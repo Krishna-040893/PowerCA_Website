@@ -69,7 +69,9 @@ export async function POST(req: NextRequest) {
       // Discount fields for progressive pricing
       discountPercentage,
       discountAmount,
-      originalAmount
+      originalAmount,
+      // Payment type for two-stage payment tracking
+      paymentType // 'initial_payment' or 'final_settlement'
     } = body
 
     // Validate amount is provided
@@ -131,41 +133,60 @@ export async function POST(req: NextRequest) {
       const customerEmail = customerDetails?.email || session.user.email || body.email
       const supabase = createAdminClient()
 
-      // Store pending order
+      // Base order data without payment_type (for fallback if column doesn't exist)
+      const baseOrderData = {
+        order_id: order.id,
+        amount: amount / 100, // Convert to rupees for storage
+        currency: 'INR',
+        status: 'created',
+        customer_email: customerEmail,
+        customer_name: customerDetails?.name || session.user.name || body.name,
+        customer_phone: customerDetails?.phone || body.phone,
+        company: customerDetails?.company || body.company,
+        firm_name: customerDetails?.firmName || body.firmName,
+        gst_number: customerDetails?.gst,
+        product_id: productId || planId,
+        user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
+        // Add referral tracking
+        referral_code: referralInfo?.referralCode || null,
+        customer_id: referralInfo?.customerId || null,
+        is_affiliate_purchase: !!referralInfo?.referralCode,
+        // Add address fields
+        customer_address: address || body.address,
+        customer_city: city || body.city,
+        customer_state: state || body.state,
+        customer_postcode: postcode || body.postcode,
+        customer_country: country || body.country,
+        address_id: addressId || null,
+        // Discount fields for progressive pricing
+        discount_percentage: discountPercentage || 0,
+        discount_amount: discountAmount || 0,
+        original_amount: originalAmount || null
+      }
+
+      // Try to store with payment_type first
       const { error } = await supabase
         .from('payment_orders')
         .insert({
-          order_id: order.id,
-          amount: amount / 100, // Convert to rupees for storage
-          currency: 'INR',
-          status: 'created',
-          customer_email: customerEmail,
-          customer_name: customerDetails?.name || session.user.name || body.name,
-          customer_phone: customerDetails?.phone || body.phone,
-          company: customerDetails?.company || body.company,
-          firm_name: customerDetails?.firmName || body.firmName,
-          gst_number: customerDetails?.gst,
-          product_id: productId || planId,
-          user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
-          // Add referral tracking
-          referral_code: referralInfo?.referralCode || null,
-          customer_id: referralInfo?.customerId || null,
-          is_affiliate_purchase: !!referralInfo?.referralCode,
-          // Add address fields
-          customer_address: address || body.address,
-          customer_city: city || body.city,
-          customer_state: state || body.state,
-          customer_postcode: postcode || body.postcode,
-          customer_country: country || body.country,
-          address_id: addressId || null,
-          // Discount fields for progressive pricing
-          discount_percentage: discountPercentage || 0,
-          discount_amount: discountAmount || 0,
-          original_amount: originalAmount || null
+          ...baseOrderData,
+          // Payment type for two-stage payment tracking
+          payment_type: paymentType || 'initial_payment'
         })
 
       if (error) {
-        logger.error('Error storing order (non-critical)', error)
+        // If error might be due to missing payment_type column, try without it
+        if (error.message?.includes('payment_type') || error.code === '42703') {
+          logger.info('payment_type column may not exist, trying fallback insert')
+          const { error: fallbackError } = await supabase
+            .from('payment_orders')
+            .insert(baseOrderData)
+
+          if (fallbackError) {
+            logger.error('Error storing order (non-critical)', fallbackError)
+          }
+        } else {
+          logger.error('Error storing order (non-critical)', error)
+        }
         // Continue even if DB save fails - this is not critical
       }
     } catch (dbError) {

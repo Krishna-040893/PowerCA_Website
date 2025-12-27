@@ -60,6 +60,7 @@ interface OrderHistory {
   discountPercentage: number
   discountAmount: number
   originalAmount: number | null
+  paymentType: 'initial_payment' | 'final_settlement'
 }
 
 interface UserData {
@@ -116,6 +117,16 @@ interface SavedAddress {
   is_default: boolean
   label?: string
   created_at: string
+}
+
+interface AddressPaymentStatus {
+  addressId: string
+  initialPaymentDate: string | null
+  initialPaymentId: string | null
+  finalSettlementDate: string | null
+  finalSettlementPaymentId: string | null
+  isFinalSettlementEnabled: boolean
+  daysUntilFinalSettlement: number | null
 }
 
 // Common spelling corrections for Indian cities
@@ -342,6 +353,9 @@ function AccountPageContent() {
       ? tabParam
       : 'profile'
   })
+
+  // Check if this is a final settlement payment flow
+  const paymentType = searchParams.get('paymentType')
   const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
@@ -351,6 +365,7 @@ function AccountPageContent() {
   const [loadingAddresses, setLoadingAddresses] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [purchasedAddressIds, setPurchasedAddressIds] = useState<string[]>([])
+  const [addressPaymentStatus, setAddressPaymentStatus] = useState<AddressPaymentStatus[]>([])
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [expandedOrders, setExpandedOrders] = useState<string[]>([])
@@ -428,11 +443,34 @@ function AccountPageContent() {
       if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
         setPurchasedAddressIds(purchasedResult.purchasedAddressIds)
       }
+
+      // Fetch address payment status (for two-stage payment tracking)
+      const paymentStatusResponse = await fetch('/api/user/address-payment-status')
+      const paymentStatusResult = await paymentStatusResponse.json()
+      if (paymentStatusResult.success && paymentStatusResult.addressPaymentStatus) {
+        setAddressPaymentStatus(paymentStatusResult.addressPaymentStatus)
+      }
     } catch (error) {
       console.error('Error fetching addresses:', error)
     } finally {
       setLoadingAddresses(false)
     }
+  }
+
+  // Helper function to get payment status for an address
+  const getAddressPaymentStatus = (addressId: string): AddressPaymentStatus | undefined => {
+    return addressPaymentStatus.find(status => status.addressId === addressId)
+  }
+
+  // Helper function to calculate days remaining from initial payment (90 days / 3 months period)
+  const getDaysRemaining = (initialPaymentDate: string | null): number => {
+    if (!initialPaymentDate) return 90
+    const paymentDate = new Date(initialPaymentDate)
+    const today = new Date()
+    const diffTime = today.getTime() - paymentDate.getTime()
+    const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    const daysRemaining = 90 - daysPassed
+    return daysRemaining > 0 ? daysRemaining : 0
   }
 
   const _handleDeleteAddress = async (addressId: string) => {
@@ -764,7 +802,10 @@ function AccountPageContent() {
 
         // For new addresses, redirect to checkout with the new address ID
         if (!isEditing && result.address?.id) {
-          router.push(`/checkout?addressId=${result.address.id}`)
+          const checkoutUrl = paymentType
+            ? `/checkout?addressId=${result.address.id}&paymentType=${paymentType}`
+            : `/checkout?addressId=${result.address.id}`
+          router.push(checkoutUrl)
           return
         }
 
@@ -1464,69 +1505,126 @@ function AccountPageContent() {
                                             )
                                           }}
                                         >
-                                          <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                            <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                            {address.gst_no && (
-                                              <p className="text-gray-400 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-2 shrink-0">
-                                            {isOrdered && (
-                                              <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>
-                                                ✓ Ordered
-                                              </span>
-                                            )}
-                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                                          </div>
+                                          {(() => {
+                                            const addrPaymentStatus = getAddressPaymentStatus(address.id)
+                                            const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
+                                            const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
+
+                                            return (
+                                              <>
+                                                <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
+                                                  <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                                  {address.gst_no && (
+                                                    <p className="text-gray-400 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
+                                                  )}
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                  {hasFinalSettlement ? (
+                                                    <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
+                                                      ✓ Completed
+                                                    </span>
+                                                  ) : hasInitialPayment ? (
+                                                    <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
+                                                      Final Settlement Pending
+                                                    </span>
+                                                  ) : null}
+                                                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                </div>
+                                              </>
+                                            )
+                                          })()}
                                         </div>
 
                                         {/* Accordion Content - Expandable */}
                                         {isExpanded && (
                                           <div className="px-4 pb-4 pt-2">
-                                            <div className="flex items-start gap-2">
-                                              <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                                <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                              </div>
-                                              {!isOrdered && (
-                                                <button
-                                                  type="button"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleEditAddress(address)
-                                                  }}
-                                                  className="text-blue-500 hover:text-blue-700 p-1"
-                                                  title="Edit address"
-                                                >
-                                                  <Pencil className="w-5 h-5" />
-                                                </button>
-                                              )}
-                                            </div>
-                                            {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
-                                            {!isOrdered && (
-                                              <div className="mt-4 w-full flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
-                                                    ○ Not Ordered
-                                                  </span>
-                                                  {originalIndex > 0 && (
-                                                    <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
-                                                      10% Off
-                                                    </span>
-                                                  )}
+                                            {(() => {
+                                              const addrPaymentStatus = getAddressPaymentStatus(address.id)
+                                              const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
+                                              const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
+                                              const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
+
+                                              return (
+                                                <div className="flex items-center gap-3">
+                                                  <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
+                                                    <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                                    {/* Status badges below address */}
+                                                    {hasInitialPayment && (
+                                                      <div className="flex flex-wrap gap-2 mt-2">
+                                                        <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
+                                                          ✓ Installation & Support Paid
+                                                        </span>
+                                                        {hasFinalSettlement ? (
+                                                          <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
+                                                            ✓ Final Settlement Paid
+                                                          </span>
+                                                        ) : (
+                                                          <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
+                                                            ○ Final Settlement Pending
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                  {/* Right side: Action buttons */}
+                                                  <div className="flex flex-col items-end gap-2 shrink-0">
+                                                    {hasFinalSettlement ? null : hasInitialPayment && isFinalEnabled ? (
+                                                      <>
+                                                        <span className="text-xs text-gray-500">
+                                                          {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)} days remaining
+                                                        </span>
+                                                        <button
+                                                          onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            sessionStorage.setItem('checkoutAddressId', address.id)
+                                                            localStorage.setItem('checkoutAddressId', address.id)
+                                                            router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
+                                                          }}
+                                                          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
+                                                        >
+                                                          Pay Final Settlement
+                                                        </button>
+                                                      </>
+                                                    ) : !hasInitialPayment ? (
+                                                      <div className="flex flex-col items-end gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                          <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '13px' }}>
+                                                            ○ Not Ordered
+                                                          </span>
+                                                          {originalIndex > 0 && (
+                                                            <span className="text-green-600 font-medium" style={{ fontSize: '12px' }}>
+                                                              10% Off
+                                                            </span>
+                                                          )}
+                                                          <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation()
+                                                              handleEditAddress(address)
+                                                            }}
+                                                            className="text-blue-500 hover:text-blue-700 p-1"
+                                                            title="Edit address"
+                                                          >
+                                                            <Pencil className="w-4 h-4" />
+                                                          </button>
+                                                        </div>
+                                                        <button
+                                                          onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            sessionStorage.setItem('checkoutAddressId', address.id)
+                                                            localStorage.setItem('checkoutAddressId', address.id)
+                                                            router.push(`/checkout?addressId=${address.id}`)
+                                                          }}
+                                                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
+                                                        >
+                                                          Proceed to Order
+                                                        </button>
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
                                                 </div>
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    sessionStorage.setItem('checkoutAddressId', address.id)
-                                                    localStorage.setItem('checkoutAddressId', address.id)
-                                                    router.push(`/checkout?addressId=${address.id}`)
-                                                  }}
-                                                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
-                                                >
-                                                  Proceed to Order
-                                                </button>
-                                              </div>
-                                            )}
+                                              )
+                                            })()}
                                           </div>
                                         )}
                                       </div>
@@ -1543,55 +1641,96 @@ function AccountPageContent() {
                                           : 'border-gray-200 bg-white'
                                       }`}
                                     >
-                                      <div className="flex items-start gap-2">
-                                        <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                          <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                          {address.gst_no && (
-                                            <p className="text-gray-400" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
-                                          )}
-                                          <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2 shrink-0">
-                                          {isOrdered && (
-                                            <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>✓ Ordered</span>
-                                          )}
-                                          {!isOrdered && (
-                                            <button
-                                              type="button"
-                                              onClick={() => handleEditAddress(address)}
-                                              className="text-blue-500 hover:text-blue-700 p-1"
-                                              title="Edit address"
-                                            >
-                                              <Pencil className="w-5 h-5" />
-                                            </button>
-                                          )}
-                                        </div>
-                                      </div>
-                                      {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
-                                      {!isOrdered && (
-                                        <div className="mt-4 w-full flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
-                                              ○ Not Ordered
-                                            </span>
-                                            {originalIndex > 0 && (
-                                              <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
-                                                10% Off
-                                              </span>
-                                            )}
+                                      {(() => {
+                                        const addrPaymentStatus = getAddressPaymentStatus(address.id)
+                                        const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
+                                        const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
+                                        const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
+
+                                        return (
+                                          <div className="flex items-start gap-3">
+                                            <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
+                                              <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
+                                              {address.gst_no && (
+                                                <p className="text-gray-400" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
+                                              )}
+                                              <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
+                                              {/* Status badges below address */}
+                                              {hasInitialPayment && (
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                  <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
+                                                    ✓ Installation & Support Paid
+                                                  </span>
+                                                  {hasFinalSettlement ? (
+                                                    <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
+                                                      ✓ Final Settlement Paid
+                                                    </span>
+                                                  ) : (
+                                                    <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
+                                                      ○ Final Settlement Pending
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
+                                            {/* Right side: Action buttons */}
+                                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                              {hasFinalSettlement ? (
+                                                <span className="px-3 py-2 rounded-full bg-green-100 text-green-700 font-medium text-sm">
+                                                  ✓ Completed
+                                                </span>
+                                              ) : hasInitialPayment && isFinalEnabled ? (
+                                                <>
+                                                  <span className="text-xs text-gray-500">
+                                                    {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)} days remaining
+                                                  </span>
+                                                  <button
+                                                    onClick={() => {
+                                                      sessionStorage.setItem('checkoutAddressId', address.id)
+                                                      localStorage.setItem('checkoutAddressId', address.id)
+                                                      router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
+                                                    }}
+                                                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
+                                                  >
+                                                    Pay Final Settlement
+                                                  </button>
+                                                </>
+                                              ) : !hasInitialPayment ? (
+                                                <div className="flex flex-col items-end gap-2">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '13px' }}>
+                                                      ○ Not Ordered
+                                                    </span>
+                                                    {originalIndex > 0 && (
+                                                      <span className="text-green-600 font-medium" style={{ fontSize: '12px' }}>
+                                                        10% Off
+                                                      </span>
+                                                    )}
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleEditAddress(address)}
+                                                      className="text-blue-500 hover:text-blue-700 p-1"
+                                                      title="Edit address"
+                                                    >
+                                                      <Pencil className="w-4 h-4" />
+                                                    </button>
+                                                  </div>
+                                                  <button
+                                                    onClick={() => {
+                                                      sessionStorage.setItem('checkoutAddressId', address.id)
+                                                      localStorage.setItem('checkoutAddressId', address.id)
+                                                      router.push(`/checkout?addressId=${address.id}`)
+                                                    }}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
+                                                  >
+                                                    Proceed to Order
+                                                  </button>
+                                                </div>
+                                              ) : null}
+                                            </div>
                                           </div>
-                                          <button
-                                            onClick={() => {
-                                              sessionStorage.setItem('checkoutAddressId', address.id)
-                                              localStorage.setItem('checkoutAddressId', address.id)
-                                              router.push(`/checkout?addressId=${address.id}`)
-                                            }}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
-                                          >
-                                            Proceed to Order
-                                          </button>
-                                        </div>
-                                      )}
+                                        )
+                                      })()}
                                     </div>
                                   )
                                 })
@@ -1893,12 +2032,21 @@ function AccountPageContent() {
                                 )}
                                 <Badge
                                   className={`text-xs px-2 py-0.5 ${
+                                    order.paymentType === 'final_settlement'
+                                      ? 'bg-purple-100 text-purple-800 border-purple-200'
+                                      : 'bg-blue-100 text-blue-800 border-blue-200'
+                                  }`}
+                                >
+                                  {order.paymentType === 'final_settlement' ? 'Final Settlement' : 'Installation & Support'}
+                                </Badge>
+                                <Badge
+                                  className={`text-xs px-2 py-0.5 ${
                                     order.status === 'paid'
                                       ? 'bg-green-100 text-green-800 border-green-200'
                                       : 'bg-yellow-100 text-yellow-800 border-yellow-200'
                                   }`}
                                 >
-                                  {order.status === 'paid' ? '✓' : order.status}
+                                  {order.status === 'paid' ? '✓ Paid' : order.status}
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">

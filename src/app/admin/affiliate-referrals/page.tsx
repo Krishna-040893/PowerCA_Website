@@ -27,11 +27,25 @@ import {
   XCircle,
   IndianRupee,
   RotateCw,
+  Trash2,
+  Loader2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface Referral {
   id: string
@@ -71,6 +85,8 @@ export default function AffiliateReferralsPage() {
   const [syncingReferral, setSyncingReferral] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchReferrals = async () => {
     try {
@@ -190,6 +206,66 @@ export default function AffiliateReferralsPage() {
     }
   }
 
+  // Get all referrals from the current expanded affiliate for selection purposes
+  const getCurrentExpandedReferrals = () => {
+    if (!expandedAffiliate) return []
+    const group = data.find(g => g.affiliate_id === expandedAffiliate)
+    return group?.referrals || []
+  }
+
+  const currentExpandedReferrals = getCurrentExpandedReferrals()
+  const allCurrentReferralsSelected = currentExpandedReferrals.length > 0 &&
+    currentExpandedReferrals.every(ref => selectedIds.has(ref.id))
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      const currentReferralIds = currentExpandedReferrals.map(r => r.id)
+      setSelectedIds(new Set(currentReferralIds))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean | 'indeterminate') => {
+    const newSelected = new Set(selectedIds)
+    if (checked === true) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/affiliate-referrals', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete referrals')
+      }
+
+      toast.success(`Successfully deleted ${selectedIds.size} referral(s)`)
+      setSelectedIds(new Set())
+      fetchReferrals()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete referrals')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <AdminPageWrapper
       title="Affiliate Referrals"
@@ -201,14 +277,52 @@ export default function AffiliateReferralsPage() {
         { label: 'Affiliates', value: data.length, color: 'bg-purple-100 text-purple-800' }
       ]}
       actions={
-        <Button
-          onClick={fetchReferrals}
-          variant="outline"
-          disabled={loading}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2 flex-wrap items-center">
+          {selectedIds.size > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Referrals</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.size} referral(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
+          <Button
+            onClick={fetchReferrals}
+            variant="outline"
+            disabled={loading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       }
     >
       <div>
@@ -309,6 +423,14 @@ export default function AffiliateReferralsPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              <TableHead className="w-[50px]">
+                                <Checkbox
+                                  checked={allCurrentReferralsSelected}
+                                  onCheckedChange={handleSelectAll}
+                                  aria-label="Select all"
+                                  className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                />
+                              </TableHead>
                               <TableHead className="text-base font-bold">Customer ID</TableHead>
                               <TableHead className="text-base font-bold">Customer Name</TableHead>
                               <TableHead className="text-base font-bold">Email</TableHead>
@@ -321,7 +443,15 @@ export default function AffiliateReferralsPage() {
                           </TableHeader>
                           <TableBody>
                             {group.referrals.map((referral) => (
-                              <TableRow key={referral.id}>
+                              <TableRow key={referral.id} className={selectedIds.has(referral.id) ? 'bg-blue-50/50' : ''}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedIds.has(referral.id)}
+                                    onCheckedChange={(checked) => handleSelectOne(referral.id, checked)}
+                                    aria-label={`Select ${referral.referred_name || referral.referred_email}`}
+                                    className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                  />
+                                </TableCell>
                                 <TableCell>
                                   <code className="text-xs bg-gray-100 px-2 py-1 rounded">
                                     {referral.customer_id}

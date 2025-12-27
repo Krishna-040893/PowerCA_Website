@@ -136,8 +136,8 @@ export async function GET(req: NextRequest) {
         const firmNamesDisplay = allFirmNames.join(', ') || ''
 
         if (!existingRecord) {
-          // No existing record - all payments are pending
-          const commissionAmount = BASE_PRICE * totalPaymentCount * (commissionRate / 100)
+          // No existing record - all orders pending commission
+          const totalCommission = BASE_PRICE * totalPaymentCount * (commissionRate / 100)
 
           mergedPayments.push({
             id: `email-match-${referralId}`,
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
             customer_phone: referral.referred_phone,
             customer_firm_name: firmNamesDisplay,
             payment_amount: totalPaymentAmount,
-            commission_amount: commissionAmount,
+            commission_amount: totalCommission,
             commission_rate: commissionRate,
             commission_paid: false,
             commission_paid_at: null,
@@ -160,10 +160,11 @@ export async function GET(req: NextRequest) {
             payment_completed_at: firstPayment.created_at,
             created_at: firstPayment.created_at,
             payment_count: totalPaymentCount,
-            paid_count: 0,
-            pending_count: totalPaymentCount,
+            paid_order_count: 0,
+            pending_order_count: totalPaymentCount,
             paid_commission: 0,
-            pending_commission: commissionAmount,
+            pending_commission: totalCommission,
+            payment_type: 'initial_payment',
             affiliate_referrals: {
               id: referral.id,
               referral_code: referral.referral_code,
@@ -174,29 +175,24 @@ export async function GET(req: NextRequest) {
             }
           })
         } else {
-          // Existing record - merge with new payment info
-          const paidCount = existingRecord.payment_count || 0
-          const newPaymentsCount = totalPaymentCount - paidCount
-          const paidCommission = existingRecord.commission_amount || 0
-          const pendingCommission = newPaymentsCount > 0 ? BASE_PRICE * newPaymentsCount * (commissionRate / 100) : 0
+          // Existing record - calculate paid vs pending based on paid_order_count
+          const paidOrderCount = existingRecord.paid_order_count || 0
+          const pendingOrderCount = totalPaymentCount - paidOrderCount
+          const paidCommission = BASE_PRICE * paidOrderCount * (commissionRate / 100)
+          const pendingCommission = BASE_PRICE * pendingOrderCount * (commissionRate / 100)
           const totalCommission = paidCommission + pendingCommission
-
-          // Determine overall status
-          const allPaid = newPaymentsCount <= 0
-          const partiallyPaid = paidCount > 0 && newPaymentsCount > 0
 
           mergedPayments.push({
             ...existingRecord,
             customer_firm_name: firmNamesDisplay || existingRecord.customer_firm_name,
             payment_amount: totalPaymentAmount,
             commission_amount: totalCommission,
-            commission_paid: allPaid ? existingRecord.commission_paid : false,
+            commission_paid: pendingOrderCount === 0 && existingRecord.commission_paid,
             payment_count: totalPaymentCount,
-            paid_count: paidCount,
-            pending_count: newPaymentsCount > 0 ? newPaymentsCount : 0,
+            paid_order_count: paidOrderCount,
+            pending_order_count: pendingOrderCount,
             paid_commission: paidCommission,
             pending_commission: pendingCommission,
-            is_partially_paid: partiallyPaid,
             affiliate_referrals: existingRecord.affiliate_referrals || {
               id: referral.id,
               referral_code: referral.referral_code,
@@ -314,6 +310,10 @@ export async function PUT(req: NextRequest) {
       const paymentAmount = Number(paymentData.payment_amount) || 0
       const totalAmount = paymentData.total_amount || Math.round(paymentAmount * 1.18)
 
+      // Calculate paid order count - when paying, we pay all pending orders
+      const pendingOrderCount = paymentData.pending_order_count || paymentData.payment_count || 1
+      const paidOrderCount = commissionPaid ? pendingOrderCount : 0
+
       const insertData = {
         referral_id: paymentData.referral_id,
         referral_code: paymentData.referral_code,
@@ -327,7 +327,7 @@ export async function PUT(req: NextRequest) {
         customer_firm_name: paymentData.customer_firm_name,
         payment_amount: paymentAmount,
         total_amount: totalAmount,
-        commission_amount: paymentData.commission_amount,
+        commission_amount: paymentData.pending_commission || paymentData.commission_amount,
         commission_rate: paymentData.commission_rate,
         commission_paid: commissionPaid,
         commission_paid_at: commissionPaid ? new Date().toISOString() : null,
@@ -336,6 +336,8 @@ export async function PUT(req: NextRequest) {
         payment_status: 'completed',
         payment_completed_at: paymentData.payment_completed_at,
         payment_count: paymentData.payment_count || 1,
+        paid_order_count: paidOrderCount,
+        payment_type: paymentData.payment_type || 'initial_payment',
       }
 
       const { data, error } = await supabase
@@ -359,14 +361,34 @@ export async function PUT(req: NextRequest) {
     }
 
     // For existing records, update them
-    const updateData: Record<string, unknown> = {
-      commission_paid: commissionPaid,
-    }
+    // First, get the current record to calculate new paid_order_count
+    const { data: currentRecord } = await supabase
+      .from('affiliate_referral_payments')
+      .select('paid_order_count, payment_count')
+      .eq('id', paymentId)
+      .single()
+
+    const currentPaidOrderCount = currentRecord?.paid_order_count || 0
+    const totalPaymentCount = paymentData?.payment_count || currentRecord?.payment_count || 1
+    const pendingOrderCount = paymentData?.pending_order_count || (totalPaymentCount - currentPaidOrderCount)
+
+    const updateData: Record<string, unknown> = {}
 
     if (commissionPaid) {
+      // When paying commission, update paid_order_count to include pending orders
+      const newPaidOrderCount = currentPaidOrderCount + pendingOrderCount
+      updateData.paid_order_count = newPaidOrderCount
+      updateData.commission_paid = newPaidOrderCount >= totalPaymentCount // Only mark as fully paid if all orders are paid
       updateData.commission_paid_at = new Date().toISOString()
       updateData.payment_mode = paymentMode
       updateData.payment_date = paymentDate
+      // Update commission amount to include the paid pending commission
+      if (paymentData?.pending_commission) {
+        const currentCommission = paymentData?.paid_commission || 0
+        updateData.commission_amount = currentCommission + paymentData.pending_commission
+      }
+    } else {
+      updateData.commission_paid = false
     }
 
     const { data, error } = await supabase
@@ -391,6 +413,72 @@ export async function PUT(req: NextRequest) {
 
   } catch (error) {
     logger.error('Error updating commission status', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// Delete affiliate payments
+export async function DELETE(req: NextRequest) {
+  try {
+    // Verify admin authentication
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
+    }
+
+    const body = await req.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Payment IDs are required' },
+        { status: 400 }
+      )
+    }
+
+    const supabase = createAdminClient()
+
+    // Filter out email-matched IDs (synthetic IDs starting with "email-match-")
+    // These don't exist in the database yet, so we can't delete them
+    const realIds = ids.filter((id: string) => !id.startsWith('email-match-'))
+    const emailMatchedIds = ids.filter((id: string) => id.startsWith('email-match-'))
+
+    let deletedCount = 0
+
+    if (realIds.length > 0) {
+      const { error, count } = await supabase
+        .from('affiliate_referral_payments')
+        .delete()
+        .in('id', realIds)
+
+      if (error) {
+        logger.error('Failed to delete affiliate payments', { error, ids: realIds })
+        return NextResponse.json(
+          { success: false, error: `Failed to delete payments: ${error.message}` },
+          { status: 500 }
+        )
+      }
+
+      deletedCount = count || realIds.length
+    }
+
+    // Email-matched entries are not in the database, so we just acknowledge them
+    const skippedCount = emailMatchedIds.length
+
+    return NextResponse.json({
+      success: true,
+      deletedCount,
+      skippedCount,
+      message: skippedCount > 0
+        ? `Deleted ${deletedCount} payment(s). ${skippedCount} pending payment(s) were skipped (not yet recorded in database).`
+        : `Successfully deleted ${deletedCount} payment(s).`
+    })
+
+  } catch (error) {
+    logger.error('Error deleting affiliate payments', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

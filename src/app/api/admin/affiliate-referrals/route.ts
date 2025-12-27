@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
+import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
 
 interface PaymentOrder {
   order_id: string
@@ -350,6 +351,56 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     logger.error('Error in affiliate referrals API', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
+    }
+
+    const body = await req.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No referral IDs provided' },
+        { status: 400 }
+      )
+    }
+
+    const supabase = createAdminClient()
+
+    // Delete referrals by IDs
+    const { error } = await supabase
+      .from('affiliate_referrals')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      logger.error('Failed to delete affiliate referrals', error)
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete referrals' },
+        { status: 500 }
+      )
+    }
+
+    logger.info(`Admin ${session.user?.id || 'unknown'} deleted ${ids.length} affiliate referral(s)`)
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully deleted ${ids.length} referral(s)`
+    })
+
+  } catch (error) {
+    logger.error('Error deleting affiliate referrals', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

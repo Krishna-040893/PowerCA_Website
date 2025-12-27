@@ -303,7 +303,7 @@ async function sendConfirmationEmail(booking: Booking) {
     const _teamEmailResult = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
       to: 'contact@powerca.in',
-      subject: `[TEAM] New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
+      subject: `New Demo Booking - ${booking.name} - ${firmName || 'Individual'}`,
       html: teamEmailHtml,
     })
 

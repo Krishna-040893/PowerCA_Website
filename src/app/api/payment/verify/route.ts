@@ -34,8 +34,11 @@ export async function POST(req: NextRequest) {
       affiliateCode,
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature
+      razorpay_signature,
+      paymentType // 'initial_payment' or 'final_settlement'
     } = body
+
+    const isFinalSettlement = paymentType === 'final_settlement'
 
     // Normalize the payment data for compatibility
     const normalizedOrderId = orderId || razorpay_order_id
@@ -153,7 +156,28 @@ export async function POST(req: NextRequest) {
           .eq('user_id', session.user.id)
           .single()
 
-        if (!existingSubscription) {
+        if (isFinalSettlement && existingSubscription) {
+          // Update existing subscription to launch_offer_complete
+          const { data: updatedSubscription, error: updateError } = await supabase
+            .from('subscriptions')
+            .update({
+              plan: 'launch_offer_complete',
+              final_settlement_paid_at: new Date().toISOString()
+            })
+            .eq('id', existingSubscription.id)
+            .select()
+            .single()
+
+          if (updateError) {
+            logger.error('Failed to update subscription for final settlement', updateError)
+          } else {
+            logger.info('✅ Subscription updated for final settlement', {
+              subscriptionId: updatedSubscription.id,
+              userId: session.user.id,
+              plan: 'launch_offer_complete'
+            })
+          }
+        } else if (!existingSubscription) {
           // Create new subscription (first purchase - launch offer)
           const subscriptionData = {
             user_id: session.user.id,
@@ -217,7 +241,9 @@ export async function POST(req: NextRequest) {
       paymentId: normalizedPaymentId,
       paymentDate: new Date(),
       items: [{
-        description: productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE',
+        description: isFinalSettlement
+          ? 'PowerCA Final Settlement - Complete your service payment'
+          : (productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE'),
         quantity: 1,
         rate: subtotal,
         amount: subtotal,
@@ -284,7 +310,7 @@ export async function POST(req: NextRequest) {
         await resend.emails.send({
           from: 'PowerCA <contact@powerca.in>',
           to: customerEmail,
-          subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Invoice ${invoiceNumber}`,
+          subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Receipt ${invoiceNumber}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -321,7 +347,7 @@ export async function POST(req: NextRequest) {
                   <div class="payment-details">
                     <h3>💳 Payment Summary</h3>
                     <div class="detail-row">
-                      <span>📋 Invoice Number</span>
+                      <span>📋 Receipt Number</span>
                       <strong>${invoiceNumber}</strong>
                     </div>
                     <div class="detail-row">
@@ -352,7 +378,7 @@ export async function POST(req: NextRequest) {
                     </ul>
                   </div>
 
-                  <p>📎 Your detailed invoice is attached as a PDF for your records.</p>
+                  <p>📎 Your detailed receipt is attached as a PDF for your records.</p>
                   <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong> 🚀</p>
                 </div>
                 <div class="footer">
@@ -364,7 +390,7 @@ export async function POST(req: NextRequest) {
             </html>
           `,
           attachments: invoicePDF ? [{
-            filename: `PowerCA-Invoice-${invoiceNumber}.pdf`,
+            filename: `PowerCA-Receipt-${invoiceNumber}.pdf`,
             content: Buffer.from(invoicePDF).toString('base64'),
           }] : [],
         })
@@ -617,6 +643,9 @@ export async function POST(req: NextRequest) {
                   // Status
                   payment_status: 'completed',
                   payment_completed_at: new Date().toISOString(),
+
+                  // Payment type for tracking two-stage commissions
+                  payment_type: paymentType || 'initial_payment',
 
                   // Additional data
                   notes: {

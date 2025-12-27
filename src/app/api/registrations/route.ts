@@ -575,8 +575,108 @@ async function handleGetRegistrations(_request: NextRequest) {
   }
 }
 
+async function handleDeleteRegistrations(request: NextRequest) {
+  try {
+    // Check if Supabase is configured
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return handleConfigurationError('Database')
+    }
+
+    const body = await request.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Please provide an array of registration IDs to delete.',
+        { statusCode: 400 }
+      )
+    }
+
+    const supabase = createAdminClient()
+
+    // First, get the registrations to find their roles and related data
+    const { data: registrations, error: fetchError } = await supabase
+      .from(REGISTRATION_FORMS_TABLE)
+      .select('id, email, role')
+      .in('id', ids)
+
+    if (fetchError) {
+      logger.error('Error fetching registrations for deletion', fetchError)
+      return handleDatabaseError(fetchError)
+    }
+
+    if (!registrations || registrations.length === 0) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'No registrations found with the provided IDs.',
+        { statusCode: 404 }
+      )
+    }
+
+    // Delete from role-specific tables first
+    const professionalEmails = registrations
+      .filter(r => r.role === 'professional')
+      .map(r => r.email)
+    const studentEmails = registrations
+      .filter(r => r.role === 'student')
+      .map(r => r.email)
+
+    if (professionalEmails.length > 0) {
+      const { error: profError } = await supabase
+        .from(PROFESSIONAL_REGISTRATIONS_TABLE)
+        .delete()
+        .in('email', professionalEmails)
+
+      if (profError) {
+        logger.error('Error deleting from professional registrations', profError)
+      }
+    }
+
+    if (studentEmails.length > 0) {
+      const { error: studentError } = await supabase
+        .from(STUDENT_REGISTRATIONS_TABLE)
+        .delete()
+        .in('email', studentEmails)
+
+      if (studentError) {
+        logger.error('Error deleting from student registrations', studentError)
+      }
+    }
+
+    // Delete from main registration table
+    const { error: deleteError } = await supabase
+      .from(REGISTRATION_FORMS_TABLE)
+      .delete()
+      .in('id', ids)
+
+    if (deleteError) {
+      logger.error('Error deleting registrations', deleteError)
+      return handleDatabaseError(deleteError)
+    }
+
+    logger.info('Registrations deleted successfully', { count: ids.length, ids })
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully deleted ${ids.length} registration(s).`,
+      deletedCount: ids.length
+    })
+  } catch (error) {
+    logger.error('Delete registrations error', error)
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error,
+      { logError: true }
+    )
+  }
+}
+
 // Apply strict rate limiting (3 requests per minute for registration)
 export const POST = withRateLimit(handleRegistration, RateLimits.STRICT)
 
 // Apply relaxed rate limiting (30 requests per minute for fetching registrations)
 export const GET = withRateLimit(handleGetRegistrations, RateLimits.RELAXED)
+
+// Apply relaxed rate limiting for delete operations
+export const DELETE = withRateLimit(handleDeleteRegistrations, RateLimits.RELAXED)

@@ -18,7 +18,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Invoice - ${data.invoiceNumber}</title>
+  <title>Receipt - ${data.invoiceNumber}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -280,11 +280,11 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       </div>
 
       <div class="invoice-info">
-        <div class="invoice-title">INVOICE</div>
+        <div class="invoice-title">RECEIPT</div>
         <div class="invoice-details">
-          <strong>Invoice #:</strong> ${data.invoiceNumber}<br>
+          <strong>Receipt #:</strong> ${data.invoiceNumber}<br>
           <strong>Order #:</strong> ${data.orderId}<br>
-          <strong>Invoice Date:</strong> ${formatDate(data.invoiceDate)}<br>
+          <strong>Receipt Date:</strong> ${formatDate(data.invoiceDate)}<br>
           <strong>Order Date:</strong> ${formatDate(data.paymentDate)}
         </div>
       </div>

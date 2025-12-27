@@ -239,22 +239,12 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete blog post
+// DELETE - Delete blog post(s)
 export async function DELETE(request: NextRequest) {
   try {
     const session = await requireAdminAuth()
     if (!session) {
       return createUnauthorizedResponse()
-    }
-
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Blog post ID is required' },
-        { status: 400 }
-      )
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -274,13 +264,48 @@ export async function DELETE(request: NextRequest) {
       }
     })
 
+    // Check for bulk delete (ids in body) or single delete (id in query)
+    const { searchParams } = new URL(request.url)
+    const singleId = searchParams.get('id')
+
+    if (singleId) {
+      // Single delete via query param
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', singleId)
+
+      if (error) {
+        console.error('Error deleting blog post:', error)
+        return NextResponse.json(
+          { error: error.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        message: 'Blog post deleted successfully'
+      })
+    }
+
+    // Bulk delete via request body
+    const body = await request.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { error: 'Blog post ID(s) required' },
+        { status: 400 }
+      )
+    }
+
     const { error } = await supabase
       .from('blog_posts')
       .delete()
-      .eq('id', id)
+      .in('id', ids)
 
     if (error) {
-      console.error('Error deleting blog post:', error)
+      console.error('Error deleting blog posts:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -288,7 +313,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: 'Blog post deleted successfully'
+      message: `Successfully deleted ${ids.length} blog post(s)`
     })
 
   } catch (error) {

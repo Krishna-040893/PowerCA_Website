@@ -47,9 +47,9 @@ export function useSubscription(): SubscriptionStatus {
 
         const { subscriptions } = await response.json()
 
-        // Find Launch Offer subscription
+        // Find Launch Offer subscription (either initial or complete)
         const launchOfferSub = subscriptions?.find((sub: UserSubscription) =>
-          sub.plan === 'launch_offer' || sub.plan === 'first_year'
+          sub.plan === 'launch_offer' || sub.plan === 'launch_offer_complete' || sub.plan === 'first_year'
         )
 
         if (!launchOfferSub) {

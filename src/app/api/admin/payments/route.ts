@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest) {
     // Get order IDs from payments to fetch location from payment_orders
     const orderIds = [...new Set((payments || []).filter(p => p.order_id).map(p => p.order_id))]
 
-    // Fetch payment_orders with address data to get location for each payment
+    // Fetch payment_orders with address data to get location and payment_type for each payment
     let orderAddressMap: Record<string, {
       location: string | null;
       city: string | null;
@@ -63,6 +63,7 @@ export async function GET(_request: NextRequest) {
       discount_percentage: number | null;
       discount_amount: number | null;
       original_amount: number | null;
+      payment_type: string | null;
     }> = {}
 
     if (orderIds.length > 0) {
@@ -78,6 +79,7 @@ export async function GET(_request: NextRequest) {
           discount_percentage,
           discount_amount,
           original_amount,
+          payment_type,
           user_addresses (
             label,
             city,
@@ -104,13 +106,14 @@ export async function GET(_request: NextRequest) {
             discount_percentage: order.discount_percentage,
             discount_amount: order.discount_amount,
             original_amount: order.original_amount,
+            payment_type: order.payment_type || 'initial_payment',
           }
           return acc
-        }, {} as Record<string, { location: string | null; city: string | null; state: string | null; postcode: string | null; country: string | null; discount_percentage: number | null; discount_amount: number | null; original_amount: number | null }>)
+        }, {} as Record<string, { location: string | null; city: string | null; state: string | null; postcode: string | null; country: string | null; discount_percentage: number | null; discount_amount: number | null; original_amount: number | null; payment_type: string | null }>)
       }
     }
 
-    // Map payments to include location and discount data from payment_orders
+    // Map payments to include location, discount data, and payment_type from payment_orders
     const mappedPayments = (payments || []).map(payment => {
       const orderData = payment.order_id ? orderAddressMap[payment.order_id] : null
       return {
@@ -125,6 +128,8 @@ export async function GET(_request: NextRequest) {
         discount_percentage: orderData?.discount_percentage || null,
         discount_amount: orderData?.discount_amount || null,
         original_amount: orderData?.original_amount || null,
+        // Payment type
+        payment_type: orderData?.payment_type || 'initial_payment',
       }
     })
 

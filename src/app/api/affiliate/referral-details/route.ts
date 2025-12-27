@@ -88,51 +88,35 @@ export async function GET(_request: NextRequest) {
         }
 
         if (paymentData) {
-          // There's an existing payment record - check if there are NEW payments
-          const paidCount = paymentData.payment_count || 0
-          const newPaymentsCount = totalActualPayments - paidCount
+          // There's an existing payment record - calculate paid vs pending based on paid_order_count
+          const BASE_PRICE_PER_ADDRESS = 25000
+          const commissionRate = paymentData.commission_rate || 10
+          const paidOrderCount = paymentData.paid_order_count || 0
+          const pendingOrderCount = totalActualPayments - paidOrderCount
 
-          if (newPaymentsCount > 0) {
-            // There are new unpaid payments - show both paid and pending info
-            const BASE_PRICE_PER_ADDRESS = 25000
-            const commissionRate = paymentData.commission_rate || 10
+          // Calculate paid and pending commission
+          const paidCommission = BASE_PRICE_PER_ADDRESS * paidOrderCount * (commissionRate / 100)
+          const pendingCommission = BASE_PRICE_PER_ADDRESS * pendingOrderCount * (commissionRate / 100)
+          const totalCommissionAmount = paidCommission + pendingCommission
 
-            paymentInfo = {
-              payment_id: paymentData.payment_id,
-              order_id: paymentData.order_id,
-              payment_amount: paymentData.payment_amount,
-              total_amount: paymentData.total_amount,
-              commission_amount: paymentData.commission_amount,
-              commission_rate: commissionRate,
-              commission_paid: paymentData.commission_paid,
-              payment_status: paymentData.payment_status,
-              payment_completed_at: paymentData.payment_completed_at,
-              customer_firm_name: paymentData.customer_firm_name,
-              created_at: paymentData.created_at,
-              payment_count: paidCount,
-              // Additional info for new unpaid payments
-              total_payment_count: totalActualPayments,
-              new_payments_count: newPaymentsCount,
-              pending_commission_amount: BASE_PRICE_PER_ADDRESS * newPaymentsCount * (commissionRate / 100),
-              total_commission_amount: BASE_PRICE_PER_ADDRESS * totalActualPayments * (commissionRate / 100)
-            }
-          } else {
-            // All payments have been paid commission
-            paymentInfo = {
-              payment_id: paymentData.payment_id,
-              order_id: paymentData.order_id,
-              payment_amount: paymentData.payment_amount,
-              total_amount: paymentData.total_amount,
-              commission_amount: paymentData.commission_amount,
-              commission_rate: paymentData.commission_rate,
-              commission_paid: paymentData.commission_paid,
-              payment_status: paymentData.payment_status,
-              payment_completed_at: paymentData.payment_completed_at,
-              customer_firm_name: paymentData.customer_firm_name,
-              created_at: paymentData.created_at,
-              payment_count: paidCount,
-              total_payment_count: totalActualPayments
-            }
+          paymentInfo = {
+            payment_id: paymentData.payment_id,
+            order_id: paymentData.order_id,
+            payment_amount: paymentData.payment_amount,
+            total_amount: paymentData.total_amount,
+            commission_amount: totalCommissionAmount,
+            commission_rate: commissionRate,
+            commission_paid: pendingOrderCount === 0 && paymentData.commission_paid,
+            payment_status: paymentData.payment_status,
+            payment_completed_at: paymentData.payment_completed_at,
+            customer_firm_name: paymentData.customer_firm_name,
+            created_at: paymentData.created_at,
+            payment_count: totalActualPayments,
+            paid_order_count: paidOrderCount,
+            pending_order_count: pendingOrderCount,
+            paid_commission: paidCommission,
+            pending_commission: pendingCommission,
+            total_payment_count: totalActualPayments
           }
         } else {
           // Fallback: Check payment_orders table for ALL paid orders (multiple address purchases)
@@ -270,6 +254,10 @@ export async function GET(_request: NextRequest) {
               created_at: firstOrder.created_at,
               // Additional info for multiple purchases
               payment_count: ordersList.length,
+              paid_order_count: 0,
+              pending_order_count: ordersList.length,
+              paid_commission: 0,
+              pending_commission: totalCommissionAmount,
               all_payments: allPayments
             }
           }
@@ -293,15 +281,23 @@ export async function GET(_request: NextRequest) {
       !r.payment_info || r.payment_info.payment_status === 'pending'
     )
 
+    // Calculate commission totals using paid_commission and pending_commission fields
     const totalCommissionEarned = paidReferrals.reduce((sum, r) =>
       sum + parseFloat(r.payment_info?.commission_amount || '0'), 0
     )
 
-    const pendingCommission = paidReferrals
-      .filter(r => !r.payment_info?.commission_paid)
-      .reduce((sum, r) => sum + parseFloat(r.payment_info?.commission_amount || '0'), 0)
+    // Sum up pending_commission from all referrals
+    const pendingCommission = paidReferrals.reduce((sum, r) =>
+      sum + parseFloat(r.payment_info?.pending_commission || '0'), 0
+    )
 
-    const paidCommission = paidReferrals
+    // Sum up paid_commission from all referrals
+    const paidCommission = paidReferrals.reduce((sum, r) =>
+      sum + parseFloat(r.payment_info?.paid_commission || '0'), 0
+    )
+
+    // Legacy calculation as fallback
+    const legacyPaidCommission = paidReferrals
       .filter(r => r.payment_info?.commission_paid)
       .reduce((sum, r) => sum + parseFloat(r.payment_info?.commission_amount || '0'), 0)
 

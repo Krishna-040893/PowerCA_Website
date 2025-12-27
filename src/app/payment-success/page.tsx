@@ -13,8 +13,8 @@ import confetti from 'canvas-confetti'
 import { trackPurchase } from '@/components/google-analytics'
 import { trackGTMPurchase } from '@/components/google-tag-manager'
 
-interface InvoiceData {
-  invoice_number: string
+interface ReceiptData {
+  invoice_number: string  // Keep field name for API compatibility
   amount: number
   gst: number
   total: number
@@ -44,7 +44,7 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isTestMode, setIsTestMode] = useState(false)
-  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDownloading, setIsDownloading] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'pending' | 'cancelled' | 'failed' | null>(null)
@@ -86,10 +86,10 @@ function PaymentSuccessContent() {
           .then(res => res.json())
           .then(data => {
             if (data.success) {
-              setInvoiceData(data.data)
+              setReceiptData(data.data)
               setIsLoading(false)
             } else {
-              // Invoice not found, process payment
+              // Receipt not found, process payment
               return processPayment(orderId)
             }
           })
@@ -97,17 +97,17 @@ function PaymentSuccessContent() {
             processPayment(orderId)
           })
       } else {
-        // No invoice number, process payment directly
+        // No receipt number, process payment directly
         processPayment(orderId)
       }
     }
-    // Fetch invoice data if invoice number is provided (Razorpay flow)
+    // Fetch receipt data if invoice number is provided (Razorpay flow)
     else if (invoiceNumber) {
       fetch(`/api/invoice/${invoiceNumber}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            setInvoiceData(data.data)
+            setReceiptData(data.data)
           }
           setIsLoading(false)
         })
@@ -128,13 +128,13 @@ function PaymentSuccessContent() {
         .then(data => {
           if (data.success) {
             setPaymentStatus('success')
-            // Fetch the generated invoice
+            // Fetch the generated receipt
             if (data.invoiceNumber) {
               return fetch(`/api/invoice/${data.invoiceNumber}`)
                 .then(res => res.json())
-                .then(invoiceData => {
-                  if (invoiceData.success) {
-                    setInvoiceData(invoiceData.data)
+                .then(receiptResponse => {
+                  if (receiptResponse.success) {
+                    setReceiptData(receiptResponse.data)
                   }
                   setIsLoading(false)
                 })
@@ -179,41 +179,41 @@ function PaymentSuccessContent() {
   // Separate effect for confetti animation
   useEffect(() => {
     // Trigger confetti animation only on success
-    if (paymentStatus === 'success' || invoiceData) {
+    if (paymentStatus === 'success' || receiptData) {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       })
     }
-  }, [paymentStatus, invoiceData])
+  }, [paymentStatus, receiptData])
 
-  const handleDownloadInvoice = async () => {
-    if (!invoiceData?.invoice_number) {
-      alert('Invoice not available for download')
+  const handleDownloadReceipt = async () => {
+    if (!receiptData?.invoice_number) {
+      alert('Receipt not available for download')
       return
     }
 
     setIsDownloading(true)
     try {
-      const response = await fetch(`/api/invoice/download/${invoiceData.invoice_number}`)
+      const response = await fetch(`/api/invoice/download/${receiptData.invoice_number}`)
 
       if (!response.ok) {
-        throw new Error('Failed to download invoice')
+        throw new Error('Failed to download receipt')
       }
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `PowerCA-Invoice-${invoiceData.invoice_number}.pdf`
+      a.download = `PowerCA-Receipt-${receiptData.invoice_number}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (err) {
-      console.error('Error downloading invoice:', err)
-      alert('Failed to download invoice. Please try again or contact support.')
+      console.error('Error downloading receipt:', err)
+      alert('Failed to download receipt. Please try again or contact support.')
     } finally {
       setIsDownloading(false)
     }
@@ -333,7 +333,7 @@ function PaymentSuccessContent() {
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-                <span className="ml-3 text-gray-600">Loading invoice details...</span>
+                <span className="ml-3 text-gray-600">Loading receipt details...</span>
               </div>
             ) : paymentStatus === 'cancelled' || paymentStatus === 'failed' || paymentStatus === 'pending' ? (
               <div className={`rounded-lg p-6 ${
@@ -385,18 +385,18 @@ function PaymentSuccessContent() {
                   </div>
                 )}
               </div>
-            ) : invoiceData ? (
+            ) : receiptData ? (
               <>
-                {/* Invoice Details */}
+                {/* Receipt Details */}
                 <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-200 shadow-md">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">Tax Invoice</h3>
-                      <p className="text-2xl font-bold text-gray-900">{invoiceData.invoice_number}</p>
+                      <h3 className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">Payment Receipt</h3>
+                      <p className="text-2xl font-bold text-gray-900">{receiptData.invoice_number}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">Date</p>
-                      <p className="font-semibold text-gray-900">{formatDate(invoiceData.issued_at)}</p>
+                      <p className="font-semibold text-gray-900">{formatDate(receiptData.issued_at)}</p>
                     </div>
                   </div>
 
@@ -406,16 +406,23 @@ function PaymentSuccessContent() {
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">Billing Address</h4>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p className="font-medium text-gray-900">{invoiceData.payment.name}</p>
-                          {(invoiceData.payment.firm_name || invoiceData.payment.company) && (
-                            <p>{invoiceData.payment.firm_name || invoiceData.payment.company}</p>
+                          <p className="font-medium text-gray-900">{receiptData.payment.name}</p>
+                          {(receiptData.payment.firm_name || receiptData.payment.company) && (
+                            <p>{receiptData.payment.firm_name || receiptData.payment.company}</p>
                           )}
-                          {invoiceData.payment.address && <p>{invoiceData.payment.address}</p>}
-                          {invoiceData.payment.phone && <p>{invoiceData.payment.phone}</p>}
-                          <p>{invoiceData.payment.email}</p>
-                          {invoiceData.payment.gst_number && (
+                          {receiptData.payment.address && (
+                            <p>
+                              {/* Remove name from address if it starts with the name to avoid duplication */}
+                              {receiptData.payment.address.startsWith(receiptData.payment.name)
+                                ? receiptData.payment.address.slice(receiptData.payment.name.length).replace(/^[\s,]+/, '')
+                                : receiptData.payment.address}
+                            </p>
+                          )}
+                          {receiptData.payment.phone && <p>{receiptData.payment.phone}</p>}
+                          <p>{receiptData.payment.email}</p>
+                          {receiptData.payment.gst_number && (
                             <p className="mt-2">
-                              <span className="font-medium">GSTIN:</span> {invoiceData.payment.gst_number}
+                              <span className="font-medium">GSTIN:</span> {receiptData.payment.gst_number}
                             </p>
                           )}
                         </div>
@@ -427,11 +434,11 @@ function PaymentSuccessContent() {
                         <div className="text-sm text-gray-600 space-y-1">
                           <p>
                             <span className="font-medium">Order ID:</span>{' '}
-                            <span className="font-mono text-xs">{invoiceData.payment.order_id}</span>
+                            <span className="font-mono text-xs">{receiptData.payment.order_id}</span>
                           </p>
                           <p>
                             <span className="font-medium">Payment ID:</span>{' '}
-                            <span className="font-mono text-xs">{invoiceData.payment.payment_id}</span>
+                            <span className="font-mono text-xs">{receiptData.payment.payment_id}</span>
                           </p>
                           <p>
                             <span className="font-medium">Status:</span>{' '}
@@ -463,40 +470,40 @@ function PaymentSuccessContent() {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-right font-medium">
-                          {invoiceData.discount_info?.original_amount && invoiceData.discount_info.discount_percentage > 0 ? (
+                          {receiptData.discount_info?.original_amount && receiptData.discount_info.discount_percentage > 0 ? (
                             <div>
                               <span className="text-gray-400 line-through text-sm block">
-                                {formatCurrency(invoiceData.discount_info.original_amount)}
+                                {formatCurrency(receiptData.discount_info.original_amount)}
                               </span>
-                              <span>{formatCurrency(invoiceData.amount)}</span>
+                              <span>{formatCurrency(receiptData.amount)}</span>
                             </div>
                           ) : (
-                            formatCurrency(invoiceData.amount)
+                            formatCurrency(receiptData.amount)
                           )}
                         </td>
                       </tr>
-                      {invoiceData.discount_info && invoiceData.discount_info.discount_percentage > 0 && (
+                      {receiptData.discount_info && receiptData.discount_info.discount_percentage > 0 && (
                         <tr className="bg-green-50">
                           <td className="px-4 py-3 text-sm text-green-700 font-medium">
-                            Discount ({invoiceData.discount_info.discount_percentage}%)
+                            Discount ({receiptData.discount_info.discount_percentage}%)
                           </td>
                           <td className="px-4 py-3 text-right text-sm text-green-700 font-medium">
-                            -{formatCurrency(invoiceData.discount_info.discount_amount)}
+                            -{formatCurrency(receiptData.discount_info.discount_amount)}
                           </td>
                         </tr>
                       )}
                       <tr>
                         <td className="px-4 py-3 text-sm text-gray-600">CGST (9%)</td>
-                        <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(invoiceData.amount).cgst)}</td>
+                        <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(receiptData.amount).cgst)}</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 text-sm text-gray-600">SGST (9%)</td>
-                        <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(invoiceData.amount).sgst)}</td>
+                        <td className="px-4 py-3 text-right text-sm">{formatCurrency(calculateGSTBreakdown(receiptData.amount).sgst)}</td>
                       </tr>
                       <tr className="bg-green-50">
                         <td className="px-4 py-4 font-bold text-gray-900">Grand Total</td>
                         <td className="px-4 py-4 text-right font-bold text-xl text-green-700">
-                          {formatCurrency(invoiceData.total)}
+                          {formatCurrency(receiptData.total)}
                         </td>
                       </tr>
                     </tbody>
@@ -507,7 +514,7 @@ function PaymentSuccessContent() {
               <div className="bg-blue-50 rounded-lg p-6">
                 <h3 className="font-semibold text-lg mb-3">Order Confirmed</h3>
                 <p className="text-gray-600">
-                  Your payment has been successfully processed. You will receive a confirmation email with your invoice shortly.
+                  Your payment has been successfully processed. You will receive a confirmation email with your receipt shortly.
                 </p>
               </div>
             )}
@@ -565,8 +572,8 @@ function PaymentSuccessContent() {
               <>
                 <Button
                   className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                  onClick={handleDownloadInvoice}
-                  disabled={isDownloading || !invoiceData}
+                  onClick={handleDownloadReceipt}
+                  disabled={isDownloading || !receiptData}
                 >
                   {isDownloading ? (
                     <>
@@ -576,7 +583,7 @@ function PaymentSuccessContent() {
                   ) : (
                     <>
                       <Download className="mr-2 w-4 h-4" />
-                      Download Invoice
+                      Download Receipt
                     </>
                   )}
                 </Button>

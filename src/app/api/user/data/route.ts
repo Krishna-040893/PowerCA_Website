@@ -56,12 +56,12 @@ export async function GET(_request: NextRequest) {
       return payment?.order_id
     }).filter(Boolean) || []
 
-    // Get payment_orders with address_id and discount info
+    // Get payment_orders with address_id, discount info, and payment_type
     let paymentOrders = null
     if (orderIds.length > 0) {
       const { data } = await supabase
         .from('payment_orders')
-        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount')
+        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount, payment_type')
         .in('order_id', orderIds)
       paymentOrders = data
     }
@@ -85,9 +85,9 @@ export async function GET(_request: NextRequest) {
       addressLocationMap[addr.id] = addr.label || addr.city
     }
 
-    // Create a map of order_id to location and discount info
+    // Create a map of order_id to location, discount info, and payment_type
     const orderCityMap: Record<string, string> = {}
-    const orderDiscountMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null }> = {}
+    const orderDetailsMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null; paymentType: string }> = {}
     if (paymentOrders) {
       for (const po of paymentOrders) {
         if (po.order_id) {
@@ -98,11 +98,12 @@ export async function GET(_request: NextRequest) {
             // Fallback to customer_city from payment_orders
             orderCityMap[po.order_id] = po.customer_city
           }
-          // Store discount info
-          orderDiscountMap[po.order_id] = {
+          // Store discount info and payment type
+          orderDetailsMap[po.order_id] = {
             discountPercentage: po.discount_percentage || 0,
             discountAmount: po.discount_amount || 0,
-            originalAmount: po.original_amount || null
+            originalAmount: po.original_amount || null,
+            paymentType: po.payment_type || 'initial_payment'
           }
         }
       }
@@ -147,8 +148,8 @@ export async function GET(_request: NextRequest) {
       const payment = Array.isArray(invoice.payments) ? invoice.payments[0] : invoice.payments
       // Get city from payment_orders map
       const location = payment?.order_id ? (orderCityMap[payment.order_id] || '') : ''
-      // Get discount info from payment_orders map
-      const discountInfo = payment?.order_id ? orderDiscountMap[payment.order_id] : null
+      // Get order details (discount info and payment type) from payment_orders map
+      const orderDetails = payment?.order_id ? orderDetailsMap[payment.order_id] : null
       return {
         invoiceNumber: invoice.invoice_number,
         orderId: payment?.order_id || 'N/A',
@@ -160,9 +161,10 @@ export async function GET(_request: NextRequest) {
         issuedAt: invoice.issued_at,
         paidAt: payment?.created_at || invoice.issued_at,
         location: location,
-        discountPercentage: discountInfo?.discountPercentage || 0,
-        discountAmount: discountInfo?.discountAmount || 0,
-        originalAmount: discountInfo?.originalAmount || null,
+        discountPercentage: orderDetails?.discountPercentage || 0,
+        discountAmount: orderDetails?.discountAmount || 0,
+        originalAmount: orderDetails?.originalAmount || null,
+        paymentType: orderDetails?.paymentType || 'initial_payment',
       }
     }) || []
 

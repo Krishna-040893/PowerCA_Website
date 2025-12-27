@@ -176,7 +176,7 @@ function PricingContent() {
             {/* Left Card - Launch Offer */}
             <div className="relative bg-[#306bea] rounded-2xl md:rounded-3xl p-6 md:p-12 text-white shadow-2xl">
               {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-10 overflow-hidden rounded-3xl">
+              <div className="absolute inset-0 opacity-10 overflow-hidden rounded-3xl pointer-events-none">
                 <div className="absolute top-16 left-16 w-96 h-96">
                   <div className="grid grid-cols-8 grid-rows-8 h-full gap-1">
                     {Array.from({ length: 64 }).map((_, i) => (
@@ -231,54 +231,95 @@ function PricingContent() {
                   <div className="text-center">
                     <p className="text-[#f4f7fd] text-xs md:text-sm mb-1 md:mb-2">LAUNCH OFFER</p>
                     <div className="flex items-baseline justify-center gap-1 md:gap-2">
-                      <span className="text-2xl md:text-4xl font-semibold">FREE</span>
+                      <span className="text-lg md:text-2xl">₹</span>
+                      <span className="text-2xl md:text-4xl font-semibold">50,000</span>
                     </div>
                     <p className="text-[#f4f7fd] text-xs md:text-sm opacity-0">-</p>
                   </div>
                 </div>
 
-                {/* Service Package Card - Professional Design */}
+                {/* Service Package Card - Timeline Design */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 shadow-lg">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                    <div>
-                      <h4 className="text-[#001525] text-lg md:text-xl font-semibold">Service Package</h4>
-                      <p className="text-gray-500 text-sm mt-1">One-time implementation fee</p>
+                  <div className="mb-6 pb-4 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[#001525] text-lg md:text-xl font-semibold">Payment Terms</h4>
+                      {/* <span className="text-gray-400 text-base md:text-lg font-medium">₹50,000</span> */}
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-baseline gap-0.5">
-                        <span className="text-[#306bea] text-lg">₹</span>
-                        <span className="text-[#306bea] text-2xl md:text-3xl font-bold">25,000</span>
+                    {/* <p className="text-gray-500 text-sm mt-1">Flexible Payment Structure</p> */}
+                    <p className="text-gray-400 text-xs mt-2">A structured two-installment payment plan, consisting of an initial payment at the time of purchase and the remaining balance payable within three months.</p>
+                  </div>
+
+                  {/* Payment Timeline - Shows both payment steps as enabled */}
+                  <div className="relative pl-6">
+                    {/* Timeline vertical line */}
+                    <div className="absolute left-[9px] top-[28px] bottom-[28px] w-0.5 bg-[#306bea]"></div>
+
+                    {/* First Payment - Initial Payment */}
+                    <div className="relative flex items-start justify-between mb-8">
+                      {/* Timeline circle */}
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full border-2 border-[#306bea] bg-[#306bea] flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
                       </div>
-                      <p className="text-gray-400 text-xs">+ Applicable Taxes</p>
+                      <div>
+                        <p className="font-semibold text-[#001525] text-base md:text-lg">On Installation & Support</p>
+                        <p className="text-xs mt-0.5 text-gray-500">
+                          Payable at the time of purchase
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[#306bea] text-base">₹</span>
+                          <span className="font-bold text-[#306bea] text-2xl md:text-3xl">25,000</span>
+                        </div>
+                        <p className="text-xs text-gray-400">+ Applicable Taxes</p>
+                      </div>
+                    </div>
+
+                    {/* Second Payment - Final Settlement (also enabled) */}
+                    <div className="relative flex items-start justify-between">
+                      {/* Timeline circle */}
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full border-2 border-[#306bea] bg-[#306bea] flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#001525] text-base md:text-lg">Final Settlement</p>
+                        <p className="text-xs mt-0.5 text-gray-500">
+                          Payable within 3 months
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[#306bea] text-base">₹</span>
+                          <span className="font-bold text-[#306bea] text-2xl md:text-3xl">25,000</span>
+                        </div>
+                        <p className="text-xs text-gray-400">+ Applicable Taxes</p>
+                      </div>
                     </div>
                   </div>
 
                   {/* Features */}
-                  <div className="space-y-4">
+                  {/* <div className="mt-6 space-y-3">
                     {[
-                      { title: 'Installation & Demo', desc: 'Complete software setup and walkthrough' },
-                      { title: 'Required Training', desc: 'Comprehensive hands-on team training' },
-                      { title: 'Ongoing Support & Updates', desc: 'Dedicated assistance and regular updates' }
+                      'Complete software installation & demo',
+                      'Comprehensive hands-on training',
+                      'Ongoing support & regular updates'
                     ].map((feature, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="w-5 h-5 rounded-full bg-[#306bea] flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="w-3 h-3 text-white" />
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full bg-[#306bea] flex items-center justify-center flex-shrink-0">
+                          <Check className="w-2.5 h-2.5 text-white" />
                         </div>
-                        <div>
-                          <p className="text-[#001525] font-medium text-sm md:text-base">{feature.title}</p>
-                          <p className="text-gray-500 text-xs md:text-sm">{feature.desc}</p>
-                        </div>
+                        <p className="text-gray-600 text-xs md:text-sm">{feature}</p>
                       </div>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
 
-                {/* Button */}
+                {/* Button - Always show Order Now, redirects to Account page for per-address management */}
                 <button
                   onClick={handleLaunchOfferPurchase}
                   disabled={isAffiliate}
-                  title={isAffiliate ? 'Affiliates cannot purchase directly' : 'Proceed to checkout'}
+                  title={isAffiliate ? 'Affiliates cannot purchase directly' : 'View billing addresses and payment options'}
                   className={`w-full py-4 rounded-full text-lg font-medium shadow-lg transition-colors ${
                     isAffiliate
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -319,31 +360,12 @@ function PricingContent() {
                 </div>
 
                 {/* Pricing */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-4 mb-6 md:mb-8">
-                  {/* Percentage */}
-                  <div className="text-center">
-                    <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Your Annual Turnover</p>
-                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
-                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">0.25%</span>
-                      <span className="text-sm md:text-lg font-medium text-[#001525]">Cost</span>
-                    </div>
-                    <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
-                  </div>
-
-                  {/* OR */}
-                  <div className="text-center px-3 md:px-6">
-                    <p className="text-xl md:text-3xl font-medium text-black">OR</p>
-                  </div>
-
-                  {/* Fixed Amount */}
-                  <div className="text-center">
-                    <p className="text-[#666d80] text-xs md:text-sm mb-1 md:mb-2">Minimum Of Cost</p>
-                    <div className="flex items-baseline justify-center gap-1 md:gap-2">
-                      <span className="text-lg md:text-2xl text-[#001525]">₹</span>
-                      <span className="text-2xl md:text-4xl font-semibold text-[#001525]">12,000</span>
-                    </div>
-                    <p className="text-[#666d80] text-xs md:text-sm">+ Applicable Taxes</p>
-                  </div>
+                <div className="text-center mb-6 md:mb-8">
+                  <p className="text-[#666d80] text-base md:text-lg">
+                    An annual fee of{' '}
+                    <span className="text-2xl md:text-4xl font-bold text-[#001525]">₹1,000</span>
+                    {' '}per user.
+                  </p>
                 </div>
 
                 {/* Features */}

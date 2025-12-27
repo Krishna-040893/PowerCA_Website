@@ -19,11 +19,25 @@ import {
   Clock,
   CheckCircle,
   Search,
-  RefreshCw
+  RefreshCw,
+  Trash2,
+  Loader2
 } from 'lucide-react'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface AffiliatePayment {
   id: string
@@ -46,11 +60,11 @@ interface AffiliatePayment {
   payment_completed_at: string
   created_at: string
   payment_count?: number
-  paid_count?: number
-  pending_count?: number
+  paid_order_count?: number
+  pending_order_count?: number
   paid_commission?: number
   pending_commission?: number
-  is_partially_paid?: boolean
+  payment_type?: 'initial_payment' | 'final_settlement'
   affiliate_referrals?: {
     id?: string
     referral_code: string
@@ -89,6 +103,11 @@ export default function AffiliatePaymentsPage() {
   const [paymentMode, setPaymentMode] = useState<string>('')
   const [paymentDate, setPaymentDate] = useState<string>('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Selection and delete state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -151,10 +170,8 @@ export default function AffiliatePaymentsPage() {
       }
 
       // For email-matched payments or partial payments, send full payment data
-      if (isEmailMatched || (selectedPayment.pending_count && selectedPayment.pending_count > 0)) {
-        // For partial payments (existing record with new pending orders), we need to update
-        const isPartialPayment = selectedPayment.pending_count && selectedPayment.pending_count > 0 && selectedPayment.paid_count && selectedPayment.paid_count > 0
-
+      // Always include paymentData for proper commission tracking
+      if (isEmailMatched || (selectedPayment.pending_commission && selectedPayment.pending_commission > 0)) {
         requestBody.paymentData = {
           referral_id: selectedPayment.affiliate_referrals?.id || selectedPayment.referral_id,
           referral_code: selectedPayment.referral_code,
@@ -167,15 +184,15 @@ export default function AffiliatePaymentsPage() {
           customer_phone: selectedPayment.customer_phone,
           customer_firm_name: selectedPayment.customer_firm_name,
           payment_amount: selectedPayment.payment_amount,
-          // For partial payments, only pay the pending commission
-          commission_amount: isPartialPayment ? selectedPayment.pending_commission : selectedPayment.commission_amount,
+          commission_amount: selectedPayment.commission_amount,
           commission_rate: selectedPayment.commission_rate,
           payment_completed_at: selectedPayment.payment_completed_at,
-          // For partial payments, add new count to existing
           payment_count: selectedPayment.payment_count || 1,
-          pending_count: selectedPayment.pending_count || 0,
-          paid_count: selectedPayment.paid_count || 0,
-          is_partial_payment: isPartialPayment
+          paid_order_count: selectedPayment.paid_order_count || 0,
+          pending_order_count: selectedPayment.pending_order_count || 0,
+          paid_commission: selectedPayment.paid_commission || 0,
+          pending_commission: selectedPayment.pending_commission || 0,
+          payment_type: selectedPayment.payment_type || 'initial_payment'
         }
       }
 
@@ -219,6 +236,84 @@ export default function AffiliatePaymentsPage() {
     )
   })
 
+  // Track scroll position for showing/hiding footer action bar
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main.overflow-y-auto')
+
+    const handleScroll = () => {
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop
+        setIsHeaderVisible(scrollTop < 100)
+      }
+    }
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll()
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
+  const currentPageItems = filteredPayments
+    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+
+  const allCurrentPageSelected = currentPageItems.length > 0 &&
+    currentPageItems.every(item => selectedIds.has(item.id))
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      const currentPageIds = currentPageItems.map(p => p.id)
+      setSelectedIds(new Set(currentPageIds))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean | 'indeterminate') => {
+    const newSelected = new Set(selectedIds)
+    if (checked === true) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/affiliate-payments', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete payments')
+      }
+
+      toast.success(data.message || `Successfully deleted ${selectedIds.size} payment(s)`)
+      setSelectedIds(new Set())
+      fetchPayments()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete payments')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -253,14 +348,52 @@ export default function AffiliatePaymentsPage() {
         { label: 'Paid', value: formatCurrency(summary.paidCommission), color: 'bg-green-100 text-green-800' }
       ]}
       actions={
-        <Button
-          onClick={fetchPayments}
-          variant="outline"
-          disabled={loading}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2 flex-wrap items-center">
+          {selectedIds.size > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Affiliate Payments</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.size} payment(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
+          <Button
+            onClick={fetchPayments}
+            variant="outline"
+            disabled={loading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       }
     >
       <div>
@@ -314,6 +447,14 @@ export default function AffiliatePaymentsPage() {
                   <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-6 py-3 w-[50px]">
+                    <Checkbox
+                      checked={allCurrentPageSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-base font-bold">
                     Date
                   </th>
@@ -345,6 +486,14 @@ export default function AffiliatePaymentsPage() {
                   .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                   .map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <Checkbox
+                          checked={selectedIds.has(payment.id)}
+                          onCheckedChange={(checked) => handleSelectOne(payment.id, checked)}
+                          aria-label={`Select ${payment.customer_name}`}
+                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(payment.payment_completed_at || payment.created_at)}
                       </td>
@@ -370,16 +519,9 @@ export default function AffiliatePaymentsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
-                            {payment.payment_count || 1}
-                          </span>
-                          {(payment.paid_count !== undefined && payment.pending_count !== undefined && payment.pending_count > 0) && (
-                            <span className="text-xs text-gray-500">
-                              {payment.paid_count} paid + {payment.pending_count} new
-                            </span>
-                          )}
-                        </div>
+                        <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                          {payment.payment_count || 1}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <div className="space-y-1">
@@ -389,6 +531,7 @@ export default function AffiliatePaymentsPage() {
                               <span className="font-bold text-green-600">
                                 {formatCurrency(payment.paid_commission)}
                               </span>
+                              <span className="text-[10px] text-gray-400">({payment.paid_order_count} order{payment.paid_order_count !== 1 ? 's' : ''})</span>
                             </div>
                           )}
                           {payment.pending_commission !== undefined && payment.pending_commission > 0 && (
@@ -397,6 +540,7 @@ export default function AffiliatePaymentsPage() {
                               <span className="font-bold text-orange-600">
                                 {formatCurrency(payment.pending_commission)}
                               </span>
+                              <span className="text-[10px] text-gray-400">({payment.pending_order_count} order{payment.pending_order_count !== 1 ? 's' : ''})</span>
                             </div>
                           )}
                           {(!payment.paid_commission && !payment.pending_commission) && (
@@ -405,15 +549,15 @@ export default function AffiliatePaymentsPage() {
                             </p>
                           )}
                           <p className="text-xs text-gray-500">
-                            ({payment.commission_rate}%)
+                            Total: {formatCurrency(payment.commission_amount)} ({payment.commission_rate}%)
                           </p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {payment.pending_count && payment.pending_count > 0 ? (
+                        {payment.pending_commission && payment.pending_commission > 0 ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                             <Clock className="w-3 h-3 mr-1" />
-                            {payment.paid_count && payment.paid_count > 0 ? 'Partial' : 'Pending'}
+                            {payment.paid_commission && payment.paid_commission > 0 ? 'Partial' : 'Pending'}
                           </span>
                         ) : payment.commission_paid ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -428,15 +572,13 @@ export default function AffiliatePaymentsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {(payment.pending_count && payment.pending_count > 0) || !payment.commission_paid ? (
+                        {payment.pending_commission && payment.pending_commission > 0 ? (
                           <Button
                             size="sm"
                             onClick={() => handleMarkPaidClick(payment)}
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >
-                            {payment.pending_count && payment.pending_count > 0
-                              ? `Pay ₹${payment.pending_commission?.toLocaleString('en-IN')}`
-                              : 'Mark Paid'}
+                            Pay ₹{payment.pending_commission.toLocaleString('en-IN')}
                           </Button>
                         ) : null}
                       </td>
@@ -449,16 +591,32 @@ export default function AffiliatePaymentsPage() {
 
                 {/* Mobile Card View - Professional Design */}
                 <div className="md:hidden p-4 space-y-3">
+                  {/* Mobile Select All */}
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <Checkbox
+                      checked={allCurrentPageSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                    />
+                    <span className="text-sm text-gray-600">Select all on this page</span>
+                  </div>
                   {filteredPayments
                     .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                     .map((payment) => (
-                    <Card key={payment.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <Card key={payment.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(payment.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {/* Customer and Status */}
+                          {/* Checkbox, Customer and Status */}
                           <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <Checkbox
+                                checked={selectedIds.has(payment.id)}
+                                onCheckedChange={(checked) => handleSelectOne(payment.id, checked)}
+                                aria-label={`Select ${payment.customer_name}`}
+                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              />
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
                                   <IndianRupee className="h-4 w-4 text-indigo-600" />
                                 </div>
@@ -468,10 +626,10 @@ export default function AffiliatePaymentsPage() {
                                 </div>
                               </div>
                             </div>
-                            {payment.pending_count && payment.pending_count > 0 ? (
+                            {payment.pending_commission && payment.pending_commission > 0 ? (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 flex-shrink-0">
                                 <Clock className="w-3 h-3 mr-1" />
-                                {payment.paid_count && payment.paid_count > 0 ? 'Partial' : 'Pending'}
+                                {payment.paid_commission && payment.paid_commission > 0 ? 'Partial' : 'Pending'}
                               </span>
                             ) : payment.commission_paid ? (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 flex-shrink-0">
@@ -490,35 +648,26 @@ export default function AffiliatePaymentsPage() {
                           <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Orders:</span>
-                              <div className="flex flex-col items-end">
-                                <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
-                                  {payment.payment_count || 1}
-                                </span>
-                                {(payment.paid_count !== undefined && payment.pending_count !== undefined && payment.pending_count > 0) && (
-                                  <span className="text-[10px] text-gray-500 mt-0.5">
-                                    {payment.paid_count} paid + {payment.pending_count} new
-                                  </span>
-                                )}
-                              </div>
+                              <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                                {payment.payment_count || 1}
+                              </span>
                             </div>
                             {payment.paid_commission !== undefined && payment.paid_commission > 0 && (
                               <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Paid Commission:</span>
+                                <span className="text-gray-500">Paid ({payment.paid_order_count} order{payment.paid_order_count !== 1 ? 's' : ''}):</span>
                                 <span className="text-green-700 font-bold">{formatCurrency(payment.paid_commission)}</span>
                               </div>
                             )}
                             {payment.pending_commission !== undefined && payment.pending_commission > 0 && (
                               <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Pending Commission:</span>
+                                <span className="text-gray-500">Pending ({payment.pending_order_count} order{payment.pending_order_count !== 1 ? 's' : ''}):</span>
                                 <span className="text-orange-600 font-bold">{formatCurrency(payment.pending_commission)}</span>
                               </div>
                             )}
-                            {(!payment.paid_commission && !payment.pending_commission) && (
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Commission ({payment.commission_rate}%):</span>
-                                <span className="text-green-700 font-bold">{formatCurrency(payment.commission_amount)}</span>
-                              </div>
-                            )}
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500">Total ({payment.commission_rate}%):</span>
+                              <span className="text-gray-700 font-bold">{formatCurrency(payment.commission_amount)}</span>
+                            </div>
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Affiliate ID:</span>
                               <code className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-mono">
@@ -540,16 +689,14 @@ export default function AffiliatePaymentsPage() {
                           </div>
 
                           {/* Mark Paid Button */}
-                          {((payment.pending_count && payment.pending_count > 0) || !payment.commission_paid) && (
+                          {payment.pending_commission && payment.pending_commission > 0 && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkPaidClick(payment)}
                               className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              {payment.pending_count && payment.pending_count > 0
-                                ? `Pay ₹${payment.pending_commission?.toLocaleString('en-IN')}`
-                                : 'Mark as Paid'}
+                              Pay ₹{payment.pending_commission.toLocaleString('en-IN')}
                             </Button>
                           )}
                         </div>
@@ -678,6 +825,61 @@ export default function AffiliatePaymentsPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+        {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
+        {selectedIds.size > 0 && !isHeaderVisible && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] p-4 z-[9999] lg:left-64">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Clear
+                </Button>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
+                    Delete ({selectedIds.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-white">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Affiliate Payments</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete {selectedIds.size} payment(s)?
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSelected}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        )}
     </AdminPageWrapper>
   )
 }
