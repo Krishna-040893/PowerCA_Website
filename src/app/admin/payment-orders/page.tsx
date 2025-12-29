@@ -29,7 +29,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, Clock, XCircle, User, Mail } from 'lucide-react'
+import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, XCircle, User } from 'lucide-react'
 
 interface IndividualOrder {
   id: string
@@ -181,15 +181,7 @@ export default function PaymentOrdersPage() {
       case 'created':
         return (
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
-            <Clock className="h-3 w-3 mr-1 inline" />
             Created
-          </Badge>
-        )
-      case 'attempted':
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
-            <Clock className="h-3 w-3 mr-1 inline" />
-            Attempted
           </Badge>
         )
       default:
@@ -287,7 +279,8 @@ export default function PaymentOrdersPage() {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount)
   }
 
@@ -334,7 +327,7 @@ export default function PaymentOrdersPage() {
     total: orders.flatMap(o => o.all_orders || []).length,
     paid: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'paid').length,
     created: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'created').length,
-    totalAmount: filteredOrders.reduce((sum, o) => sum + o.total_amount, 0),
+    totalAmount: filteredOrders.reduce((sum, o) => sum + (o.paid_amount || 0), 0),
   }
 
   return (
@@ -345,6 +338,7 @@ export default function PaymentOrdersPage() {
         { label: 'Customers', value: stats.totalCustomers, color: 'bg-purple-100 text-purple-800' },
         { label: 'Orders', value: stats.total, color: 'bg-blue-100 text-blue-800' },
         { label: 'Paid', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Created', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
         { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-indigo-100 text-indigo-800' }
       ]}
     >
@@ -423,17 +417,9 @@ export default function PaymentOrdersPage() {
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="text-sm font-bold text-green-600 flex items-center">
-                            <IndianRupee className="h-3 w-3" />
-                            {(order.paid_amount || 0).toFixed(2)}
-                          </div>
-                          {(order.pending_amount || 0) > 0 && (
-                            <div className="text-xs text-orange-600 flex items-center">
-                              <IndianRupee className="h-2.5 w-2.5" />
-                              {order.pending_amount.toFixed(2)} pending
-                            </div>
-                          )}
+                        <div className="text-sm font-bold text-green-600 flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {(order.paid_amount || 0).toFixed(0)}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -502,14 +488,8 @@ export default function PaymentOrdersPage() {
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
                             <p className="font-bold text-base text-green-600 whitespace-nowrap flex items-center">
                               <IndianRupee className="h-3 w-3" />
-                              {(order.paid_amount || 0).toFixed(2)}
+                              {(order.paid_amount || 0).toFixed(0)}
                             </p>
-                            {(order.pending_amount || 0) > 0 && (
-                              <p className="text-xs text-orange-600 whitespace-nowrap flex items-center">
-                                <IndianRupee className="h-2.5 w-2.5" />
-                                {order.pending_amount.toFixed(2)} pending
-                              </p>
-                            )}
                             <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
                               {order.total_orders} orders
                             </span>
@@ -647,21 +627,12 @@ export default function PaymentOrdersPage() {
                     <p className="font-bold text-blue-600">{selectedOrder.total_orders}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Paid Amount:</span>
+                    <span className="text-gray-600">Total Paid:</span>
                     <p className="font-bold text-green-600 flex items-center">
                       <IndianRupee className="h-3 w-3" />
-                      {(selectedOrder.paid_amount || 0).toFixed(2)}
+                      {(selectedOrder.paid_amount || 0).toFixed(0)}
                     </p>
                   </div>
-                  {(selectedOrder.pending_amount || 0) > 0 && (
-                    <div>
-                      <span className="text-gray-600">Pending Amount:</span>
-                      <p className="font-bold text-orange-600 flex items-center">
-                        <IndianRupee className="h-3 w-3" />
-                        {selectedOrder.pending_amount.toFixed(2)}
-                      </p>
-                    </div>
-                  )}
                   {selectedOrder.gst_number && (
                     <div>
                       <span className="text-gray-600">GST:</span>
@@ -728,7 +699,7 @@ export default function PaymentOrdersPage() {
                           <div className="text-right flex-shrink-0">
                             <p className="font-bold flex items-center justify-end">
                               <IndianRupee className="h-3 w-3" />
-                              {group.totalAmount.toFixed(2)}
+                              {group.totalAmount.toFixed(0)}
                             </p>
                           </div>
                         </div>

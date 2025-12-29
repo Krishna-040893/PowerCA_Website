@@ -13,6 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 export async function GET(_request: NextRequest) {
   try {
     // Fetch all payment orders with address data
+    // Orders are only created when user clicks "Place Order" button in checkout
     const { data: orders, error } = await supabase
       .from('payment_orders')
       .select(`

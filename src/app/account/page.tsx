@@ -809,10 +809,10 @@ function AccountPageContent() {
           return
         }
 
-        // For edits, stay on the page
-        // Store the edited address ID and location before resetting
-        const editedAddressId = editingAddressId
-        const editedLocation = normalizedCity
+        // Stay on the page for both new addresses and edits
+        // Store the address ID and location before resetting
+        const addressId = isEditing ? editingAddressId : result.address?.id
+        const addressLocation = normalizedCity
 
         // Fetch updated addresses list
         await fetchSavedAddresses()
@@ -832,15 +832,15 @@ function AccountPageContent() {
         setShowAddressForm(false)
         setEditingAddressId(null)
 
-        // Set the current location tab to the edited address's location
-        if (editedLocation) {
-          setSelectedLocationTab(editedLocation)
+        // Set the current location tab to the address's location
+        if (addressLocation) {
+          setSelectedLocationTab(addressLocation)
         }
 
-        // Expand the edited address accordion
-        if (editedAddressId) {
+        // Expand the address accordion to show it's been created/updated
+        if (addressId) {
           setExpandedAddresses(prev =>
-            prev.includes(editedAddressId) ? prev : [...prev, editedAddressId]
+            prev.includes(addressId) ? prev : [...prev, addressId]
           )
         }
       } else {

@@ -24,6 +24,7 @@ export async function GET(_request: NextRequest) {
           approvedAffiliates: 0,
           referrals: 0,
           pendingPayments: 0,
+          affiliatePayments: 0,
           payments: 0,
           paymentOrders: 0,
           newsletterSubscribers: 0,
@@ -56,7 +57,9 @@ export async function GET(_request: NextRequest) {
       newsletterSubscribersResult,
       blogPostsResult,
       appDownloadEmailsResult,
-      appDownloadOrdersResult
+      appDownloadOrdersResult,
+      affiliateReferralsResult,
+      paidPaymentsResult
     ] = await Promise.allSettled([
       // Total bookings count
       supabase
@@ -90,11 +93,10 @@ export async function GET(_request: NextRequest) {
         .from('affiliate_referrals')
         .select('id', { count: 'exact', head: true }),
 
-      // Pending payments count (unpaid commissions)
+      // Pending payments count from database (unpaid commissions)
       supabase
         .from('affiliate_referral_payments')
-        .select('id', { count: 'exact', head: true })
-        .eq('commission_paid', false),
+        .select('referral_id, commission_paid'),
 
       // Fetch emails from payments table to count unique customers
       supabase
@@ -125,7 +127,18 @@ export async function GET(_request: NextRequest) {
       // Total pending app download orders count (from app_download_orders table)
       supabase
         .from('app_download_orders')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true }),
+
+      // Fetch affiliate referrals with referred emails for email matching
+      supabase
+        .from('affiliate_referrals')
+        .select('id, referred_email'),
+
+      // Fetch paid payments with emails for affiliate payment matching
+      supabase
+        .from('payments')
+        .select('email')
+        .in('status', ['captured', 'paid', 'authorized', 'success'])
     ])
 
     // Count unique customers for payments (by email)
@@ -161,6 +174,74 @@ export async function GET(_request: NextRequest) {
       appDownloadsUniqueCustomers = uniqueEmails.size
     }
 
+    // Calculate pending affiliate payments including email-matched ones
+    // This matches the logic in affiliate-payments API
+    let pendingPaymentsCount = 0
+
+    // Get existing payment records
+    const existingPayments = pendingPaymentsResult.status === 'fulfilled'
+      ? (pendingPaymentsResult.value.data || [])
+      : []
+
+    // Get referral IDs that have payment records
+    const referralIdsWithPayments = new Set(
+      existingPayments.map((p: { referral_id: string }) => p.referral_id)
+    )
+
+    // Count pending payments from existing records
+    const pendingFromDb = existingPayments.filter(
+      (p: { commission_paid: boolean }) => !p.commission_paid
+    ).length
+
+    // Count email-matched payments (referrals with paid payments but no payment record)
+    let emailMatchedCount = 0
+    if (affiliateReferralsResult.status === 'fulfilled' &&
+        paidPaymentsResult.status === 'fulfilled' &&
+        affiliateReferralsResult.value.data &&
+        paidPaymentsResult.value.data) {
+
+      // Create set of paid customer emails
+      const paidEmails = new Set(
+        paidPaymentsResult.value.data
+          .map((p: { email: string }) => p.email?.toLowerCase())
+          .filter(Boolean)
+      )
+
+      // Count referrals where customer paid but no payment record exists
+      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string }) => {
+        if (ref.referred_email &&
+            paidEmails.has(ref.referred_email.toLowerCase()) &&
+            !referralIdsWithPayments.has(ref.id)) {
+          emailMatchedCount++
+        }
+      })
+    }
+
+    pendingPaymentsCount = pendingFromDb + emailMatchedCount
+
+    // Calculate total affiliate payments (all unique customers who paid through referrals)
+    // This counts all affiliate payments regardless of commission paid status
+    let totalAffiliatePayments = 0
+    if (affiliateReferralsResult.status === 'fulfilled' &&
+        paidPaymentsResult.status === 'fulfilled' &&
+        affiliateReferralsResult.value.data &&
+        paidPaymentsResult.value.data) {
+
+      // Create set of paid customer emails
+      const paidEmails = new Set(
+        paidPaymentsResult.value.data
+          .map((p: { email: string }) => p.email?.toLowerCase())
+          .filter(Boolean)
+      )
+
+      // Count referrals where customer paid (both from payment records and email-matched)
+      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string }) => {
+        if (ref.referred_email && paidEmails.has(ref.referred_email.toLowerCase())) {
+          totalAffiliatePayments++
+        }
+      })
+    }
+
     const counts = {
       bookings: bookingsResult.status === 'fulfilled' ? (bookingsResult.value.count || 0) : 0,
       registrations: registrationsResult.status === 'fulfilled' ? (registrationsResult.value.count || 0) : 0,
@@ -168,7 +249,8 @@ export async function GET(_request: NextRequest) {
       pendingApprovals: pendingApprovalsResult.status === 'fulfilled' ? (pendingApprovalsResult.value.count || 0) : 0,
       approvedAffiliates: approvedAffiliatesResult.status === 'fulfilled' ? (approvedAffiliatesResult.value.count || 0) : 0,
       referrals: referralsResult.status === 'fulfilled' ? (referralsResult.value.count || 0) : 0,
-      pendingPayments: pendingPaymentsResult.status === 'fulfilled' ? (pendingPaymentsResult.value.count || 0) : 0,
+      pendingPayments: pendingPaymentsCount,
+      affiliatePayments: totalAffiliatePayments,
       payments: paymentsUniqueCustomers,
       paymentOrders: paymentOrdersUniqueCustomers,
       newsletterSubscribers: newsletterSubscribersResult.status === 'fulfilled' ? (newsletterSubscribersResult.value.count || 0) : 0,
@@ -190,6 +272,7 @@ export async function GET(_request: NextRequest) {
         approvedAffiliates: 0,
         referrals: 0,
         pendingPayments: 0,
+        affiliatePayments: 0,
         payments: 0,
         paymentOrders: 0,
         newsletterSubscribers: 0,

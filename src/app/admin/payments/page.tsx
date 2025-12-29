@@ -466,7 +466,7 @@ export default function AdminPaymentsPage() {
                           </p>
                         </TableCell>
                         <TableCell>
-                          <p className="font-bold text-green-600">₹{payment.total_amount.toFixed(2)}</p>
+                          <p className="font-bold text-green-600">₹{payment.total_amount.toFixed(0)}</p>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
@@ -529,7 +529,7 @@ export default function AdminPaymentsPage() {
                                         </div>
                                         <div>
                                           <span className="text-gray-600">Total Amount:</span>
-                                          <p className="font-bold text-green-600">₹{selectedPayment.total_amount.toFixed(2)}</p>
+                                          <p className="font-bold text-green-600">₹{selectedPayment.total_amount.toFixed(0)}</p>
                                         </div>
                                         {selectedPayment.phone && (
                                           <div>
@@ -574,7 +574,7 @@ export default function AdminPaymentsPage() {
                                                   <p className="text-sm text-blue-600">{group.location}</p>
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
-                                                  <p className="font-bold">₹{group.totalAmount.toFixed(2)}</p>
+                                                  <p className="font-bold">₹{group.totalAmount.toFixed(0)}</p>
                                                 </div>
                                               </div>
                                               {/* Payment Status Row */}
@@ -635,7 +635,7 @@ export default function AdminPaymentsPage() {
                             <p className="text-xs text-gray-500 truncate mt-1">{payment.email}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                            <p className="font-bold text-lg text-green-600 whitespace-nowrap">₹{payment.total_amount.toFixed(2)}</p>
+                            <p className="font-bold text-lg text-green-600 whitespace-nowrap">₹{payment.total_amount.toFixed(0)}</p>
                             <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
                               {payment.total_orders} orders
                             </span>
@@ -714,7 +714,7 @@ export default function AdminPaymentsPage() {
                                       </div>
                                       <div>
                                         <span className="text-gray-600">Total Amount:</span>
-                                        <p className="font-bold text-green-600">₹{selectedPayment.total_amount.toFixed(2)}</p>
+                                        <p className="font-bold text-green-600">₹{selectedPayment.total_amount.toFixed(0)}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -753,7 +753,7 @@ export default function AdminPaymentsPage() {
                                                 <p className="text-sm text-blue-600">{group.location}</p>
                                               </div>
                                               <div className="text-right flex-shrink-0">
-                                                <p className="font-bold">₹{group.totalAmount.toFixed(2)}</p>
+                                                <p className="font-bold">₹{group.totalAmount.toFixed(0)}</p>
                                               </div>
                                             </div>
                                             {/* Payment Status Row */}

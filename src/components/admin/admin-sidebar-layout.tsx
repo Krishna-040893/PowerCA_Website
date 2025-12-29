@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'appDownloads' | 'appDownloadOrders'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'affiliatePayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'appDownloads' | 'appDownloadOrders'
   subItems?: { title: string; href: string }[]
 }
 
@@ -46,6 +46,7 @@ interface Counts {
   approvedAffiliates: number
   referrals: number
   pendingPayments: number
+  affiliatePayments: number
   payments: number
   paymentOrders: number
   newsletterSubscribers: number
@@ -106,7 +107,7 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'All Affiliates', href: '/admin/affiliates', icon: Handshake, countKey: 'affiliates', badgeVariant: 'default' },
       { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'approvedAffiliates', badgeVariant: 'default' },
       { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
-      { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Wallet, countKey: 'pendingPayments', badgeVariant: 'default' },
+      { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Wallet, countKey: 'affiliatePayments', badgeVariant: 'default' },
     ]
   },
 ]
@@ -137,6 +138,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       approvedAffiliates: 0,
       referrals: 0,
       pendingPayments: 0,
+      affiliatePayments: 0,
       payments: 0,
       paymentOrders: 0,
       newsletterSubscribers: 0,
