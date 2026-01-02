@@ -370,6 +370,7 @@ function AccountPageContent() {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [expandedOrders, setExpandedOrders] = useState<string[]>([])
   const [expandedAddresses, setExpandedAddresses] = useState<string[]>([])
+  const [expandedLocations, setExpandedLocations] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 5
 
@@ -471,6 +472,18 @@ function AccountPageContent() {
     const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24))
     const daysRemaining = 90 - daysPassed
     return daysRemaining > 0 ? daysRemaining : 0
+  }
+
+  // Helper function to group orders by location
+  const groupOrdersByLocation = (orders: OrderHistory[]): Record<string, OrderHistory[]> => {
+    return orders.reduce((groups, order) => {
+      const location = order.location || 'Unknown Location'
+      if (!groups[location]) {
+        groups[location] = []
+      }
+      groups[location].push(order)
+      return groups
+    }, {} as Record<string, OrderHistory[]>)
   }
 
   const _handleDeleteAddress = async (addressId: string) => {
@@ -1468,8 +1481,8 @@ function AccountPageContent() {
                               })}
                             </div>
 
-                            {/* Show Addresses for Selected Location */}
-                            <div className="space-y-4">
+                            {/* Show Addresses for Selected Location - Flat card view */}
+                            <div className="space-y-3 mt-3">
                               {(() => {
                                 const locationAddresses = savedAddresses.filter(
                                   address => (address.label || address.city) === currentLocation
@@ -1478,259 +1491,112 @@ function AccountPageContent() {
                                 return locationAddresses.map((address) => {
                                   const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
                                   const isBeingEdited = editingAddressId === address.id
-                                  const isExpanded = expandedAddresses.includes(address.id) || isBeingEdited
-                                  const isOrdered = purchasedAddressIds.includes(address.id)
-                                  // Use accordion for ordered addresses OR when there are more than 3 addresses
-                                  const useAccordion = isOrdered || locationAddresses.length > 3
+                                  const addrPaymentStatus = getAddressPaymentStatus(address.id)
+                                  const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
+                                  const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
+                                  const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
 
-                                  // If accordion mode (ordered addresses or more than 3 total)
-                                  if (useAccordion) {
-                                    return (
-                                      <div
-                                        key={address.id}
-                                        className={`rounded-xl border transition-all overflow-hidden shadow-md ${
-                                          isBeingEdited
-                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
-                                            : 'border-gray-200 bg-white'
-                                        }`}
-                                      >
-                                        {/* Accordion Header - Always visible */}
-                                        <div
-                                          className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                                          onClick={() => {
-                                            setExpandedAddresses(prev =>
-                                              prev.includes(address.id)
-                                                ? prev.filter(id => id !== address.id)
-                                                : [...prev, address.id]
-                                            )
-                                          }}
-                                        >
-                                          {(() => {
-                                            const addrPaymentStatus = getAddressPaymentStatus(address.id)
-                                            const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
-                                            const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
-
-                                            return (
-                                              <>
-                                                <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                                  <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                                  {address.gst_no && (
-                                                    <p className="text-gray-400 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
-                                                  )}
-                                                </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                  {hasFinalSettlement ? (
-                                                    <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
-                                                      ✓ Completed
-                                                    </span>
-                                                  ) : hasInitialPayment ? (
-                                                    <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
-                                                      Final Settlement Pending
-                                                    </span>
-                                                  ) : null}
-                                                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                                                </div>
-                                              </>
-                                            )
-                                          })()}
-                                        </div>
-
-                                        {/* Accordion Content - Expandable */}
-                                        {isExpanded && (
-                                          <div className="px-4 pb-4 pt-2">
-                                            {(() => {
-                                              const addrPaymentStatus = getAddressPaymentStatus(address.id)
-                                              const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
-                                              const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
-                                              const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
-
-                                              return (
-                                                <div className="flex items-center gap-3">
-                                                  <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                                    <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                                    {/* Status badges below address */}
-                                                    {hasInitialPayment && (
-                                                      <div className="flex flex-wrap gap-2 mt-2">
-                                                        <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
-                                                          ✓ Installation & Support Paid
-                                                        </span>
-                                                        {hasFinalSettlement ? (
-                                                          <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
-                                                            ✓ Final Settlement Paid
-                                                          </span>
-                                                        ) : (
-                                                          <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
-                                                            ○ Final Settlement Pending
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                  {/* Right side: Action buttons */}
-                                                  <div className="flex flex-col items-end gap-2 shrink-0">
-                                                    {hasFinalSettlement ? null : hasInitialPayment && isFinalEnabled ? (
-                                                      <>
-                                                        <span className="text-xs text-gray-500">
-                                                          {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)} days remaining
-                                                        </span>
-                                                        <button
-                                                          onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            sessionStorage.setItem('checkoutAddressId', address.id)
-                                                            localStorage.setItem('checkoutAddressId', address.id)
-                                                            router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
-                                                          }}
-                                                          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
-                                                        >
-                                                          Pay Final Settlement
-                                                        </button>
-                                                      </>
-                                                    ) : !hasInitialPayment ? (
-                                                      <div className="flex flex-col items-end gap-2">
-                                                        <div className="flex items-center gap-2">
-                                                          <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '13px' }}>
-                                                            ○ Not Ordered
-                                                          </span>
-                                                          {originalIndex > 0 && (
-                                                            <span className="text-green-600 font-medium" style={{ fontSize: '12px' }}>
-                                                              10% Off
-                                                            </span>
-                                                          )}
-                                                          <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                              e.stopPropagation()
-                                                              handleEditAddress(address)
-                                                            }}
-                                                            className="text-blue-500 hover:text-blue-700 p-1"
-                                                            title="Edit address"
-                                                          >
-                                                            <Pencil className="w-4 h-4" />
-                                                          </button>
-                                                        </div>
-                                                        <button
-                                                          onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            sessionStorage.setItem('checkoutAddressId', address.id)
-                                                            localStorage.setItem('checkoutAddressId', address.id)
-                                                            router.push(`/checkout?addressId=${address.id}`)
-                                                          }}
-                                                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
-                                                        >
-                                                          Proceed to Order
-                                                        </button>
-                                                      </div>
-                                                    ) : null}
-                                                  </div>
-                                                </div>
-                                              )
-                                            })()}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  }
-
-                                  // Normal card format (3 or fewer addresses)
                                   return (
                                     <div
                                       key={address.id}
-                                      className={`p-4 rounded-xl border transition-all shadow-md ${
+                                      className={`p-4 rounded-xl border transition-all shadow-sm hover:shadow-md ${
                                         isBeingEdited
-                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
-                                          : 'border-gray-200 bg-white'
+                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                          : hasFinalSettlement
+                                            ? 'border-green-200 bg-green-50/30'
+                                            : hasInitialPayment
+                                              ? 'border-orange-200 bg-orange-50/30'
+                                              : 'border-gray-200 bg-white'
                                       }`}
                                     >
-                                      {(() => {
-                                        const addrPaymentStatus = getAddressPaymentStatus(address.id)
-                                        const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
-                                        const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
-                                        const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
-
-                                        return (
-                                          <div className="flex items-start gap-3">
-                                            <div className="flex-1 min-w-0" style={{ lineHeight: '1.7' }}>
-                                              <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                              {address.gst_no && (
-                                                <p className="text-gray-400" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
-                                              )}
-                                              <p className="text-gray-400" style={{ fontSize: '14px' }}>{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                              {/* Status badges below address */}
-                                              {hasInitialPayment && (
-                                                <div className="flex flex-wrap gap-2 mt-2">
-                                                  <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
-                                                    ✓ Installation & Support Paid
-                                                  </span>
-                                                  {hasFinalSettlement ? (
-                                                    <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '12px' }}>
-                                                      ✓ Final Settlement Paid
-                                                    </span>
-                                                  ) : (
-                                                    <span className="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium" style={{ fontSize: '12px' }}>
-                                                      ○ Final Settlement Pending
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                            {/* Right side: Action buttons */}
-                                            <div className="flex flex-col items-end gap-2 shrink-0">
-                                              {hasFinalSettlement ? (
-                                                <span className="px-3 py-2 rounded-full bg-green-100 text-green-700 font-medium text-sm">
-                                                  ✓ Completed
-                                                </span>
-                                              ) : hasInitialPayment && isFinalEnabled ? (
-                                                <>
-                                                  <span className="text-xs text-gray-500">
-                                                    {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)} days remaining
-                                                  </span>
-                                                  <button
-                                                    onClick={() => {
-                                                      sessionStorage.setItem('checkoutAddressId', address.id)
-                                                      localStorage.setItem('checkoutAddressId', address.id)
-                                                      router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
-                                                    }}
-                                                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
-                                                  >
-                                                    Pay Final Settlement
-                                                  </button>
-                                                </>
-                                              ) : !hasInitialPayment ? (
-                                                <div className="flex flex-col items-end gap-2">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '13px' }}>
-                                                      ○ Not Ordered
-                                                    </span>
-                                                    {originalIndex > 0 && (
-                                                      <span className="text-green-600 font-medium" style={{ fontSize: '12px' }}>
-                                                        10% Off
-                                                      </span>
-                                                    )}
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => handleEditAddress(address)}
-                                                      className="text-blue-500 hover:text-blue-700 p-1"
-                                                      title="Edit address"
-                                                    >
-                                                      <Pencil className="w-4 h-4" />
-                                                    </button>
-                                                  </div>
-                                                  <button
-                                                    onClick={() => {
-                                                      sessionStorage.setItem('checkoutAddressId', address.id)
-                                                      localStorage.setItem('checkoutAddressId', address.id)
-                                                      router.push(`/checkout?addressId=${address.id}`)
-                                                    }}
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-2xl transition-colors text-center text-sm whitespace-nowrap"
-                                                  >
-                                                    Proceed to Order
-                                                  </button>
-                                                </div>
-                                              ) : null}
-                                            </div>
+                                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                        {/* Left side - Address info */}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                                            <p className="font-bold text-gray-900 text-lg">{address.firm_name}</p>
+                                            {hasFinalSettlement ? (
+                                              <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">✓ Completed</Badge>
+                                            ) : hasInitialPayment ? (
+                                              <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">Final Pending</Badge>
+                                            ) : (
+                                              <Badge className="bg-red-100 text-red-600 border-red-200 text-xs">○ Not Ordered</Badge>
+                                            )}
                                           </div>
-                                        )
-                                      })()}
+                                          {address.gst_no && (
+                                            <p className="text-gray-500 text-sm">GST: {address.gst_no}</p>
+                                          )}
+                                          <p className="text-gray-500 text-sm mt-1">
+                                            {address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}
+                                          </p>
+
+                                          {/* Payment status badges */}
+                                          {hasInitialPayment && (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                              <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium">
+                                                ✓ Installation & Support
+                                              </span>
+                                              {hasFinalSettlement ? (
+                                                <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium">
+                                                  ✓ Final Settlement
+                                                </span>
+                                              ) : (
+                                                <span className="px-2 py-0.5 rounded text-xs bg-orange-100 text-orange-700 font-medium">
+                                                  ○ Final Settlement
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Right side - Action buttons */}
+                                        <div className="flex items-center gap-2 shrink-0">
+                                          {hasFinalSettlement ? (
+                                            <span className="text-green-600 font-medium text-sm">All Payments Complete</span>
+                                          ) : hasInitialPayment && isFinalEnabled ? (
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-xs text-gray-500">
+                                                {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)}d left
+                                              </span>
+                                              <button
+                                                onClick={() => {
+                                                  sessionStorage.setItem('checkoutAddressId', address.id)
+                                                  localStorage.setItem('checkoutAddressId', address.id)
+                                                  router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
+                                                }}
+                                                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                                              >
+                                                Pay Final
+                                              </button>
+                                            </div>
+                                          ) : !hasInitialPayment ? (
+                                            <div className="flex items-center gap-2">
+                                              {originalIndex > 0 && (
+                                                <span className="text-green-600 font-medium text-xs bg-green-50 px-2 py-1 rounded">
+                                                  10% Off
+                                                </span>
+                                              )}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleEditAddress(address)}
+                                                className="text-blue-500 hover:text-blue-700 p-1.5 hover:bg-blue-50 rounded"
+                                                title="Edit address"
+                                              >
+                                                <Pencil className="w-4 h-4" />
+                                              </button>
+                                              <button
+                                                onClick={() => {
+                                                  sessionStorage.setItem('checkoutAddressId', address.id)
+                                                  localStorage.setItem('checkoutAddressId', address.id)
+                                                  router.push(`/checkout?addressId=${address.id}`)
+                                                }}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                                              >
+                                                Order Now
+                                              </button>
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      </div>
                                     </div>
                                   )
                                 })
@@ -1998,188 +1864,79 @@ function AccountPageContent() {
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading order history...</span>
                   </div>
                 ) : userData && userData.orderHistory.length > 0 ? (
-                  <>
-                  <div className="space-y-2">
-                    {userData.orderHistory
-                      .slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage)
-                      .map((order) => {
-                      const isExpanded = expandedOrders.includes(order.invoiceNumber)
-                      return (
-                        <div
-                          key={order.invoiceNumber}
-                          className="border border-gray-200 rounded-lg hover:shadow-sm transition-shadow bg-white overflow-hidden"
-                        >
-                          {/* Clickable header row */}
-                          <div
-                            className="flex items-center justify-between gap-3 p-4 cursor-pointer"
-                            onClick={() => {
-                              setExpandedOrders(prev =>
-                                prev.includes(order.invoiceNumber)
-                                  ? prev.filter(id => id !== order.invoiceNumber)
-                                  : [...prev, order.invoiceNumber]
-                              )
-                            }}
-                          >
-                            {/* Left: Invoice info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-900 text-base">Invoice No: #{order.invoiceNumber}</p>
-                                {order.location && (
-                                  <span className="text-sm text-blue-600 flex items-center gap-0.5">
-                                    <MapPin className="h-4 w-4" />
-                                    {order.location}
-                                  </span>
-                                )}
-                                <Badge
-                                  className={`text-xs px-2 py-0.5 ${
-                                    order.paymentType === 'final_settlement'
-                                      ? 'bg-purple-100 text-purple-800 border-purple-200'
-                                      : 'bg-blue-100 text-blue-800 border-blue-200'
-                                  }`}
-                                >
-                                  {order.paymentType === 'final_settlement' ? 'Final Settlement' : 'Installation & Support'}
-                                </Badge>
-                                <Badge
-                                  className={`text-xs px-2 py-0.5 ${
-                                    order.status === 'paid'
-                                      ? 'bg-green-100 text-green-800 border-green-200'
-                                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                                  }`}
-                                >
-                                  {order.status === 'paid' ? '✓ Paid' : order.status}
-                                </Badge>
+                  <div className="space-y-3">
+                    {(() => {
+                      const groupedOrders = groupOrdersByLocation(userData.orderHistory)
+                      const locationKeys = Object.keys(groupedOrders)
+
+                      return locationKeys.map((location) => {
+                        const orders = groupedOrders[location]
+                        const locationTotal = orders.reduce((sum, order) => sum + order.total, 0)
+
+                        return (
+                          <div key={location} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                            {/* Location Header - Compact */}
+                            <div className="bg-blue-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-blue-600" />
+                                <span className="font-semibold text-blue-800">{location}</span>
+                                <span className="text-xs text-gray-500">({orders.length})</span>
                               </div>
-                              <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">
-                                <span className="flex items-center">
-                                  <IndianRupee className="h-4 w-4" />
-                                  <span className="font-semibold text-green-700">{formatCurrency(order.total).replace('₹', '')}</span>
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  {formatDate(order.paidAt)}
-                                </span>
-                              </div>
+                              <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
                             </div>
 
-                            {/* Right: Expand icon */}
-                            <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            {/* Orders Table - Compact */}
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-50 text-xs text-gray-600">
+                                <tr>
+                                  <th className="text-left px-3 py-1.5 font-medium">Invoice</th>
+                                  <th className="text-left px-3 py-1.5 font-medium">Type</th>
+                                  <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell">Date</th>
+                                  <th className="text-right px-3 py-1.5 font-medium">Amount</th>
+                                  <th className="text-center px-3 py-1.5 font-medium w-20"></th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100">
+                                {orders.map((order) => (
+                                  <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
+                                    <td className="px-3 py-2">
+                                      <span className="font-medium text-gray-900">#{order.invoiceNumber}</span>
+                                      <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                        order.paymentType === 'final_settlement'
+                                          ? 'bg-purple-100 text-purple-700'
+                                          : 'bg-blue-100 text-blue-700'
+                                      }`}>
+                                        {order.paymentType === 'final_settlement' ? 'Final' : 'Initial'}
+                                      </span>
+                                    </td>
+                                    <td className="px-3 py-2 text-gray-600 hidden sm:table-cell">{formatDate(order.paidAt)}</td>
+                                    <td className="px-3 py-2 text-right">
+                                      <span className="font-semibold text-green-700">₹{formatCurrency(order.total).replace('₹', '')}</span>
+                                      {order.discountAmount > 0 && (
+                                        <span className="text-xs text-green-600 ml-1">(-{order.discountPercentage}%)</span>
+                                      )}
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                      <button
+                                        onClick={() => handleDownloadInvoice(order.invoiceNumber)}
+                                        className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 rounded"
+                                        title="Download Invoice"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-
-                          {/* Expandable details */}
-                          {isExpanded && (
-                            <div className="px-4 pb-4 pt-0 border-t border-gray-100 bg-gray-50">
-                              <div className="grid grid-cols-3 gap-4 py-3 text-sm">
-                                {order.originalAmount && order.discountAmount > 0 ? (
-                                  <>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Original Amount</p>
-                                      <p className="font-medium text-gray-400 line-through flex items-center">
-                                        <IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.originalAmount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Discount ({order.discountPercentage}%)</p>
-                                      <p className="font-medium text-green-600 flex items-center">
-                                        -<IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.discountAmount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Discounted Amount</p>
-                                      <p className="font-medium text-gray-900 flex items-center">
-                                        <IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.amount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div>
-                                    <p className="text-gray-500 mb-1">Amount</p>
-                                    <p className="font-medium text-gray-900 flex items-center">
-                                      <IndianRupee className="h-4 w-4" />
-                                      {formatCurrency(order.amount).replace('₹', '')}
-                                    </p>
-                                  </div>
-                                )}
-                                <div>
-                                  <p className="text-gray-500 mb-1">GST</p>
-                                  <p className="font-medium text-gray-900 flex items-center">
-                                    <IndianRupee className="h-4 w-4" />
-                                    {formatCurrency(order.gst).replace('₹', '')}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 mb-1">Total</p>
-                                  <p className="font-semibold text-green-700 flex items-center">
-                                    <IndianRupee className="h-4 w-4" />
-                                    {formatCurrency(order.total).replace('₹', '')}
-                                  </p>
-                                </div>
-                              </div>
-                              <p className="text-xs text-gray-400 font-mono mb-3">Order ID: {order.orderId}</p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDownloadInvoice(order.invoiceNumber)
-                                }}
-                                className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 text-sm py-2"
-                              >
-                                <Download className="h-4 w-4 mr-1.5" />
-                                Download Invoice
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
+                        )
+                      })
+                    })()}
                   </div>
-
-                  {/* Pagination Controls */}
-                  {userData.orderHistory.length > ordersPerPage && (
-                    <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className="text-sm"
-                      >
-                        Previous
-                      </Button>
-
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.ceil(userData.orderHistory.length / ordersPerPage) }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={`w-9 h-9 text-sm ${
-                              currentPage === page
-                                ? 'bg-green-600 hover:bg-green-700 text-white'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(userData.orderHistory.length / ordersPerPage), prev + 1))}
-                        disabled={currentPage === Math.ceil(userData.orderHistory.length / ordersPerPage)}
-                        className="text-sm"
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  )}
-                  </>
                 ) : (
                   <div className="text-center py-8 sm:py-12">
                     <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />

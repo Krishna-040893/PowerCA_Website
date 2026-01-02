@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
+import { useSubscription } from '@/hooks/useSubscription'
 import Link from 'next/link'
 import {
   Download,
@@ -51,9 +52,13 @@ export default function AppDownloadPage() {
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
   const { data: session, status } = useSession()
+  const subscriptionStatus = useSubscription()
 
   // Check if user is an affiliate
   const isAffiliate = session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate'
+
+  // Check if user has paid for the pricing (Launch Offer)
+  const hasPaidPricing = subscriptionStatus.hasLaunchOffer
 
   // Fix hydration error - wait for client mount
   useEffect(() => {
@@ -208,7 +213,7 @@ export default function AppDownloadPage() {
                     )}
 
                     {/* Buy Button */}
-                    {isCheckingPurchase ? (
+                    {isCheckingPurchase || subscriptionStatus.isLoading ? (
                       <Button
                         disabled
                         size="lg"
@@ -229,6 +234,25 @@ export default function AppDownloadPage() {
                             </p>
                           </div>
                         </div>
+                      </div>
+                    ) : isMounted && session && !hasPaidPricing ? (
+                      <div className="space-y-3">
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                            <p className="text-amber-800 text-sm">
+                              Demo Version access will be available after completing the &apos;On Installation &amp; Support&apos; payment.
+                            </p>
+                          </div>
+                        </div>
+                        <Link href="/pricing">
+                          <Button
+                            size="lg"
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Go to Pricing
+                          </Button>
+                        </Link>
                       </div>
                     ) : (
                       <div className="space-y-3">

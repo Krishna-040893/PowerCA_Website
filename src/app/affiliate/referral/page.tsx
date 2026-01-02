@@ -732,9 +732,9 @@ export default function AffiliateAccountPage() {
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer ID</th>
                       <th className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer Details</th>
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Date</th>
-                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission Status</th>
                       <th className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Count</th>
                       <th className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
@@ -767,28 +767,6 @@ export default function AffiliateAccountPage() {
                                 year: 'numeric'
                               })}
                             </div>
-                          </td>
-                          <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                            {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
-                              // Show commission status based on paid_commission and pending_commission
-                              referral.payment_info.pending_commission > 0 && referral.payment_info.paid_commission > 0 ? (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-300">
-                                  Partial
-                                </span>
-                              ) : referral.payment_info.commission_paid || referral.payment_info.pending_commission === 0 ? (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300">
-                                  ✓ Received
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300">
-                                  Pending
-                                </span>
-                              )
-                            ) : (
-                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold bg-gray-100 text-gray-500 border border-gray-300 shadow-sm">
-                                Awaiting Payment
-                              </span>
-                            )}
                           </td>
                           <td className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center whitespace-nowrap">
                             {referral.payment_info && referral.payment_info.payment_count > 0 ? (
@@ -830,6 +808,28 @@ export default function AffiliateAccountPage() {
                                 <span className="text-gray-400 font-medium">-</span>
                               )}
                             </div>
+                          </td>
+                          <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
+                            {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
+                              // Show commission status based on paid_commission and pending_commission
+                              referral.payment_info.pending_commission > 0 && referral.payment_info.paid_commission > 0 ? (
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-300">
+                                  Partial
+                                </span>
+                              ) : referral.payment_info.commission_paid || referral.payment_info.pending_commission === 0 ? (
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300">
+                                  ✓ Received
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300">
+                                  Pending
+                                </span>
+                              )
+                            ) : (
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold bg-gray-100 text-gray-500 border border-gray-300 shadow-sm">
+                                Awaiting Payment
+                              </span>
+                            )}
                           </td>
                         </tr>
                       ))

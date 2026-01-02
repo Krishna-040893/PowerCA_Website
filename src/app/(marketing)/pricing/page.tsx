@@ -1,9 +1,8 @@
 'use client'
 
-import { Check, Calendar, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useSubscription } from '@/hooks/useSubscription'
-import Link from 'next/link'
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
@@ -247,7 +246,7 @@ function PricingContent() {
                       {/* <span className="text-gray-400 text-base md:text-lg font-medium">₹50,000</span> */}
                     </div>
                     {/* <p className="text-gray-500 text-sm mt-1">Flexible Payment Structure</p> */}
-                    <p className="text-gray-400 text-xs mt-2">A structured two-installment payment plan, consisting of an initial payment at the time of purchase and the remaining balance payable within three months.</p>
+                    {/* <p className="text-gray-400 text-xs mt-2">A structured two-installment payment plan, consisting of an initial payment at the time of purchase and the remaining balance payable within three months.</p> */}
                   </div>
 
                   {/* Payment Timeline - Shows both payment steps as enabled */}
@@ -360,11 +359,13 @@ function PricingContent() {
                 </div>
 
                 {/* Pricing */}
-                <div className="text-center mb-6 md:mb-8">
+                <div className="text-center mb-6 md:mb-8 space-y-2">
                   <p className="text-[#666d80] text-base md:text-lg">
-                    An annual fee of{' '}
-                    <span className="text-2xl md:text-4xl font-bold text-[#001525]">₹1,000</span>
-                    {' '}per user.
+                    A monthly fee of <span className="text-2xl md:text-2xl font-bold text-[#001525]">₹100</span> per user
+                  </p>
+                  <p className="text-[#666d80] text-sm md:text-base">(or)</p>
+                  <p className="text-[#666d80] text-base md:text-lg">
+                    An annual fee of <span className="text-2xl md:text-2xl font-bold text-[#001525]">₹1,000</span> per user
                   </p>
                 </div>
 
@@ -383,58 +384,9 @@ function PricingContent() {
                   ))}
                 </div>
 
-                {/* Button */}
-                <div className="space-y-3">
-                  {subscriptionStatus.isLoading ? (
-                    <button className="w-full bg-gray-200 text-gray-400 py-4 rounded-full text-lg font-medium animate-pulse">
-                      Loading...
-                    </button>
-                  ) : isAffiliate ? (
-                    <button
-                      disabled
-                      title="Affiliates cannot purchase directly"
-                      className="w-full bg-gray-300 text-gray-500 py-4 rounded-full text-lg font-medium cursor-not-allowed"
-                    >
-                      Not Available for Affiliates
-                    </button>
-                  ) : subscriptionStatus.canRenew ? (
-                    <Link href="/dashboard/subscription/renew">
-                      <button className="w-full bg-[#306bea] text-white py-4 rounded-full text-lg font-medium hover:bg-[#244b9b] transition-colors">
-                        Renewal Now
-                      </button>
-                    </Link>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full bg-[#f4f7fd] text-[#b6c9f3] py-4 rounded-full text-lg font-medium cursor-not-allowed"
-                    >
-                      Renewal Now
-                    </button>
-                  )}
-
-                  <div className="text-xs text-[#666d80] text-center space-y-1">
-                    {isAffiliate ? (
-                      <p>As an affiliate, you can refer customers but cannot purchase directly</p>
-                    ) : !subscriptionStatus.hasLaunchOffer ? (
-                      <p>Currently you don't have plan yet !</p>
-                    ) : subscriptionStatus.canRenew ? (
-                      <div className="flex items-center justify-center space-x-2 text-green-600">
-                        <Check className="w-4 h-4" />
-                        <p>Ready for renewal!</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Clock className="w-4 h-4" />
-                          <p>Renewal available in {subscriptionStatus.daysUntilRenewal} days</p>
-                        </div>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Calendar className="w-4 h-4" />
-                          <p>Launch Offer purchased on {subscriptionStatus.subscription ? new Date(subscriptionStatus.subscription.created_at).toLocaleDateString() : ''}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                {/* Annual Subscription Info */}
+                <div className="text-xs text-[#666d80] text-center">
+                  <p>You&apos;ll receive a reminder email before renewal.</p>
                 </div>
               </div>
             </div>
