@@ -71,7 +71,9 @@ export async function POST(req: NextRequest) {
       discountAmount,
       originalAmount,
       // Payment type for two-stage payment tracking
-      paymentType // 'initial_payment' or 'final_settlement'
+      paymentType, // 'initial_payment' or 'final_settlement'
+      // User count for per-user pricing plans
+      userCount
     } = body
 
     // Validate amount is provided
@@ -133,10 +135,34 @@ export async function POST(req: NextRequest) {
       const customerEmail = customerDetails?.email || session.user.email || body.email
       const supabase = createAdminClient()
 
+      // Delete any existing "created" (abandoned) orders for the same address and user
+      // This prevents duplicate orders when user abandons payment and tries again
+      if (addressId && session.user.id) {
+        const { error: deleteError } = await supabase
+          .from('payment_orders')
+          .delete()
+          .eq('address_id', addressId)
+          .eq('user_id', session.user.id)
+          .eq('status', 'created')
+          .eq('payment_type', paymentType || 'initial_payment')
+
+        if (deleteError) {
+          logger.debug('No existing abandoned orders to delete or delete failed', deleteError)
+        } else {
+          logger.info('Deleted existing abandoned order for same address', { addressId, paymentType })
+        }
+      }
+
+      // Calculate GST breakdown (18% GST)
+      const totalAmountRupees = amount / 100 // Convert paise to rupees
+      const baseAmount = parseFloat((totalAmountRupees / 1.18).toFixed(2))
+      const gstAmount = parseFloat((totalAmountRupees - baseAmount).toFixed(2))
+
       // Base order data without payment_type (for fallback if column doesn't exist)
       const baseOrderData = {
         order_id: order.id,
-        amount: amount / 100, // Convert to rupees for storage
+        amount: totalAmountRupees, // Store total amount in rupees
+        gst: gstAmount, // GST amount (18%)
         currency: 'INR',
         status: 'created',
         customer_email: customerEmail,
@@ -161,7 +187,11 @@ export async function POST(req: NextRequest) {
         // Discount fields for progressive pricing
         discount_percentage: discountPercentage || 0,
         discount_amount: discountAmount || 0,
-        original_amount: originalAmount || null
+        original_amount: originalAmount || null,
+        // Plan type for subscription tracking
+        plan_type: planType || 'monthly',
+        // User count for per-user pricing
+        user_count: userCount || 1
       }
 
       // Try to store with payment_type first

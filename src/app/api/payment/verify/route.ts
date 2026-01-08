@@ -149,42 +149,88 @@ export async function POST(req: NextRequest) {
     // Create or update subscription for the user
     if (payment && session?.user?.id) {
       try {
-        // Check if user already has a subscription
+        // Get order data to determine plan type and user count
+        const { data: orderDataForSub } = await supabase
+          .from('payment_orders')
+          .select('plan_type, address_id, user_count')
+          .eq('order_id', normalizedOrderId)
+          .single()
+
+        const planType = orderDataForSub?.plan_type || 'monthly'
+        const addressId = orderDataForSub?.address_id
+        const userCount = orderDataForSub?.user_count || 1
+
+        // Calculate next due date based on plan type
+        const now = new Date()
+        let nextDueDate: Date | null = null
+
+        switch (planType) {
+          case 'monthly':
+            nextDueDate = new Date(now)
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1)
+            break
+          case 'annual':
+            nextDueDate = new Date(now)
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1)
+            break
+          case 'onetime':
+            nextDueDate = null // Lifetime, no renewal
+            break
+          case 'installment':
+            nextDueDate = new Date(now)
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1) // Monthly installment
+            break
+          default:
+            nextDueDate = new Date(now)
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1)
+        }
+
+        // Check if user already has a subscription for this address
         const { data: existingSubscription } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', session.user.id)
+          .eq('address_id', addressId)
           .single()
 
-        if (isFinalSettlement && existingSubscription) {
-          // Update existing subscription to launch_offer_complete
+        if (existingSubscription) {
+          // Update existing subscription with new plan type, user count, and next due date
           const { data: updatedSubscription, error: updateError } = await supabase
             .from('subscriptions')
             .update({
-              plan: 'launch_offer_complete',
-              final_settlement_paid_at: new Date().toISOString()
+              plan_type: planType,
+              user_count: userCount,
+              status: 'active',
+              current_period_start: now.toISOString(),
+              current_period_end: nextDueDate?.toISOString() || null,
+              next_due_date: nextDueDate?.toISOString() || null,
+              updated_at: now.toISOString()
             })
             .eq('id', existingSubscription.id)
             .select()
             .single()
 
           if (updateError) {
-            logger.error('Failed to update subscription for final settlement', updateError)
+            logger.error('Failed to update subscription', updateError)
           } else {
-            logger.info('✅ Subscription updated for final settlement', {
+            logger.info('✅ Subscription updated', {
               subscriptionId: updatedSubscription.id,
               userId: session.user.id,
-              plan: 'launch_offer_complete'
+              planType: planType,
+              nextDueDate: nextDueDate?.toISOString()
             })
           }
-        } else if (!existingSubscription) {
-          // Create new subscription (first purchase - launch offer)
+        } else {
+          // Create new subscription
           const subscriptionData = {
             user_id: session.user.id,
-            plan: 'launch_offer',
-            status: 'ACTIVE',
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() // 1 year from now
+            address_id: addressId,
+            plan_type: planType,
+            user_count: userCount,
+            status: 'active',
+            current_period_start: now.toISOString(),
+            current_period_end: nextDueDate?.toISOString() || null,
+            next_due_date: nextDueDate?.toISOString() || null
           }
 
           const { data: newSubscription, error: subError } = await supabase
@@ -199,15 +245,10 @@ export async function POST(req: NextRequest) {
             logger.info('✅ Subscription created', {
               subscriptionId: newSubscription.id,
               userId: session.user.id,
-              plan: 'launch_offer',
-              validUntil: subscriptionData.current_period_end
+              planType: planType,
+              nextDueDate: nextDueDate?.toISOString()
             })
           }
-        } else {
-          logger.info('User already has active subscription', {
-            subscriptionId: existingSubscription.id,
-            plan: existingSubscription.plan
-          })
         }
       } catch (subscriptionError) {
         logger.error('Error handling subscription', subscriptionError)
@@ -217,6 +258,15 @@ export async function POST(req: NextRequest) {
 
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
+
+    // Get user_count from payment_orders for invoice
+    const { data: orderForInvoice } = await supabase
+      .from('payment_orders')
+      .select('user_count')
+      .eq('order_id', normalizedOrderId)
+      .single()
+    const invoiceUserCount = orderForInvoice?.user_count || 1
+
     // Use already calculated values (no need to recalculate GST)
     const subtotal = paymentAmount // Base amount (excluding GST)
     const gst = {
@@ -288,6 +338,7 @@ export async function POST(req: NextRequest) {
           gst: gst.totalTax,
           total: grandTotal,
           status: 'paid',
+          user_count: invoiceUserCount,
         })
 
       if (invoiceError) {
@@ -486,7 +537,8 @@ export async function POST(req: NextRequest) {
           }
 
           // Track payment referral for commission calculation
-          // Commission is 10% of base amount (excluding GST)
+          // Commission is 10% of BASE amount (excluding GST)
+          // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
           const commissionAmount = parseFloat((paymentAmount * 0.10).toFixed(2))
 
           const paymentReferralData = {
@@ -597,7 +649,8 @@ export async function POST(req: NextRequest) {
             // Create record in affiliate_referral_payments table
             try {
               const commissionRate = 10.00 // 10% commission
-              // Commission is calculated on BASE amount (excluding GST)
+              // Commission is 10% of BASE amount (excluding GST)
+              // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
               const commissionAmount = parseFloat((paymentAmount * (commissionRate / 100)).toFixed(2))
 
               const { data: affiliatePaymentRecord, error: paymentRecordError } = await supabase

@@ -29,7 +29,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, XCircle, User } from 'lucide-react'
+import { IndianRupee, Search, Eye, ShoppingCart, CheckCircle, XCircle, User, Percent, Tag } from 'lucide-react'
 
 interface IndividualOrder {
   id: string
@@ -58,6 +58,9 @@ interface IndividualOrder {
   customer_postcode: string | null
   customer_country: string | null
   payment_type: string | null
+  address_id: string | null
+  plan_type: string | null
+  user_count: number | null
 }
 
 interface PaymentOrder {
@@ -189,40 +192,21 @@ export default function PaymentOrdersPage() {
     }
   }
 
-  const getPaymentTypeBadge = (paymentType: string | null, status: string) => {
-    const isPaid = status === 'paid'
+  const getPlanTypeBadge = (planType: string | null | undefined) => {
+    if (!planType) return <Badge variant="outline" className="text-gray-500">N/A</Badge>
 
-    if (paymentType === 'final_settlement') {
-      return (
-        <Badge className={`text-xs ${isPaid ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
-          Final Settlement {isPaid ? '✓' : '- Pending'}
-        </Badge>
-      )
+    switch (planType) {
+      case 'onetime':
+        return <Badge className="bg-purple-100 text-purple-700 border border-purple-300">One-Time</Badge>
+      case 'monthly':
+        return <Badge className="bg-blue-100 text-blue-700 border border-blue-300">Monthly</Badge>
+      case 'annual':
+        return <Badge className="bg-green-100 text-green-700 border border-green-300">Annual</Badge>
+      case 'installment':
+        return <Badge className="bg-orange-100 text-orange-700 border border-orange-300">Installment</Badge>
+      default:
+        return <Badge variant="outline">{planType}</Badge>
     }
-    // Installation & Support - only show paid status, no "Pending" label
-    return (
-      <Badge className={`text-xs ${isPaid ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-        Installation & Support {isPaid ? '✓' : ''}
-      </Badge>
-    )
-  }
-
-  // Determine payment type based on order sequence for same location
-  // First order = Installation & Support, Second order = Final Settlement
-  const getPaymentTypeBySequence = (order: IndividualOrder, allOrders: IndividualOrder[]) => {
-    // Group orders by location (address_id or location)
-    const locationKey = order.location || 'unknown'
-
-    // Get all orders for the same location, sorted by created_at ascending (oldest first)
-    const ordersForLocation = allOrders
-      .filter(o => (o.location || 'unknown') === locationKey)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-
-    // Find the index of current order in the sorted list
-    const orderIndex = ordersForLocation.findIndex(o => o.order_id === order.order_id)
-
-    // First order (index 0) = initial_payment, Second order (index 1) = final_settlement
-    return orderIndex === 0 ? 'initial_payment' : 'final_settlement'
   }
 
   // Group orders by location for popup display
@@ -231,7 +215,13 @@ export default function PaymentOrdersPage() {
     firmName: string | null
     initialPayment: IndividualOrder | null
     finalSettlement: IndividualOrder | null
+    paidAmount: number
     totalAmount: number
+    planType: string | null
+    userCount: number | null
+    discountPercentage: number | null
+    discountAmount: number | null
+    originalAmount: number | null
   }
 
   const getOrdersGroupedByLocation = (orders: IndividualOrder[]): LocationGroup[] => {
@@ -242,33 +232,61 @@ export default function PaymentOrdersPage() {
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
 
+    // Process all orders (both 'created' and 'paid') for location grouping
     sortedOrders.forEach(order => {
-      const locationKey = order.location || 'No Location'
+      // Use address_id as primary grouping key for accurate payment tracking
+      // Fall back to location string for legacy orders without address_id
+      const groupKey = order.address_id || order.location || 'No Location'
+      const displayLocation = order.location || 'No Location'
 
-      if (!locationMap.has(locationKey)) {
-        locationMap.set(locationKey, {
-          location: locationKey,
+      if (!locationMap.has(groupKey)) {
+        locationMap.set(groupKey, {
+          location: displayLocation,
           firmName: order.firm_name,
           initialPayment: null,
           finalSettlement: null,
-          totalAmount: 0
+          paidAmount: 0,
+          totalAmount: 0,
+          planType: order.plan_type,
+          userCount: order.user_count,
+          discountPercentage: order.discount_percentage,
+          discountAmount: order.discount_amount,
+          originalAmount: order.original_amount
         })
       }
 
-      const group = locationMap.get(locationKey)!
+      const group = locationMap.get(groupKey)!
+      // Track total amount and paid amount separately
       group.totalAmount += order.amount || 0
+      if (order.status === 'paid') {
+        group.paidAmount += order.amount || 0
+      }
 
-      // First order for this location = initial payment
-      // Second order for this location = final settlement
-      if (!group.initialPayment) {
-        group.initialPayment = order
-      } else if (!group.finalSettlement) {
-        group.finalSettlement = order
+      // Use payment_type field to determine order type
+      // Prefer 'paid' orders over 'created' orders for display
+      const paymentType = order.payment_type
+
+      if (paymentType === 'final_settlement') {
+        // This is a final settlement payment - prefer paid over created
+        if (!group.finalSettlement || (order.status === 'paid' && group.finalSettlement.status !== 'paid')) {
+          group.finalSettlement = order
+        }
+      } else {
+        // This is an initial payment (payment_type is 'initial_payment' or null/undefined)
+        // Prefer paid over created
+        if (!group.initialPayment || (order.status === 'paid' && group.initialPayment.status !== 'paid')) {
+          group.initialPayment = order
+        }
       }
 
       // Update firm name if available
       if (order.firm_name) {
         group.firmName = order.firm_name
+      }
+
+      // Update display location if available (prefer non-null values)
+      if (order.location && group.location === 'No Location') {
+        group.location = order.location
       }
     })
 
@@ -307,26 +325,12 @@ export default function PaymentOrdersPage() {
     setDialogOpen(true)
   }
 
-  // Filter orders inside dialog
-  const getFilteredDialogOrders = () => {
-    if (!selectedOrder?.all_orders) return []
-    if (!dialogSearchTerm) return selectedOrder.all_orders
-
-    const search = dialogSearchTerm.toLowerCase()
-    return selectedOrder.all_orders.filter(o =>
-      o.order_id?.toLowerCase().includes(search) ||
-      o.firm_name?.toLowerCase().includes(search) ||
-      o.location?.toLowerCase().includes(search) ||
-      o.status?.toLowerCase().includes(search) ||
-      o.amount?.toString().includes(search)
-    )
-  }
-
+  const allOrdersFlat = orders.flatMap(o => o.all_orders || [])
   const stats = {
     totalCustomers: filteredOrders.length,
-    total: orders.flatMap(o => o.all_orders || []).length,
-    paid: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'paid').length,
-    created: orders.flatMap(o => o.all_orders || []).filter(o => o.status === 'created').length,
+    total: allOrdersFlat.length,
+    paid: allOrdersFlat.filter(o => o.status === 'paid').length,
+    created: allOrdersFlat.filter(o => o.status === 'created').length,
     totalAmount: filteredOrders.reduce((sum, o) => sum + (o.paid_amount || 0), 0),
   }
 
@@ -336,16 +340,15 @@ export default function PaymentOrdersPage() {
       description="Manage and track all payment orders"
       stats={[
         { label: 'Customers', value: stats.totalCustomers, color: 'bg-purple-100 text-purple-800' },
-        { label: 'Orders', value: stats.total, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Paid', value: stats.paid, color: 'bg-green-100 text-green-800' },
-        { label: 'Created', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
-        { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-indigo-100 text-indigo-800' }
+        { label: 'Paid Orders', value: stats.paid, color: 'bg-green-100 text-green-800' },
+        { label: 'Pending', value: stats.created, color: 'bg-yellow-100 text-yellow-800' },
+        { label: 'Revenue', value: formatCurrency(stats.totalAmount), color: 'bg-emerald-100 text-emerald-800' }
       ]}
     >
       {/* Orders Table - Enhanced */}
       <Card className="shadow-sm border border-gray-100">
         <CardContent>
-          {/* Filters */}
+          {/* Search and Status Filter */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -357,13 +360,13 @@ export default function PaymentOrdersPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-10 border-gray-200 bg-white">
+              <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">All Statuses</SelectItem>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="created">Created</SelectItem>
+                <SelectItem value="created">Pending</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -697,38 +700,44 @@ export default function PaymentOrdersPage() {
                             <p className="text-sm text-blue-600">{group.location}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="font-bold flex items-center justify-end">
+                            <p className="font-bold text-green-600 flex items-center justify-end">
                               <IndianRupee className="h-3 w-3" />
-                              {group.totalAmount.toFixed(0)}
+                              {group.paidAmount.toFixed(0)}
                             </p>
                           </div>
                         </div>
-                        {/* Payment Status Row */}
+                        {/* Plan Type, User Count, and Discount Info */}
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          {/* Installation & Support Status */}
-                          {group.initialPayment && (
-                            <Badge className={`text-xs ${group.initialPayment.status === 'paid' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                              Installation & Support {group.initialPayment.status === 'paid' ? '✓' : ''}
+                          {/* Plan Type */}
+                          <div className="flex items-center gap-1">
+                            <Tag className="h-3 w-3 text-gray-400" />
+                            {getPlanTypeBadge(group.planType)}
+                          </div>
+                          {/* User Count - only for monthly/annual plans (not for onetime/installment) */}
+                          {group.userCount && group.userCount > 0 && (group.planType === 'monthly' || group.planType === 'annual') && (
+                            <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs">
+                              {group.userCount} {group.userCount === 1 ? 'User' : 'Users'}
                             </Badge>
                           )}
-                          {/* Final Settlement Status */}
-                          {group.finalSettlement ? (
-                            <Badge className={`text-xs ${group.finalSettlement.status === 'paid' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
-                              Final Settlement {group.finalSettlement.status === 'paid' ? '✓' : '- Pending'}
-                            </Badge>
-                          ) : group.initialPayment?.status === 'paid' ? (
-                            <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
-                              Final Settlement - Not Started
-                            </Badge>
-                          ) : null}
+                          {/* Discount Info */}
+                          {group.discountPercentage != null && group.discountPercentage > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Percent className="h-3 w-3 text-green-500" />
+                              <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs">
+                                {group.discountPercentage}% Off
+                              </Badge>
+                              {group.originalAmount && (
+                                <span className="text-xs text-gray-500">
+                                  (₹{group.originalAmount.toLocaleString()} → ₹{(group.originalAmount - (group.discountAmount || 0)).toLocaleString()})
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        {/* Order dates */}
-                        <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                        {/* Order date */}
+                        <div className="mt-2 text-xs text-gray-500">
                           {group.initialPayment && (
-                            <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                          )}
-                          {group.finalSettlement && (
-                            <span>Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                            <span>Date: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                           )}
                         </div>
                       </div>

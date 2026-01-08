@@ -156,6 +156,14 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
     .update({ status: 'paid' })
     .eq('order_id', order_id)
 
+  // Get user_count from payment_orders for invoice
+  const { data: orderForInvoice } = await supabase
+    .from('payment_orders')
+    .select('user_count')
+    .eq('order_id', order_id)
+    .single()
+  const invoiceUserCount = orderForInvoice?.user_count || 1
+
   // Generate invoice
   const invoiceData = createInvoiceData({
     ...paymentRecord,
@@ -175,6 +183,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
       gst: invoiceData.totalTax,
       total: invoiceData.grandTotal,
       status: 'paid',
+      user_count: invoiceUserCount,
     })
     .select()
     .single()

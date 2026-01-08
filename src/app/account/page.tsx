@@ -29,7 +29,11 @@ import {
   ChevronDown,
   FileText,
   Upload,
-  CheckCircle2
+  CheckCircle2,
+  CreditCard,
+  ArrowUpCircle,
+  Clock,
+  CheckCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +65,7 @@ interface OrderHistory {
   discountAmount: number
   originalAmount: number | null
   paymentType: 'initial_payment' | 'final_settlement'
+  planType: string
 }
 
 interface UserData {
@@ -354,8 +359,30 @@ function AccountPageContent() {
       : 'profile'
   })
 
-  // Check if this is a final settlement payment flow
+  // Check if coming from pricing page with a plan selected
   const paymentType = searchParams.get('paymentType')
+  const planPrice = searchParams.get('planPrice')
+
+  // Subscription state
+  interface SubscriptionData {
+    id: string
+    plan_type: string
+    status: string
+    created_at: string
+    current_period_start?: string
+    current_period_end?: string
+    next_due_date?: string
+    address_id?: string
+    user_addresses?: {
+      id: string
+      firm_name: string
+      city: string
+      label?: string
+    }
+  }
+  const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([])
+  const [loadingSubscription, setLoadingSubscription] = useState(false)
+
   const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
@@ -420,9 +447,27 @@ function AccountPageContent() {
       fetchSavedAddresses()
       fetchAgreementStatus()
       fetchAppDownloads()
+      fetchSubscription()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.email])
+
+  // Fetch subscription data
+  const fetchSubscription = async () => {
+    setLoadingSubscription(true)
+    try {
+      const response = await fetch('/api/subscriptions/status')
+      const data = await response.json()
+
+      if (data.subscriptions && data.subscriptions.length > 0) {
+        setSubscriptions(data.subscriptions)
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error)
+    } finally {
+      setLoadingSubscription(false)
+    }
+  }
 
   const fetchSavedAddresses = async () => {
     setLoadingAddresses(true)
@@ -463,15 +508,28 @@ function AccountPageContent() {
     return addressPaymentStatus.find(status => status.addressId === addressId)
   }
 
-  // Helper function to calculate days remaining from initial payment (90 days / 3 months period)
-  const getDaysRemaining = (initialPaymentDate: string | null): number => {
-    if (!initialPaymentDate) return 90
-    const paymentDate = new Date(initialPaymentDate)
-    const today = new Date()
-    const diffTime = today.getTime() - paymentDate.getTime()
-    const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    const daysRemaining = 90 - daysPassed
-    return daysRemaining > 0 ? daysRemaining : 0
+  // Helper function to get subscription for an address
+  const getAddressSubscription = (addressId: string): SubscriptionData | undefined => {
+    return subscriptions.find(sub => sub.address_id === addressId)
+  }
+
+  // Helper function to format next due date
+  const formatNextDueDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return 'N/A'
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return 'N/A'
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  }
+
+  // Helper function to check if due date is past
+  const isDueDatePast = (dateStr: string | undefined): boolean => {
+    if (!dateStr) return false
+    const dueDate = new Date(dateStr)
+    return dueDate < new Date()
   }
 
   // Helper function to group orders by location
@@ -813,13 +871,23 @@ function AccountPageContent() {
       if (result.success) {
         toast.success(isEditing ? 'Address updated successfully!' : 'Billing address saved successfully!')
 
-        // For new addresses, redirect to checkout with the new address ID
+        // For new addresses, redirect to pricing page so user can select a subscription plan
+        // Only redirect to checkout if a specific plan is already selected (paymentType exists)
         if (!isEditing && result.address?.id) {
-          const checkoutUrl = paymentType
-            ? `/checkout?addressId=${result.address.id}&paymentType=${paymentType}`
-            : `/checkout?addressId=${result.address.id}`
-          router.push(checkoutUrl)
-          return
+          if (paymentType && planPrice) {
+            // If coming from pricing page with a plan already selected, go to checkout
+            const checkoutUrl = `/checkout?addressId=${result.address.id}&planType=${paymentType}&planPrice=${planPrice}`
+            router.push(checkoutUrl)
+            return
+          } else {
+            // First time user - redirect to pricing page to select a plan
+            // Store the new address ID so pricing page can pass it to checkout
+            sessionStorage.setItem('pendingAddressId', result.address.id)
+            localStorage.setItem('pendingAddressId', result.address.id)
+            toast.success('Now select your subscription plan!')
+            router.push('/pricing')
+            return
+          }
         }
 
         // Stay on the page for both new addresses and edits
@@ -1392,6 +1460,29 @@ function AccountPageContent() {
               }
             `}</style>
 
+            {/* Show selected plan banner when coming from pricing page */}
+            {paymentType && planPrice && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900">
+                      Selected Plan: {paymentType === 'monthly' ? 'Monthly License' : paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? 'One Time Payment' : 'Installment Plan'}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'monthly' ? '/month' : paymentType === 'annual' ? '/year' : paymentType === 'installment' ? '× 10 months' : '(Lifetime)'}
+                      {paymentType === 'onetime' && ' • 10% Discount Applied'}
+                    </p>
+                  </div>
+                  <div className="text-sm text-blue-600">
+                    Select an address below to continue
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className={`grid gap-6 ${savedAddresses.length === 0 ? 'grid-cols-1' : showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left Column - Saved Addresses (only show if user has addresses) */}
               {savedAddresses.length > 0 && (
@@ -1455,10 +1546,6 @@ function AccountPageContent() {
                             <div className="flex gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                               {uniqueLocations.map((location) => {
                                 const isSelected = currentLocation === location
-                                // Count only "Not Ordered" addresses for this location
-                                const notOrderedCount = savedAddresses.filter(
-                                  a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
-                                ).length
                                 return (
                                   <button
                                     key={location}
@@ -1471,11 +1558,6 @@ function AccountPageContent() {
                                   >
                                     <MapPin className="w-4 h-4" />
                                     {location}
-                                    {notOrderedCount > 0 && (
-                                      <span className={`text-[10px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
-                                        {notOrderedCount}
-                                      </span>
-                                    )}
                                   </button>
                                 )
                               })}
@@ -1489,114 +1571,183 @@ function AccountPageContent() {
                                 )
 
                                 return locationAddresses.map((address) => {
-                                  const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
                                   const isBeingEdited = editingAddressId === address.id
                                   const addrPaymentStatus = getAddressPaymentStatus(address.id)
                                   const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
-                                  const hasFinalSettlement = !!addrPaymentStatus?.finalSettlementDate
-                                  const isFinalEnabled = addrPaymentStatus?.isFinalSettlementEnabled || false
+
+                                  // Get plan type from order history for this address location
+                                  const addressLocation = address.label || address.city
+                                  const addressOrders = userData?.orderHistory?.filter(
+                                    order => order.location === addressLocation
+                                  ) || []
+                                  const addressPlanType = addressOrders.length > 0 ? addressOrders[0].planType : null
+
+                                  // Get subscription for this address
+                                  const addressSubscription = getAddressSubscription(address.id)
+                                  const nextDueDate = addressSubscription?.next_due_date
+                                  const isMonthlyPlan = addressPlanType === 'monthly'
+                                  const isOverdue = isDueDatePast(nextDueDate)
+
+                                  // Check if this address qualifies for 10% discount (2nd or later address)
+                                  const addressIndex = savedAddresses.findIndex(a => a.id === address.id)
+                                  const isSecondOrMoreAddress = addressIndex >= 1
 
                                   return (
                                     <div
                                       key={address.id}
-                                      className={`p-4 rounded-xl border transition-all shadow-sm hover:shadow-md ${
+                                      className={`rounded-xl border transition-all p-4 ${
                                         isBeingEdited
                                           ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                                          : hasFinalSettlement
-                                            ? 'border-green-200 bg-green-50/30'
-                                            : hasInitialPayment
-                                              ? 'border-orange-200 bg-orange-50/30'
-                                              : 'border-gray-200 bg-white'
+                                          : hasInitialPayment
+                                            ? 'border-green-300 bg-white'
+                                            : 'border-gray-200 bg-white hover:border-gray-300'
                                       }`}
                                     >
-                                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                                        {/* Left side - Address info */}
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                                            <p className="font-bold text-gray-900 text-lg">{address.firm_name}</p>
-                                            {hasFinalSettlement ? (
-                                              <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">✓ Completed</Badge>
-                                            ) : hasInitialPayment ? (
-                                              <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">Final Pending</Badge>
-                                            ) : (
-                                              <Badge className="bg-red-100 text-red-600 border-red-200 text-xs">○ Not Ordered</Badge>
-                                            )}
-                                          </div>
-                                          {address.gst_no && (
-                                            <p className="text-gray-500 text-sm">GST: {address.gst_no}</p>
-                                          )}
-                                          <p className="text-gray-500 text-sm mt-1">
-                                            {address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}
-                                          </p>
-
-                                          {/* Payment status badges */}
-                                          {hasInitialPayment && (
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                              <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium">
-                                                ✓ Installation & Support
+                                      {/* Main Row - All info in single line on desktop */}
+                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        {/* Left - Firm Name & Status */}
+                                        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                          <h3 className="font-bold text-gray-900 text-lg truncate">{address.firm_name}</h3>
+                                          {hasInitialPayment ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
+                                              <CheckCircle className="w-3 h-3" />
+                                              Paid
+                                            </span>
+                                          ) : (
+                                            <>
+                                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 shrink-0">
+                                                Not Ordered
                                               </span>
-                                              {hasFinalSettlement ? (
-                                                <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium">
-                                                  ✓ Final Settlement
-                                                </span>
-                                              ) : (
-                                                <span className="px-2 py-0.5 rounded text-xs bg-orange-100 text-orange-700 font-medium">
-                                                  ○ Final Settlement
+                                              {isSecondOrMoreAddress && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
+                                                  10% Discount
                                                 </span>
                                               )}
-                                            </div>
+                                            </>
                                           )}
                                         </div>
 
-                                        {/* Right side - Action buttons */}
+                                        {/* Right - Status/Actions */}
                                         <div className="flex items-center gap-2 shrink-0">
-                                          {hasFinalSettlement ? (
-                                            <span className="text-green-600 font-medium text-sm">All Payments Complete</span>
-                                          ) : hasInitialPayment && isFinalEnabled ? (
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-xs text-gray-500">
-                                                {getDaysRemaining(addrPaymentStatus?.initialPaymentDate || null)}d left
-                                              </span>
-                                              <button
-                                                onClick={() => {
-                                                  sessionStorage.setItem('checkoutAddressId', address.id)
-                                                  localStorage.setItem('checkoutAddressId', address.id)
-                                                  router.push(`/checkout?addressId=${address.id}&paymentType=final_settlement`)
-                                                }}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
-                                              >
-                                                Pay Final
-                                              </button>
+                                          {hasInitialPayment ? (
+                                            <div className="flex items-center gap-1.5 text-green-600">
+                                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                              <span className="font-medium text-sm">Active</span>
                                             </div>
-                                          ) : !hasInitialPayment ? (
-                                            <div className="flex items-center gap-2">
-                                              {originalIndex > 0 && (
-                                                <span className="text-green-600 font-medium text-xs bg-green-50 px-2 py-1 rounded">
-                                                  10% Off
-                                                </span>
-                                              )}
+                                          ) : (
+                                            <>
                                               <button
                                                 type="button"
                                                 onClick={() => handleEditAddress(address)}
-                                                className="text-blue-500 hover:text-blue-700 p-1.5 hover:bg-blue-50 rounded"
-                                                title="Edit address"
+                                                className="text-gray-400 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded transition-colors"
+                                                title="Edit"
                                               >
                                                 <Pencil className="w-4 h-4" />
                                               </button>
                                               <button
                                                 onClick={() => {
-                                                  sessionStorage.setItem('checkoutAddressId', address.id)
-                                                  localStorage.setItem('checkoutAddressId', address.id)
-                                                  router.push(`/checkout?addressId=${address.id}`)
+                                                  if (paymentType && planPrice) {
+                                                    sessionStorage.setItem('checkoutAddressId', address.id)
+                                                    localStorage.setItem('checkoutAddressId', address.id)
+                                                    router.push(`/checkout?addressId=${address.id}&planType=${paymentType}&planPrice=${planPrice}`)
+                                                  } else {
+                                                    sessionStorage.setItem('pendingAddressId', address.id)
+                                                    localStorage.setItem('pendingAddressId', address.id)
+                                                    router.push('/pricing')
+                                                  }
                                                 }}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg transition-colors text-sm"
                                               >
-                                                Order Now
+                                                {paymentType ? 'Go to Checkout' : 'Order Now'}
                                               </button>
-                                            </div>
-                                          ) : null}
+                                            </>
+                                          )}
                                         </div>
                                       </div>
+
+                                      {/* Details Row */}
+                                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+                                        {address.gst_no && (
+                                          <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">GST: {address.gst_no}</span>
+                                        )}
+                                        <span className="truncate">{address.address}, {address.city}, {address.state} - {address.postcode}</span>
+                                      </div>
+
+                                      {/* Subscription Info - Compact inline for paid */}
+                                      {hasInitialPayment && addressPlanType && (
+                                        <div className="mt-3 pt-3 border-t border-gray-100">
+                                          <div className="flex items-center justify-between gap-4">
+                                            {/* Left - Plan details */}
+                                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                                              {/* Plan */}
+                                              <div className="flex items-center gap-2">
+                                                <CreditCard className="w-4 h-4 text-blue-500" />
+                                                <span className="text-sm">
+                                                  <span className="font-medium text-gray-900">
+                                                    {addressPlanType === 'monthly' && 'Monthly'}
+                                                    {addressPlanType === 'annual' && 'Annual'}
+                                                    {addressPlanType === 'onetime' && 'Lifetime'}
+                                                    {addressPlanType === 'installment' && 'Installment'}
+                                                    {!['monthly', 'annual', 'onetime', 'installment'].includes(addressPlanType) && 'Monthly'}
+                                                  </span>
+                                                  <span className="text-gray-500 ml-1">
+                                                    {addressPlanType === 'monthly' && '₹100/mo'}
+                                                    {addressPlanType === 'annual' && '₹1,000/yr'}
+                                                    {addressPlanType === 'onetime' && '₹1,00,000'}
+                                                    {addressPlanType === 'installment' && '₹10,000×10'}
+                                                    {!['monthly', 'annual', 'onetime', 'installment'].includes(addressPlanType) && '₹100/mo'}
+                                                  </span>
+                                                </span>
+                                              </div>
+
+                                              {/* Due Date */}
+                                              {addressPlanType !== 'onetime' && nextDueDate && (
+                                                <div className="flex items-center gap-2">
+                                                  <Clock className={`w-4 h-4 ${isOverdue ? 'text-red-500' : 'text-gray-400'}`} />
+                                                  <span className="text-sm">
+                                                    <span className={isOverdue ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                                                      {isOverdue ? 'Overdue: ' : 'Due: '}
+                                                      {formatNextDueDate(nextDueDate)}
+                                                    </span>
+                                                  </span>
+                                                  {isOverdue && (
+                                                    <button
+                                                      onClick={() => {
+                                                        sessionStorage.setItem('checkoutAddressId', address.id)
+                                                        localStorage.setItem('checkoutAddressId', address.id)
+                                                        router.push(`/checkout?addressId=${address.id}&planType=${addressPlanType}&planPrice=${addressPlanType === 'monthly' ? 100 : addressPlanType === 'annual' ? 1000 : 10000}`)
+                                                      }}
+                                                      className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-0.5 rounded transition-colors"
+                                                    >
+                                                      Pay
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              )}
+
+                                              {/* Payments count */}
+                                              <span className="text-sm text-gray-500">
+                                                {addressOrders.length} payment{addressOrders.length !== 1 ? 's' : ''}
+                                              </span>
+                                            </div>
+
+                                            {/* Right - Upgrade button (Monthly only) */}
+                                            {isMonthlyPlan && (
+                                              <button
+                                                onClick={() => {
+                                                  sessionStorage.setItem('checkoutAddressId', address.id)
+                                                  localStorage.setItem('checkoutAddressId', address.id)
+                                                  router.push(`/checkout?addressId=${address.id}&planType=annual&planPrice=1000&upgrade=true`)
+                                                }}
+                                                className="flex items-center gap-1.5 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                                              >
+                                                <ArrowUpCircle className="w-4 h-4" />
+                                                Upgrade to Annual
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   )
                                 })
@@ -1890,7 +2041,7 @@ function AccountPageContent() {
                               <thead className="bg-gray-50 text-xs text-gray-600">
                                 <tr>
                                   <th className="text-left px-3 py-1.5 font-medium">Invoice</th>
-                                  <th className="text-left px-3 py-1.5 font-medium">Type</th>
+                                  <th className="text-left px-3 py-1.5 font-medium">Plan</th>
                                   <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell">Date</th>
                                   <th className="text-right px-3 py-1.5 font-medium">Amount</th>
                                   <th className="text-center px-3 py-1.5 font-medium w-20"></th>
@@ -1904,12 +2055,12 @@ function AccountPageContent() {
                                       <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
                                     </td>
                                     <td className="px-3 py-2">
-                                      <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                        order.paymentType === 'final_settlement'
-                                          ? 'bg-purple-100 text-purple-700'
-                                          : 'bg-blue-100 text-blue-700'
-                                      }`}>
-                                        {order.paymentType === 'final_settlement' ? 'Final' : 'Initial'}
+                                      <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                        {order.planType === 'monthly' && 'Monthly'}
+                                        {order.planType === 'annual' && 'Annual'}
+                                        {order.planType === 'onetime' && 'One Time'}
+                                        {order.planType === 'installment' && 'Installment'}
+                                        {!['monthly', 'annual', 'onetime', 'installment'].includes(order.planType) && 'Monthly'}
                                       </span>
                                     </td>
                                     <td className="px-3 py-2 text-gray-600 hidden sm:table-cell">{formatDate(order.paidAt)}</td>

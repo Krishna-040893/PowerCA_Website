@@ -18,12 +18,12 @@ export async function GET() {
 
     const supabase = createAdminClient()
 
-    // Get all paid payments for this user
+    // Get all paid payments for this user (check multiple statuses)
     const { data: payments, error } = await supabase
       .from('payments')
-      .select('address, order_id')
+      .select('address, order_id, status')
       .eq('user_id', session.user.id)
-      .eq('status', 'captured')
+      .in('status', ['captured', 'paid', 'success', 'SUCCESS', 'completed', 'COMPLETED'])
 
     if (error) {
       logger.error('Error fetching purchased addresses', error)
@@ -33,12 +33,12 @@ export async function GET() {
       )
     }
 
-    // Check payment_orders for address_id
+    // Check payment_orders for address_id (check multiple statuses)
     const { data: paidOrders } = await supabase
       .from('payment_orders')
-      .select('id, address_id, customer_city, customer_address')
+      .select('id, address_id, customer_city, customer_address, status')
       .eq('user_id', session.user.id)
-      .eq('status', 'paid')
+      .in('status', ['paid', 'captured', 'success', 'SUCCESS', 'completed', 'COMPLETED'])
 
     // Get user addresses to match by city/address
     const { data: userAddresses } = await supabase
@@ -48,11 +48,40 @@ export async function GET() {
 
     const purchasedAddressIds: string[] = []
 
+    // Log for debugging
+    logger.info('Purchased addresses check', {
+      userId: session.user.id,
+      paymentsCount: payments?.length || 0,
+      paidOrdersCount: paidOrders?.length || 0,
+      userAddressesCount: userAddresses?.length || 0,
+      paidOrdersData: paidOrders?.map(o => ({ id: o.id, address_id: o.address_id, city: o.customer_city, status: o.status }))
+    })
+
     // Primary: direct address_id matches from payment_orders
     if (paidOrders) {
       for (const order of paidOrders) {
         if (order.address_id && !purchasedAddressIds.includes(order.address_id)) {
           purchasedAddressIds.push(order.address_id)
+          logger.info('Matched by address_id', { orderId: order.id, addressId: order.address_id })
+        }
+      }
+    }
+
+    // Secondary fallback: match payment_orders to addresses by customer_city
+    // For orders without address_id but with customer_city
+    if (paidOrders && userAddresses) {
+      for (const order of paidOrders) {
+        if (!order.address_id && order.customer_city) {
+          const orderCity = order.customer_city.toLowerCase().trim()
+          const matchedAddress = userAddresses.find(addr =>
+            addr.city.toLowerCase().trim() === orderCity ||
+            addr.city.toLowerCase().trim().includes(orderCity) ||
+            orderCity.includes(addr.city.toLowerCase().trim())
+          )
+          if (matchedAddress && !purchasedAddressIds.includes(matchedAddress.id)) {
+            purchasedAddressIds.push(matchedAddress.id)
+            logger.info('Matched by customer_city', { orderId: order.id, city: order.customer_city, addressId: matchedAddress.id })
+          }
         }
       }
     }
@@ -73,6 +102,12 @@ export async function GET() {
         }
       }
     }
+
+    logger.info('Purchased addresses result', {
+      userId: session.user.id,
+      purchasedCount: purchasedAddressIds.length,
+      purchasedAddressIds
+    })
 
     return NextResponse.json({
       success: true,

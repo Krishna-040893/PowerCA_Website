@@ -26,6 +26,7 @@ interface FormErrors {
   postcode?: string
   terms?: string
   paymentGateway?: string
+  userCount?: string
 }
 
 interface ReferralInfo {
@@ -155,7 +156,7 @@ function CheckoutContent() {
   const [error, setError] = useState('')
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
-  const [quantity, setQuantity] = useState(1)
+  const [userCount, setUserCount] = useState<number | ''>(``)
   const [_couponCode, _setCouponCode] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
@@ -164,6 +165,23 @@ function CheckoutContent() {
   // Check if this is a final settlement payment
   const paymentType = searchParams.get('paymentType')
   const isFinalSettlement = paymentType === 'final_settlement'
+
+  // Get plan details from URL params (from pricing page)
+  const planType = searchParams.get('planType')
+  const planPriceParam = searchParams.get('planPrice')
+
+  // Redirect to pricing if no plan is selected
+  useEffect(() => {
+    if (!planType || !planPriceParam) {
+      // No plan selected - redirect to pricing page to select a plan
+      router.push('/pricing')
+    }
+  }, [planType, planPriceParam, router])
+
+  const selectedPlanPrice = planPriceParam ? parseInt(planPriceParam, 10) : 0
+
+  // Check if this plan supports user count (per-user pricing)
+  const isPerUserPlan = planType === 'monthly' || planType === 'annual'
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -194,32 +212,64 @@ function CheckoutContent() {
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
 
-  // Calculate pricing based on address position
-  // First address = full price, Second+ addresses = flat 10% discount
-  const getAddressIndex = () => {
+  // Discount logic: Two separate discounts that can stack
+  // 1. One-Time Plan Discount: 10% for one-time payment plan
+  // 2. Second Address Discount: 10% for 2nd+ address (based on position in saved addresses)
+  // For final settlement, no discounts apply
+  const isOneTimePlan = planType === 'onetime'
+
+  // Check if current address is 2nd or later in the saved addresses list
+  const getAddressPosition = () => {
     if (!selectedAddressId || savedAddresses.length === 0) return 0
-    return savedAddresses.findIndex(addr => addr.id === selectedAddressId)
+    const index = savedAddresses.findIndex(addr => addr.id === selectedAddressId)
+    return index >= 0 ? index + 1 : 0 // 1-based position
   }
+  const addressPosition = getAddressPosition()
+  const isSecondOrMoreAddress = addressPosition >= 2
 
-  const addressIndex = getAddressIndex()
-  const isFirstAddress = addressIndex === 0
+  // Calculate individual discount rates (each 10%)
+  const oneTimeDiscountRate = isFinalSettlement ? 0 : (isOneTimePlan ? 0.10 : 0)
+  const secondAddressDiscountRate = isFinalSettlement ? 0 : (isSecondOrMoreAddress ? 0.10 : 0)
 
-  // For final settlement, no discounts apply - always ₹25,000
-  const discountRate = isFinalSettlement ? 0 : (isFirstAddress ? 0 : 0.10) // Flat 10% for 2nd address onwards (only for initial payment)
-  const discountPercentage = isFinalSettlement ? 0 : (isFirstAddress ? 0 : 10) // For display: 0 for 1st, 10 for 2nd+
+  // Total combined discount rate (can be 0%, 10%, or 20%)
+  const totalDiscountRate = oneTimeDiscountRate + secondAddressDiscountRate
+  const totalDiscountPercentage = (oneTimeDiscountRate * 100) + (secondAddressDiscountRate * 100)
 
-  const fullBasePrice = 25000 // ₹25,000 base price
-  const discountAmount = fullBasePrice * discountRate
-  const basePrice = fullBasePrice - discountAmount
+  // Use the plan price from URL (selected on pricing page)
+  const fullBasePrice = selectedPlanPrice
+
+  // Calculate individual discount amounts for display
+  const oneTimeDiscountAmount = fullBasePrice * oneTimeDiscountRate
+  const secondAddressDiscountAmount = fullBasePrice * secondAddressDiscountRate
+  const totalDiscountAmount = fullBasePrice * totalDiscountRate
+
+  const basePrice = fullBasePrice - totalDiscountAmount
+  // For per-user plans (monthly/annual), multiply by user count
+  const quantity = isPerUserPlan ? (userCount || 0) : 1
   const subtotal = basePrice * quantity
   const gstRate = 0.18 // 18% GST
   const gstAmount = subtotal * gstRate
   const total = subtotal + gstAmount
 
-  // Product name based on payment type
-  const productName = isFinalSettlement ? 'PowerCA Final Settlement' : (product.name || 'PowerCA Implementation')
+  // Plan display names
+  const getPlanDisplayName = () => {
+    switch (planType) {
+      case 'monthly': return 'Monthly Subscription'
+      case 'annual': return 'Annual Subscription'
+      case 'onetime': return 'One Time Payment'
+      case 'installment': return 'Installment Payment'
+      default: return 'PowerCA Subscription'
+    }
+  }
+
+  // Product name based on payment type and plan
+  const productName = isFinalSettlement ? 'PowerCA Final Settlement' : getPlanDisplayName()
   const productDescription = isFinalSettlement
     ? 'Final settlement payment for PowerCA service'
+    : planType === 'monthly' ? 'Monthly subscription with ongoing support'
+    : planType === 'annual' ? 'Annual subscription with ongoing support'
+    : planType === 'onetime' ? 'One time payment - Lifetime access'
+    : planType === 'installment' ? 'Installment payment (10 months)'
     : 'Installation and Ongoing Support & Update'
 
 
@@ -581,6 +631,11 @@ function CheckoutContent() {
       return false
     }
 
+    // Check user count for per-user plans
+    if (isPerUserPlan && (userCount === '' || userCount < 1)) {
+      newErrors.userCount = 'Please enter the number of users'
+    }
+
     // Payment gateway is always 'razorpay' now (Cashfree disabled)
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
@@ -611,7 +666,9 @@ function CheckoutContent() {
         body: JSON.stringify({
           amount: total,
           productId: product.productId,
-          planType: 'implementation',
+          planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type
+          planPrice: selectedPlanPrice, // Send selected plan price
+          paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
           ...formData,
           country: formData.country,
           address: formData.address,
@@ -622,8 +679,8 @@ function CheckoutContent() {
           gstAmount: gstAmount,
           gstPercentage: gstRate * 100, // Convert 0.18 to 18
           // Discount information for progressive pricing
-          discountPercentage: discountPercentage,
-          discountAmount: discountAmount,
+          discountPercentage: totalDiscountPercentage,
+          discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
@@ -726,8 +783,10 @@ function CheckoutContent() {
         body: JSON.stringify({
           amount: Math.round(total * 100), // Convert to paise
           productId: product.productId,
-          planType: isFinalSettlement ? 'final_settlement' : 'implementation',
+          planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type from pricing page
+          planPrice: selectedPlanPrice, // Send selected plan price
           paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
+          userCount: isPerUserPlan ? (userCount || 1) : 1, // Send user count for per-user plans
           ...formData,
           // Send address fields separately for storage
           country: formData.country,
@@ -738,8 +797,8 @@ function CheckoutContent() {
           gstNo: formData.gstNo,
           addressId: selectedAddressId, // Track which address this purchase is for
           // Discount information for progressive pricing
-          discountPercentage: discountPercentage,
-          discountAmount: discountAmount,
+          discountPercentage: totalDiscountPercentage,
+          discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
           customerDetails: {
             name: formData.firstName,
@@ -867,8 +926,17 @@ function CheckoutContent() {
     // TODO: Implement coupon validation
   }
 
-  const _incrementQuantity = () => setQuantity(prev => prev + 1)
-  const _decrementQuantity = () => setQuantity(prev => Math.max(1, prev - 1))
+  const handleUserCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value
+    if (inputValue === '') {
+      setUserCount('')
+    } else {
+      const value = parseInt(inputValue, 10)
+      if (!isNaN(value) && value >= 1) {
+        setUserCount(value)
+      }
+    }
+  }
 
   // Show loading screen while checking authentication
   if (checkingAuth) {
@@ -899,6 +967,15 @@ function CheckoutContent() {
         .checkout-page input:-ms-input-placeholder,
         .checkout-page textarea:-ms-input-placeholder {
           color: #666D80 !important;
+        }
+        /* Hide number input arrows/spinners */
+        .checkout-page input[type="number"]::-webkit-outer-spin-button,
+        .checkout-page input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        .checkout-page input[type="number"] {
+          -moz-appearance: textfield;
         }
       `}</style>
       <Script
@@ -1126,7 +1203,8 @@ function CheckoutContent() {
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Purchase Plan</h3>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                {/* Product Info */}
+                <div className="flex items-center gap-3 sm:gap-4 mb-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md flex-shrink-0">
                     <Image
                       src="/images/power-ca-logo-footer.png"
@@ -1137,54 +1215,63 @@ function CheckoutContent() {
                       unoptimized
                     />
                   </div>
-                  <div className="flex-1 w-full sm:w-auto">
-                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-2">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm sm:text-base text-gray-900">
                       {isFinalSettlement ? 'PowerCA Final Settlement' : 'Power CA Software'}
                     </h4>
-                    <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
-                      <span className="text-xs sm:text-sm text-gray-600">{productDescription}</span>
-                      {/* <div className="flex items-center border-2 border-gray-300 rounded-lg shadow-sm">
-                        <button
-                          type="button"
-                          onClick={decrementQuantity}
-                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                          disabled={quantity <= 1}
-                        >
-                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                        <span className="px-3 sm:px-4 py-1 text-sm sm:text-base font-semibold min-w-[40px] text-center">{quantity}</span>
-                        <button
-                          type="button"
-                          onClick={incrementQuantity}
-                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors"
-                        >
-                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                      </div> */}
-                      <div className="sm:hidden ml-auto">
-                        <div className="text-right">
-                          {!isFirstAddress && selectedAddressId && (
-                            <span className="text-xs text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
-                          )}
-                          <span className="text-base font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-xs sm:text-sm text-gray-600">{productDescription}</p>
                   </div>
-                  <div className="hidden sm:block text-right">
-                    {!isFirstAddress && selectedAddressId && (
-                      <span className="text-sm text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
+                  <div className="text-right flex-shrink-0">
+                    {(isOneTimePlan || isSecondOrMoreAddress) && !isFinalSettlement && (
+                      <span className="text-xs text-gray-400 line-through block">₹{fullBasePrice.toLocaleString()}</span>
                     )}
-                    <span className="text-lg font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
+                    <span className="text-lg font-bold text-purple-600">₹{basePrice.toLocaleString()}</span>
                   </div>
                 </div>
 
+                {/* User Count Input - Only for Monthly/Annual Plans */}
+                {isPerUserPlan && (
+                  <div className={`mb-4 p-3 rounded-lg border ${errors.userCount ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'}`}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <Label htmlFor="userCount" className={`text-sm font-medium ${errors.userCount ? 'text-red-700' : 'text-blue-900'}`}>
+                          Number of Users <span className="text-red-500">*</span>
+                        </Label>
+                        <p className={`text-xs ${errors.userCount ? 'text-red-600' : 'text-blue-600'}`}>₹{basePrice.toLocaleString()} per user / {planType === 'monthly' ? 'month' : 'year'}</p>
+                      </div>
+                      <Input
+                        id="userCount"
+                        type="number"
+                        min="1"
+                        value={userCount}
+                        onChange={handleUserCountChange}
+                        placeholder="0"
+                        className={`w-24 text-center text-lg font-bold border-2 bg-white ${errors.userCount ? 'border-red-400' : 'border-blue-300'}`}
+                        required
+                      />
+                    </div>
+                    {errors.userCount && (
+                      <p className="text-red-600 text-xs mt-2 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.userCount}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
-                  {/* Show discount info for second+ address (not for final settlement) */}
-                  {!isFinalSettlement && !isFirstAddress && selectedAddressId && (
+                  {/* Show 10% One-Time discount (not for final settlement) */}
+                  {!isFinalSettlement && isOneTimePlan && (
                     <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium">{discountPercentage}% Discount</span>
-                      <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
+                      <span className="font-medium">10% One-Time Discount</span>
+                      <span className="font-semibold">-₹{oneTimeDiscountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {/* Show 10% Second Address discount (not for final settlement) */}
+                  {!isFinalSettlement && isSecondOrMoreAddress && (
+                    <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                      <span className="font-medium">10% Address Discount</span>
+                      <span className="font-semibold">-₹{secondAddressDiscountAmount.toLocaleString()}</span>
                     </div>
                   )}
                   {/* Show final settlement info */}
@@ -1194,10 +1281,28 @@ function CheckoutContent() {
                       <span className="font-semibold">2nd of 2 payments</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                    <span>Base Price</span>
-                    <span className="font-semibold">₹{basePrice.toLocaleString()}</span>
-                  </div>
+                  {/* Show per-user calculation for monthly/annual */}
+                  {isPerUserPlan && typeof userCount === 'number' && userCount > 1 ? (
+                    <>
+                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
+                        <span>Price per User</span>
+                        <span className="font-semibold">₹{basePrice.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
+                        <span>Number of Users</span>
+                        <span className="font-semibold">× {userCount}</span>
+                      </div>
+                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
+                        <span>Subtotal</span>
+                        <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-xs sm:text-sm text-gray-700">
+                      <span>Base Price</span>
+                      <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs sm:text-sm text-gray-700">
                     <span>SGST & CGST (18%)</span>
                     <span className="font-semibold">₹{gstAmount.toLocaleString()}</span>

@@ -53,8 +53,13 @@ export async function GET(_request: NextRequest) {
       }
     })
 
+    // Include all orders (both 'created' and 'paid')
+    // 'created' = user clicked Place Order but hasn't paid yet
+    // 'paid' = user completed the payment
+    const allOrders = orders || []
+
     // Map the orders to include address data and affiliate info based on email matching
-    const mappedOrders = (orders || []).map(order => {
+    const mappedOrders = allOrders.map(order => {
       const addressData = order.user_addresses
       // Build location: use label first, then city only (state is common)
       const city = order.customer_city || addressData?.city

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Loader2, Search, Eye, RefreshCw, CheckCircle, XCircle, Clock, RotateCw } from 'lucide-react'
+import { Loader2, Search, Eye, RefreshCw, CheckCircle, XCircle, Clock, RotateCw, Tag, Percent } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Pagination,
@@ -52,6 +52,10 @@ interface IndividualPayment {
   country?: string
   // Payment type
   payment_type?: string
+  // Plan type
+  plan_type?: string
+  // User count
+  user_count?: number
 }
 
 interface Payment {
@@ -229,22 +233,21 @@ export default function AdminPaymentsPage() {
     }
   }
 
-  const getPaymentTypeBadge = (paymentType: string | undefined, status: string) => {
-    const isPaid = ['paid', 'captured', 'authorized', 'success'].includes(status.toLowerCase())
+  const getPlanTypeBadge = (planType: string | null | undefined) => {
+    if (!planType) return <Badge variant="outline" className="text-gray-500">N/A</Badge>
 
-    if (paymentType === 'final_settlement') {
-      return (
-        <Badge className={`text-xs ${isPaid ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
-          Final Settlement {isPaid ? '✓' : '- Pending'}
-        </Badge>
-      )
+    switch (planType) {
+      case 'onetime':
+        return <Badge className="bg-purple-100 text-purple-700 border border-purple-300">One-Time</Badge>
+      case 'monthly':
+        return <Badge className="bg-blue-100 text-blue-700 border border-blue-300">Monthly</Badge>
+      case 'annual':
+        return <Badge className="bg-green-100 text-green-700 border border-green-300">Annual</Badge>
+      case 'installment':
+        return <Badge className="bg-orange-100 text-orange-700 border border-orange-300">Installment</Badge>
+      default:
+        return <Badge variant="outline">{planType}</Badge>
     }
-    // Installation & Support - only show paid status, no "Pending" label
-    return (
-      <Badge className={`text-xs ${isPaid ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-        Installation & Support {isPaid ? '✓' : ''}
-      </Badge>
-    )
   }
 
   // Group payments by location for popup display
@@ -254,6 +257,11 @@ export default function AdminPaymentsPage() {
     initialPayment: IndividualPayment | null
     finalSettlement: IndividualPayment | null
     totalAmount: number
+    planType: string | null
+    userCount: number | null
+    discountPercentage: number | null
+    discountAmount: number | null
+    originalAmount: number | null
   }
 
   const getPaymentsGroupedByLocation = (payments: IndividualPayment[]): LocationGroup[] => {
@@ -273,7 +281,12 @@ export default function AdminPaymentsPage() {
           firmName: payment.firm_name || null,
           initialPayment: null,
           finalSettlement: null,
-          totalAmount: 0
+          totalAmount: 0,
+          planType: payment.plan_type || null,
+          userCount: payment.user_count || null,
+          discountPercentage: payment.discount_percentage || null,
+          discountAmount: payment.discount_amount || null,
+          originalAmount: payment.original_amount || null
         })
       }
 
@@ -577,32 +590,38 @@ export default function AdminPaymentsPage() {
                                                   <p className="font-bold">₹{group.totalAmount.toFixed(0)}</p>
                                                 </div>
                                               </div>
-                                              {/* Payment Status Row */}
+                                              {/* Plan Type, User Count, and Discount Info */}
                                               <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                {/* Installation & Support Status */}
-                                                {group.initialPayment && (
-                                                  <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                                                    Installation & Support {['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? '✓' : ''}
+                                                {/* Plan Type */}
+                                                <div className="flex items-center gap-1">
+                                                  <Tag className="h-3 w-3 text-gray-400" />
+                                                  {getPlanTypeBadge(group.planType)}
+                                                </div>
+                                                {/* User Count - only for monthly/annual plans (not for onetime/installment) */}
+                                                {group.userCount && group.userCount > 0 && (group.planType === 'monthly' || group.planType === 'annual') && (
+                                                  <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs">
+                                                    {group.userCount} {group.userCount === 1 ? 'User' : 'Users'}
                                                   </Badge>
                                                 )}
-                                                {/* Final Settlement Status */}
-                                                {group.finalSettlement ? (
-                                                  <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
-                                                    Final Settlement {['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? '✓' : '- Pending'}
-                                                  </Badge>
-                                                ) : group.initialPayment && ['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? (
-                                                  <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
-                                                    Final Settlement - Not Started
-                                                  </Badge>
-                                                ) : null}
+                                                {/* Discount Info */}
+                                                {group.discountPercentage && group.discountPercentage > 0 && (
+                                                  <div className="flex items-center gap-1">
+                                                    <Percent className="h-3 w-3 text-green-500" />
+                                                    <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs">
+                                                      {group.discountPercentage}% Off
+                                                    </Badge>
+                                                    {group.originalAmount && (
+                                                      <span className="text-xs text-gray-500">
+                                                        (₹{group.originalAmount.toLocaleString()} → ₹{(group.originalAmount - (group.discountAmount || 0)).toLocaleString()})
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                )}
                                               </div>
-                                              {/* Order dates */}
-                                              <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                              {/* Order date */}
+                                              <div className="mt-2 text-xs text-gray-500">
                                                 {group.initialPayment && (
-                                                  <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                                                )}
-                                                {group.finalSettlement && (
-                                                  <span>Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                  <span>Date: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                                 )}
                                               </div>
                                             </div>
@@ -756,29 +775,33 @@ export default function AdminPaymentsPage() {
                                                 <p className="font-bold">₹{group.totalAmount.toFixed(0)}</p>
                                               </div>
                                             </div>
-                                            {/* Payment Status Row */}
+                                            {/* Plan Type, User Count, and Discount Info */}
                                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                              {group.initialPayment && (
-                                                <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                                                  Installation & Support {['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? '✓' : ''}
+                                              {/* Plan Type */}
+                                              <div className="flex items-center gap-1">
+                                                <Tag className="h-3 w-3 text-gray-400" />
+                                                {getPlanTypeBadge(group.planType)}
+                                              </div>
+                                              {/* User Count - only for monthly/annual plans (not for onetime/installment) */}
+                                              {group.userCount && group.userCount > 0 && (group.planType === 'monthly' || group.planType === 'annual') && (
+                                                <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs">
+                                                  {group.userCount} {group.userCount === 1 ? 'User' : 'Users'}
                                                 </Badge>
                                               )}
-                                              {group.finalSettlement ? (
-                                                <Badge className={`text-xs ${['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-orange-100 text-orange-700 border border-orange-300'}`}>
-                                                  Final Settlement {['paid', 'captured', 'authorized', 'success'].includes(group.finalSettlement.status.toLowerCase()) ? '✓' : '- Pending'}
-                                                </Badge>
-                                              ) : group.initialPayment && ['paid', 'captured', 'authorized', 'success'].includes(group.initialPayment.status.toLowerCase()) ? (
-                                                <Badge className="text-xs bg-gray-100 text-gray-500 border border-gray-300">
-                                                  Final Settlement - Not Started
-                                                </Badge>
-                                              ) : null}
+                                              {/* Discount Info */}
+                                              {group.discountPercentage && group.discountPercentage > 0 && (
+                                                <div className="flex items-center gap-1">
+                                                  <Percent className="h-3 w-3 text-green-500" />
+                                                  <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs">
+                                                    {group.discountPercentage}% Off
+                                                  </Badge>
+                                                </div>
+                                              )}
                                             </div>
+                                            {/* Order date */}
                                             <div className="mt-2 text-xs text-gray-500">
                                               {group.initialPayment && (
-                                                <span>Initial: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                                              )}
-                                              {group.finalSettlement && (
-                                                <span className="ml-3">Final: {new Date(group.finalSettlement.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                <span>Date: {new Date(group.initialPayment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                               )}
                                             </div>
                                           </div>

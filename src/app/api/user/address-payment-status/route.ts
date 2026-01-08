@@ -53,12 +53,12 @@ export async function GET() {
       order_id: string
     }> | null = null
 
-    // Try query with payment_type column
+    // Try query with payment_type column - check multiple success statuses
     const { data: ordersWithType, error: orderErrorWithType } = await supabase
       .from('payment_orders')
-      .select('id, address_id, payment_type, created_at, order_id')
+      .select('id, address_id, payment_type, created_at, order_id, status')
       .eq('user_id', session.user.id)
-      .eq('status', 'paid')
+      .in('status', ['paid', 'captured', 'success', 'SUCCESS', 'completed', 'COMPLETED'])
       .not('address_id', 'is', null)
 
     if (orderErrorWithType) {
@@ -66,9 +66,9 @@ export async function GET() {
       logger.info('payment_type column may not exist, trying fallback query')
       const { data: ordersWithoutType, error: orderErrorWithoutType } = await supabase
         .from('payment_orders')
-        .select('id, address_id, created_at, order_id')
+        .select('id, address_id, created_at, order_id, status')
         .eq('user_id', session.user.id)
-        .eq('status', 'paid')
+        .in('status', ['paid', 'captured', 'success', 'SUCCESS', 'completed', 'COMPLETED'])
         .not('address_id', 'is', null)
 
       if (orderErrorWithoutType) {

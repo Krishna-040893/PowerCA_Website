@@ -220,6 +220,7 @@ export async function POST(req: NextRequest) {
               gst: gst.totalTax,
               total: totalAmount,
               status: 'paid',
+              user_count: orderData.user_count || 1,
             })
 
           if (invoiceError) {
@@ -365,6 +366,8 @@ export async function POST(req: NextRequest) {
               .eq('id', referralRecord.id)
 
             // Create affiliate payment record
+            // Commission is 10% of BASE amount (excluding GST)
+            // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
             const commissionAmount = parseFloat((paymentAmount * 0.10).toFixed(2))
 
             await supabase

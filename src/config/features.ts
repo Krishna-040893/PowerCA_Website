@@ -37,7 +37,7 @@ export const featuresConfig = {
       price: '₹25,000',
       originalPrice: '₹1,00,000',
       period: 'first-year',
-      description: 'Special 50% discount for CAs only – Till 30th Nov 2025',
+      description: 'Special 100% discount for CAs only – Till 30th Nov 2025',
       features: [
         'Installation and Demo',
         'Required training',

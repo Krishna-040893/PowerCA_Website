@@ -57,8 +57,8 @@ export default function AppDownloadPage() {
   // Check if user is an affiliate
   const isAffiliate = session?.user?.role === 'affiliate' || session?.user?.role === 'Affiliate'
 
-  // Check if user has paid for the pricing (Launch Offer)
-  const hasPaidPricing = subscriptionStatus.hasLaunchOffer
+  // Check if user has paid for any plan
+  const hasPaidPricing = subscriptionStatus.hasAnyPaidPlan
 
   // Fix hydration error - wait for client mount
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function AppDownloadPage() {
                           <div className="flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                             <p className="text-amber-800 text-sm">
-                              Demo Version access will be available after completing the &apos;On Installation &amp; Support&apos; payment.
+                              Demo Version access will be available after completing the payment.
                             </p>
                           </div>
                         </div>

@@ -31,7 +31,7 @@ export default function PromotionalBanner() {
         <div className="flex items-center justify-center gap-1.5 sm:gap-4">
           {/* Promotional text - responsive */}
           <span className="text-white font-medium text-[10px] sm:text-sm whitespace-nowrap">
-            Launch Offer – 50% for CAs
+            Launch Offer – 100% for CAs
           </span>
 
           {/* View Pricing button - visible on all screens */}

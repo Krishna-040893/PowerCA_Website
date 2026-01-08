@@ -118,14 +118,18 @@ export async function GET(req: NextRequest) {
       })
 
       // Process each referral - create ONE merged row per customer
-      const BASE_PRICE = 25000
+      // Commission is 10% of BASE amount (excluding GST) per address
+      // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
       const commissionRate = 10
 
       paymentsByReferralId.forEach((payments, referralId) => {
         const referral = affiliateReferrals.find(r => r.id === referralId)!
         const totalPaymentCount = payments.length
         const existingRecord = existingPaymentsByReferralId.get(referralId)
-        const totalPaymentAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+        // payments.amount is TOTAL (including GST)
+        // Calculate BASE amount: base = total / 1.18 (removes 18% GST)
+        const totalAmountWithGst = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+        const totalPaymentAmount = parseFloat((totalAmountWithGst / 1.18).toFixed(2)) // BASE amount excluding GST
         const firstPayment = payments[0]
 
         // Get all unique firm names from paid payments
@@ -135,10 +139,12 @@ export async function GET(req: NextRequest) {
         )]
         const firmNamesDisplay = allFirmNames.join(', ') || ''
 
-        if (!existingRecord) {
-          // No existing record - all orders pending commission
-          const totalCommission = BASE_PRICE * totalPaymentCount * (commissionRate / 100)
+        // Commission is 10% of BASE amount (excluding GST)
+        // Example: Total ₹590 → Base ₹500 → Commission ₹50
+        const totalCommission = parseFloat((totalPaymentAmount * (commissionRate / 100)).toFixed(2))
 
+        if (!existingRecord) {
+          // No existing record - all pending commission
           mergedPayments.push({
             id: `email-match-${referralId}`,
             referral_id: referral.id,
@@ -175,22 +181,19 @@ export async function GET(req: NextRequest) {
             }
           })
         } else {
-          // Existing record - calculate paid vs pending based on paid_order_count
-          const paidOrderCount = existingRecord.paid_order_count || 0
-          const pendingOrderCount = totalPaymentCount - paidOrderCount
-          const paidCommission = BASE_PRICE * paidOrderCount * (commissionRate / 100)
-          const pendingCommission = BASE_PRICE * pendingOrderCount * (commissionRate / 100)
-          const totalCommission = paidCommission + pendingCommission
+          // Existing record - check if commission already paid
+          const paidCommission = existingRecord.commission_paid ? (existingRecord.paid_commission || totalCommission) : 0
+          const pendingCommission = existingRecord.commission_paid ? 0 : totalCommission
 
           mergedPayments.push({
             ...existingRecord,
             customer_firm_name: firmNamesDisplay || existingRecord.customer_firm_name,
             payment_amount: totalPaymentAmount,
             commission_amount: totalCommission,
-            commission_paid: pendingOrderCount === 0 && existingRecord.commission_paid,
+            commission_paid: existingRecord.commission_paid,
             payment_count: totalPaymentCount,
-            paid_order_count: paidOrderCount,
-            pending_order_count: pendingOrderCount,
+            paid_order_count: existingRecord.commission_paid ? totalPaymentCount : 0,
+            pending_order_count: existingRecord.commission_paid ? 0 : totalPaymentCount,
             paid_commission: paidCommission,
             pending_commission: pendingCommission,
             affiliate_referrals: existingRecord.affiliate_referrals || {

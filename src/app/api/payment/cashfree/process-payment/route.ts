@@ -403,6 +403,7 @@ export async function POST(req: NextRequest) {
             gst: gst.totalTax,
             total: totalAmount,
             status: 'paid',
+            user_count: orderData.user_count || 1,
           })
 
         if (invoiceError) {

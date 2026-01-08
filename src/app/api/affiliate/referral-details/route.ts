@@ -88,16 +88,22 @@ export async function GET(_request: NextRequest) {
         }
 
         if (paymentData) {
-          // There's an existing payment record - calculate paid vs pending based on paid_order_count
-          const BASE_PRICE_PER_ADDRESS = 25000
+          // Use stored commission from affiliate_referral_payments
+          // Commission = Base Amount × 10% (Base = payment without GST)
           const commissionRate = paymentData.commission_rate || 10
           const paidOrderCount = paymentData.paid_order_count || 0
-          const pendingOrderCount = totalActualPayments - paidOrderCount
+          const pendingOrderCount = totalActualPayments > 0 ? totalActualPayments - paidOrderCount : (paymentData.commission_paid ? 0 : 1)
 
-          // Calculate paid and pending commission
-          const paidCommission = BASE_PRICE_PER_ADDRESS * paidOrderCount * (commissionRate / 100)
-          const pendingCommission = BASE_PRICE_PER_ADDRESS * pendingOrderCount * (commissionRate / 100)
-          const totalCommissionAmount = paidCommission + pendingCommission
+          // Use stored payment_amount as BASE (already excludes GST after SQL update)
+          // Commission = Base × 10%
+          const storedBaseAmount = parseFloat(paymentData.payment_amount as string) || 0
+          const totalCommissionAmount = parseFloat((storedBaseAmount * (commissionRate / 100)).toFixed(2))
+
+          // Distribute commission proportionally between paid and pending
+          const totalOrders = totalActualPayments > 0 ? totalActualPayments : 1
+          const perOrderCommission = totalCommissionAmount / totalOrders
+          const paidCommission = parseFloat((perOrderCommission * paidOrderCount).toFixed(2))
+          const pendingCommission = parseFloat((totalCommissionAmount - paidCommission).toFixed(2))
 
           paymentInfo = {
             payment_id: paymentData.payment_id,
@@ -197,19 +203,17 @@ export async function GET(_request: NextRequest) {
 
           if (ordersList.length > 0) {
             // Sum up ALL paid orders for this customer
+            // Commission is 10% of BASE amount (excluding GST)
+            // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
             let totalBaseAmount = 0
             let totalGstAmount = 0
             let totalAmountSum = 0
             const allPayments: Record<string, unknown>[] = []
 
-            // Fixed base price for commission calculation (₹25,000 per address)
-            // Commission is always calculated on the base price, not discounted amount
-            const BASE_PRICE_PER_ADDRESS = 25000
-
             ordersList.forEach(orderData => {
               // orderData.amount is TOTAL (including GST)
-              // Calculate base amount: base = total / 1.18
-              const orderTotal = parseFloat(orderData.amount as string)
+              const orderTotal = parseFloat(orderData.amount as string) || 0
+              // Always calculate: base = total / 1.18 (removes 18% GST)
               const orderBase = parseFloat((orderTotal / 1.18).toFixed(2))
               const orderGst = parseFloat((orderTotal - orderBase).toFixed(2))
 
@@ -230,11 +234,10 @@ export async function GET(_request: NextRequest) {
               })
             })
 
-            // Calculate commission on FIXED BASE PRICE (₹25,000 per address), not discounted amount
-            // This ensures affiliate gets same commission regardless of customer discounts
+            // Calculate commission on actual BASE amount (excluding GST)
+            // Commission = Base Amount × 10%
             const commissionRate = affiliateProfile?.commission_rate || 10.00
-            const commissionBaseAmount = BASE_PRICE_PER_ADDRESS * ordersList.length // ₹25,000 per paid order
-            const totalCommissionAmount = parseFloat((commissionBaseAmount * (commissionRate / 100)).toFixed(2))
+            const totalCommissionAmount = parseFloat((totalBaseAmount * (commissionRate / 100)).toFixed(2))
 
             // Use the first (most recent) order for primary display
             const firstOrder = ordersList[0]

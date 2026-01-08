@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest) {
     // Get order IDs from payments to fetch location from payment_orders
     const orderIds = [...new Set((payments || []).filter(p => p.order_id).map(p => p.order_id))]
 
-    // Fetch payment_orders with address data to get location and payment_type for each payment
+    // Fetch payment_orders with address data to get location, payment_type, plan_type, and user_count for each payment
     let orderAddressMap: Record<string, {
       location: string | null;
       city: string | null;
@@ -64,6 +64,8 @@ export async function GET(_request: NextRequest) {
       discount_amount: number | null;
       original_amount: number | null;
       payment_type: string | null;
+      plan_type: string | null;
+      user_count: number | null;
     }> = {}
 
     if (orderIds.length > 0) {
@@ -80,6 +82,8 @@ export async function GET(_request: NextRequest) {
           discount_amount,
           original_amount,
           payment_type,
+          plan_type,
+          user_count,
           user_addresses (
             label,
             city,
@@ -107,13 +111,15 @@ export async function GET(_request: NextRequest) {
             discount_amount: order.discount_amount,
             original_amount: order.original_amount,
             payment_type: order.payment_type || 'initial_payment',
+            plan_type: order.plan_type || null,
+            user_count: order.user_count || null,
           }
           return acc
-        }, {} as Record<string, { location: string | null; city: string | null; state: string | null; postcode: string | null; country: string | null; discount_percentage: number | null; discount_amount: number | null; original_amount: number | null; payment_type: string | null }>)
+        }, {} as Record<string, { location: string | null; city: string | null; state: string | null; postcode: string | null; country: string | null; discount_percentage: number | null; discount_amount: number | null; original_amount: number | null; payment_type: string | null; plan_type: string | null; user_count: number | null }>)
       }
     }
 
-    // Map payments to include location, discount data, and payment_type from payment_orders
+    // Map payments to include location, discount data, payment_type, and plan_type from payment_orders
     const mappedPayments = (payments || []).map(payment => {
       const orderData = payment.order_id ? orderAddressMap[payment.order_id] : null
       return {
@@ -130,6 +136,10 @@ export async function GET(_request: NextRequest) {
         original_amount: orderData?.original_amount || null,
         // Payment type
         payment_type: orderData?.payment_type || 'initial_payment',
+        // Plan type
+        plan_type: orderData?.plan_type || null,
+        // User count
+        user_count: orderData?.user_count || null,
       }
     })
 

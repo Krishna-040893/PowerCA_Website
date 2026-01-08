@@ -12,6 +12,7 @@ export interface UserSubscription {
 
 export interface SubscriptionStatus {
   hasLaunchOffer: boolean
+  hasAnyPaidPlan: boolean
   canRenew: boolean
   subscription: UserSubscription | null
   isLoading: boolean
@@ -22,6 +23,7 @@ export function useSubscription(): SubscriptionStatus {
   const { data: session } = useSession()
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>({
     hasLaunchOffer: false,
+    hasAnyPaidPlan: false,
     canRenew: false,
     subscription: null,
     isLoading: true,
@@ -45,7 +47,10 @@ export function useSubscription(): SubscriptionStatus {
           return
         }
 
-        const { subscriptions } = await response.json()
+        const { subscriptions, hasPaidOrders } = await response.json()
+
+        // Check if user has any paid plan (any subscription OR paid payment orders)
+        const hasAnyPaidPlan = (subscriptions && subscriptions.length > 0) || hasPaidOrders === true
 
         // Find Launch Offer subscription (either initial or complete)
         const launchOfferSub = subscriptions?.find((sub: UserSubscription) =>
@@ -53,11 +58,12 @@ export function useSubscription(): SubscriptionStatus {
         )
 
         if (!launchOfferSub) {
-          // No launch offer subscription found
+          // No launch offer subscription found, but may have other plans
           setSubscriptionStatus({
             hasLaunchOffer: false,
+            hasAnyPaidPlan: hasAnyPaidPlan,
             canRenew: false,
-            subscription: null,
+            subscription: subscriptions?.[0] || null,
             isLoading: false,
             daysUntilRenewal: 0
           })
@@ -78,6 +84,7 @@ export function useSubscription(): SubscriptionStatus {
 
         setSubscriptionStatus({
           hasLaunchOffer: true,
+          hasAnyPaidPlan: true,
           canRenew: canRenew,
           subscription: launchOfferSub,
           isLoading: false,
