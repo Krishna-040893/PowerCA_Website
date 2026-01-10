@@ -294,13 +294,13 @@ const primaryButton: React.CSSProperties = {
   boxShadow: '0 4px 12px rgba(29, 145, 235, 0.2)',
 }
 
-const alternativeActions: React.CSSProperties = {
+const _alternativeActions: React.CSSProperties = {
   fontSize: '14px',
   color: '#94a3b8',
   margin: '16px 0',
 }
 
-const secondaryLink: React.CSSProperties = {
+const _secondaryLink: React.CSSProperties = {
   color: '#1D91EB',
   fontSize: '14px',
   fontWeight: '500',
@@ -309,7 +309,7 @@ const secondaryLink: React.CSSProperties = {
   padding: '8px 16px',
 }
 
-const helpSection: React.CSSProperties = {
+const _helpSection: React.CSSProperties = {
   backgroundColor: 'rgba(29, 145, 235, 0.05)',
   borderRadius: '8px',
   padding: '24px',
@@ -317,7 +317,7 @@ const helpSection: React.CSSProperties = {
   textAlign: 'center' as const,
 }
 
-const helpTitle: React.CSSProperties = {
+const _helpTitle: React.CSSProperties = {
   fontSize: '16px',
   fontWeight: '600',
   color: '#0F172A',
@@ -325,14 +325,14 @@ const helpTitle: React.CSSProperties = {
   marginTop: '0',
 }
 
-const helpText: React.CSSProperties = {
+const _helpText: React.CSSProperties = {
   fontSize: '14px',
   color: '#64748b',
   lineHeight: '22px',
   marginBottom: '16px',
 }
 
-const helpLink: React.CSSProperties = {
+const _helpLink: React.CSSProperties = {
   color: '#1D91EB',
   fontSize: '14px',
   fontWeight: '500',

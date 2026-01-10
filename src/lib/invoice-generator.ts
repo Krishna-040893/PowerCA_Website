@@ -45,6 +45,10 @@ export interface InvoiceData {
   discountPercentage?: number
   discountAmount?: number
   originalAmount?: number
+
+  // User/Plan Details
+  user_count?: number
+  planType?: string
 }
 
 export interface PaymentData {
@@ -463,10 +467,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
         <div class="footer-section">
           <h4>📋 Terms & Conditions</h4>
           <p>
-            ✅ This is a computer-generated invoice.<br>
-            🎁 First year subscription is FREE with implementation.<br>
-            🔄 Renewal charges apply from second year onwards.<br>
-            📞 For queries, contact contact@powerca.in
+            This is a computer-generated invoice. For any queries or support, please contact us at contact@powerca.in or call +91 96295 14635.
           </p>
         </div>
 

@@ -300,7 +300,7 @@ export async function GET(_request: NextRequest) {
     )
 
     // Legacy calculation as fallback
-    const legacyPaidCommission = paidReferrals
+    const _legacyPaidCommission = paidReferrals
       .filter(r => r.payment_info?.commission_paid)
       .reduce((sum, r) => sum + parseFloat(r.payment_info?.commission_amount || '0'), 0)
 

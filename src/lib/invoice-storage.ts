@@ -101,7 +101,7 @@ export async function invoiceExistsInStorage(
 ): Promise<boolean> {
   try {
     const supabase = createAdminClient()
-    const filePath = `invoices/${invoiceNumber}.pdf`
+    const _filePath = `invoices/${invoiceNumber}.pdf`
 
     const { data, error } = await supabase.storage
       .from(INVOICE_BUCKET)

@@ -13,6 +13,7 @@ import Script from 'next/script'
 import Link from 'next/link'
 import {RazorpayPaymentResponse  } from '@/types/common'
 import Image from 'next/image'
+import { PageErrorBoundary } from '@/components/error-boundary'
 
 interface FormErrors {
   firstName?: string
@@ -316,8 +317,11 @@ function CheckoutContent() {
               setError('Invalid referral link. Please contact your affiliate partner.')
             }
           })
-          .catch(_err => {
-            // Failed to validate referral
+          .catch(err => {
+            // Log referral validation failure for debugging
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Referral validation failed:', err)
+            }
           })
           .finally(() => {
             setValidatingReferral(false)
@@ -348,7 +352,11 @@ function CheckoutContent() {
                   setReferralInfo(null)
                 }
               })
-              .catch(_err => {
+              .catch(err => {
+                // Log error and clear invalid referral data
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Stored referral validation failed:', err)
+                }
                 localStorage.removeItem('affiliate_referral')
                 setReferralInfo(null)
               })
@@ -360,7 +368,9 @@ function CheckoutContent() {
             localStorage.removeItem('affiliate_referral')
           }
         } catch (err) {
-          console.error('Error parsing affiliate referral from localStorage:', err)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error parsing affiliate referral from localStorage:', err)
+          }
           localStorage.removeItem('affiliate_referral')
         }
       }
@@ -429,7 +439,9 @@ function CheckoutContent() {
           }
         } catch (err) {
           // Continue without auto-fill if there's an error
-          console.error('Error fetching last order for auto-fill:', err)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error fetching last order for auto-fill:', err)
+          }
         }
       }
 
@@ -484,7 +496,9 @@ function CheckoutContent() {
         setPurchasedAddressCount(purchasedResult.purchasedAddressIds.length)
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching addresses:', error)
+      }
     } finally {
       setLoadingAddresses(false)
     }
@@ -569,7 +583,9 @@ function CheckoutContent() {
         setError(result.error || 'Failed to save address')
       }
     } catch (error) {
-      console.error('Error saving address:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving address:', error)
+      }
       setError('An error occurred while saving address')
     } finally {
       setSavingAddress(false)
@@ -599,7 +615,9 @@ function CheckoutContent() {
         setError(result.error || 'Failed to delete address')
       }
     } catch (error) {
-      console.error('Error deleting address:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error deleting address:', error)
+      }
       setError('An error occurred while deleting address')
     }
   }
@@ -1433,8 +1451,10 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <CheckoutContent />
-    </Suspense>
+    <PageErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <CheckoutContent />
+      </Suspense>
+    </PageErrorBoundary>
   )
 }

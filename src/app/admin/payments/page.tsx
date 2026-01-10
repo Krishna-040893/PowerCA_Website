@@ -311,7 +311,7 @@ export default function AdminPaymentsPage() {
   }
 
   // Filter payments inside dialog
-  const getFilteredDialogPayments = () => {
+  const _getFilteredDialogPayments = () => {
     if (!selectedPayment?.all_payments) return []
     if (!dialogSearchTerm) return selectedPayment.all_payments
 

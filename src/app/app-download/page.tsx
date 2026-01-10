@@ -47,7 +47,7 @@ const appProducts = [
 ]
 
 export default function AppDownloadPage() {
-  const [selectedProduct, setSelectedProduct] = useState(appProducts[0])
+  const [_selectedProduct, setSelectedProduct] = useState(appProducts[0])
   const [purchaseCount, setPurchaseCount] = useState(0)
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true)
   const [isMounted, setIsMounted] = useState(false)

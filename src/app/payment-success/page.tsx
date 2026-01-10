@@ -36,6 +36,10 @@ interface ReceiptData {
     discount_amount: number
     original_amount: number | null
   }
+  user_info?: {
+    user_count: number
+    plan_type: string
+  }
 }
 
 function PaymentSuccessContent() {
@@ -194,7 +198,7 @@ function PaymentSuccessContent() {
 
     setIsDownloading(true)
     try {
-      const response = await fetch(`/api/invoice/download/${receiptData.invoice_number}`)
+      const response = await fetch(`/api/invoice/download/${receiptData.invoice_number}?regenerate=true`)
 
       if (!response.ok) {
         throw new Error('Failed to download receipt')
@@ -462,10 +466,25 @@ function PaymentSuccessContent() {
                     <tbody className="divide-y divide-gray-200">
                       <tr>
                         <td className="px-4 py-4">
-                          <div className="font-medium text-gray-900">PowerCA Implementation</div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Complete setup with first year subscription FREE
+                          <div className="font-medium text-gray-900">
+                            {receiptData.user_info?.plan_type === 'monthly' && 'PowerCA Monthly Subscription'}
+                            {receiptData.user_info?.plan_type === 'annual' && 'PowerCA Annual Subscription'}
+                            {receiptData.user_info?.plan_type === 'onetime' && 'PowerCA Implementation'}
+                            {receiptData.user_info?.plan_type === 'installment' && 'PowerCA Installment Payment'}
+                            {!receiptData.user_info?.plan_type && 'PowerCA Implementation'}
                           </div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            {receiptData.user_info?.plan_type === 'monthly' && 'Monthly subscription with ongoing support'}
+                            {receiptData.user_info?.plan_type === 'annual' && 'Annual subscription with ongoing support'}
+                            {receiptData.user_info?.plan_type === 'onetime' && 'Complete setup with first year subscription FREE'}
+                            {receiptData.user_info?.plan_type === 'installment' && 'Installment payment (10 months)'}
+                            {!receiptData.user_info?.plan_type && 'Complete setup with first year subscription FREE'}
+                          </div>
+                          {receiptData.user_info && receiptData.user_info.user_count > 1 && (
+                            <div className="text-sm text-blue-600 font-medium mt-1">
+                              {receiptData.user_info.user_count} users @ {formatCurrency(receiptData.amount / receiptData.user_info.user_count)} per user
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-4 text-right font-medium">
                           {receiptData.discount_info?.original_amount && receiptData.discount_info.discount_percentage > 0 ? (
@@ -473,10 +492,14 @@ function PaymentSuccessContent() {
                               <span className="text-gray-400 line-through text-sm block">
                                 {formatCurrency(receiptData.discount_info.original_amount)}
                               </span>
-                              <span>{formatCurrency(receiptData.amount)}</span>
+                              {/* Only show discounted amount for single user */}
+                              {(!receiptData.user_info || receiptData.user_info.user_count <= 1) && (
+                                <span>{formatCurrency(receiptData.amount)}</span>
+                              )}
                             </div>
                           ) : (
-                            formatCurrency(receiptData.amount)
+                            /* Only show amount for single user when no discount */
+                            (!receiptData.user_info || receiptData.user_info.user_count <= 1) && formatCurrency(receiptData.amount)
                           )}
                         </td>
                       </tr>
@@ -489,6 +512,22 @@ function PaymentSuccessContent() {
                             -{formatCurrency(receiptData.discount_info.discount_amount)}
                           </td>
                         </tr>
+                      )}
+                      {receiptData.user_info && receiptData.user_info.user_count > 1 && (
+                        <>
+                          <tr className="bg-blue-50">
+                            <td className="px-4 py-3 text-sm text-blue-700">Price per User</td>
+                            <td className="px-4 py-3 text-right text-sm text-blue-700">{formatCurrency(receiptData.amount / receiptData.user_info.user_count)}</td>
+                          </tr>
+                          <tr className="bg-blue-50">
+                            <td className="px-4 py-3 text-sm text-blue-700">Number of Users</td>
+                            <td className="px-4 py-3 text-right text-sm text-blue-700 font-medium">× {receiptData.user_info.user_count}</td>
+                          </tr>
+                          <tr>
+                            <td className="px-4 py-3 text-sm text-gray-600 font-medium">Subtotal</td>
+                            <td className="px-4 py-3 text-right text-sm font-medium">{formatCurrency(receiptData.amount)}</td>
+                          </tr>
+                        </>
                       )}
                       <tr>
                         <td className="px-4 py-3 text-sm text-gray-600">CGST (9%)</td>

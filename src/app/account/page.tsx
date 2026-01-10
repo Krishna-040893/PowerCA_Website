@@ -21,12 +21,9 @@ import {
   Download,
   Package,
   Loader2,
-  Calendar,
-  IndianRupee,
   Save,
   Plus,
   Pencil,
-  ChevronDown,
   FileText,
   Upload,
   CheckCircle2,
@@ -39,6 +36,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import ProfilePhotoUpload from '@/components/profile-photo-upload'
+import { PageErrorBoundary } from '@/components/error-boundary'
 
 interface BillingAddress {
   name: string
@@ -66,6 +64,7 @@ interface OrderHistory {
   originalAmount: number | null
   paymentType: 'initial_payment' | 'final_settlement'
   planType: string
+  userCount: number
 }
 
 interface UserData {
@@ -381,7 +380,7 @@ function AccountPageContent() {
     }
   }
   const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([])
-  const [loadingSubscription, setLoadingSubscription] = useState(false)
+  const [_loadingSubscription, setLoadingSubscription] = useState(false)
 
   const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
@@ -395,11 +394,11 @@ function AccountPageContent() {
   const [addressPaymentStatus, setAddressPaymentStatus] = useState<AddressPaymentStatus[]>([])
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
-  const [expandedOrders, setExpandedOrders] = useState<string[]>([])
-  const [expandedAddresses, setExpandedAddresses] = useState<string[]>([])
-  const [expandedLocations, setExpandedLocations] = useState<string[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const ordersPerPage = 5
+  const [_expandedOrders, _setExpandedOrders] = useState<string[]>([])
+  const [_expandedAddresses, setExpandedAddresses] = useState<string[]>([])
+  const [_expandedLocations, _setExpandedLocations] = useState<string[]>([])
+  const [_currentPage, setCurrentPage] = useState(1)
+  const _ordersPerPage = 5
 
   // Agreement document state
   const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
@@ -937,7 +936,7 @@ function AccountPageContent() {
 
   const handleDownloadInvoice = async (invoiceNumber: string) => {
     try {
-      const response = await fetch(`/api/invoice/download/${invoiceNumber}`)
+      const response = await fetch(`/api/invoice/download/${invoiceNumber}?regenerate=true`)
 
       if (!response.ok) {
         throw new Error('Failed to download invoice')
@@ -2036,25 +2035,29 @@ function AccountPageContent() {
                               <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
                             </div>
 
-                            {/* Orders Table - Compact */}
-                            <table className="w-full text-sm">
+                            {/* Orders Table - Compact with fixed column widths */}
+                            <table className="w-full text-sm table-fixed">
                               <thead className="bg-gray-50 text-xs text-gray-600">
                                 <tr>
-                                  <th className="text-left px-3 py-1.5 font-medium">Invoice</th>
-                                  <th className="text-left px-3 py-1.5 font-medium">Plan</th>
-                                  <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell">Date</th>
-                                  <th className="text-right px-3 py-1.5 font-medium">Amount</th>
-                                  <th className="text-center px-3 py-1.5 font-medium w-20"></th>
+                                  <th className="text-left px-3 py-1.5 font-medium w-[28%]">Invoice</th>
+                                  <th className="text-left px-3 py-1.5 font-medium w-[12%]">Plan</th>
+                                  <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[10%]">Users</th>
+                                  <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[18%]">Date</th>
+                                  <th className="text-right px-3 py-1.5 font-medium w-[22%]">Amount</th>
+                                  <th className="text-center px-3 py-1.5 font-medium w-[10%]"></th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-100">
                                 {orders.map((order) => (
                                   <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
-                                    <td className="px-3 py-2">
+                                    <td className="px-3 py-2 w-[28%]">
                                       <span className="font-medium text-gray-900">#{order.invoiceNumber}</span>
                                       <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
+                                      {order.userCount > 1 && (
+                                        <span className="sm:hidden block text-xs text-purple-600 mt-0.5">{order.userCount} users</span>
+                                      )}
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td className="px-3 py-2 w-[12%]">
                                       <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                                         {order.planType === 'monthly' && 'Monthly'}
                                         {order.planType === 'annual' && 'Annual'}
@@ -2063,14 +2066,21 @@ function AccountPageContent() {
                                         {!['monthly', 'annual', 'onetime', 'installment'].includes(order.planType) && 'Monthly'}
                                       </span>
                                     </td>
-                                    <td className="px-3 py-2 text-gray-600 hidden sm:table-cell">{formatDate(order.paidAt)}</td>
-                                    <td className="px-3 py-2 text-right">
+                                    <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[10%]">
+                                      {order.userCount > 1 ? (
+                                        <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{order.userCount}</span>
+                                      ) : (
+                                        <span className="text-gray-400">1</span>
+                                      )}
+                                    </td>
+                                    <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[18%]">{formatDate(order.paidAt)}</td>
+                                    <td className="px-3 py-2 text-right w-[22%]">
                                       <span className="font-semibold text-green-700">₹{formatCurrency(order.total).replace('₹', '')}</span>
                                       {order.discountAmount > 0 && (
                                         <span className="text-xs text-green-600 ml-1">(-{order.discountPercentage}%)</span>
                                       )}
                                     </td>
-                                    <td className="px-3 py-2 text-center">
+                                    <td className="px-3 py-2 text-center w-[10%]">
                                       <button
                                         onClick={() => handleDownloadInvoice(order.invoiceNumber)}
                                         className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 rounded"
@@ -2225,15 +2235,17 @@ function AccountPageContent() {
 
 export default function AccountPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading account...</p>
+    <PageErrorBoundary>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading account...</p>
+          </div>
         </div>
-      </div>
-    }>
-      <AccountPageContent />
-    </Suspense>
+      }>
+        <AccountPageContent />
+      </Suspense>
+    </PageErrorBoundary>
   )
 }

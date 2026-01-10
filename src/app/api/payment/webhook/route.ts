@@ -156,20 +156,39 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
     .update({ status: 'paid' })
     .eq('order_id', order_id)
 
-  // Get user_count from payment_orders for invoice
+  // Get user_count, plan_type, and discount info from payment_orders for invoice
   const { data: orderForInvoice } = await supabase
     .from('payment_orders')
-    .select('user_count')
+    .select('user_count, plan_type, discount_percentage, discount_amount, original_amount')
     .eq('order_id', order_id)
     .single()
   const invoiceUserCount = orderForInvoice?.user_count || 1
+  const invoicePlanType = orderForInvoice?.plan_type || 'onetime'
+  const invoiceDiscountPercentage = orderForInvoice?.discount_percentage || 0
+  const invoiceDiscountAmount = orderForInvoice?.discount_amount || 0
+  const invoiceOriginalAmount = orderForInvoice?.original_amount || null
 
   // Generate invoice
-  const invoiceData = createInvoiceData({
+  const baseInvoiceData = createInvoiceData({
     ...paymentRecord,
     paymentId: payment_id,
     orderId: order_id,
   })
+
+  // Add user count, plan type, and discount info to invoice data
+  const invoiceData = {
+    ...baseInvoiceData,
+    user_count: invoiceUserCount,
+    planType: invoicePlanType,
+    discountPercentage: invoiceDiscountPercentage,
+    discountAmount: invoiceDiscountAmount,
+    originalAmount: invoiceOriginalAmount,
+    items: [{
+      ...baseInvoiceData.items[0],
+      quantity: invoiceUserCount,
+      rate: invoiceUserCount > 1 ? Math.round(baseInvoiceData.subtotal / invoiceUserCount) : baseInvoiceData.subtotal,
+    }]
+  }
 
   const invoiceHTML = generateInvoiceHTML(invoiceData)
 

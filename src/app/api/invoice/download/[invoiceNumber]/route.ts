@@ -83,17 +83,21 @@ export async function GET(
       )
     }
 
-    // Fetch discount information from payment_orders
+    // Fetch discount information and user details from payment_orders
     let discountInfo = {
       discountPercentage: 0,
       discountAmount: 0,
       originalAmount: 0
     }
+    let userInfo = {
+      user_count: 1,
+      plan_type: 'onetime'
+    }
 
     if (payment.order_id) {
       const { data: orderData } = await supabase
         .from('payment_orders')
-        .select('discount_percentage, discount_amount, original_amount')
+        .select('discount_percentage, discount_amount, original_amount, user_count, plan_type')
         .eq('order_id', payment.order_id)
         .single()
 
@@ -102,6 +106,10 @@ export async function GET(
           discountPercentage: orderData.discount_percentage || 0,
           discountAmount: orderData.discount_amount || 0,
           originalAmount: orderData.original_amount || 0
+        }
+        userInfo = {
+          user_count: orderData.user_count || 1,
+          plan_type: orderData.plan_type || 'onetime'
         }
       }
     }
@@ -137,6 +145,9 @@ export async function GET(
       discountPercentage: discountInfo.discountPercentage,
       discountAmount: discountInfo.discountAmount,
       originalAmount: discountInfo.originalAmount,
+      // Include user/plan information
+      user_count: userInfo.user_count,
+      planType: userInfo.plan_type,
     }
 
     // Step 3: Generate PDF using default HTML template

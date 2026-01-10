@@ -11,7 +11,37 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
   }
 
   // Calculate account number from invoice number
-  const accountNumber = data.invoiceNumber.replace(/[^0-9]/g, '').padStart(12, '0')
+  const _accountNumber = data.invoiceNumber.replace(/[^0-9]/g, '').padStart(12, '0')
+
+  // Get user count and plan type
+  const userCount = data.user_count || 1
+  const planType = data.planType || 'onetime'
+
+  // Plan display names
+  const getPlanDisplayName = () => {
+    switch (planType) {
+      case 'monthly': return 'Monthly Subscription'
+      case 'annual': return 'Annual Subscription'
+      case 'onetime': return 'One Time Payment'
+      case 'installment': return 'Installment Payment'
+      case 'final_settlement': return 'Final Settlement'
+      default: return 'PowerCA Implementation'
+    }
+  }
+
+  const getProductDescription = () => {
+    switch (planType) {
+      case 'monthly': return 'Monthly subscription with ongoing support'
+      case 'annual': return 'Annual subscription with ongoing support'
+      case 'onetime': return 'Complete setup with first year subscription FREE'
+      case 'installment': return 'Installment payment (10 months)'
+      case 'final_settlement': return 'Final settlement payment for PowerCA service'
+      default: return 'Installation and Ongoing Support & Update'
+    }
+  }
+
+  // Calculate price per user (for display purposes)
+  const pricePerUser = userCount > 1 ? Math.round(data.subtotal / userCount) : data.subtotal
 
   return `
 <!DOCTYPE html>
@@ -323,11 +353,19 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
             `}
           </td>
           <td>
-            <strong>Power CA Software</strong><br>
-            <span style="font-size: 11px; color: #666; font-style: italic;">Installation and Ongoing Support & Update</span>
+            <strong>${getPlanDisplayName()}</strong><br>
+            <span style="font-size: 11px; color: #666; font-style: italic;">${getProductDescription()}</span>
+            ${userCount > 1 ? `<br><span style="font-size: 11px; color: #3b7dd6; font-weight: 500;">@ ${formatCurrency(pricePerUser)} per user</span>` : ''}
           </td>
-          <td class="text-right">${item.quantity}</td>
-          <td class="text-right"><strong>${formatCurrency(item.amount)}</strong></td>
+          <td class="text-right">${userCount > 1 ? `${userCount} users` : item.quantity}</td>
+          <td class="text-right">
+            ${data.originalAmount && data.discountAmount && data.discountAmount > 0 ? `
+              <span style="text-decoration: line-through; color: #999; font-size: 12px; display: block;">${formatCurrency(data.originalAmount)}</span>
+              ${userCount <= 1 ? `<strong>${formatCurrency(item.amount)}</strong>` : ''}
+            ` : `
+              ${userCount <= 1 ? `<strong>${formatCurrency(item.amount)}</strong>` : ''}
+            `}
+          </td>
         </tr>
         `).join('')}
       </tbody>
@@ -344,6 +382,16 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
         <div class="totals-row" style="color: #27ae60;">
           <span>DISCOUNT (${data.discountPercentage || 0}%):</span>
           <span>-${formatCurrency(data.discountAmount)}</span>
+        </div>
+        ` : ''}
+        ${userCount > 1 ? `
+        <div class="totals-row">
+          <span>PRICE PER USER:</span>
+          <span>${formatCurrency(pricePerUser)}</span>
+        </div>
+        <div class="totals-row">
+          <span>NUMBER OF USERS:</span>
+          <span>× ${userCount}</span>
         </div>
         ` : ''}
         <div class="totals-row subtotal">
@@ -378,8 +426,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       <div class="terms">
         <h4>TERMS AND CONDITIONS:</h4>
         <p>
-          This is a computer-generated invoice. First year subscription is FREE with implementation.
-          Renewal charges apply from second year onwards. For any queries, please contact contact@powerca.in
+          This is a computer-generated invoice. For any queries or support, please contact us at contact@powerca.in or call +91 96295 14635.
         </p>
       </div>
 

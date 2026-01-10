@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       city,
       state,
       postcode,
-      gstNo,
+      gstNo: _gstNo,
       addressId, // Address ID from user_addresses table
       // Discount fields for progressive pricing
       discountPercentage,

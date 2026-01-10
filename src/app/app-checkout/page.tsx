@@ -5,11 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, AlertCircle, CheckCircle, Shield, Download, Mail } from 'lucide-react'
+import { Loader2, AlertCircle, Shield, Download, Mail } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Script from 'next/script'
-import Link from 'next/link'
-import Image from 'next/image'
 
 interface FormErrors {
   name?: string
@@ -87,7 +85,7 @@ function AppCheckoutContent() {
     }
   }, [session])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,

@@ -259,13 +259,17 @@ export async function POST(req: NextRequest) {
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
 
-    // Get user_count from payment_orders for invoice
+    // Get user_count, plan_type, and discount info from payment_orders for invoice
     const { data: orderForInvoice } = await supabase
       .from('payment_orders')
-      .select('user_count')
+      .select('user_count, plan_type, discount_percentage, discount_amount, original_amount')
       .eq('order_id', normalizedOrderId)
       .single()
     const invoiceUserCount = orderForInvoice?.user_count || 1
+    const invoicePlanType = orderForInvoice?.plan_type || 'onetime'
+    const invoiceDiscountPercentage = orderForInvoice?.discount_percentage || 0
+    const invoiceDiscountAmount = orderForInvoice?.discount_amount || 0
+    const invoiceOriginalAmount = orderForInvoice?.original_amount || null
 
     // Use already calculated values (no need to recalculate GST)
     const subtotal = paymentAmount // Base amount (excluding GST)
@@ -294,14 +298,21 @@ export async function POST(req: NextRequest) {
         description: isFinalSettlement
           ? 'PowerCA Final Settlement - Complete your service payment'
           : (productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE'),
-        quantity: 1,
-        rate: subtotal,
+        quantity: invoiceUserCount,
+        rate: invoiceUserCount > 1 ? Math.round(subtotal / invoiceUserCount) : subtotal,
         amount: subtotal,
       }],
       subtotal,
       ...gst,
       grandTotal,
-      isTestMode: isTestPayment
+      isTestMode: isTestPayment,
+      // User and plan details
+      user_count: invoiceUserCount,
+      planType: invoicePlanType,
+      // Discount details
+      discountPercentage: invoiceDiscountPercentage,
+      discountAmount: invoiceDiscountAmount,
+      originalAmount: invoiceOriginalAmount
     }
 
     // Generate PDF invoice and upload to storage

@@ -56,12 +56,12 @@ export async function GET(_request: NextRequest) {
       return payment?.order_id
     }).filter(Boolean) || []
 
-    // Get payment_orders with address_id, discount info, payment_type, and plan_type
+    // Get payment_orders with address_id, discount info, payment_type, plan_type, and user_count
     let paymentOrders = null
     if (orderIds.length > 0) {
       const { data } = await supabase
         .from('payment_orders')
-        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount, payment_type, plan_type')
+        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount, payment_type, plan_type, user_count')
         .in('order_id', orderIds)
       paymentOrders = data
     }
@@ -85,9 +85,9 @@ export async function GET(_request: NextRequest) {
       addressLocationMap[addr.id] = addr.label || addr.city
     }
 
-    // Create a map of order_id to location, discount info, payment_type, and plan_type
+    // Create a map of order_id to location, discount info, payment_type, plan_type, and user_count
     const orderCityMap: Record<string, string> = {}
-    const orderDetailsMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null; paymentType: string; planType: string }> = {}
+    const orderDetailsMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null; paymentType: string; planType: string; userCount: number }> = {}
     if (paymentOrders) {
       for (const po of paymentOrders) {
         if (po.order_id) {
@@ -98,13 +98,14 @@ export async function GET(_request: NextRequest) {
             // Fallback to customer_city from payment_orders
             orderCityMap[po.order_id] = po.customer_city
           }
-          // Store discount info, payment type, and plan type
+          // Store discount info, payment type, plan type, and user count
           orderDetailsMap[po.order_id] = {
             discountPercentage: po.discount_percentage || 0,
             discountAmount: po.discount_amount || 0,
             originalAmount: po.original_amount || null,
             paymentType: po.payment_type || 'initial_payment',
-            planType: po.plan_type || 'monthly'
+            planType: po.plan_type || 'monthly',
+            userCount: po.user_count || 1
           }
         }
       }
@@ -167,6 +168,7 @@ export async function GET(_request: NextRequest) {
         originalAmount: orderDetails?.originalAmount || null,
         paymentType: orderDetails?.paymentType || 'initial_payment',
         planType: orderDetails?.planType || 'monthly',
+        userCount: orderDetails?.userCount || 1,
       }
     }) || []
 

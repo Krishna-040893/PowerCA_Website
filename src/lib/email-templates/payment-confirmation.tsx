@@ -17,7 +17,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
   orderId,
   paymentId,
   invoiceNumber,
-  company,
+  company: _company,
 }) => {
   return `
 <!DOCTYPE html>

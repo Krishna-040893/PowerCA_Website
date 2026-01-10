@@ -34,10 +34,12 @@ export async function GET(
     const payment = Array.isArray(invoice.payment) ? invoice.payment[0] : invoice.payment
     let discountInfo = null
 
+    let userInfo = null
+
     if (payment?.order_id) {
       const { data: orderData } = await supabase
         .from('payment_orders')
-        .select('discount_percentage, discount_amount, original_amount')
+        .select('discount_percentage, discount_amount, original_amount, user_count, plan_type')
         .eq('order_id', payment.order_id)
         .single()
 
@@ -47,6 +49,10 @@ export async function GET(
           discount_amount: orderData.discount_amount || 0,
           original_amount: orderData.original_amount || null
         }
+        userInfo = {
+          user_count: orderData.user_count || 1,
+          plan_type: orderData.plan_type || 'onetime'
+        }
       }
     }
 
@@ -55,7 +61,8 @@ export async function GET(
       data: {
         ...invoice,
         payment: payment, // Return as single object, not array
-        discount_info: discountInfo
+        discount_info: discountInfo,
+        user_info: userInfo
       }
     })
 
