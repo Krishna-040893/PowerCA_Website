@@ -6,7 +6,7 @@ import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus  } from 'lucide-react'
+import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus, Tag  } from 'lucide-react'
 import {useSession  } from 'next-auth/react'
 import {featuresConfig  } from '@/config/features'
 import Script from 'next/script'
@@ -158,7 +158,10 @@ function CheckoutContent() {
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [userCount, setUserCount] = useState<number | ''>(``)
-  const [_couponCode, _setCouponCode] = useState('')
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercentage: number; description?: string } | null>(null)
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [couponError, setCouponError] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
   const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
@@ -213,36 +216,17 @@ function CheckoutContent() {
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
 
-  // Discount logic: Two separate discounts that can stack
-  // 1. One-Time Plan Discount: 10% for one-time payment plan
-  // 2. Second Address Discount: 10% for 2nd+ address (based on position in saved addresses)
+  // Coupon-based discount logic
+  // Discounts are now applied via coupon codes from the database
   // For final settlement, no discounts apply
-  const isOneTimePlan = planType === 'onetime'
-
-  // Check if current address is 2nd or later in the saved addresses list
-  const getAddressPosition = () => {
-    if (!selectedAddressId || savedAddresses.length === 0) return 0
-    const index = savedAddresses.findIndex(addr => addr.id === selectedAddressId)
-    return index >= 0 ? index + 1 : 0 // 1-based position
-  }
-  const addressPosition = getAddressPosition()
-  const isSecondOrMoreAddress = addressPosition >= 2
-
-  // Calculate individual discount rates (each 10%)
-  const oneTimeDiscountRate = isFinalSettlement ? 0 : (isOneTimePlan ? 0.10 : 0)
-  const secondAddressDiscountRate = isFinalSettlement ? 0 : (isSecondOrMoreAddress ? 0.10 : 0)
-
-  // Total combined discount rate (can be 0%, 10%, or 20%)
-  const totalDiscountRate = oneTimeDiscountRate + secondAddressDiscountRate
-  const totalDiscountPercentage = (oneTimeDiscountRate * 100) + (secondAddressDiscountRate * 100)
 
   // Use the plan price from URL (selected on pricing page)
   const fullBasePrice = selectedPlanPrice
 
-  // Calculate individual discount amounts for display
-  const oneTimeDiscountAmount = fullBasePrice * oneTimeDiscountRate
-  const secondAddressDiscountAmount = fullBasePrice * secondAddressDiscountRate
-  const totalDiscountAmount = fullBasePrice * totalDiscountRate
+  // Calculate coupon discount
+  const couponDiscountRate = isFinalSettlement ? 0 : (appliedCoupon ? appliedCoupon.discountPercentage / 100 : 0)
+  const totalDiscountPercentage = appliedCoupon ? appliedCoupon.discountPercentage : 0
+  const totalDiscountAmount = fullBasePrice * couponDiscountRate
 
   const basePrice = fullBasePrice - totalDiscountAmount
   // For per-user plans (monthly/annual), multiply by user count
@@ -696,10 +680,12 @@ function CheckoutContent() {
           gstNo: formData.gstNo,
           gstAmount: gstAmount,
           gstPercentage: gstRate * 100, // Convert 0.18 to 18
-          // Discount information for progressive pricing
+          // Coupon-based discount information
           discountPercentage: totalDiscountPercentage,
           discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
+          couponCode: appliedCoupon?.code || null,
+          couponDiscountPercentage: appliedCoupon?.discountPercentage || 0,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -814,10 +800,12 @@ function CheckoutContent() {
           postcode: formData.postcode,
           gstNo: formData.gstNo,
           addressId: selectedAddressId, // Track which address this purchase is for
-          // Discount information for progressive pricing
+          // Coupon-based discount information
           discountPercentage: totalDiscountPercentage,
           discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
+          couponCode: appliedCoupon?.code || null,
+          couponDiscountPercentage: appliedCoupon?.discountPercentage || 0,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -940,8 +928,46 @@ function CheckoutContent() {
     }
   }
 
-  const _handleApplyCoupon = () => {
-    // TODO: Implement coupon validation
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code')
+      return
+    }
+
+    setCouponLoading(true)
+    setCouponError('')
+
+    try {
+      const response = await fetch('/api/coupon/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim() })
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.coupon) {
+        setAppliedCoupon(result.coupon)
+        setCouponCode('') // Clear input after successful application
+        setCouponError('')
+      } else {
+        setCouponError(result.error || 'Invalid coupon code')
+        setAppliedCoupon(null)
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error applying coupon:', error)
+      }
+      setCouponError('Failed to validate coupon code')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCode('')
+    setCouponError('')
   }
 
   const handleUserCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1194,28 +1220,82 @@ function CheckoutContent() {
 
             {/* Right Column - Order Summary */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Apply Coupon
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Apply Coupon</h3>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Coupon code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6"
-                  >
-                    Apply
-                  </Button>
+              {/* Apply Coupon */}
+              {!isFinalSettlement && (
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <Tag className="w-5 h-5 text-purple-600" />
+                    Apply Coupon
+                  </h3>
+
+                  {appliedCoupon ? (
+                    // Show applied coupon
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 sm:p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="font-semibold text-green-700">{appliedCoupon.code}</p>
+                            <p className="text-xs text-green-600">{appliedCoupon.discountPercentage}% discount applied</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveCoupon}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Show coupon input
+                    <>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value)
+                            setCouponError('')
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleApplyCoupon()
+                            }
+                          }}
+                          className={`flex-1 ${couponError ? 'border-red-300' : ''}`}
+                          disabled={couponLoading}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 sm:px-6"
+                        >
+                          {couponLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            'Apply'
+                          )}
+                        </Button>
+                      </div>
+                      {couponError && (
+                        <p className="text-red-600 text-xs mt-2 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {couponError}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-2">
+                        Have a coupon code? Enter it above to get a discount.
+                      </p>
+                    </>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  If you have a coupon code, please apply it below.
-                </p>
-              </div>*/}
+              )}
 
               {/* Purchase Plan */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
@@ -1240,7 +1320,7 @@ function CheckoutContent() {
                     <p className="text-xs sm:text-sm text-gray-600">{productDescription}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    {(isOneTimePlan || isSecondOrMoreAddress) && !isFinalSettlement && (
+                    {appliedCoupon && !isFinalSettlement && (
                       <span className="text-xs text-gray-400 line-through block">₹{fullBasePrice.toLocaleString()}</span>
                     )}
                     <span className="text-lg font-bold text-purple-600">₹{basePrice.toLocaleString()}</span>
@@ -1263,6 +1343,7 @@ function CheckoutContent() {
                         min="1"
                         value={userCount}
                         onChange={handleUserCountChange}
+                        onWheel={(e) => e.currentTarget.blur()}
                         placeholder="0"
                         className={`w-24 text-center text-lg font-bold border-2 bg-white ${errors.userCount ? 'border-red-400' : 'border-blue-300'}`}
                         required
@@ -1278,18 +1359,14 @@ function CheckoutContent() {
                 )}
 
                 <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
-                  {/* Show 10% One-Time discount (not for final settlement) */}
-                  {!isFinalSettlement && isOneTimePlan && (
+                  {/* Show coupon discount (not for final settlement) */}
+                  {!isFinalSettlement && appliedCoupon && (
                     <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium">10% One-Time Discount</span>
-                      <span className="font-semibold">-₹{oneTimeDiscountAmount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {/* Show 10% Second Address discount (not for final settlement) */}
-                  {!isFinalSettlement && isSecondOrMoreAddress && (
-                    <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium">10% Address Discount</span>
-                      <span className="font-semibold">-₹{secondAddressDiscountAmount.toLocaleString()}</span>
+                      <span className="font-medium flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        Coupon: {appliedCoupon.code} ({appliedCoupon.discountPercentage}% off)
+                      </span>
+                      <span className="font-semibold">-₹{totalDiscountAmount.toLocaleString()}</span>
                     </div>
                   )}
                   {/* Show final settlement info */}

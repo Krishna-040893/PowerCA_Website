@@ -1472,7 +1472,6 @@ function AccountPageContent() {
                     </p>
                     <p className="text-sm text-blue-700">
                       ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'monthly' ? '/month' : paymentType === 'annual' ? '/year' : paymentType === 'installment' ? '× 10 months' : '(Lifetime)'}
-                      {paymentType === 'onetime' && ' • 10% Discount Applied'}
                     </p>
                   </div>
                   <div className="text-sm text-blue-600">
@@ -1587,10 +1586,6 @@ function AccountPageContent() {
                                   const isMonthlyPlan = addressPlanType === 'monthly'
                                   const isOverdue = isDueDatePast(nextDueDate)
 
-                                  // Check if this address qualifies for 10% discount (2nd or later address)
-                                  const addressIndex = savedAddresses.findIndex(a => a.id === address.id)
-                                  const isSecondOrMoreAddress = addressIndex >= 1
-
                                   return (
                                     <div
                                       key={address.id}
@@ -1613,16 +1608,9 @@ function AccountPageContent() {
                                               Paid
                                             </span>
                                           ) : (
-                                            <>
-                                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 shrink-0">
-                                                Not Ordered
-                                              </span>
-                                              {isSecondOrMoreAddress && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
-                                                  10% Discount
-                                                </span>
-                                              )}
-                                            </>
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 shrink-0">
+                                              Not Ordered
+                                            </span>
                                           )}
                                         </div>
 

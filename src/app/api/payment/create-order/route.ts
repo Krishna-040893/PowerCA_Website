@@ -66,10 +66,13 @@ export async function POST(req: NextRequest) {
       postcode,
       gstNo: _gstNo,
       addressId, // Address ID from user_addresses table
-      // Discount fields for progressive pricing
+      // Discount fields for coupon-based pricing
       discountPercentage,
       discountAmount,
       originalAmount,
+      // Coupon code information
+      couponCode,
+      couponDiscountPercentage,
       // Payment type for two-stage payment tracking
       paymentType, // 'initial_payment' or 'final_settlement'
       // User count for per-user pricing plans
@@ -184,10 +187,12 @@ export async function POST(req: NextRequest) {
         customer_postcode: postcode || body.postcode,
         customer_country: country || body.country,
         address_id: addressId || null,
-        // Discount fields for progressive pricing
+        // Coupon-based discount fields
         discount_percentage: discountPercentage || 0,
         discount_amount: discountAmount || 0,
         original_amount: originalAmount || null,
+        coupon_code: couponCode || null,
+        coupon_discount_percentage: couponDiscountPercentage || 0,
         // Plan type for subscription tracking
         plan_type: planType || 'monthly',
         // User count for per-user pricing

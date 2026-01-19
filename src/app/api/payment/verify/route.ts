@@ -259,10 +259,10 @@ export async function POST(req: NextRequest) {
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
 
-    // Get user_count, plan_type, and discount info from payment_orders for invoice
+    // Get user_count, plan_type, coupon, and discount info from payment_orders for invoice
     const { data: orderForInvoice } = await supabase
       .from('payment_orders')
-      .select('user_count, plan_type, discount_percentage, discount_amount, original_amount')
+      .select('user_count, plan_type, discount_percentage, discount_amount, original_amount, coupon_code, coupon_discount_percentage')
       .eq('order_id', normalizedOrderId)
       .single()
     const invoiceUserCount = orderForInvoice?.user_count || 1
@@ -270,6 +270,31 @@ export async function POST(req: NextRequest) {
     const invoiceDiscountPercentage = orderForInvoice?.discount_percentage || 0
     const invoiceDiscountAmount = orderForInvoice?.discount_amount || 0
     const invoiceOriginalAmount = orderForInvoice?.original_amount || null
+    const usedCouponCode = orderForInvoice?.coupon_code || null
+
+    // Increment coupon usage if a coupon was applied
+    if (usedCouponCode) {
+      try {
+        // Increment usage count for the coupon
+        const { data: coupon } = await supabase
+          .from('coupon_codes')
+          .select('usage_count')
+          .ilike('code', usedCouponCode)
+          .single()
+
+        if (coupon) {
+          await supabase
+            .from('coupon_codes')
+            .update({ usage_count: (coupon.usage_count || 0) + 1 })
+            .ilike('code', usedCouponCode)
+
+          logger.info('Coupon usage incremented', { couponCode: usedCouponCode })
+        }
+      } catch (couponError) {
+        logger.error('Failed to increment coupon usage (non-critical)', couponError)
+        // Continue - this is not critical to payment success
+      }
+    }
 
     // Use already calculated values (no need to recalculate GST)
     const subtotal = paymentAmount // Base amount (excluding GST)

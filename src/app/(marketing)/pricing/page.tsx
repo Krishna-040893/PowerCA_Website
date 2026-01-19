@@ -558,7 +558,7 @@ function PricingContent() {
                           <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
                           <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>1,00,000</span>
                         </div>
-                        <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>10% Discount</p>
+                        {/* <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>One-Time Payment</p> */}
                         <p className={`text-xs mt-0.5 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
                       </>
                     ) : (
