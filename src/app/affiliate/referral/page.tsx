@@ -703,13 +703,13 @@ export default function AffiliateAccountPage() {
                   <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Total Referrals</p>
                   <p className="text-lg sm:text-2xl font-black text-blue-600">{referralSummary.total_referrals}</p>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-2 sm:p-3 rounded-lg border border-green-200">
-                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Paid</p>
-                  <p className="text-lg sm:text-2xl font-black text-green-600">{referralSummary.paid_referrals}</p>
-                </div>
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-2 sm:p-3 rounded-lg border border-purple-200">
                   <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Total Commission</p>
                   <p className="text-base sm:text-xl font-black text-purple-600">₹{referralSummary.total_commission_earned}</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-2 sm:p-3 rounded-lg border border-green-200">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Received</p>
+                  <p className="text-base sm:text-xl font-black text-green-600">₹{referralSummary.paid_commission}</p>
                 </div>
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-2 sm:p-3 rounded-lg border border-orange-200">
                   <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5">Pending</p>

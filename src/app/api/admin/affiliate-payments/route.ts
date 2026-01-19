@@ -181,19 +181,35 @@ export async function GET(req: NextRequest) {
             }
           })
         } else {
-          // Existing record - check if commission already paid
-          const paidCommission = existingRecord.commission_paid ? (existingRecord.paid_commission || totalCommission) : 0
-          const pendingCommission = existingRecord.commission_paid ? 0 : totalCommission
+          // Existing record - check for NEW payments since commission was paid
+          // Use STORED paid commission amount (not order counts) since each order may have different amounts
+          const storedPaidOrderCount = existingRecord.paid_order_count || 0
+          const storedPaidCommission = existingRecord.commission_paid
+            ? parseFloat(existingRecord.commission_amount as string) || 0
+            : 0
+
+          // If new payments came in after commission was paid, pending = total - paid
+          const actualPendingOrders = Math.max(0, totalPaymentCount - storedPaidOrderCount)
+          const actualPaidOrders = storedPaidOrderCount
+
+          // Calculate pending commission as difference between current total and what was paid
+          const pendingCommission = existingRecord.commission_paid
+            ? Math.max(0, parseFloat((totalCommission - storedPaidCommission).toFixed(2)))
+            : totalCommission
+          const paidCommission = existingRecord.commission_paid ? storedPaidCommission : 0
+
+          // Commission is fully paid only if pending commission is 0
+          const isFullyPaid = pendingCommission === 0 && existingRecord.commission_paid
 
           mergedPayments.push({
             ...existingRecord,
             customer_firm_name: firmNamesDisplay || existingRecord.customer_firm_name,
             payment_amount: totalPaymentAmount,
             commission_amount: totalCommission,
-            commission_paid: existingRecord.commission_paid,
+            commission_paid: isFullyPaid,
             payment_count: totalPaymentCount,
-            paid_order_count: existingRecord.commission_paid ? totalPaymentCount : 0,
-            pending_order_count: existingRecord.commission_paid ? 0 : totalPaymentCount,
+            paid_order_count: actualPaidOrders,
+            pending_order_count: actualPendingOrders,
             paid_commission: paidCommission,
             pending_commission: pendingCommission,
             affiliate_referrals: existingRecord.affiliate_referrals || {

@@ -273,11 +273,14 @@ export default function AdminPaymentsPage() {
     )
 
     sortedPayments.forEach(payment => {
-      const locationKey = payment.location || 'No Location'
+      // Use firm_name + location as unique key to separate different addresses in same city
+      const firmName = payment.firm_name || ''
+      const location = payment.location || 'No Location'
+      const locationKey = firmName ? `${firmName}__${location}` : location
 
       if (!locationMap.has(locationKey)) {
         locationMap.set(locationKey, {
-          location: locationKey,
+          location: location,
           firmName: payment.firm_name || null,
           initialPayment: null,
           finalSettlement: null,

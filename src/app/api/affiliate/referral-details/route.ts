@@ -94,25 +94,55 @@ export async function GET(_request: NextRequest) {
           const paidOrderCount = paymentData.paid_order_count || 0
           const pendingOrderCount = totalActualPayments > 0 ? totalActualPayments - paidOrderCount : (paymentData.commission_paid ? 0 : 1)
 
-          // Use stored payment_amount as BASE (already excludes GST after SQL update)
-          // Commission = Base × 10%
-          const storedBaseAmount = parseFloat(paymentData.payment_amount as string) || 0
-          const totalCommissionAmount = parseFloat((storedBaseAmount * (commissionRate / 100)).toFixed(2))
+          // Get CURRENT total payment amount from payments table (not stored old value)
+          // This ensures we calculate commission based on ALL payments including new ones
+          let currentTotalBaseAmount = 0
+          if (referral.referred_email) {
+            const { data: allPaymentsForCustomer } = await supabase
+              .from('payments')
+              .select('amount, order_id')
+              .eq('email', referral.referred_email)
 
-          // Distribute commission proportionally between paid and pending
-          const totalOrders = totalActualPayments > 0 ? totalActualPayments : 1
-          const perOrderCommission = totalCommissionAmount / totalOrders
-          const paidCommission = parseFloat((perOrderCommission * paidOrderCount).toFixed(2))
-          const pendingCommission = parseFloat((totalCommissionAmount - paidCommission).toFixed(2))
+            // Deduplicate by order_id and sum amounts
+            const uniquePayments = new Map<string, number>()
+            allPaymentsForCustomer?.forEach(p => {
+              if (p.order_id && !uniquePayments.has(p.order_id)) {
+                // amount includes GST, so we calculate base = amount / 1.18
+                const baseAmount = parseFloat(((Number(p.amount) || 0) / 1.18).toFixed(2))
+                uniquePayments.set(p.order_id, baseAmount)
+              }
+            })
+            currentTotalBaseAmount = Array.from(uniquePayments.values()).reduce((sum, amt) => sum + amt, 0)
+          }
+
+          // Use current total base amount if available, otherwise fall back to stored
+          const effectiveBaseAmount = currentTotalBaseAmount > 0
+            ? currentTotalBaseAmount
+            : parseFloat(paymentData.payment_amount as string) || 0
+          const totalCommissionAmount = parseFloat((effectiveBaseAmount * (commissionRate / 100)).toFixed(2))
+
+          // Use STORED paid commission amount (not order counts) since each order may have different amounts
+          const storedPaidCommission = paymentData.commission_paid
+            ? parseFloat(paymentData.commission_amount as string) || 0
+            : 0
+
+          // Calculate pending commission as difference between current total and what was paid
+          const pendingCommission = paymentData.commission_paid
+            ? Math.max(0, parseFloat((totalCommissionAmount - storedPaidCommission).toFixed(2)))
+            : totalCommissionAmount
+          const paidCommission = paymentData.commission_paid ? storedPaidCommission : 0
+
+          // Commission is fully paid only if pending commission is 0
+          const isFullyPaid = pendingCommission === 0 && paymentData.commission_paid
 
           paymentInfo = {
             payment_id: paymentData.payment_id,
             order_id: paymentData.order_id,
-            payment_amount: paymentData.payment_amount,
+            payment_amount: effectiveBaseAmount,
             total_amount: paymentData.total_amount,
             commission_amount: totalCommissionAmount,
             commission_rate: commissionRate,
-            commission_paid: pendingOrderCount === 0 && paymentData.commission_paid,
+            commission_paid: isFullyPaid,
             payment_status: paymentData.payment_status,
             payment_completed_at: paymentData.payment_completed_at,
             customer_firm_name: paymentData.customer_firm_name,
