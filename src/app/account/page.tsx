@@ -30,7 +30,9 @@ import {
   CreditCard,
   ArrowUpCircle,
   Clock,
-  CheckCircle
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -394,11 +396,13 @@ function AccountPageContent() {
   const [addressPaymentStatus, setAddressPaymentStatus] = useState<AddressPaymentStatus[]>([])
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
-  const [_expandedOrders, _setExpandedOrders] = useState<string[]>([])
   const [_expandedAddresses, setExpandedAddresses] = useState<string[]>([])
-  const [_expandedLocations, _setExpandedLocations] = useState<string[]>([])
-  const [_currentPage, setCurrentPage] = useState(1)
-  const _ordersPerPage = 5
+
+  // Pagination state for all tabs (pagination shows when entries exceed this limit)
+  const ITEMS_PER_PAGE = 10
+  const [orderHistoryPage, setOrderHistoryPage] = useState(1)
+  const [billingAddressPage, setBillingAddressPage] = useState<Record<string, number>>({}) // Per-location pagination
+  const [demoVersionPage, setDemoVersionPage] = useState(1)
 
   // Agreement document state
   const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
@@ -410,9 +414,13 @@ function AccountPageContent() {
   // Handle tab change - update both state and URL
   const handleTabChange = (value: string) => {
     setActiveTab(value)
-    // Reset pagination when switching to orders tab
+    // Reset pagination when switching tabs
     if (value === 'orders') {
-      setCurrentPage(1)
+      setOrderHistoryPage(1)
+    } else if (value === 'billing') {
+      setBillingAddressPage({}) // Reset all location pages
+    } else if (value === 'downloads') {
+      setDemoVersionPage(1)
     }
     // Update URL without full page reload
     const params = new URLSearchParams(searchParams.toString())
@@ -975,6 +983,85 @@ function AccountPageContent() {
       month: 'short',
       year: 'numeric'
     })
+  }
+
+  // Pagination component
+  const PaginationControls = ({
+    currentPage,
+    totalPages,
+    onPageChange,
+    totalItems,
+    itemsPerPage
+  }: {
+    currentPage: number
+    totalPages: number
+    onPageChange: (page: number) => void
+    totalItems: number
+    itemsPerPage: number
+  }) => {
+    if (totalPages <= 1) return null
+
+    const startItem = (currentPage - 1) * itemsPerPage + 1
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-200">
+        <p className="text-sm text-gray-600">
+          Showing <span className="font-medium">{startItem}</span> to <span className="font-medium">{endItem}</span> of <span className="font-medium">{totalItems}</span> entries
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="h-8 px-3 text-sm"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+              // Show first, last, current, and adjacent pages
+              const showPage = page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1
+              const showEllipsis = page === 2 && currentPage > 3 || page === totalPages - 1 && currentPage < totalPages - 2
+
+              if (showEllipsis && !showPage) {
+                return <span key={page} className="px-1 text-gray-400">...</span>
+              }
+
+              if (!showPage) return null
+
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(page)}
+                  className={`h-8 w-8 p-0 text-sm ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </Button>
+              )
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="h-8 px-3 text-sm"
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (status === 'loading') {
@@ -1561,14 +1648,25 @@ function AccountPageContent() {
                               })}
                             </div>
 
-                            {/* Show Addresses for Selected Location - Flat card view */}
+                            {/* Show Addresses for Selected Location - Flat card view with pagination */}
                             <div className="space-y-3 mt-3">
                               {(() => {
                                 const locationAddresses = savedAddresses.filter(
                                   address => (address.label || address.city) === currentLocation
                                 )
 
-                                return locationAddresses.map((address) => {
+                                // Pagination for addresses within this location
+                                const currentPageForLocation = billingAddressPage[currentLocation] || 1
+                                const totalAddresses = locationAddresses.length
+                                const totalPages = Math.ceil(totalAddresses / ITEMS_PER_PAGE)
+                                const paginatedAddresses = locationAddresses.slice(
+                                  (currentPageForLocation - 1) * ITEMS_PER_PAGE,
+                                  currentPageForLocation * ITEMS_PER_PAGE
+                                )
+
+                                return (
+                                  <>
+                                    {paginatedAddresses.map((address) => {
                                   const isBeingEdited = editingAddressId === address.id
                                   const addrPaymentStatus = getAddressPaymentStatus(address.id)
                                   const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
@@ -1737,7 +1835,21 @@ function AccountPageContent() {
                                       )}
                                     </div>
                                   )
-                                })
+                                })}
+                                    <PaginationControls
+                                      currentPage={currentPageForLocation}
+                                      totalPages={totalPages}
+                                      onPageChange={(page) => {
+                                        setBillingAddressPage(prev => ({
+                                          ...prev,
+                                          [currentLocation]: page
+                                        }))
+                                      }}
+                                      totalItems={totalAddresses}
+                                      itemsPerPage={ITEMS_PER_PAGE}
+                                    />
+                                  </>
+                                )
                               })()}
                             </div>
                           </>
@@ -2006,84 +2118,101 @@ function AccountPageContent() {
                     {(() => {
                       const groupedOrders = groupOrdersByLocation(userData.orderHistory)
                       const locationKeys = Object.keys(groupedOrders)
+                      const totalLocations = locationKeys.length
+                      const totalPages = Math.ceil(totalLocations / ITEMS_PER_PAGE)
+                      const paginatedLocationKeys = locationKeys.slice(
+                        (orderHistoryPage - 1) * ITEMS_PER_PAGE,
+                        orderHistoryPage * ITEMS_PER_PAGE
+                      )
 
-                      return locationKeys.map((location) => {
-                        const orders = groupedOrders[location]
-                        const locationTotal = orders.reduce((sum, order) => sum + order.total, 0)
+                      return (
+                        <>
+                          {paginatedLocationKeys.map((location) => {
+                            const orders = groupedOrders[location]
+                            const locationTotal = orders.reduce((sum, order) => sum + order.total, 0)
 
-                        return (
-                          <div key={location} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-                            {/* Location Header - Compact */}
-                            <div className="bg-blue-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-blue-600" />
-                                <span className="font-semibold text-blue-800">{location}</span>
-                                <span className="text-xs text-gray-500">({orders.length})</span>
+                            return (
+                              <div key={location} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                                {/* Location Header - Compact */}
+                                <div className="bg-blue-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-blue-600" />
+                                    <span className="font-semibold text-blue-800">{location}</span>
+                                    <span className="text-xs text-gray-500">({orders.length})</span>
+                                  </div>
+                                  <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
+                                </div>
+
+                                {/* Orders Table - Compact with fixed column widths */}
+                                <table className="w-full text-sm table-fixed">
+                                  <thead className="bg-gray-50 text-xs text-gray-600">
+                                    <tr>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[28%]">Invoice</th>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[12%]">Plan</th>
+                                      <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[10%]">Users</th>
+                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[18%]">Date</th>
+                                      <th className="text-right px-3 py-1.5 font-medium w-[22%]">Amount</th>
+                                      <th className="text-center px-3 py-1.5 font-medium w-[10%]"></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {orders.map((order) => (
+                                      <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
+                                        <td className="px-3 py-2 w-[28%]">
+                                          <span className="font-medium text-gray-900">#{order.invoiceNumber}</span>
+                                          <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
+                                          {order.userCount > 1 && (
+                                            <span className="sm:hidden block text-xs text-purple-600 mt-0.5">{order.userCount} users</span>
+                                          )}
+                                        </td>
+                                        <td className="px-3 py-2 w-[12%]">
+                                          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                            {order.planType === 'monthly' && 'Monthly'}
+                                            {order.planType === 'annual' && 'Annual'}
+                                            {order.planType === 'onetime' && 'One Time'}
+                                            {order.planType === 'installment' && 'Installment'}
+                                            {!['monthly', 'annual', 'onetime', 'installment'].includes(order.planType) && 'Monthly'}
+                                          </span>
+                                        </td>
+                                        <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[10%]">
+                                          {order.userCount > 1 ? (
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{order.userCount}</span>
+                                          ) : (
+                                            <span className="text-gray-400">1</span>
+                                          )}
+                                        </td>
+                                        <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[18%]">{formatDate(order.paidAt)}</td>
+                                        <td className="px-3 py-2 text-right w-[22%]">
+                                          <span className="font-semibold text-green-700">₹{formatCurrency(order.total).replace('₹', '')}</span>
+                                          {order.discountAmount > 0 && (
+                                            <span className="text-xs text-green-600 ml-1">(-{order.discountPercentage}%)</span>
+                                          )}
+                                        </td>
+                                        <td className="px-3 py-2 text-center w-[10%]">
+                                          <button
+                                            onClick={() => handleDownloadInvoice(order.invoiceNumber)}
+                                            className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 rounded"
+                                            title="Download Invoice"
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
-                              <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
-                            </div>
-
-                            {/* Orders Table - Compact with fixed column widths */}
-                            <table className="w-full text-sm table-fixed">
-                              <thead className="bg-gray-50 text-xs text-gray-600">
-                                <tr>
-                                  <th className="text-left px-3 py-1.5 font-medium w-[28%]">Invoice</th>
-                                  <th className="text-left px-3 py-1.5 font-medium w-[12%]">Plan</th>
-                                  <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[10%]">Users</th>
-                                  <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[18%]">Date</th>
-                                  <th className="text-right px-3 py-1.5 font-medium w-[22%]">Amount</th>
-                                  <th className="text-center px-3 py-1.5 font-medium w-[10%]"></th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-100">
-                                {orders.map((order) => (
-                                  <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
-                                    <td className="px-3 py-2 w-[28%]">
-                                      <span className="font-medium text-gray-900">#{order.invoiceNumber}</span>
-                                      <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
-                                      {order.userCount > 1 && (
-                                        <span className="sm:hidden block text-xs text-purple-600 mt-0.5">{order.userCount} users</span>
-                                      )}
-                                    </td>
-                                    <td className="px-3 py-2 w-[12%]">
-                                      <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                                        {order.planType === 'monthly' && 'Monthly'}
-                                        {order.planType === 'annual' && 'Annual'}
-                                        {order.planType === 'onetime' && 'One Time'}
-                                        {order.planType === 'installment' && 'Installment'}
-                                        {!['monthly', 'annual', 'onetime', 'installment'].includes(order.planType) && 'Monthly'}
-                                      </span>
-                                    </td>
-                                    <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[10%]">
-                                      {order.userCount > 1 ? (
-                                        <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{order.userCount}</span>
-                                      ) : (
-                                        <span className="text-gray-400">1</span>
-                                      )}
-                                    </td>
-                                    <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[18%]">{formatDate(order.paidAt)}</td>
-                                    <td className="px-3 py-2 text-right w-[22%]">
-                                      <span className="font-semibold text-green-700">₹{formatCurrency(order.total).replace('₹', '')}</span>
-                                      {order.discountAmount > 0 && (
-                                        <span className="text-xs text-green-600 ml-1">(-{order.discountPercentage}%)</span>
-                                      )}
-                                    </td>
-                                    <td className="px-3 py-2 text-center w-[10%]">
-                                      <button
-                                        onClick={() => handleDownloadInvoice(order.invoiceNumber)}
-                                        className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 rounded"
-                                        title="Download Invoice"
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )
-                      })
+                            )
+                          })}
+                          <PaginationControls
+                            currentPage={orderHistoryPage}
+                            totalPages={totalPages}
+                            onPageChange={setOrderHistoryPage}
+                            totalItems={totalLocations}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                          />
+                        </>
+                      )
                     })()}
                   </div>
                 ) : (
@@ -2120,84 +2249,106 @@ function AccountPageContent() {
                     <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                   </div>
                 ) : appDownloads.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
-                          <TableHead className="font-semibold">Order ID</TableHead>
-                          <TableHead className="font-semibold">Amount Paid</TableHead>
-                          <TableHead className="font-semibold">Date</TableHead>
-                          <TableHead className="font-semibold">Status</TableHead>
-                          <TableHead className="font-semibold">Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {appDownloads.map((download) => (
-                          <TableRow key={download.id}>
-                            <TableCell className="font-mono text-sm">{download.orderId}</TableCell>
-                            <TableCell className="font-semibold">₹{download.amount.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="text-sm">
-                              {new Date(download.purchasedAt).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </TableCell>
-                            <TableCell>
-                              {download.isDownloaded ? (
-                                <div className="flex flex-col gap-1">
-                                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 w-fit">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    Downloaded
-                                  </Badge>
-                                  {download.downloadedAt && (
-                                    <p className="text-xs text-gray-500">
-                                      {new Date(download.downloadedAt).toLocaleDateString('en-IN', {
+                  <>
+                    {(() => {
+                      const totalDownloads = appDownloads.length
+                      const totalPages = Math.ceil(totalDownloads / ITEMS_PER_PAGE)
+                      const paginatedDownloads = appDownloads.slice(
+                        (demoVersionPage - 1) * ITEMS_PER_PAGE,
+                        demoVersionPage * ITEMS_PER_PAGE
+                      )
+
+                      return (
+                        <>
+                          <div className="border rounded-lg overflow-hidden">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="bg-gray-50">
+                                  <TableHead className="font-semibold">Order ID</TableHead>
+                                  <TableHead className="font-semibold">Amount Paid</TableHead>
+                                  <TableHead className="font-semibold">Date</TableHead>
+                                  <TableHead className="font-semibold">Status</TableHead>
+                                  <TableHead className="font-semibold">Action</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {paginatedDownloads.map((download) => (
+                                  <TableRow key={download.id}>
+                                    <TableCell className="font-mono text-sm">{download.orderId}</TableCell>
+                                    <TableCell className="font-semibold">₹{download.amount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="text-sm">
+                                      {new Date(download.purchasedAt).toLocaleDateString('en-IN', {
                                         day: '2-digit',
                                         month: 'short',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
+                                        year: 'numeric'
                                       })}
-                                    </p>
-                                  )}
-                                </div>
-                              ) : (
-                                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 w-fit">
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Ready to Download
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {download.isDownloaded ? (
-                                <span className="text-xs text-gray-400">-</span>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleAppDownload(download)}
-                                  disabled={downloadingId === download.id}
-                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-8"
-                                >
-                                  {downloadingId === download.id ? (
-                                    <>
-                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                      Downloading...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Download className="h-3 w-3 mr-1" />
-                                      Download
-                                    </>
-                                  )}
-                                </Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      {download.isDownloaded ? (
+                                        <div className="flex flex-col gap-1">
+                                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 w-fit">
+                                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                                            Downloaded
+                                          </Badge>
+                                          {download.downloadedAt && (
+                                            <p className="text-xs text-gray-500">
+                                              {new Date(download.downloadedAt).toLocaleDateString('en-IN', {
+                                                day: '2-digit',
+                                                month: 'short',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                              })}
+                                            </p>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 w-fit">
+                                          <Download className="h-3 w-3 mr-1" />
+                                          Ready to Download
+                                        </Badge>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      {download.isDownloaded ? (
+                                        <span className="text-xs text-gray-400">-</span>
+                                      ) : (
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleAppDownload(download)}
+                                          disabled={downloadingId === download.id}
+                                          className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-8"
+                                        >
+                                          {downloadingId === download.id ? (
+                                            <>
+                                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                              Downloading...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Download className="h-3 w-3 mr-1" />
+                                              Download
+                                            </>
+                                          )}
+                                        </Button>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <PaginationControls
+                            currentPage={demoVersionPage}
+                            totalPages={totalPages}
+                            onPageChange={setDemoVersionPage}
+                            totalItems={totalDownloads}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                          />
+                        </>
+                      )
+                    })()}
+                  </>
                 ) : (
                   <div className="text-center py-8 sm:py-12">
                     <Download className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
