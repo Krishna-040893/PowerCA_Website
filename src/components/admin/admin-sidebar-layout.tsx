@@ -176,12 +176,14 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       }
     }
 
-    if (isAuthenticated) {
-      fetchCounts()
-      // Refresh counts every 30 seconds
-      const interval = setInterval(fetchCounts, 30000)
-      return () => clearInterval(interval)
+    if (!isAuthenticated) {
+      return undefined
     }
+
+    fetchCounts()
+    // Refresh counts every 30 seconds
+    const interval = setInterval(fetchCounts, 30000)
+    return () => clearInterval(interval)
   }, [isAuthenticated])
 
   // Compute navigation with counts using useMemo to prevent unnecessary re-renders
