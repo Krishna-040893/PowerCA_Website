@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Download, Package } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Download } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -209,6 +209,30 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
     }
   }, [])
 
+  // Auto-expand dropdown when navigating to a child page
+  useEffect(() => {
+    const baseNav = getBaseNavigation()
+
+    // Find if current pathname matches any subItem
+    for (const section of baseNav) {
+      for (const item of section.items) {
+        if (item.subItems) {
+          const isOnSubPage = item.subItems.some(sub => pathname === sub.href)
+          if (isOnSubPage) {
+            // Expand this menu if not already expanded
+            setExpandedMenus(prev => {
+              if (!prev.includes(item.title)) {
+                return [...prev, item.title]
+              }
+              return prev
+            })
+            break
+          }
+        }
+      }
+    }
+  }, [pathname])
+
   // Save collapsed state
   const toggleCollapsed = () => {
     const newState = !collapsed
@@ -354,9 +378,9 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                           )}
                         </button>
                         {/* Sub-items */}
-                        {isExpanded && (!collapsed || sidebarOpen) && (
+                        {isExpanded && (!collapsed || sidebarOpen) && item.subItems && (
                           <div className="ml-4 mt-1 space-y-1 border-l border-slate-700 pl-3">
-                            {item.subItems!.map((subItem) => {
+                            {item.subItems.map((subItem) => {
                               const isSubActive = pathname === subItem.href
                               return (
                                 <Link

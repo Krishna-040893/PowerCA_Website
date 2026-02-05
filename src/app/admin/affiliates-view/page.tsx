@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import React, { useState, useEffect } from 'react'
 import {useSession  } from 'next-auth/react'
 import {useRouter  } from 'next/navigation'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 import { Users,
   Eye,
   ChevronDown,
@@ -46,6 +47,8 @@ export default function AdminAffiliatesViewPage() {
   const [loading, setLoading] = useState(true)
   const [expandedAffiliate, setExpandedAffiliate] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
   const [stats, setStats] = useState({
     totalAffiliates: 0,
     activeAffiliates: 0,
@@ -121,6 +124,15 @@ export default function AdminAffiliatesViewPage() {
     affiliate.affiliate_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     affiliate.user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedAffiliates = filteredAffiliates.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   const exportToCSV = () => {
     const csvContent = [
@@ -244,7 +256,7 @@ export default function AdminAffiliatesViewPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAffiliates.map((affiliate) => (
+                {paginatedAffiliates.map((affiliate) => (
                   <React.Fragment key={affiliate.id}>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -358,6 +370,19 @@ export default function AdminAffiliatesViewPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filteredAffiliates.length > ITEMS_PER_PAGE && (
+            <div className="p-4 border-t">
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredAffiliates.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="affiliates"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

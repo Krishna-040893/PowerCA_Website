@@ -14,7 +14,7 @@ function PricingContent() {
   const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<'onetime' | 'installment'>('onetime')
   const [activeCard, setActiveCard] = useState<string | null>(null)
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null) // Track which plan button is loading
+  const [loadingPlan, _setLoadingPlan] = useState<string | null>(null) // Track which plan button is loading
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null)
   const [loadingSubscription, setLoadingSubscription] = useState(true)
 
@@ -259,7 +259,7 @@ function PricingContent() {
                       <div className="p-4 text-center">
                         <div className="flex items-baseline justify-center gap-1">
                           <span className="text-2xl text-white">₹</span>
-                          <span className="font-bold text-4xl md:text-5xl text-white">1,000</span>
+                          <span className="font-bold text-4xl md:text-5xl text-white">1,200</span>
                         </div>
                         <p className="text-lg font-semibold mt-3 text-white">/user/annual</p>
                         <p className="text-sm mt-1 text-white/70">+ Applicable Taxes</p>
@@ -301,7 +301,7 @@ function PricingContent() {
                         <div className="flex items-baseline justify-center gap-1">
                           <span className="text-2xl text-white">₹</span>
                           <span className="font-bold text-4xl md:text-5xl text-white">
-                            {activeSubscription.plan_type === 'onetime' ? '1,00,000' : '10,000'}
+                            {activeSubscription.plan_type === 'onetime' ? '1,20,000' : '12,000'}
                           </span>
                         </div>
                         <p className="text-lg font-semibold mt-3 text-white">
@@ -348,69 +348,48 @@ function PricingContent() {
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-6">
 
-            {/* Card 1 - Monthly Subscription (Lowest Price) */}
+            {/* Card 1 - Monthly License */}
             <div
-              onClick={() => setActiveCard('monthly')}
-              className={`relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col ${
-                activeCard === 'monthly'
-                  ? 'bg-[#306bea] text-white border-2 border-[#306bea]'
-                  : 'bg-white border-2 border-gray-200'
-              }`}
+              className="relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg h-full flex flex-col bg-white border-2 border-gray-200 overflow-hidden"
             >
+              {/* Decorative Background Pattern */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-50 to-blue-100 rounded-full translate-y-12 -translate-x-12 opacity-60"></div>
+
               <div className="relative z-10 flex flex-col flex-1">
-                {/* Header - Fixed height for alignment */}
-                <div className="text-center mb-6 h-[70px]">
-                  <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'monthly' ? 'text-white' : 'text-[#001525]'}`}>Monthly License</h3>
-                  <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${activeCard === 'monthly' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'}`}>Monthly Subscription</span>
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <svg className="w-7 h-7 text-[#306bea]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-[#001525]">Monthly License</h3>
                 </div>
 
-                {/* Pricing Section Wrapper - Fixed height for alignment */}
-                <div className="h-[160px] flex flex-col justify-center">
+                {/* Price Box */}
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 mb-6 border border-gray-200">
                   <div className="text-center">
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className={`text-2xl ${activeCard === 'monthly' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'monthly' ? 'text-white' : 'text-[#001525]'}`}>100</span>
+                      <span className="text-xl text-[#306bea] font-medium">₹</span>
+                      <span className="font-bold text-4xl md:text-5xl text-[#001525]">100</span>
                     </div>
-                    <p className={`text-lg font-semibold mt-3 ${activeCard === 'monthly' ? 'text-white' : 'text-[#306bea]'}`}>/user/monthly</p>
-                    <p className={`text-sm mt-1 ${activeCard === 'monthly' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
+                    <p className="text-[#306bea] font-semibold mt-2">/user/month</p>
+                    <p className="text-gray-400 text-sm mt-1">+ Applicable Taxes</p>
                   </div>
                 </div>
 
-                {/* Features */}
-                <div className="space-y-3 mb-6">
-                  {['On Installation and Demo', 'Ongoing Support', 'Per user'].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'monthly' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className={`text-base ${activeCard === 'monthly' ? 'text-white/90' : 'text-[#666d80]'}`}>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Order Now Button - Hidden for affiliates */}
-                {!isAffiliate && (
-                  <div className="mt-auto">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleOrderClick('monthly', 100); }}
-                      disabled={loadingPlan === 'monthly'}
-                      className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
-                        loadingPlan === 'monthly'
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : activeCard === 'monthly'
-                            ? 'bg-white text-[#306bea] hover:bg-gray-50'
-                            : 'bg-[#306bea] text-white hover:bg-[#244b9b]'
-                      } cursor-pointer`}
-                    >
-                      {loadingPlan === 'monthly' ? 'Please wait...' : 'Order Now'}
-                    </button>
-                    {!session && (
-                      <p className={`text-sm text-center mt-2 ${activeCard === 'monthly' ? 'text-white/80' : 'text-gray-500'}`}>
-                        *Please signin to order
-                      </p>
-                    )}
+                {/* Info Section */}
+                <div className="flex items-center gap-3 bg-blue-50 rounded-xl p-4 mt-auto">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <svg className="w-5 h-5 text-[#306bea]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                )}
+                  <p className="text-gray-600 text-sm leading-snug">
+                    Contact our team for Monthly Billing options.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -435,7 +414,7 @@ function PricingContent() {
                   <div className="text-center">
                     <div className="flex items-baseline justify-center gap-1">
                       <span className={`text-2xl ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>1,000</span>
+                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>1,200</span>
                     </div>
                     <p className={`text-lg font-semibold mt-3 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>/user/annual</p>
                     <p className={`text-sm mt-1 ${activeCard === 'annual' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -458,7 +437,7 @@ function PricingContent() {
                 {!isAffiliate && (
                   <div className="mt-auto">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1000); }}
+                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1200); }}
                       disabled={loadingPlan === 'annual'}
                       className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
                         loadingPlan === 'annual'
@@ -556,7 +535,7 @@ function PricingContent() {
                       <>
                         <div className="flex items-baseline justify-center gap-1">
                           <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>1,00,000</span>
+                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>1,20,000</span>
                         </div>
                         {/* <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>One-Time Payment</p> */}
                         <p className={`text-xs mt-0.5 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -565,7 +544,7 @@ function PricingContent() {
                       <>
                         <div className="flex items-baseline justify-center gap-1">
                           <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>10,000</span>
+                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>12,000</span>
                         </div>
                         <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>(10 Months)</p>
                         <p className={`text-xs mt-0.5 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -593,7 +572,7 @@ function PricingContent() {
                       onClick={(e) => {
                         e.stopPropagation();
                         const currentPlanType = activeTab === 'onetime' ? 'onetime' : 'installment';
-                        const planPrice = activeTab === 'onetime' ? 100000 : 10000;
+                        const planPrice = activeTab === 'onetime' ? 120000 : 12000;
                         handleOrderClick(currentPlanType, planPrice);
                       }}
                       disabled={loadingPlan === 'onetime' || loadingPlan === 'installment'}
@@ -652,7 +631,7 @@ function PricingContent() {
 
                 {/* Features */}
                 <div className="space-y-3 mb-6">
-                  {['Priority Support 24/7', 'Custom Integrations', 'Unlimited Users'].map((feature, index) => (
+                  {['Priority Support 24/7', 'Customization', 'Unlimited Users'].map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'enterprise' ? 'text-white' : 'text-purple-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

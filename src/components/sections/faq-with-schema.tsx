@@ -143,7 +143,7 @@ export const powerCAFAQs: FAQItem[] = [
   },
   {
     question: 'What is the pricing structure for PowerCA?',
-    answer: 'PowerCA offers simple and transparent pricing: 1) Launch Offer (First Year) - ₹50,000 which includes installation, training, and ongoing support. 2) An annual fee of ₹1,000 per user for continued access and support. Contact us to learn more about how PowerCA can fit your practice needs.'
+    answer: 'PowerCA offers flexible pricing plans to suit your needs: 1) Annual License at ₹1,200/user/year, 2) Perpetual License (One-Time Payment) at ₹1,20,000 for up to 20 users (or ₹12,000/month for 10 months installment option), and 3) Enterprise/Large Practitioner with custom pricing for 20+ users. All plans include installation, demo, and ongoing support. Contact us to learn more about how PowerCA can fit your practice needs.'
   },
   {
     question: 'Can PowerCA handle multiple branches or locations?',

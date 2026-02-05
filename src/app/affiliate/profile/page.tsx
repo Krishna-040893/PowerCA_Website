@@ -217,22 +217,30 @@ export default function AffiliateProfilePage() {
   const handleAgreementDownload = async () => {
     setIsDownloading(true)
     try {
-      // Record download
-      await fetch('/api/affiliate/agreement', {
+      // Record download in database
+      const response = await fetch('/api/affiliate/agreement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'download' })
       })
 
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('API Error:', result)
+        alert(result.error || 'Failed to record download. Please try again.')
+        return
+      }
+
       // Download the PDF
       const link = document.createElement('a')
-      link.href = '/docs/PowerCA-Affiliate-Agreement.pdf'
-      link.download = 'PowerCA-Affiliate-Agreement.pdf'
+      link.href = '/docs/Affiliate/PowerCA_Affiliate_Agreement.pdf'
+      link.download = 'PowerCA_Affiliate_Agreement.pdf'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
 
-      // Refresh status
+      // Refresh status to move to upload step
       await fetchAgreementStatus()
     } catch (error) {
       console.error('Error downloading agreement:', error)
@@ -262,7 +270,7 @@ export default function AffiliateProfilePage() {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('/api/affiliate/agreement/upload', {
+      const response = await fetch('/api/affiliate/agreement', {
         method: 'POST',
         body: formData
       })

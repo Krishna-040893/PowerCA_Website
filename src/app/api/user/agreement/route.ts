@@ -197,12 +197,15 @@ export async function POST(request: NextRequest) {
       const dateString = `${day}signed`
 
       // Create filename: {documentname}-{username}-{date}signed.pdf
-      // Remove any existing "-signed" suffix to avoid duplication like "signed-signed"
+      // Remove any existing "-signed" suffix and "test" word
       const originalFileName = file.name
       const fileNameWithoutExt = originalFileName
         .replace(/\.pdf$/i, '')
         .replace(/-signed$/i, '')  // Remove existing -signed suffix if present
         .replace(/_signed$/i, '')  // Remove existing _signed suffix if present
+        .replace(/-?test-?/gi, '-')  // Remove "test" with surrounding hyphens
+        .replace(/--+/g, '-')        // Clean up multiple hyphens
+        .replace(/^-|-$/g, '')       // Remove leading/trailing hyphens
 
       const signedFileName = `${fileNameWithoutExt}-${userName}-${dateString}.pdf`
 

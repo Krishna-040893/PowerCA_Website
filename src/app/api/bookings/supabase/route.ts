@@ -192,7 +192,8 @@ async function sendConfirmationEmail(booking: Booking) {
     })
 
     // Handle both camelCase and snake_case field names from database
-    const firmName = (booking as any).firmName || (booking as any).firm_name
+    const bookingRecord = booking as Booking & { firm_name?: string }
+    const firmName = bookingRecord.firmName || bookingRecord.firm_name
     const message = booking.message
 
     logger.info('Sending booking confirmation email', { bookingId: booking.id, firmName })

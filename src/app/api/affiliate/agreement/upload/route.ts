@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
 
     // Get affiliate info
     const { data: affiliate, error: affiliateError } = await supabase
-      .from('affiliate_applications')
-      .select('id, name')
+      .from('affiliate_registrations')
+      .select('id, full_name')
       .eq('email', session.user.email)
       .single()
 
@@ -43,14 +43,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Get affiliate name (sanitize for file system - lowercase with hyphens)
-    const affiliateName = (affiliate.name || 'unknown')
+    const affiliateName = (affiliate.full_name || 'unknown')
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .replace(/\s+/g, '-')
 
     // Create filename: {documentname}-{affiliatename}-signed.pdf
+    // Remove "test" word (case-insensitive) and clean up
     const originalFileName = file.name
-    const fileNameWithoutExt = originalFileName.replace(/\.pdf$/i, '')
+    const fileNameWithoutExt = originalFileName
+      .replace(/\.pdf$/i, '')
+      .replace(/-?test-?/gi, '-')  // Remove "test" with surrounding hyphens
+      .replace(/--+/g, '-')        // Clean up multiple hyphens
+      .replace(/^-|-$/g, '')       // Remove leading/trailing hyphens
     const signedFileName = `${fileNameWithoutExt}-${affiliateName}-signed.pdf`
 
     // Store in local project folder: uploads/affiliate-signed-agreements/{filename}
@@ -73,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     // Update affiliate record
     const { error: updateError } = await supabase
-      .from('affiliate_applications')
+      .from('affiliate_registrations')
       .update({
         agreement_uploaded_at: new Date().toISOString(),
         agreement_file_path: filePath

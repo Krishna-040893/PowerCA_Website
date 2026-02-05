@@ -28,7 +28,6 @@ import {
   Upload,
   CheckCircle2,
   CreditCard,
-  ArrowUpCircle,
   Clock,
   CheckCircle,
   ChevronLeft,
@@ -1555,10 +1554,10 @@ function AccountPageContent() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-blue-900">
-                      Selected Plan: {paymentType === 'monthly' ? 'Monthly License' : paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? 'One Time Payment' : 'Installment Plan'}
+                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? 'One Time Payment' : 'Installment Plan'}
                     </p>
                     <p className="text-sm text-blue-700">
-                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'monthly' ? '/month' : paymentType === 'annual' ? '/year' : paymentType === 'installment' ? '× 10 months' : '(Lifetime)'}
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/year' : paymentType === 'installment' ? '× 10 months' : '(Lifetime)'}
                     </p>
                   </div>
                   <div className="text-sm text-blue-600">
@@ -1681,7 +1680,6 @@ function AccountPageContent() {
                                   // Get subscription for this address
                                   const addressSubscription = getAddressSubscription(address.id)
                                   const nextDueDate = addressSubscription?.next_due_date
-                                  const isMonthlyPlan = addressPlanType === 'monthly'
                                   const isOverdue = isDueDatePast(nextDueDate)
 
                                   return (
@@ -1769,18 +1767,16 @@ function AccountPageContent() {
                                                 <CreditCard className="w-4 h-4 text-blue-500" />
                                                 <span className="text-sm">
                                                   <span className="font-medium text-gray-900">
-                                                    {addressPlanType === 'monthly' && 'Monthly'}
                                                     {addressPlanType === 'annual' && 'Annual'}
                                                     {addressPlanType === 'onetime' && 'Lifetime'}
                                                     {addressPlanType === 'installment' && 'Installment'}
-                                                    {!['monthly', 'annual', 'onetime', 'installment'].includes(addressPlanType) && 'Monthly'}
+                                                    {!['annual', 'onetime', 'installment'].includes(addressPlanType) && 'Annual'}
                                                   </span>
                                                   <span className="text-gray-500 ml-1">
-                                                    {addressPlanType === 'monthly' && '₹100/mo'}
-                                                    {addressPlanType === 'annual' && '₹1,000/yr'}
-                                                    {addressPlanType === 'onetime' && '₹1,00,000'}
-                                                    {addressPlanType === 'installment' && '₹10,000×10'}
-                                                    {!['monthly', 'annual', 'onetime', 'installment'].includes(addressPlanType) && '₹100/mo'}
+                                                    {addressPlanType === 'annual' && '₹1,200/yr'}
+                                                    {addressPlanType === 'onetime' && '₹1,20,000'}
+                                                    {addressPlanType === 'installment' && '₹12,000×10'}
+                                                    {!['annual', 'onetime', 'installment'].includes(addressPlanType) && '₹1,200/yr'}
                                                   </span>
                                                 </span>
                                               </div>
@@ -1800,7 +1796,7 @@ function AccountPageContent() {
                                                       onClick={() => {
                                                         sessionStorage.setItem('checkoutAddressId', address.id)
                                                         localStorage.setItem('checkoutAddressId', address.id)
-                                                        router.push(`/checkout?addressId=${address.id}&planType=${addressPlanType}&planPrice=${addressPlanType === 'monthly' ? 100 : addressPlanType === 'annual' ? 1000 : 10000}`)
+                                                        router.push(`/checkout?addressId=${address.id}&planType=${addressPlanType}&planPrice=${addressPlanType === 'annual' ? 1200 : 12000}`)
                                                       }}
                                                       className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-0.5 rounded transition-colors"
                                                     >
@@ -1816,20 +1812,6 @@ function AccountPageContent() {
                                               </span>
                                             </div>
 
-                                            {/* Right - Upgrade button (Monthly only) */}
-                                            {isMonthlyPlan && (
-                                              <button
-                                                onClick={() => {
-                                                  sessionStorage.setItem('checkoutAddressId', address.id)
-                                                  localStorage.setItem('checkoutAddressId', address.id)
-                                                  router.push(`/checkout?addressId=${address.id}&planType=annual&planPrice=1000&upgrade=true`)
-                                                }}
-                                                className="flex items-center gap-1.5 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-lg transition-colors shrink-0"
-                                              >
-                                                <ArrowUpCircle className="w-4 h-4" />
-                                                Upgrade to Annual
-                                              </button>
-                                            )}
                                           </div>
                                         </div>
                                       )}
@@ -2167,11 +2149,10 @@ function AccountPageContent() {
                                         </td>
                                         <td className="px-3 py-2 w-[12%]">
                                           <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                                            {order.planType === 'monthly' && 'Monthly'}
                                             {order.planType === 'annual' && 'Annual'}
                                             {order.planType === 'onetime' && 'One Time'}
                                             {order.planType === 'installment' && 'Installment'}
-                                            {!['monthly', 'annual', 'onetime', 'installment'].includes(order.planType) && 'Monthly'}
+                                            {!['annual', 'onetime', 'installment'].includes(order.planType) && 'Annual'}
                                           </span>
                                         </td>
                                         <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[10%]">

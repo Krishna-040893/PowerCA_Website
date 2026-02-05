@@ -164,7 +164,7 @@ function CheckoutContent() {
   const [couponError, setCouponError] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
-  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
+  const [paymentGateway, _setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
 
   // Check if this is a final settlement payment
   const paymentType = searchParams.get('paymentType')
@@ -185,7 +185,7 @@ function CheckoutContent() {
   const selectedPlanPrice = planPriceParam ? parseInt(planPriceParam, 10) : 0
 
   // Check if this plan supports user count (per-user pricing)
-  const isPerUserPlan = planType === 'monthly' || planType === 'annual'
+  const isPerUserPlan = planType === 'annual'
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -205,13 +205,14 @@ function CheckoutContent() {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [loadingAddresses, setLoadingAddresses] = useState(false)
-  const [savingAddress, setSavingAddress] = useState(false)
-  const [addressSaveSuccess, setAddressSaveSuccess] = useState(false)
-  const [purchasedAddressCount, setPurchasedAddressCount] = useState(0)
+  const [_savingAddress, setSavingAddress] = useState(false)
+  const [_addressSaveSuccess, setAddressSaveSuccess] = useState(false)
+  // Track purchased addresses for future use (multi-address feature)
+  const [_purchasedAddressCount, setPurchasedAddressCount] = useState(0)
 
-  // Get states for selected country
-  const availableStates = countryStates[formData.country] || countryStates['default']
-  const hasStateDropdown = formData.country && countryStates[formData.country] !== undefined
+  // Get states for selected country (available for future state dropdown feature)
+  const _availableStates = countryStates[formData.country] || countryStates['default']
+  const _hasStateDropdown = formData.country && countryStates[formData.country] !== undefined
 
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
@@ -239,7 +240,6 @@ function CheckoutContent() {
   // Plan display names
   const getPlanDisplayName = () => {
     switch (planType) {
-      case 'monthly': return 'Monthly Subscription'
       case 'annual': return 'Annual Subscription'
       case 'onetime': return 'One Time Payment'
       case 'installment': return 'Installment Payment'
@@ -251,7 +251,6 @@ function CheckoutContent() {
   const productName = isFinalSettlement ? 'PowerCA Final Settlement' : getPlanDisplayName()
   const productDescription = isFinalSettlement
     ? 'Final settlement payment for PowerCA service'
-    : planType === 'monthly' ? 'Monthly subscription with ongoing support'
     : planType === 'annual' ? 'Annual subscription with ongoing support'
     : planType === 'onetime' ? 'One time payment - Lifetime access'
     : planType === 'installment' ? 'Installment payment (10 months)'
@@ -507,7 +506,8 @@ function CheckoutContent() {
     setFormData(newData)
   }
 
-  const handleSaveAddress = async () => {
+  // Address save handler - kept for future multi-address feature
+  const _handleSaveAddress = async () => {
     // Validate required fields
     if (!formData.firstName || !formData.firmName || !formData.address ||
         !formData.city || !formData.state || !formData.postcode ||
@@ -576,7 +576,8 @@ function CheckoutContent() {
     }
   }
 
-  const handleDeleteAddress = async (addressId: string) => {
+  // Address delete handler - kept for future multi-address feature
+  const _handleDeleteAddress = async (addressId: string) => {
     if (!confirm('Are you sure you want to delete this address?')) {
       return
     }
@@ -606,7 +607,8 @@ function CheckoutContent() {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  // Generic input change handler - kept for future form enhancements
+  const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
     // If country changes, reset the state field
@@ -826,8 +828,11 @@ function CheckoutContent() {
 
       const orderData = await orderResponse.json()
 
-      // Log response for debugging
-      console.log('Razorpay Order Response:', orderData)
+      // Log response for debugging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.info('Razorpay Order Response:', orderData)
+      }
 
       if (!orderData.success && !orderData.orderId) {
         // Log full error details
@@ -1335,7 +1340,7 @@ function CheckoutContent() {
                         <Label htmlFor="userCount" className={`text-sm font-medium ${errors.userCount ? 'text-red-700' : 'text-blue-900'}`}>
                           Number of Users <span className="text-red-500">*</span>
                         </Label>
-                        <p className={`text-xs ${errors.userCount ? 'text-red-600' : 'text-blue-600'}`}>₹{basePrice.toLocaleString()} per user / {planType === 'monthly' ? 'month' : 'year'}</p>
+                        <p className={`text-xs ${errors.userCount ? 'text-red-600' : 'text-blue-600'}`}>₹{basePrice.toLocaleString()} per user / year</p>
                       </div>
                       <Input
                         id="userCount"
