@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   User,
   Mail,
@@ -16,7 +15,6 @@ import {
   MapPin,
   ShoppingBag,
   Trash2,
-  LogOut,
   AlertCircle,
   Download,
   Package,
@@ -31,7 +29,9 @@ import {
   Clock,
   CheckCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Building2,
+  Star
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -66,6 +66,9 @@ interface OrderHistory {
   paymentType: 'initial_payment' | 'final_settlement'
   planType: string
   userCount: number
+  firmName: string
+  addressId: string | null
+  renewalDate: string | null
 }
 
 interface UserData {
@@ -89,22 +92,11 @@ interface AgreementStatus {
   uploadedAt: string | null
   filePath: string | null
   signingMethod: 'digital' | 'manual' | null
-}
-
-interface AppDownload {
-  id: string
-  orderId: string
-  paymentId: string
-  productName: string
-  amount: number
-  downloadCount: number
-  maxDownloads: number
-  isDownloaded: boolean
-  downloadedAt: string | null
-  purchasedAt: string
-  status: string
-  downloadToken: string | null
-  downloadLinkExpiry: string | null
+  hasCompanySigned: boolean
+  companySignedAt: string | null
+  companyFilePath: string | null
+  hasFinalDownloaded: boolean
+  finalDownloadedAt: string | null
 }
 
 interface SavedAddress {
@@ -354,7 +346,7 @@ function AccountPageContent() {
   const [activeTab, setActiveTab] = useState(() => {
     // Check URL param for initial tab
     const tabParam = searchParams.get('tab')
-    return tabParam && ['profile', 'billing', 'orders', 'downloads'].includes(tabParam)
+    return tabParam && ['profile', 'billing', 'orders'].includes(tabParam)
       ? tabParam
       : 'profile'
   })
@@ -383,9 +375,6 @@ function AccountPageContent() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([])
   const [_loadingSubscription, setLoadingSubscription] = useState(false)
 
-  const [appDownloads, setAppDownloads] = useState<AppDownload[]>([])
-  const [isLoadingDownloads, setIsLoadingDownloads] = useState(false)
-  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
@@ -401,8 +390,6 @@ function AccountPageContent() {
   const ITEMS_PER_PAGE = 10
   const [orderHistoryPage, setOrderHistoryPage] = useState(1)
   const [billingAddressPage, setBillingAddressPage] = useState<Record<string, number>>({}) // Per-location pagination
-  const [demoVersionPage, setDemoVersionPage] = useState(1)
-
   // Agreement document state
   const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
   const [isLoadingAgreement, setIsLoadingAgreement] = useState(false)
@@ -418,14 +405,17 @@ function AccountPageContent() {
       setOrderHistoryPage(1)
     } else if (value === 'billing') {
       setBillingAddressPage({}) // Reset all location pages
-    } else if (value === 'downloads') {
-      setDemoVersionPage(1)
     }
     // Update URL without full page reload
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', value)
     router.replace(`/account?${params.toString()}`, { scroll: false })
   }
+
+  // Check if user is a student (students use Full Name instead of Firm Name)
+  // Role may be 'student' at runtime even though TS type is narrower
+  const userRole = session?.user?.role as string | undefined
+  const isStudent = userRole === 'student' || userRole === 'Student'
 
   // Billing form state
   const [isSavingBilling, setIsSavingBilling] = useState(false)
@@ -452,7 +442,6 @@ function AccountPageContent() {
       fetchReferralInfo()
       fetchSavedAddresses()
       fetchAgreementStatus()
-      fetchAppDownloads()
       fetchSubscription()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -541,7 +530,8 @@ function AccountPageContent() {
   // Helper function to group orders by location
   const groupOrdersByLocation = (orders: OrderHistory[]): Record<string, OrderHistory[]> => {
     return orders.reduce((groups, order) => {
-      const location = order.location || 'Unknown Location'
+      // Use location, then firmName as fallback, then 'Other' as last resort
+      const location = order.location || order.firmName || 'Other'
       if (!groups[location]) {
         groups[location] = []
       }
@@ -576,8 +566,10 @@ function AccountPageContent() {
 
   const handleEditAddress = (address: SavedAddress) => {
     // Load address data into form - use label as city if available for consistency
+    // For students, the input value is stored in full_name; for professionals, in firm_name
+    // Fallback handles old data where students had their name in firm_name
     setBillingForm({
-      firmName: address.firm_name,
+      firmName: address.firm_name || address.full_name,
       gstNo: address.gst_no || '',
       address: address.address,
       city: address.label || address.city,
@@ -606,7 +598,7 @@ function AccountPageContent() {
   const fetchUserData = async () => {
     try {
       setIsLoadingData(true)
-      const response = await fetch('/api/user/data')
+      const response = await fetch(`/api/user/data?t=${Date.now()}`, { cache: 'no-store' })
       const result = await response.json()
 
       if (result.success) {
@@ -649,51 +641,6 @@ function AccountPageContent() {
       console.error('Error fetching agreement status:', error)
     } finally {
       setIsLoadingAgreement(false)
-    }
-  }
-
-  const fetchAppDownloads = async () => {
-    setIsLoadingDownloads(true)
-    try {
-      const response = await fetch('/api/user/app-downloads')
-      const result = await response.json()
-
-      if (result.success) {
-        setAppDownloads(result.downloads || [])
-      }
-    } catch (error) {
-      console.error('Error fetching app downloads:', error)
-    } finally {
-      setIsLoadingDownloads(false)
-    }
-  }
-
-  const handleAppDownload = async (download: AppDownload) => {
-    if (!download.downloadToken) {
-      toast.error('Download link not available. Please contact support.')
-      return
-    }
-
-    // Check if link is expired
-    if (download.downloadLinkExpiry && new Date(download.downloadLinkExpiry) < new Date()) {
-      toast.error('Download link has expired. Please contact support.')
-      return
-    }
-
-    setDownloadingId(download.id)
-    try {
-      // Open download in new tab/trigger download
-      window.location.href = `/api/download/app?token=${download.downloadToken}`
-
-      // Wait a moment then refresh the list to show updated status
-      setTimeout(() => {
-        fetchAppDownloads()
-        setDownloadingId(null)
-      }, 2000)
-    } catch (error) {
-      console.error('Error downloading app:', error)
-      toast.error('Failed to start download. Please try again.')
-      setDownloadingId(null)
     }
   }
 
@@ -788,6 +735,39 @@ function AccountPageContent() {
     }
   }
 
+  const handleFinalDownload = async () => {
+    try {
+      // Record the final download action
+      await fetch('/api/user/agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'final_download' })
+      })
+
+      // Download the company-signed document
+      const response = await fetch('/api/user/agreement/download-company-signed')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'PowerCA_Agreement_Company_Signed.pdf'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        await fetchAgreementStatus()
+        toast.success('Company-signed agreement downloaded successfully!')
+      } else {
+        toast.error('Failed to download company-signed agreement.')
+      }
+    } catch (error) {
+      console.error('Error downloading company-signed agreement:', error)
+      toast.error('Failed to download agreement. Please try again.')
+    }
+  }
+
   const handleProfilePhotoUpdate = (newUrl: string) => {
     setCurrentProfilePhotoUrl(newUrl)
   }
@@ -857,8 +837,8 @@ function AccountPageContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          full_name: session?.user?.name || '',
-          firm_name: billingForm.firmName,
+          full_name: isStudent ? billingForm.firmName : (session?.user?.name || ''),
+          firm_name: isStudent ? '' : billingForm.firmName,
           gst_no: billingForm.gstNo || null,
           address: billingForm.address,
           city: normalizedCity,
@@ -868,6 +848,7 @@ function AccountPageContent() {
           phone: session?.user?.phone || '',
           email: session?.user?.email || '',
           is_default: false,
+          is_student: isStudent,
           label: normalizedCity
         }),
       })
@@ -931,7 +912,15 @@ function AccountPageContent() {
           )
         }
       } else {
-        toast.error(result.error || 'Failed to save billing address')
+        if (result.error === 'DUPLICATE_ADDRESS') {
+          toast.error(
+            isStudent
+              ? 'An address with the same name and location already exists'
+              : 'An address with the same firm name and location already exists'
+          )
+        } else {
+          toast.error(result.error || 'Failed to save billing address')
+        }
       }
     } catch (error) {
       console.error('Error saving billing address:', error)
@@ -1106,15 +1095,6 @@ function AccountPageContent() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors w-full sm:w-auto"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
           </div>
         </div>
       </div>
@@ -1147,14 +1127,6 @@ function AccountPageContent() {
               <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Order History</span>
               <span className="sm:hidden">Orders</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="downloads"
-              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
-            >
-              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Demo Version</span>
-              <span className="sm:hidden">Demo</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1275,12 +1247,12 @@ function AccountPageContent() {
                     </div>
                   ) : (
                     <div>
-                      {/* Horizontal Progress Steps - 3 Steps */}
+                      {/* Horizontal Progress Steps - 5 Steps */}
                       <div className="flex items-center justify-center mb-8">
                         {/* Step 1: Download */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
                               backgroundColor: agreementStatus?.hasDownloaded ? '#22c55e' : 'rgb(219, 230, 252)',
                               borderColor: agreementStatus?.hasDownloaded ? '#22c55e' : '#3b82f6',
@@ -1288,87 +1260,126 @@ function AccountPageContent() {
                             }}
                           >
                             {agreementStatus?.hasDownloaded ? (
-                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             ) : (
-                              <Download className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
                             agreementStatus?.hasDownloaded ? 'text-green-600' : 'text-gray-900'
                           }`}>
                             Download
                           </p>
                         </div>
 
-                        {/* Connecting Line 1 */}
+                        {/* Line 1 */}
                         <div
-                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
                             agreementStatus?.hasDownloaded ? 'bg-green-500' : 'bg-gray-300'
                           }`}
-                          style={{ marginBottom: '24px' }}
+                          style={{ marginBottom: '20px' }}
                         />
 
                         {/* Step 2: Upload */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
                               backgroundColor: agreementStatus?.hasUploaded
                                 ? '#22c55e'
                                 : agreementStatus?.hasDownloaded
-                                  ? 'rgb(219, 230, 252)'
-                                  : '#f3f4f6',
+                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
                               borderColor: agreementStatus?.hasUploaded
                                 ? '#22c55e'
                                 : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6'
-                                  : '#d1d5db',
+                                  ? '#3b82f6' : '#d1d5db',
                               color: agreementStatus?.hasUploaded
                                 ? 'white'
                                 : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6'
-                                  : '#9ca3af'
+                                  ? '#3b82f6' : '#9ca3af'
                             }}
                           >
                             {agreementStatus?.hasUploaded ? (
-                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             ) : (
-                              <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
                             agreementStatus?.hasUploaded
                               ? 'text-green-600'
                               : agreementStatus?.hasDownloaded
-                                ? 'text-gray-900'
-                                : 'text-gray-400'
+                                ? 'text-gray-900' : 'text-gray-400'
                           }`}>
                             Upload
                           </p>
                         </div>
 
-                        {/* Connecting Line 2 */}
+                        {/* Line 2 */}
                         <div
-                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
                             agreementStatus?.hasUploaded ? 'bg-green-500' : 'bg-gray-300'
                           }`}
-                          style={{ marginBottom: '24px' }}
+                          style={{ marginBottom: '20px' }}
                         />
 
-                        {/* Step 3: Completed */}
+                        {/* Step 3: Company Sign */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
-                              backgroundColor: agreementStatus?.hasUploaded ? '#22c55e' : '#f3f4f6',
-                              borderColor: agreementStatus?.hasUploaded ? '#22c55e' : '#d1d5db',
-                              color: agreementStatus?.hasUploaded ? 'white' : '#9ca3af'
+                              backgroundColor: agreementStatus?.hasCompanySigned
+                                ? '#22c55e'
+                                : agreementStatus?.hasUploaded
+                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
+                              borderColor: agreementStatus?.hasCompanySigned
+                                ? '#22c55e'
+                                : agreementStatus?.hasUploaded
+                                  ? '#3b82f6' : '#d1d5db',
+                              color: agreementStatus?.hasCompanySigned
+                                ? 'white'
+                                : agreementStatus?.hasUploaded
+                                  ? '#3b82f6' : '#9ca3af'
                             }}
                           >
-                            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                            {agreementStatus?.hasCompanySigned ? (
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
-                            agreementStatus?.hasUploaded ? 'text-green-600' : 'text-gray-400'
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium text-center ${
+                            agreementStatus?.hasCompanySigned
+                              ? 'text-green-600'
+                              : agreementStatus?.hasUploaded
+                                ? 'text-gray-900' : 'text-gray-400'
+                          }`} style={{ maxWidth: '60px' }}>
+                            {agreementStatus?.hasCompanySigned ? 'Approved' : 'Approval'}
+                          </p>
+                        </div>
+
+                        {/* Line 3 */}
+                        <div
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
+                            agreementStatus?.hasCompanySigned ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
+                          style={{ marginBottom: '20px' }}
+                        />
+
+                        {/* Step 4: Completed */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            style={{
+                              backgroundColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#f3f4f6',
+                              borderColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#d1d5db',
+                              color: agreementStatus?.hasCompanySigned ? 'white' : '#9ca3af'
+                            }}
+                          >
+                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
+                            agreementStatus?.hasCompanySigned ? 'text-green-600' : 'text-gray-400'
                           }`}>
                             Completed
                           </p>
@@ -1454,7 +1465,6 @@ function AccountPageContent() {
                       ) : !agreementStatus?.hasUploaded ? (
                         /* Step 2 Content: Upload signed document */
                         <div>
-                          {/* File Upload Option */}
                           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-w-md mx-auto">
                             <div
                               className="flex flex-col items-center justify-center h-[100px] border-2 border-dashed border-gray-300 rounded-lg bg-white hover:border-purple-400 transition-colors cursor-pointer"
@@ -1496,17 +1506,39 @@ function AccountPageContent() {
                             </Button>
                           </div>
                         </div>
-                      ) : (
-                        /* Step 3 Content: Completed */
+                      ) : !agreementStatus?.hasCompanySigned ? (
+                        /* Step 3 Content: Waiting for company to sign */
                         <div className="text-center">
-                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300">
+                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
+                            <Clock className="w-6 h-6 text-blue-600" />
+                            <div className="text-left">
+                              <p className="font-semibold text-blue-800">Waiting for Company Signature</p>
+                              <p className="text-sm text-blue-700">
+                                Your signed document has been submitted. The company will review and sign it.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Step 4 Content: Completed with download */
+                        <div className="text-center">
+                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300 mb-4">
                             <CheckCircle2 className="w-6 h-6 text-green-600" />
                             <div className="text-left">
                               <p className="font-semibold text-green-800">Agreement Completed</p>
                               <p className="text-sm text-green-700">
-                                Signed on {formatDate(agreementStatus.uploadedAt || '')}
+                                Approved on {formatDate(agreementStatus.companySignedAt || '')}
                               </p>
                             </div>
+                          </div>
+                          <div>
+                            <Button
+                              onClick={handleFinalDownload}
+                              className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Agreement
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -1554,10 +1586,10 @@ function AccountPageContent() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-blue-900">
-                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? 'One Time Payment' : 'Installment Plan'}
+                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '5 Years Pack' : 'Subscription'}
                     </p>
                     <p className="text-sm text-blue-700">
-                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/year' : paymentType === 'installment' ? '× 10 months' : '(Lifetime)'}
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/5 years' : ''}
                     </p>
                   </div>
                   <div className="text-sm text-blue-600">
@@ -1670,10 +1702,12 @@ function AccountPageContent() {
                                   const addrPaymentStatus = getAddressPaymentStatus(address.id)
                                   const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
 
-                                  // Get plan type from order history for this address location
+                                  // Get plan type from order history — match by addressId first, fallback to location
                                   const addressLocation = address.label || address.city
                                   const addressOrders = userData?.orderHistory?.filter(
-                                    order => order.location === addressLocation
+                                    order => order.addressId
+                                      ? order.addressId === address.id
+                                      : order.location === addressLocation
                                   ) || []
                                   const addressPlanType = addressOrders.length > 0 ? addressOrders[0].planType : null
 
@@ -1697,7 +1731,7 @@ function AccountPageContent() {
                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         {/* Left - Firm Name & Status */}
                                         <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                          <h3 className="font-bold text-gray-900 text-lg truncate">{address.firm_name}</h3>
+                                          <h3 className="font-bold text-gray-900 text-lg truncate">{address.firm_name || address.full_name}</h3>
                                           {hasInitialPayment ? (
                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
                                               <CheckCircle className="w-3 h-3" />
@@ -1768,50 +1802,29 @@ function AccountPageContent() {
                                                 <span className="text-sm">
                                                   <span className="font-medium text-gray-900">
                                                     {addressPlanType === 'annual' && 'Annual'}
-                                                    {addressPlanType === 'onetime' && 'Lifetime'}
-                                                    {addressPlanType === 'installment' && 'Installment'}
-                                                    {!['annual', 'onetime', 'installment'].includes(addressPlanType) && 'Annual'}
+                                                    {addressPlanType === 'onetime' && '5 Years Pack'}
+                                                    {!['annual', 'onetime'].includes(addressPlanType) && 'Annual'}
                                                   </span>
                                                   <span className="text-gray-500 ml-1">
-                                                    {addressPlanType === 'annual' && '₹1,200/yr'}
-                                                    {addressPlanType === 'onetime' && '₹1,20,000'}
-                                                    {addressPlanType === 'installment' && '₹12,000×10'}
-                                                    {!['annual', 'onetime', 'installment'].includes(addressPlanType) && '₹1,200/yr'}
+                                                    {addressPlanType === 'annual' && '₹1,800/user/yr'}
+                                                    {addressPlanType === 'onetime' && '₹6,000/user/5yrs'}
+                                                    {!['annual', 'onetime'].includes(addressPlanType) && '₹1,800/user/yr'}
                                                   </span>
                                                 </span>
                                               </div>
 
-                                              {/* Due Date */}
-                                              {addressPlanType !== 'onetime' && nextDueDate && (
+                                              {/* Valid up to / Renewal date */}
+                                              {addressOrders.length > 0 && addressOrders[0].renewalDate && (
                                                 <div className="flex items-center gap-2">
-                                                  <Clock className={`w-4 h-4 ${isOverdue ? 'text-red-500' : 'text-gray-400'}`} />
+                                                  <Clock className={`w-4 h-4 ${isOverdue ? 'text-red-500' : 'text-blue-400'}`} />
                                                   <span className="text-sm">
                                                     <span className={isOverdue ? 'text-red-600 font-medium' : 'text-gray-600'}>
-                                                      {isOverdue ? 'Overdue: ' : 'Due: '}
-                                                      {formatNextDueDate(nextDueDate)}
+                                                      Valid up to: {formatDate(addressOrders[0].renewalDate)}
                                                     </span>
                                                   </span>
-                                                  {isOverdue && (
-                                                    <button
-                                                      onClick={() => {
-                                                        sessionStorage.setItem('checkoutAddressId', address.id)
-                                                        localStorage.setItem('checkoutAddressId', address.id)
-                                                        router.push(`/checkout?addressId=${address.id}&planType=${addressPlanType}&planPrice=${addressPlanType === 'annual' ? 1200 : 12000}`)
-                                                      }}
-                                                      className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-2 py-0.5 rounded transition-colors"
-                                                    >
-                                                      Pay
-                                                    </button>
-                                                  )}
                                                 </div>
                                               )}
-
-                                              {/* Payments count */}
-                                              <span className="text-sm text-gray-500">
-                                                {addressOrders.length} payment{addressOrders.length !== 1 ? 's' : ''}
-                                              </span>
                                             </div>
-
                                           </div>
                                         </div>
                                       )}
@@ -1903,15 +1916,15 @@ function AccountPageContent() {
                 ) : (
                   <div className="space-y-3 sm:space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                      {/* Firm Name */}
+                      {/* Firm Name / Full Name (for students) */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          Firm Name <span className="text-red-500">*</span>
+                          {isStudent ? 'Full Name' : 'Firm Name'} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             value={billingForm.firmName}
                             onChange={(e) => handleBillingFormChange('firmName', e.target.value)}
-                            placeholder="Enter your firm"
+                            placeholder={isStudent ? 'Enter your full name' : 'Enter your firm'}
                             className="text-sm sm:text-base"
                           />
                       </div>
@@ -2115,71 +2128,117 @@ function AccountPageContent() {
 
                             return (
                               <div key={location} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-                                {/* Location Header - Compact */}
+                                {/* Location Header */}
                                 <div className="bg-blue-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-blue-600" />
                                     <span className="font-semibold text-blue-800">{location}</span>
                                     <span className="text-xs text-gray-500">({orders.length})</span>
                                   </div>
-                                  <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
+                                  <div className="flex items-center gap-3">
+                                    {orders.some(o => o.planType !== 'onetime') && (
+                                      <span className="flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                        Renewal available 15 days before expiry
+                                      </span>
+                                    )}
+                                    <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
+                                  </div>
                                 </div>
 
-                                {/* Orders Table - Compact with fixed column widths */}
+                                {/* Orders Table */}
                                 <table className="w-full text-sm table-fixed">
                                   <thead className="bg-gray-50 text-xs text-gray-600">
                                     <tr>
-                                      <th className="text-left px-3 py-1.5 font-medium w-[28%]">Invoice</th>
-                                      <th className="text-left px-3 py-1.5 font-medium w-[12%]">Plan</th>
-                                      <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[10%]">Users</th>
-                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[18%]">Date</th>
-                                      <th className="text-right px-3 py-1.5 font-medium w-[22%]">Amount</th>
-                                      <th className="text-center px-3 py-1.5 font-medium w-[10%]"></th>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[22%]">Firm</th>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[10%]">Plan</th>
+                                      <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[8%]">Users</th>
+                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[14%]">Subscription Date</th>
+                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[14%]">Valid up to</th>
+                                      <th className="text-center px-3 py-1.5 font-medium w-[32%]"></th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-100">
-                                    {orders.map((order) => (
-                                      <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
-                                        <td className="px-3 py-2 w-[28%]">
-                                          <span className="font-medium text-gray-900">#{order.invoiceNumber}</span>
-                                          <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
-                                          {order.userCount > 1 && (
+                                    {orders.map((order) => {
+                                      // Find matching saved address for this order's firm
+                                      const matchingAddress = order.addressId
+                                        ? savedAddresses.find(addr => addr.id === order.addressId)
+                                        : order.firmName
+                                          ? savedAddresses.find(addr => addr.firm_name === order.firmName)
+                                          : null
+
+                                      return (
+                                        <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
+                                          <td className="px-3 py-2 w-[22%]">
+                                            <span className="font-medium text-gray-900 truncate block">{order.firmName || '-'}</span>
+                                            <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
                                             <span className="sm:hidden block text-xs text-purple-600 mt-0.5">{order.userCount} users</span>
-                                          )}
-                                        </td>
-                                        <td className="px-3 py-2 w-[12%]">
-                                          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                                            {order.planType === 'annual' && 'Annual'}
-                                            {order.planType === 'onetime' && 'One Time'}
-                                            {order.planType === 'installment' && 'Installment'}
-                                            {!['annual', 'onetime', 'installment'].includes(order.planType) && 'Annual'}
-                                          </span>
-                                        </td>
-                                        <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[10%]">
-                                          {order.userCount > 1 ? (
+                                          </td>
+                                          <td className="px-3 py-2 w-[10%]">
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                              {order.planType === 'annual' && 'Annual'}
+                                              {order.planType === 'onetime' && '5 Years'}
+                                              {!['annual', 'onetime'].includes(order.planType) && 'Annual'}
+                                            </span>
+                                          </td>
+                                          <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[8%]">
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{order.userCount}</span>
-                                          ) : (
-                                            <span className="text-gray-400">1</span>
-                                          )}
-                                        </td>
-                                        <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[18%]">{formatDate(order.paidAt)}</td>
-                                        <td className="px-3 py-2 text-right w-[22%]">
-                                          <span className="font-semibold text-green-700">₹{formatCurrency(order.total).replace('₹', '')}</span>
-                                          {order.discountAmount > 0 && (
-                                            <span className="text-xs text-green-600 ml-1">(-{order.discountPercentage}%)</span>
-                                          )}
-                                        </td>
-                                        <td className="px-3 py-2 text-center w-[10%]">
-                                          <button
-                                            onClick={() => handleDownloadInvoice(order.invoiceNumber)}
-                                            className="text-green-600 hover:text-green-700 hover:bg-green-50 p-1.5 rounded"
-                                            title="Download Invoice"
-                                          >
-                                            <Download className="h-4 w-4" />
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">{formatDate(order.paidAt)}</td>
+                                          <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">
+                                            {order.planType === 'onetime' ? (
+                                              <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Lifetime</span>
+                                            ) : order.renewalDate ? (
+                                              <span className="text-xs">{formatDate(order.renewalDate)}</span>
+                                            ) : (
+                                              <span className="text-gray-400">-</span>
+                                            )}
+                                          </td>
+                                          <td className="px-3 py-2 text-right w-[32%]">
+                                            <div className="flex items-center justify-end gap-2">
+                                              <button
+                                                onClick={() => handleDownloadInvoice(order.invoiceNumber)}
+                                                className="inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 font-medium transition-colors"
+                                              >
+                                                <Download className="h-3.5 w-3.5" />
+                                                <span className="hidden sm:inline">Receipt</span>
+                                              </button>
+                                              {matchingAddress && order.planType !== 'onetime' && (() => {
+                                                const isWithinRenewalWindow = order.renewalDate
+                                                  ? (() => {
+                                                      const renewal = new Date(order.renewalDate)
+                                                      const now = new Date()
+                                                      const diffDays = Math.ceil((renewal.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                                                      return diffDays <= 15
+                                                    })()
+                                                  : false
+                                                return (
+                                                  <button
+                                                    onClick={() => {
+                                                      sessionStorage.setItem('checkoutAddressId', matchingAddress.id)
+                                                      localStorage.setItem('checkoutAddressId', matchingAddress.id)
+                                                      const renewPlanPrice = 1800
+                                                      const renewUserCount = order.userCount || 5
+                                                      router.push(`/checkout?addressId=${matchingAddress.id}&planType=annual&planPrice=${renewPlanPrice}&userCount=${renewUserCount}`)
+                                                    }}
+                                                    disabled={!isWithinRenewalWindow}
+                                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md font-medium transition-colors ${
+                                                      isWithinRenewalWindow
+                                                        ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                    }`}
+                                                    title={!isWithinRenewalWindow ? 'Renewal available 15 days before expiry' : 'Renew your subscription'}
+                                                  >
+                                                    <CreditCard className="h-3.5 w-3.5" />
+                                                    <span className="hidden sm:inline">Pay Now</span>
+                                                  </button>
+                                                )
+                                              })()}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      )
+                                    })}
                                   </tbody>
                                 </table>
                               </div>
@@ -2210,143 +2269,6 @@ function AccountPageContent() {
             </Card>
           </TabsContent>
 
-          {/* Downloads Tab - Demo Version */}
-          <TabsContent value="downloads" className="space-y-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600\15 border-b py-2 sm:py-3">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Download className="h-4 w-4 text-green-600" />
-                    Demo Version Downloads
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Manage your Demo Version purchases and downloads
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4">
-                {isLoadingDownloads ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  </div>
-                ) : appDownloads.length > 0 ? (
-                  <>
-                    {(() => {
-                      const totalDownloads = appDownloads.length
-                      const totalPages = Math.ceil(totalDownloads / ITEMS_PER_PAGE)
-                      const paginatedDownloads = appDownloads.slice(
-                        (demoVersionPage - 1) * ITEMS_PER_PAGE,
-                        demoVersionPage * ITEMS_PER_PAGE
-                      )
-
-                      return (
-                        <>
-                          <div className="border rounded-lg overflow-hidden">
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="bg-gray-50">
-                                  <TableHead className="font-semibold">Order ID</TableHead>
-                                  <TableHead className="font-semibold">Amount Paid</TableHead>
-                                  <TableHead className="font-semibold">Date</TableHead>
-                                  <TableHead className="font-semibold">Status</TableHead>
-                                  <TableHead className="font-semibold">Action</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {paginatedDownloads.map((download) => (
-                                  <TableRow key={download.id}>
-                                    <TableCell className="font-mono text-sm">{download.orderId}</TableCell>
-                                    <TableCell className="font-semibold">₹{download.amount.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="text-sm">
-                                      {new Date(download.purchasedAt).toLocaleDateString('en-IN', {
-                                        day: '2-digit',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })}
-                                    </TableCell>
-                                    <TableCell>
-                                      {download.isDownloaded ? (
-                                        <div className="flex flex-col gap-1">
-                                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 w-fit">
-                                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                                            Downloaded
-                                          </Badge>
-                                          {download.downloadedAt && (
-                                            <p className="text-xs text-gray-500">
-                                              {new Date(download.downloadedAt).toLocaleDateString('en-IN', {
-                                                day: '2-digit',
-                                                month: 'short',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                              })}
-                                            </p>
-                                          )}
-                                        </div>
-                                      ) : (
-                                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 w-fit">
-                                          <Download className="h-3 w-3 mr-1" />
-                                          Ready to Download
-                                        </Badge>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {download.isDownloaded ? (
-                                        <span className="text-xs text-gray-400">-</span>
-                                      ) : (
-                                        <Button
-                                          size="sm"
-                                          onClick={() => handleAppDownload(download)}
-                                          disabled={downloadingId === download.id}
-                                          className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-8"
-                                        >
-                                          {downloadingId === download.id ? (
-                                            <>
-                                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                              Downloading...
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Download className="h-3 w-3 mr-1" />
-                                              Download
-                                            </>
-                                          )}
-                                        </Button>
-                                      )}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
-                          <PaginationControls
-                            currentPage={demoVersionPage}
-                            totalPages={totalPages}
-                            onPageChange={setDemoVersionPage}
-                            totalItems={totalDownloads}
-                            itemsPerPage={ITEMS_PER_PAGE}
-                          />
-                        </>
-                      )
-                    })()}
-                  </>
-                ) : (
-                  <div className="text-center py-8 sm:py-12">
-                    <Download className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">No Demo Version Purchased</p>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                      Purchase the Demo Version to get access to PowerCA training content for one month.
-                    </p>
-                    <Button asChild variant="outline" className="border-green-200 text-green-600 hover:bg-green-50 text-sm">
-                      <Link href="/app-download">
-                        Get Demo Version
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
     </div>

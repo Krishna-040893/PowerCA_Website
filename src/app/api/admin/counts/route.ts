@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
+import { logger } from '@/lib/logger'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -29,8 +30,7 @@ export async function GET(_request: NextRequest) {
           paymentOrders: 0,
           newsletterSubscribers: 0,
           blogPosts: 0,
-          appDownloads: 0,
-          appDownloadOrders: 0
+          enterpriseInquiries: 0
         },
         { status: 200 }
       )
@@ -56,10 +56,9 @@ export async function GET(_request: NextRequest) {
       paymentOrderEmailsResult,
       newsletterSubscribersResult,
       blogPostsResult,
-      appDownloadEmailsResult,
-      appDownloadOrdersResult,
       affiliateReferralsResult,
-      paidPaymentsResult
+      paidPaymentsResult,
+      enterpriseInquiriesResult
     ] = await Promise.allSettled([
       // Total bookings count
       supabase
@@ -119,26 +118,21 @@ export async function GET(_request: NextRequest) {
         .from('blog_posts')
         .select('id', { count: 'exact', head: true }),
 
-      // Fetch emails from app_download_payments table to count unique customers
-      supabase
-        .from('app_download_payments')
-        .select('email'),
-
-      // Total pending app download orders count (from app_download_orders table)
-      supabase
-        .from('app_download_orders')
-        .select('id', { count: 'exact', head: true }),
-
       // Fetch affiliate referrals with referred emails for email matching
       supabase
         .from('affiliate_referrals')
-        .select('id, referred_email'),
+        .select('id, referred_email, affiliate_id'),
 
       // Fetch paid payments with emails for affiliate payment matching
       supabase
         .from('payments')
         .select('email')
-        .in('status', ['captured', 'paid', 'authorized', 'success'])
+        .in('status', ['captured', 'paid', 'authorized', 'success']),
+
+      // Total enterprise inquiries count
+      supabase
+        .from('enterprise_inquiries')
+        .select('id', { count: 'exact', head: true })
     ])
 
     // Count unique customers for payments (by email)
@@ -163,19 +157,7 @@ export async function GET(_request: NextRequest) {
       paymentOrdersUniqueCustomers = uniqueEmails.size
     }
 
-    // Count unique customers for app downloads (by email)
-    let appDownloadsUniqueCustomers = 0
-    if (appDownloadEmailsResult.status === 'fulfilled' && appDownloadEmailsResult.value.data) {
-      const uniqueEmails = new Set(
-        appDownloadEmailsResult.value.data
-          .map(p => p.email?.toLowerCase())
-          .filter(Boolean)
-      )
-      appDownloadsUniqueCustomers = uniqueEmails.size
-    }
-
     // Calculate pending affiliate payments including email-matched ones
-    // This matches the logic in affiliate-payments API
     let pendingPaymentsCount = 0
 
     // Get existing payment records
@@ -208,7 +190,7 @@ export async function GET(_request: NextRequest) {
       )
 
       // Count referrals where customer paid but no payment record exists
-      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string }) => {
+      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string; affiliate_id: string }) => {
         if (ref.referred_email &&
             paidEmails.has(ref.referred_email.toLowerCase()) &&
             !referralIdsWithPayments.has(ref.id)) {
@@ -219,27 +201,27 @@ export async function GET(_request: NextRequest) {
 
     pendingPaymentsCount = pendingFromDb + emailMatchedCount
 
-    // Calculate total affiliate payments (all unique customers who paid through referrals)
-    // This counts all affiliate payments regardless of commission paid status
+    // Calculate total affiliate payments (count unique affiliates who have paid referral customers)
     let totalAffiliatePayments = 0
     if (affiliateReferralsResult.status === 'fulfilled' &&
         paidPaymentsResult.status === 'fulfilled' &&
         affiliateReferralsResult.value.data &&
         paidPaymentsResult.value.data) {
 
-      // Create set of paid customer emails
       const paidEmails = new Set(
         paidPaymentsResult.value.data
           .map((p: { email: string }) => p.email?.toLowerCase())
           .filter(Boolean)
       )
 
-      // Count referrals where customer paid (both from payment records and email-matched)
-      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string }) => {
-        if (ref.referred_email && paidEmails.has(ref.referred_email.toLowerCase())) {
-          totalAffiliatePayments++
+      // Collect unique affiliate IDs that have at least one paid referral customer
+      const uniqueAffiliateIds = new Set<string>()
+      affiliateReferralsResult.value.data.forEach((ref: { id: string; referred_email: string; affiliate_id: string }) => {
+        if (ref.referred_email && ref.affiliate_id && paidEmails.has(ref.referred_email.toLowerCase())) {
+          uniqueAffiliateIds.add(ref.affiliate_id)
         }
       })
+      totalAffiliatePayments = uniqueAffiliateIds.size
     }
 
     const counts = {
@@ -255,14 +237,13 @@ export async function GET(_request: NextRequest) {
       paymentOrders: paymentOrdersUniqueCustomers,
       newsletterSubscribers: newsletterSubscribersResult.status === 'fulfilled' ? (newsletterSubscribersResult.value.count || 0) : 0,
       blogPosts: blogPostsResult.status === 'fulfilled' ? (blogPostsResult.value.count || 0) : 0,
-      appDownloads: appDownloadsUniqueCustomers,
-      appDownloadOrders: appDownloadOrdersResult.status === 'fulfilled' ? (appDownloadOrdersResult.value.count || 0) : 0,
+      enterpriseInquiries: enterpriseInquiriesResult.status === 'fulfilled' ? (enterpriseInquiriesResult.value.count || 0) : 0,
     }
 
     return NextResponse.json(counts)
 
   } catch (error) {
-    console.error('Failed to fetch admin counts:', error)
+    logger.error('Failed to fetch admin counts:', error)
     return NextResponse.json(
       {
         bookings: 0,
@@ -277,8 +258,7 @@ export async function GET(_request: NextRequest) {
         paymentOrders: 0,
         newsletterSubscribers: 0,
         blogPosts: 0,
-        appDownloads: 0,
-        appDownloadOrders: 0
+        enterpriseInquiries: 0
       },
       { status: 200 }
     )

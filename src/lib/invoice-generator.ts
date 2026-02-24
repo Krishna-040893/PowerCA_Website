@@ -45,10 +45,12 @@ export interface InvoiceData {
   discountPercentage?: number
   discountAmount?: number
   originalAmount?: number
+  couponCode?: string | null
 
   // User/Plan Details
   user_count?: number
   planType?: string
+  paymentType?: string
 }
 
 export interface PaymentData {

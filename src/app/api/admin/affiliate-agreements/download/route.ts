@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Security check: ensure path is within uploads folder
-    if (!filePath.startsWith('uploads/affiliate-signed-agreements/')) {
+    if (!filePath.startsWith('uploads/affiliate-signed-agreements/') && !filePath.startsWith('uploads/company-signed-agreements/')) {
       return NextResponse.json({ error: 'Invalid file path' }, { status: 400 })
     }
 

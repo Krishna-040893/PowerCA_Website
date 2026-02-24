@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Download } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2 } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'affiliatePayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'appDownloads' | 'appDownloadOrders'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'affiliatePayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'enterpriseInquiries'
   subItems?: { title: string; href: string }[]
 }
 
@@ -52,8 +52,7 @@ interface Counts {
   newsletterSubscribers: number
   blogPosts: number
   agreements: number
-  appDownloads: number
-  appDownloadOrders: number
+  enterpriseInquiries: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -80,6 +79,7 @@ const getBaseNavigation = (): NavSection[] => [
         ]
       },
       { title: 'Newsletter Subscribers', href: '/admin/newsletter-subscribers', icon: Mail, countKey: 'newsletterSubscribers', badgeVariant: 'default' },
+      { title: 'Enterprise Inquiries', href: '/admin/enterprise-inquiries', icon: Building2, countKey: 'enterpriseInquiries', badgeVariant: 'default' },
     ]
   },
   {
@@ -93,12 +93,6 @@ const getBaseNavigation = (): NavSection[] => [
     items: [
       { title: 'Payments', href: '/admin/payments', icon: CreditCard, countKey: 'payments', badgeVariant: 'default' },
       { title: 'Payment Orders', href: '/admin/payment-orders', icon: ShoppingCart, countKey: 'paymentOrders', badgeVariant: 'default' },
-    ]
-  },
-  {
-    title: 'App Downloads',
-    items: [
-      { title: 'Demo Downloads', href: '/admin/app-downloads', icon: Download, countKey: 'appDownloads', badgeVariant: 'default' },
     ]
   },
   {
@@ -144,8 +138,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       newsletterSubscribers: 0,
       blogPosts: 0,
       agreements: 0,
-      appDownloads: 0,
-      appDownloadOrders: 0
+      enterpriseInquiries: 0
     }
   })
   const pathname = usePathname()

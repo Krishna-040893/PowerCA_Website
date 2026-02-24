@@ -253,11 +253,6 @@ export async function POST(request: NextRequest) {
 
               <p>Thank you for applying to the PowerCA Affiliate Program! We're excited to have you on board.</p>
 
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #1e40af;">Application Status: Under Review</h3>
-                <p style="margin-bottom: 0;">Our team will review your application within 3-5 business days. You will receive an email notification once your application is approved.</p>
-              </div>
-
               <h3 style="color: #1e40af;">Your Registration Details:</h3>
               <ul style="background: white; padding: 20px; border-radius: 4px;">
                 <li><strong>Email:</strong> ${email}</li>
@@ -271,11 +266,11 @@ export async function POST(request: NextRequest) {
                 <li>Our team will review your application</li>
                 <li>You'll receive an approval email with your unique referral code</li>
                 <li>Once approved, you can login to your affiliate dashboard</li>
-                <li>Start referring clients to start a long term association and earnings.</li>
+                <li>Start referring clients to begin a long term association and earnings.</li>
               </ol>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://powerca.in/affiliate-login" class="button">Login to Your Account</a>
+                <a href="https://powerca.in/affiliate-login" style="display: inline-block; padding: 12px 30px; background-color: #1e40af; color: #ffffff; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold;">Login to Your Account</a>
               </div>
 
               <p style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">

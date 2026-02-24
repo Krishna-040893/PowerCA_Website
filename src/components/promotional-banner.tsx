@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 
 export default function PromotionalBanner() {
   const [isVisible, setIsVisible] = useState(true)
@@ -42,19 +41,6 @@ export default function PromotionalBanner() {
             View Pricing
           </a>
 
-          {/* Separator - hidden on mobile */}
-          <span className="hidden sm:block w-px h-4 bg-slate-600"></span>
-
-          {/* Download Demo Version - always visible */}
-          <Link href="/app-download" className="relative group inline-flex flex-shrink-0">
-            {/* Subtle glow effect */}
-            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 blur-sm group-hover:opacity-50 transition-opacity duration-300" />
-            <div className="relative inline-flex items-center gap-0.5 sm:gap-1.5 px-1.5 sm:px-4 py-0.5 sm:py-1.5 rounded-full text-[9px] sm:text-xs font-bold whitespace-nowrap bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-200">
-              <span className="text-[10px] sm:text-sm">🎁</span>
-              <span className="sm:hidden">Demo</span>
-              <span className="hidden sm:inline">Download Demo Version</span>
-            </div>
-          </Link>
         </div>
       </div>
 

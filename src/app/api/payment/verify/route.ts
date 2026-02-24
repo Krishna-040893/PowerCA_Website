@@ -85,7 +85,14 @@ export async function POST(req: NextRequest) {
 
     // Get additional user data from headers or session
     const userData = req.headers.get('x-user-data')
-    const userInfo = userData ? JSON.parse(userData) : {}
+    let userInfo: Record<string, string> = {}
+    if (userData) {
+      try {
+        userInfo = JSON.parse(userData)
+      } catch {
+        logger.warn('Failed to parse x-user-data header, using empty object')
+      }
+    }
 
     // Prepare payment data
     // Amount received is TOTAL (including GST)
@@ -152,7 +159,7 @@ export async function POST(req: NextRequest) {
         // Get order data to determine plan type and user count
         const { data: orderDataForSub } = await supabase
           .from('payment_orders')
-          .select('plan_type, address_id, user_count')
+          .select('*')
           .eq('order_id', normalizedOrderId)
           .single()
 
@@ -176,10 +183,6 @@ export async function POST(req: NextRequest) {
           case 'onetime':
             nextDueDate = null // Lifetime, no renewal
             break
-          case 'installment':
-            nextDueDate = new Date(now)
-            nextDueDate.setMonth(nextDueDate.getMonth() + 1) // Monthly installment
-            break
           default:
             nextDueDate = new Date(now)
             nextDueDate.setMonth(nextDueDate.getMonth() + 1)
@@ -194,18 +197,21 @@ export async function POST(req: NextRequest) {
           .single()
 
         if (existingSubscription) {
+          // Build update data
+          const updateData: Record<string, unknown> = {
+            plan_type: planType,
+            user_count: userCount,
+            status: 'active',
+            current_period_start: now.toISOString(),
+            current_period_end: nextDueDate?.toISOString() || null,
+            next_due_date: nextDueDate?.toISOString() || null,
+            updated_at: now.toISOString()
+          }
+
           // Update existing subscription with new plan type, user count, and next due date
           const { data: updatedSubscription, error: updateError } = await supabase
             .from('subscriptions')
-            .update({
-              plan_type: planType,
-              user_count: userCount,
-              status: 'active',
-              current_period_start: now.toISOString(),
-              current_period_end: nextDueDate?.toISOString() || null,
-              next_due_date: nextDueDate?.toISOString() || null,
-              updated_at: now.toISOString()
-            })
+            .update(updateData)
             .eq('id', existingSubscription.id)
             .select()
             .single()
@@ -222,7 +228,7 @@ export async function POST(req: NextRequest) {
           }
         } else {
           // Create new subscription
-          const subscriptionData = {
+          const subscriptionData: Record<string, unknown> = {
             user_id: session.user.id,
             address_id: addressId,
             plan_type: planType,
@@ -262,7 +268,7 @@ export async function POST(req: NextRequest) {
     // Get user_count, plan_type, coupon, and discount info from payment_orders for invoice
     const { data: orderForInvoice } = await supabase
       .from('payment_orders')
-      .select('user_count, plan_type, discount_percentage, discount_amount, original_amount, coupon_code, coupon_discount_percentage')
+      .select('*')
       .eq('order_id', normalizedOrderId)
       .single()
     const invoiceUserCount = orderForInvoice?.user_count || 1
@@ -337,7 +343,9 @@ export async function POST(req: NextRequest) {
       // Discount details
       discountPercentage: invoiceDiscountPercentage,
       discountAmount: invoiceDiscountAmount,
-      originalAmount: invoiceOriginalAmount
+      originalAmount: invoiceOriginalAmount,
+      couponCode: usedCouponCode,
+      paymentType: orderForInvoice?.payment_type || paymentType || 'initial_payment'
     }
 
     // Generate PDF invoice and upload to storage
@@ -433,43 +441,34 @@ export async function POST(req: NextRequest) {
 
                   <div class="payment-details">
                     <h3>💳 Payment Summary</h3>
-                    <div class="detail-row">
-                      <span>📋 Receipt Number</span>
-                      <strong>${invoiceNumber}</strong>
-                    </div>
-                    <div class="detail-row">
-                      <span>🔗 Order ID</span>
-                      <span>${normalizedOrderId}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>💰 Payment ID</span>
-                      <span>${normalizedPaymentId}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>📅 Date</span>
-                      <span>${new Date().toLocaleDateString('en-IN')}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>💵 Total Amount</span>
-                      <strong>₹${grandTotal.toFixed(2)}</strong>
-                    </div>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">📋 Receipt Number</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;"><strong>${invoiceNumber}</strong></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">🔗 Order ID</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${normalizedOrderId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">💰 Payment ID</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${normalizedPaymentId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">📅 Date</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #555;">💵 Total Amount</td>
+                        <td style="padding: 8px 0; text-align: right;"><strong style="color: #667eea;">₹${grandTotal.toFixed(2)}</strong></td>
+                      </tr>
+                    </table>
                   </div>
 
-                  <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="color: #27ae60; margin-top: 0;">🎁 What's Next?</h3>
-                    <ul style="margin: 0; padding-left: 20px;">
-                      <li>📧 You'll receive implementation details within 24 hours</li>
-                      <li>🎓 Free training session will be scheduled</li>
-                      <li>🛠️ Complete setup and configuration included</li>
-                      <li>🎉 First year subscription is absolutely FREE!</li>
-                    </ul>
-                  </div>
-
-                  <p>📎 Your detailed receipt is attached as a PDF for your records.</p>
-                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong> 🚀</p>
+                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong></p>
                 </div>
                 <div class="footer">
-                  <p>© 2024 PowerCA - Complete CA Practice Management Solution<br>
+                  <p>© ${new Date().getFullYear()} PowerCA - Complete CA Practice Management Solution<br>
                   This is an automated email. Please do not reply to this message.</p>
                 </div>
               </div>
@@ -781,6 +780,8 @@ export async function POST(req: NextRequest) {
         invoiceNumber: invoiceNumber,
         amount: grandTotal,
         currency: 'INR',
+        planType: invoicePlanType,
+        userCount: invoiceUserCount,
       },
     })
 

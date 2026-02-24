@@ -37,9 +37,6 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
     .detail-row:last-child { border-bottom: none; }
     .cta-button { background: #1D91EB; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
     .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; }
-    .next-steps { background: #E3F2FD; padding: 20px; border-radius: 8px; margin: 20px 0; }
-    .step { display: flex; align-items: start; margin: 15px 0; }
-    .step-number { background: #1D91EB; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -60,85 +57,30 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
       
       <div class="details-box">
         <h3>💳 PAYMENT SUMMARY</h3>
-        ${invoiceNumber ? `
-        <div class="detail-row">
-          <span>📋 Invoice Number - </span>
-          <strong>${invoiceNumber}</strong>
-        </div>
-        ` : ''}
-        <div class="detail-row">
-          <span>🔗 Order ID - </span>
-          <strong>${orderId}</strong>
-        </div>
-        <div class="detail-row">
-          <span>💰 Payment ID - </span>
-          <strong>${paymentId}</strong>
-        </div>
-        <div class="detail-row">
-          <span>📅 Date - </span>
-          <strong>${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
-        </div>
-        <div class="detail-row">
-          <span>💵 Total Amount - </span>
-          <strong>₹${amount.toLocaleString('en-IN')}</strong>
-        </div>
-      </div>
-
-      <div class="details-box" style="background: #E8F5E9;">
-        <h3>📦 PRODUCT DETAILS</h3>
-        <div class="detail-row">
-          <div>
-            <strong style="font-size: 15px; color: #2c3e50;">Power CA Software</strong><br>
-            <span style="font-size: 13px; color: #666; font-style: italic;">Installation and Ongoing Support & Update</span>
-          </div>
-          <strong style="color: #4CAF50;">First Year FREE</strong>
-        </div>
-      </div>
-
-      <div class="next-steps">
-        <h3>What Happens Next?</h3>
-        
-        <div class="step">
-          <div class="step-number">1</div>
-          <div>
-            <strong>Account Setup (Within 24 hours)</strong><br>
-            Our team will contact you to begin setting up your PowerCA account with all your requirements.
-          </div>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">2</div>
-          <div>
-            <strong>Data Migration</strong><br>
-            We'll help you migrate all your existing data seamlessly to PowerCA.
-          </div>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">3</div>
-          <div>
-            <strong>Training Session</strong><br>
-            Personalized training sessions will be scheduled for you and your team.
-          </div>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">4</div>
-          <div>
-            <strong>Go Live!</strong><br>
-            Start using PowerCA to manage your practice efficiently.
-          </div>
-        </div>
-      </div>
-      
-      <div style="text-align: center;">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="cta-button">
-          Access Your Dashboard
-        </a>
-      </div>
-      
-      <div style="background: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0;"><strong>📄 GST Invoice:</strong> Your GST invoice is attached to this email. You can also download it from your dashboard.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+          ${invoiceNumber ? `
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #555;">📋 Receipt Number</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; text-align: right;"><strong>${invoiceNumber}</strong></td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #555;">🔗 Order ID</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; text-align: right;"><strong>${orderId}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #555;">💰 Payment ID</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; text-align: right;"><strong>${paymentId}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #555;">📅 Date</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; text-align: right;"><strong>${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; color: #555;">💵 Total Amount</td>
+            <td style="padding: 10px 0; text-align: right;"><strong>₹${amount.toLocaleString('en-IN')}</strong></td>
+          </tr>
+        </table>
       </div>
       
       <div style="background: #E8F5E9; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -150,8 +92,8 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
         <p>This is an automated email. Please do not reply to this email.</p>
         <p>© ${new Date().getFullYear()} PowerCA. All rights reserved.</p>
         <p>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/terms">Terms & Conditions</a> |
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/privacy">Privacy Policy</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/terms">Terms & Conditions</a> |
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/privacy">Privacy Policy</a>
         </p>
       </div>
     </div>
@@ -178,26 +120,12 @@ Your payment has been successfully processed!
 Transaction Details:
 - Order ID: ${orderId}
 - Payment ID: ${paymentId}
-${invoiceNumber ? `- Invoice Number: ${invoiceNumber}` : ''}
+${invoiceNumber ? `- Receipt Number: ${invoiceNumber}` : ''}
 - Amount Paid: ₹${amount.toLocaleString('en-IN')}
 - Plan: PowerCA Implementation
 - First Year: FREE
 
-What Happens Next?
-
-1. Account Setup (Within 24 hours)
-   Our team will contact you to begin setting up your PowerCA account.
-
-2. Data Migration
-   We'll help you migrate all your existing data seamlessly.
-
-3. Training Session
-   Personalized training sessions will be scheduled for you and your team.
-
-4. Go Live!
-   Start using PowerCA to manage your practice efficiently.
-
-Access your dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
+Access your dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/dashboard
 
 Need Help?
 Call: +91 98765 43210

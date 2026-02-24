@@ -91,15 +91,21 @@ export async function GET(
     }
     let userInfo = {
       user_count: 1,
-      plan_type: 'onetime'
+      plan_type: 'annual',
     }
+    let couponCode: string | null = null
+    let paymentType: string | null = null
 
     if (payment.order_id) {
-      const { data: orderData } = await supabase
+      const { data: orderData, error: orderError } = await supabase
         .from('payment_orders')
-        .select('discount_percentage, discount_amount, original_amount, user_count, plan_type')
+        .select('*')
         .eq('order_id', payment.order_id)
         .single()
+
+      if (orderError) {
+        logger.error('Failed to fetch payment_orders for invoice download', { orderId: payment.order_id, error: orderError.message })
+      }
 
       if (orderData) {
         discountInfo = {
@@ -109,14 +115,27 @@ export async function GET(
         }
         userInfo = {
           user_count: orderData.user_count || 1,
-          plan_type: orderData.plan_type || 'onetime'
+          plan_type: orderData.plan_type || 'annual',
         }
+        couponCode = orderData.coupon_code || null
+        paymentType = orderData.payment_type || null
       }
     }
 
     // Calculate GST breakdown
     const baseAmount = invoice.amount
     const gstDetails = calculateGST(baseAmount, false) // Assuming intra-state
+
+    logger.info('Invoice download - data for PDF generation', {
+      invoiceNumber,
+      baseAmount,
+      grandTotal: invoice.total,
+      userCount: userInfo.user_count,
+      planType: userInfo.plan_type,
+      originalAmount: discountInfo.originalAmount,
+      discountAmount: discountInfo.discountAmount,
+      paymentType,
+    })
 
     // Prepare invoice data
     const invoiceData = {
@@ -148,6 +167,10 @@ export async function GET(
       // Include user/plan information
       user_count: userInfo.user_count,
       planType: userInfo.plan_type,
+      // Include coupon code
+      couponCode,
+      // Include payment type for server installation charge logic
+      paymentType: paymentType || 'initial_payment',
     }
 
     // Step 3: Generate PDF using default HTML template

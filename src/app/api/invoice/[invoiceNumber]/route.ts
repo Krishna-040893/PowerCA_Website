@@ -39,7 +39,7 @@ export async function GET(
     if (payment?.order_id) {
       const { data: orderData } = await supabase
         .from('payment_orders')
-        .select('discount_percentage, discount_amount, original_amount, user_count, plan_type')
+        .select('*')
         .eq('order_id', payment.order_id)
         .single()
 
@@ -51,7 +51,7 @@ export async function GET(
         }
         userInfo = {
           user_count: orderData.user_count || 1,
-          plan_type: orderData.plan_type || 'onetime'
+          plan_type: orderData.plan_type || 'onetime',
         }
       }
     }

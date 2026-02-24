@@ -23,8 +23,7 @@ export function Header() {
 
   return (
     <header
-      className="fixed w-full z-[60] bg-white"
-      style={{ top: 'var(--banner-height, 48px)' }}
+      className="sticky top-0 w-full z-[60] bg-white shadow-sm"
     >
       <div className="w-full px-4 sm:px-6 lg:px-6 xl:px-12">
         <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20 relative">
@@ -301,7 +300,7 @@ export function Header() {
                       </Button>
                     </div>
                     <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity px-[1.25rem] py-4" style={{ backgroundColor: '#155dfc' }} asChild>
-                      <Link href="/book-demo">Book Demo</Link>
+                      <Link href="/book-demo" onClick={() => setIsMobileMenuOpen(false)}>Book Demo</Link>
                     </Button>
                   </>
                 )}

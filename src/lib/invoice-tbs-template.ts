@@ -7,23 +7,25 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
       return 'Invalid Date'
     }
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    const datePart = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    const timePart = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+    return `${datePart} ${timePart}`
   }
 
   // Calculate account number from invoice number
   const _accountNumber = data.invoiceNumber.replace(/[^0-9]/g, '').padStart(12, '0')
 
-  // Get user count and plan type
+  // Get user count, plan type, and coupon code
   const userCount = data.user_count || 1
-  const planType = data.planType || 'onetime'
+  const planType = data.planType || 'annual'
+  const couponCode = data.couponCode || null
 
   // Plan display names
   const getPlanDisplayName = () => {
     switch (planType) {
       case 'monthly': return 'Monthly Subscription'
       case 'annual': return 'Annual Subscription'
-      case 'onetime': return 'One Time Payment'
-      case 'installment': return 'Installment Payment'
+      case 'onetime': return '5 Year Pack'
       case 'final_settlement': return 'Final Settlement'
       default: return 'PowerCA Implementation'
     }
@@ -33,15 +35,28 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     switch (planType) {
       case 'monthly': return 'Monthly subscription with ongoing support'
       case 'annual': return 'Annual subscription with ongoing support'
-      case 'onetime': return 'Complete setup with first year subscription FREE'
-      case 'installment': return 'Installment payment (10 months)'
+      case 'onetime': return '5 Year Pack - Per user pricing'
       case 'final_settlement': return 'Final settlement payment for PowerCA service'
       default: return 'Installation and Ongoing Support & Update'
     }
   }
 
+  // Server Installation & Configuration charge - only for first-time purchases
+  const isFirstPurchase = data.paymentType === 'initial_payment' || !data.paymentType
+  const serverInstallationCharge = isFirstPurchase ? 5000 : 0
+
+  // Calculate license amount (subtotal minus server installation if applicable)
+  const licenseTotal = data.subtotal - serverInstallationCharge
+
   // Calculate price per user (for display purposes)
-  const pricePerUser = userCount > 1 ? Math.round(data.subtotal / userCount) : data.subtotal
+  // Use originalAmount if available (before discount), otherwise derive from license total
+  const pricePerUser = data.originalAmount && data.originalAmount > 0 ? data.originalAmount : (userCount > 0 ? Math.round(licenseTotal / userCount) : licenseTotal)
+
+  // License amount before discount (per user * users)
+  const licenseBeforeDiscount = pricePerUser * userCount
+
+  // Coupon discount total (across all users)
+  const totalCouponDiscount = data.discountAmount && data.discountAmount > 0 ? data.discountAmount * userCount : 0
 
   return `
 <!DOCTYPE html>
@@ -98,7 +113,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     }
     .company-address {
       text-align: right;
-      font-size: 12px;
+      font-size: 14px;
       line-height: 1.6;
       color: #666;
     }
@@ -113,13 +128,13 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       width: 45%;
     }
     .bill-to h3 {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     }
     .bill-to-content {
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.8;
       color: #666;
     }
@@ -133,10 +148,11 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       font-size: 36px;
       font-weight: bold;
       color: #3b7dd6;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      text-align: center;
     }
     .invoice-details {
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.8;
       color: #666;
     }
@@ -156,18 +172,18 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       color: white;
     }
     .items-table th {
-      padding: 12px;
+      padding: 14px;
       text-align: left;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
     }
     .items-table th.text-right {
       text-align: right;
     }
     .items-table td {
-      padding: 15px 12px;
+      padding: 16px 14px;
       border-bottom: 1px solid #e0e0e0;
-      font-size: 13px;
+      font-size: 15px;
     }
     .items-table td.text-right {
       text-align: right;
@@ -217,8 +233,8 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     .totals-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      font-size: 14px;
+      padding: 10px 0;
+      font-size: 16px;
     }
     .totals-row.subtotal {
       border-bottom: 1px solid #e0e0e0;
@@ -227,9 +243,9 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     .totals-row.total {
       background: #3b7dd6;
       color: white;
-      padding: 12px 20px;
+      padding: 14px 20px;
       margin: 15px -20px 0 0;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
     }
 
@@ -286,7 +302,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     <!-- Header -->
     <div class="header">
       <div class="company-logo">
-        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="PowerCA Logo" style="height: 60px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
+        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="PowerCA Logo" style="height: 90px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
       </div>
       <div class="company-address">
         No. 130, II Floor, Muneer Complex, Palani Road,<br>
@@ -294,6 +310,9 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
         📞 +91 96295 14635 📧 contact@powerca.in
       </div>
     </div>
+
+    <!-- Order Summary Title -->
+    <div class="invoice-title">ORDER SUMMARY</div>
 
     <!-- Billing Section -->
     <div class="billing-section">
@@ -310,7 +329,6 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       </div>
 
       <div class="invoice-info">
-        <div class="invoice-title">RECEIPT</div>
         <div class="invoice-details">
           <strong>Receipt #:</strong> ${data.invoiceNumber}<br>
           <strong>Order #:</strong> ${data.orderId}<br>
@@ -331,81 +349,61 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     <table class="items-table">
       <thead>
         <tr>
-          <th style="width: 60px;">S. No</th>
-          <th style="width: 80px;">Image</th>
+          <th style="width: 60px; white-space: nowrap;">S.No</th>
           <th>Product</th>
-          <th style="width: 100px;" class="text-right">Quantity</th>
-          <th style="width: 120px;" class="text-right">Amount</th>
+          <th style="width: 80px;" class="text-right">Users</th>
+          <th style="width: 110px;" class="text-right">Price</th>
+          <th style="width: 150px;" class="text-right">Amount</th>
         </tr>
       </thead>
       <tbody>
-        ${data.items.map((item, index) => `
+        <!-- Row 1: Subscription -->
         <tr>
-          <td>${(index + 1).toString().padStart(2, '0')}</td>
+          <td>01</td>
           <td>
-            ${productLogoBase64 ? `<img src="${productLogoBase64}" alt="PowerCA Logo" style="width: 60px; height: 60px; object-fit: contain; display: block;">` : `
-            <div class="image-placeholder">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <rect width="40" height="40" fill="#e0e0e0"/>
-                <path d="M15 15L25 25M25 15L15 25" stroke="#999" stroke-width="2"/>
-              </svg>
-            </div>
-            `}
+            <strong>${getPlanDisplayName()} for PowerCA</strong><br>
+            <span style="font-size: 13px; color: #666;">${getProductDescription()}</span>
           </td>
-          <td>
-            <strong>${getPlanDisplayName()}</strong><br>
-            <span style="font-size: 11px; color: #666; font-style: italic;">${getProductDescription()}</span>
-            ${userCount > 1 ? `<br><span style="font-size: 11px; color: #3b7dd6; font-weight: 500;">@ ${formatCurrency(pricePerUser)} per user</span>` : ''}
-          </td>
-          <td class="text-right">${userCount > 1 ? `${userCount} users` : item.quantity}</td>
-          <td class="text-right">
-            ${data.originalAmount && data.discountAmount && data.discountAmount > 0 ? `
-              <span style="text-decoration: line-through; color: #999; font-size: 12px; display: block;">${formatCurrency(data.originalAmount)}</span>
-              ${userCount <= 1 ? `<strong>${formatCurrency(item.amount)}</strong>` : ''}
-            ` : `
-              ${userCount <= 1 ? `<strong>${formatCurrency(item.amount)}</strong>` : ''}
-            `}
-          </td>
+          <td class="text-right"><strong>${userCount}</strong></td>
+          <td class="text-right"><strong>${formatCurrency(pricePerUser)}</strong></td>
+          <td class="text-right"><strong>${formatCurrency(licenseBeforeDiscount)}</strong></td>
         </tr>
-        `).join('')}
+        ${serverInstallationCharge > 0 ? `
+        <!-- Row 2: Server Installation & Configuration (first-time only) -->
+        <tr>
+          <td>02</td>
+          <td>
+            <strong>Server Installation & Configuration</strong><br>
+            <span style="font-size: 13px; color: #666;">One-time setup and configuration</span>
+          </td>
+          <td class="text-right">-</td>
+          <td class="text-right">-</td>
+          <td class="text-right"><strong>${formatCurrency(serverInstallationCharge)}</strong></td>
+        </tr>
+        ` : ''}
+        ${totalCouponDiscount > 0 ? `
+        <!-- Coupon Discount Row -->
+        <tr>
+          <td colspan="4" style="text-align: right; color: #16a34a; font-weight: 600;">
+            Coupon Discount${couponCode ? ` (${couponCode})` : ''} ${data.discountPercentage || 0}%
+          </td>
+          <td class="text-right" style="color: #16a34a; font-weight: 600;">-${formatCurrency(totalCouponDiscount)}</td>
+        </tr>
+        ` : ''}
       </tbody>
     </table>
 
     <!-- Totals -->
     <div class="totals-section">
       <div class="totals-table">
-        ${data.originalAmount && data.discountAmount && data.discountAmount > 0 ? `
-        <div class="totals-row">
-          <span>ORIGINAL AMOUNT:</span>
-          <span style="text-decoration: line-through; color: #999;">${formatCurrency(data.originalAmount)}</span>
-        </div>
-        <div class="totals-row" style="color: #27ae60;">
-          <span>DISCOUNT (${data.discountPercentage || 0}%):</span>
-          <span>-${formatCurrency(data.discountAmount)}</span>
-        </div>
-        ` : ''}
-        ${userCount > 1 ? `
-        <div class="totals-row">
-          <span>PRICE PER USER:</span>
-          <span>${formatCurrency(pricePerUser)}</span>
-        </div>
-        <div class="totals-row">
-          <span>NUMBER OF USERS:</span>
-          <span>× ${userCount}</span>
-        </div>
-        ` : ''}
         <div class="totals-row subtotal">
           <span>SUB TOTAL:</span>
           <span>${formatCurrency(data.subtotal)}</span>
         </div>
         ${data.cgstAmount && data.sgstAmount ? `
         <div class="totals-row">
-          <span>CGST (9%):</span>
-          <span>${formatCurrency(data.cgstAmount)}</span>
-        </div>
-        <div class="totals-row">
-          <span>SGST (9%):</span>
-          <span>${formatCurrency(data.sgstAmount)}</span>
+          <span>GST (18%):</span>
+          <span>${formatCurrency(data.cgstAmount + data.sgstAmount)}</span>
         </div>
         ` : ''}
         ${data.igstAmount ? `
@@ -423,19 +421,9 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
 
     <!-- Footer -->
     <div class="footer">
-      <div class="terms">
-        <h4>TERMS AND CONDITIONS:</h4>
-        <p>
-          This is a computer-generated invoice. For any queries or support, please contact us at contact@powerca.in or call +91 96295 14635.
-        </p>
-      </div>
-
-      <div class="payment-info">
-        <strong>Payment Method:</strong> Online Payment via Razorpay | <strong>Status:</strong> Paid
-      </div>
-
-      <div class="website">
-        www.powerca.in | contact@powerca.in | +91 96295 14635
+      <div class="thank-you" style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h3 style="color: #3b7dd6; margin-bottom: 8px; font-size: 18px;">Thank You for Your Subscription!</h3>
+        <p style="color: #666; font-size: 14px;">This is a computer-generated document. No signature required.</p>
       </div>
     </div>
   </div>

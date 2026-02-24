@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -8,9 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import PhoneInput from 'react-phone-number-input'
+import PhoneInput, { type Country } from 'react-phone-number-input'
+import labels from 'react-phone-number-input/locale/en.json'
 import 'react-phone-number-input/style.css'
 import {
   Eye,
@@ -20,39 +20,82 @@ import {
   User,
   Briefcase,
   CreditCard,
-  Check,
-  FileText,
-  Download
+  Check
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+// Country-State mapping
+const countryStates: Record<string, string[]> = {
+  'India': [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ],
+  'United States': [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+    'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+    'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+    'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+    'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
+    'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma',
+    'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+    'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+    'West Virginia', 'Wisconsin', 'Wyoming'
+  ],
+  'United Kingdom': ['England', 'Scotland', 'Wales', 'Northern Ireland'],
+  'Canada': [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+    'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+    'Quebec', 'Saskatchewan', 'Yukon'
+  ],
+  'Australia': [
+    'Australian Capital Territory', 'New South Wales', 'Northern Territory', 'Queensland',
+    'South Australia', 'Tasmania', 'Victoria', 'Western Australia'
+  ],
+  'United Arab Emirates': ['Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'],
+}
+
+// Map ISO country codes to countryStates keys where names differ from locale labels
+const countryCodeOverrides: Record<string, string> = {
+  'GB': 'United Kingdom',
+  'AE': 'United Arab Emirates',
+}
+
+// Get country name from ISO code using locale labels
+function getCountryName(code: Country | undefined): string {
+  if (!code) return ''
+  return countryCodeOverrides[code] || (labels as Record<string, string>)[code] || code
+}
+
 // Required field label component
 const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) => (
-  <Label htmlFor={htmlFor} className="text-gray-900 text-sm sm:text-base font-medium">
+  <Label htmlFor={htmlFor} className="text-gray-900 text-xs sm:text-sm font-medium">
     {children} <span className="text-red-500">*</span>
   </Label>
 )
 
 export default function AffiliateRegisterPage() {
   const _router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [formData, setFormData] = useState({
+
+  const defaultFormData = {
     // Personal Information (Step 1)
     fullName: '',
     email: '',
     phone: '',
     password: '',
     confirmPassword: '',
-    city: '',
+    country: 'India',
     state: '',
+    city: '',
 
     // Business Information (Step 2)
     businessType: 'individual',
-    companyName: '',
+    firmName: '',
     designation: '',
     experience: '',
     promotionMethod: '',
@@ -64,9 +107,41 @@ export default function AffiliateRegisterPage() {
     ifscCode: '',
     panNumber: '',
     gstNumber: ''
-  })
+  }
+
+  const [currentStep, setCurrentStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [phoneCountry, setPhoneCountry] = useState<Country>('IN')
+  const [formData, setFormData] = useState<typeof defaultFormData>(defaultFormData)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Restore saved form data and step from sessionStorage after mount
+  useEffect(() => {
+    try {
+      const savedForm = sessionStorage.getItem('affiliate-register-form')
+      if (savedForm) {
+        setFormData(JSON.parse(savedForm))
+      }
+      const savedStep = sessionStorage.getItem('affiliate-register-step')
+      if (savedStep) {
+        setCurrentStep(parseInt(savedStep, 10))
+      }
+    } catch {
+      // Ignore sessionStorage errors
+    }
+  }, [])
+
+  // Persist form data and step to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('affiliate-register-form', JSON.stringify(formData))
+  }, [formData])
+
+  useEffect(() => {
+    sessionStorage.setItem('affiliate-register-step', String(currentStep))
+  }, [currentStep])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -84,8 +159,8 @@ export default function AffiliateRegisterPage() {
     if (!formData.phone) newErrors.phone = 'Phone number is required'
     if (!formData.password) newErrors.password = 'Password is required'
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password'
-    if (!formData.city) newErrors.city = 'City is required'
     if (!formData.state) newErrors.state = 'State is required'
+    if (!formData.city) newErrors.city = 'City is required'
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (formData.email && !emailRegex.test(formData.email)) {
@@ -113,8 +188,8 @@ export default function AffiliateRegisterPage() {
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {}
 
-    if (formData.businessType === 'company' && !formData.companyName) {
-      newErrors.companyName = 'Company name is required'
+    if ((formData.businessType === 'company' || formData.businessType === 'partnership') && !formData.firmName) {
+      newErrors.firmName = 'Firm name is required'
     }
     if (!formData.promotionMethod) newErrors.promotionMethod = 'Please describe your promotion method'
     if (!formData.targetAudience) newErrors.targetAudience = 'Please describe your target audience'
@@ -130,20 +205,22 @@ export default function AffiliateRegisterPage() {
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {}
 
+    if (formData.accountNumber && !/^\d{9,18}$/.test(formData.accountNumber)) {
+      newErrors.accountNumber = 'Account number must be 9-18 digits'
+    }
+
     const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/
     if (formData.ifscCode && !ifscRegex.test(formData.ifscCode)) {
       newErrors.ifscCode = 'Please enter a valid IFSC code'
     }
 
-    if (formData.accountNumber && !/^\d{9,18}$/.test(formData.accountNumber)) {
-      newErrors.accountNumber = 'Account number must be 9-18 digits'
-    }
-
-    if (!agreeToTerms) {
-      newErrors.terms = 'Please agree to the terms and conditions'
-    }
-
     setErrors(newErrors)
+
+    const hasEmptyRequired = !formData.accountNumber || !formData.ifscCode || !formData.panNumber
+    if (hasEmptyRequired) {
+      return false
+    }
+
     return Object.keys(newErrors).length === 0
   }
 
@@ -153,12 +230,14 @@ export default function AffiliateRegisterPage() {
     else if (currentStep === 2) isValid = validateStep2()
 
     if (isValid) {
+      setErrors({})
       setCurrentStep(prev => Math.min(prev + 1, 3))
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
   const handleBack = () => {
+    setErrors({})
     setCurrentStep(prev => Math.max(prev - 1, 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -166,6 +245,13 @@ export default function AffiliateRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Only allow submission from Step 3
+    if (currentStep !== 3) {
+      handleNext()
+      return
+    }
+
+    // Validate step 3 before final submission
     if (!validateStep3()) {
       return
     }
@@ -183,10 +269,11 @@ export default function AffiliateRegisterPage() {
           email: formData.email,
           phone: formData.phone, // PhoneInput already includes country code
           password: formData.password,
-          city: formData.city,
+          country: formData.country,
           state: formData.state,
+          city: formData.city,
           businessType: formData.businessType,
-          companyName: formData.companyName,
+          firmName: formData.firmName,
           designation: formData.designation,
           experience: formData.experience,
           promotionMethod: formData.promotionMethod,
@@ -208,6 +295,8 @@ export default function AffiliateRegisterPage() {
       }
 
       if (affiliateResponse.ok) {
+        sessionStorage.removeItem('affiliate-register-form')
+        sessionStorage.removeItem('affiliate-register-step')
         toast.success('🎉 Registration successful! Your affiliate application has been submitted and is under review. Please login to access your account.')
         setTimeout(() => {
           window.location.href = '/affiliate-login'
@@ -294,12 +383,9 @@ export default function AffiliateRegisterPage() {
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-5">
-            <h1 className="text-xl sm:text-2xl font-bold text-center mb-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-center">
               Join PowerCA Affiliate Program
             </h1>
-            <p className="text-center text-purple-100 text-xs sm:text-sm">
-              Complete the registration to start earning 10% commission on every referral
-            </p>
           </div>
 
           {/* Progress Steps */}
@@ -381,7 +467,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.fullName}
                           onChange={(e) => handleInputChange('fullName', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter your full name"
                         />
                         {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
@@ -394,7 +480,7 @@ export default function AffiliateRegisterPage() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="your@email.com"
                         />
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -405,9 +491,18 @@ export default function AffiliateRegisterPage() {
                         <div className="mt-1.5">
                           <PhoneInput
                             international
+                            countryCallingCodeEditable={false}
                             defaultCountry="IN"
-                            value={formData.phone}
+                            value={formData.phone || undefined}
                             onChange={(value) => handleInputChange('phone', value || '')}
+                            onCountryChange={(country) => {
+                              if (country) {
+                                setPhoneCountry(country)
+                              }
+                              const name = getCountryName(country || phoneCountry)
+                              handleInputChange('country', name)
+                              handleInputChange('state', '')
+                            }}
                             className="flex gap-0 [&>input]:h-12 [&>input]:bg-purple-50 [&>input]:border-2 [&>input]:border-purple-200 [&>input]:rounded-r-xl [&>input]:focus:border-purple-400 [&>input]:placeholder:text-gray-400 placeholder:text-sm [&>input]:caret-purple-600 [&>input]:selection:bg-purple-200 [&>input]:selection:text-purple-900 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-purple-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
                             numberInputProps={{
                               className: "flex-1"
@@ -426,7 +521,7 @@ export default function AffiliateRegisterPage() {
                             type={showPassword ? 'text' : 'password'}
                             value={formData.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
-                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 md:h-10 pr-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Minimum 8 characters"
                           />
                           <button
@@ -449,7 +544,7 @@ export default function AffiliateRegisterPage() {
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={formData.confirmPassword}
                             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                            className="h-12 pr-10 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 md:h-10 pr-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Re-enter password"
                           />
                           <button
@@ -464,29 +559,43 @@ export default function AffiliateRegisterPage() {
                       </div>
 
                       <div>
+                        <RequiredLabel htmlFor="state">State</RequiredLabel>
+                        {formData.country && countryStates[formData.country] ? (
+                          <select
+                            id="state"
+                            value={formData.state}
+                            onChange={(e) => handleInputChange('state', e.target.value)}
+                            className="mt-1.5 h-12 md:h-10 w-full bg-purple-50 border-2 border-purple-200 focus:border-purple-400 rounded-xl px-3 text-sm outline-none appearance-none"
+                          >
+                            <option value="">Select state</option>
+                            {countryStates[formData.country].map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            id="state"
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => handleInputChange('state', e.target.value)}
+                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm"
+                            placeholder="Your state"
+                          />
+                        )}
+                        {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+                      </div>
+
+                      <div>
                         <RequiredLabel htmlFor="city">City</RequiredLabel>
                         <Input
                           id="city"
                           type="text"
                           value={formData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Your city"
                         />
                         {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
-                      </div>
-
-                      <div>
-                        <RequiredLabel htmlFor="state">State</RequiredLabel>
-                        <Input
-                          id="state"
-                          type="text"
-                          value={formData.state}
-                          onChange={(e) => handleInputChange('state', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
-                          placeholder="Your state"
-                        />
-                        {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
                       </div>
                     </div>
                   </motion.div>
@@ -514,7 +623,7 @@ export default function AffiliateRegisterPage() {
                     <div className="space-y-4">
                       {/* Business Type - Full Width */}
                       <div>
-                        <Label className="text-gray-900 text-sm sm:text-base font-medium">
+                        <Label className="text-gray-900 text-xs sm:text-sm font-medium">
                           Business Type <span className="text-red-500">*</span>
                         </Label>
                         <RadioGroup
@@ -524,39 +633,39 @@ export default function AffiliateRegisterPage() {
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="individual" id="individual" />
-                            <Label htmlFor="individual" className="text-sm sm:text-base cursor-pointer">Individual</Label>
+                            <Label htmlFor="individual" className="text-xs sm:text-sm cursor-pointer">Individual</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="company" id="company" />
-                            <Label htmlFor="company" className="text-sm sm:text-base cursor-pointer">Company</Label>
+                            <Label htmlFor="company" className="text-xs sm:text-sm cursor-pointer">Company</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="partnership" id="partnership" />
-                            <Label htmlFor="partnership" className="text-sm sm:text-base cursor-pointer">Partnership</Label>
+                            <Label htmlFor="partnership" className="text-xs sm:text-sm cursor-pointer">Partnership</Label>
                           </div>
                         </RadioGroup>
                       </div>
 
                       {/* 2x2 Grid Layout for 4 fields */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Row 1, Col 1: Company Name (only for company) OR Designation */}
-                        {formData.businessType === 'company' && (
+                        {/* Firm Name (for company or partnership) */}
+                        {(formData.businessType === 'company' || formData.businessType === 'partnership') && (
                           <div>
-                            <RequiredLabel htmlFor="companyName">Company Name</RequiredLabel>
+                            <RequiredLabel htmlFor="firmName">{formData.businessType === 'company' ? 'Company Name' : 'Firm Name'}</RequiredLabel>
                             <Input
-                              id="companyName"
+                              id="firmName"
                               type="text"
-                              value={formData.companyName}
-                              onChange={(e) => handleInputChange('companyName', e.target.value)}
-                              className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
-                              placeholder="Your company name"
+                              value={formData.firmName}
+                              onChange={(e) => handleInputChange('firmName', e.target.value)}
+                              className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                              placeholder={formData.businessType === 'company' ? 'Your company name' : 'Your firm name'}
                             />
-                            {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
+                            {errors.firmName && <p className="text-red-500 text-sm mt-1">{errors.firmName}</p>}
                           </div>
                         )}
 
                         <div>
-                          <Label htmlFor="designation" className="text-gray-900 text-sm sm:text-base font-medium">
+                          <Label htmlFor="designation" className="text-gray-900 text-xs sm:text-sm font-medium">
                             Designation
                           </Label>
                           <Input
@@ -564,14 +673,14 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.designation}
                             onChange={(e) => handleInputChange('designation', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="Your role/designation"
                           />
                         </div>
 
                         {/* Row 1, Col 2: Years of Experience */}
                         <div>
-                          <Label htmlFor="experience" className="text-gray-900 text-sm sm:text-base font-medium">
+                          <Label htmlFor="experience" className="text-gray-900 text-xs sm:text-sm font-medium">
                             Years of Experience
                           </Label>
                           <Input
@@ -579,14 +688,14 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.experience}
                             onChange={(e) => handleInputChange('experience', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="e.g., 5 years"
                           />
                         </div>
 
                         {/* Row 2, Col 2: Expected Monthly Referrals */}
                         <div>
-                          <Label htmlFor="monthlyLeads" className="text-gray-900 text-sm sm:text-base font-medium">
+                          <Label htmlFor="monthlyLeads" className="text-gray-900 text-xs sm:text-sm font-medium">
                             Expected Monthly Referrals
                           </Label>
                           <Input
@@ -594,7 +703,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.monthlyLeads}
                             onChange={(e) => handleInputChange('monthlyLeads', e.target.value)}
-                            className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                             placeholder="e.g., 10-15 referrals"
                           />
                         </div>
@@ -655,7 +764,7 @@ export default function AffiliateRegisterPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="accountNumber" className="text-gray-900 text-sm sm:text-base font-medium">
+                        <Label htmlFor="accountNumber" className="text-gray-900 text-xs sm:text-sm font-medium">
                           Bank Account Number <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -663,7 +772,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.accountNumber}
                           onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter account number"
                           maxLength={18}
                         />
@@ -671,7 +780,7 @@ export default function AffiliateRegisterPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="ifscCode" className="text-gray-900 text-sm sm:text-base font-medium">
+                        <Label htmlFor="ifscCode" className="text-gray-900 text-xs sm:text-sm font-medium">
                           IFSC Code <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -679,7 +788,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.ifscCode}
                           onChange={(e) => handleInputChange('ifscCode', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter IFSC code"
                           maxLength={11}
                         />
@@ -687,7 +796,7 @@ export default function AffiliateRegisterPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="panNumber" className="text-gray-900 text-sm sm:text-base font-medium">
+                        <Label htmlFor="panNumber" className="text-gray-900 text-xs sm:text-sm font-medium">
                           PAN Number <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -695,14 +804,15 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.panNumber}
                           onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter PAN number"
                           maxLength={10}
                         />
+                        {errors.panNumber && <p className="text-red-500 text-sm mt-1">{errors.panNumber}</p>}
                       </div>
 
                       <div>
-                        <Label htmlFor="gstNumber" className="text-gray-900 text-sm sm:text-base font-medium">
+                        <Label htmlFor="gstNumber" className="text-gray-900 text-xs sm:text-sm font-medium">
                           GST Number (Optional)
                         </Label>
                         <Input
@@ -710,54 +820,13 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.gstNumber}
                           onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
                           placeholder="Enter GST number"
                           maxLength={15}
                         />
                       </div>
                     </div>
 
-                    {/* Terms and Conditions */}
-                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-3 sm:p-4 rounded-2xl border-2 border-purple-200 mt-8">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 flex-shrink-0" />
-                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Affiliate Program Terms & Conditions</h4>
-                      </div>
-
-                      <div className="bg-white p-3 sm:p-4 rounded-lg border border-purple-200 mb-3">
-                        <p className="text-xs sm:text-sm text-gray-700 mb-3">
-                          Please review our complete Affiliate Program Terms & Conditions before registering. This document outlines all program details, commission structure, payment terms, and your rights and responsibilities as an affiliate partner.
-                        </p>
-
-                        <a
-                          href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download="Affiliate-Terms-and-Conditions.pdf"
-                          className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border-2 border-purple-600 text-purple-600 rounded-xl hover:bg-purple-50 transition-colors font-medium text-xs sm:text-sm"
-                        >
-                          <Download className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                          <span>Download Terms & Conditions (PDF)</span>
-                        </a>
-                      </div>
-
-                      <div className="flex items-start gap-2 sm:gap-3 bg-white p-3 sm:p-4 rounded-lg border-2 border-purple-300">
-                        <Checkbox
-                          id="terms"
-                          checked={agreeToTerms}
-                          onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                          className="mt-0.5 flex-shrink-0"
-                        />
-                        <label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer text-gray-700 leading-relaxed flex-1">
-                          I have read, understood, and agree to the{' '}
-                          <a href="/docs/Affiliate/Affiliate%20Terms%20%26%20Conditions.pdf" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 underline font-medium">PowerCA Affiliate Program Terms & Conditions</a>
-                          {' '}and{' '}
-                          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 underline font-medium">Privacy Policy</a>
-                          {' '}<span className="text-red-500">*</span>
-                        </label>
-                      </div>
-                      {errors.terms && <p className="text-red-500 text-xs sm:text-sm mt-2 flex items-center gap-1"><span className="font-bold">!</span> {errors.terms}</p>}
-                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

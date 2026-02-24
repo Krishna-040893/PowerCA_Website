@@ -243,8 +243,6 @@ export default function AdminPaymentsPage() {
         return <Badge className="bg-blue-100 text-blue-700 border border-blue-300">Monthly</Badge>
       case 'annual':
         return <Badge className="bg-green-100 text-green-700 border border-green-300">Annual</Badge>
-      case 'installment':
-        return <Badge className="bg-orange-100 text-orange-700 border border-orange-300">Installment</Badge>
       default:
         return <Badge variant="outline">{planType}</Badge>
     }
@@ -600,7 +598,7 @@ export default function AdminPaymentsPage() {
                                                   <Tag className="h-3 w-3 text-gray-400" />
                                                   {getPlanTypeBadge(group.planType)}
                                                 </div>
-                                                {/* User Count - only for monthly/annual plans (not for onetime/installment) */}
+                                                {/* User Count */}
                                                 {group.userCount && group.userCount > 0 && (group.planType === 'monthly' || group.planType === 'annual') && (
                                                   <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs">
                                                     {group.userCount} {group.userCount === 1 ? 'User' : 'Users'}
@@ -785,7 +783,7 @@ export default function AdminPaymentsPage() {
                                                 <Tag className="h-3 w-3 text-gray-400" />
                                                 {getPlanTypeBadge(group.planType)}
                                               </div>
-                                              {/* User Count - only for monthly/annual plans (not for onetime/installment) */}
+                                              {/* User Count */}
                                               {group.userCount && group.userCount > 0 && (group.planType === 'monthly' || group.planType === 'annual') && (
                                                 <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs">
                                                   {group.userCount} {group.userCount === 1 ? 'User' : 'Users'}

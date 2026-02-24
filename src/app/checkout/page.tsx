@@ -157,7 +157,11 @@ function CheckoutContent() {
   const [error, setError] = useState('')
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
-  const [userCount, setUserCount] = useState<number | ''>(``)
+  const userCountParam = searchParams.get('userCount')
+  const [userCount, setUserCount] = useState<number | ''>(() => {
+    const parsed = userCountParam ? parseInt(userCountParam, 10) : NaN
+    return !isNaN(parsed) && parsed >= 5 ? parsed : 5
+  })
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercentage: number; description?: string } | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
@@ -185,7 +189,7 @@ function CheckoutContent() {
   const selectedPlanPrice = planPriceParam ? parseInt(planPriceParam, 10) : 0
 
   // Check if this plan supports user count (per-user pricing)
-  const isPerUserPlan = planType === 'annual'
+  const isPerUserPlan = planType === 'annual' || planType === 'onetime'
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -207,8 +211,8 @@ function CheckoutContent() {
   const [loadingAddresses, setLoadingAddresses] = useState(false)
   const [_savingAddress, setSavingAddress] = useState(false)
   const [_addressSaveSuccess, setAddressSaveSuccess] = useState(false)
-  // Track purchased addresses for future use (multi-address feature)
-  const [_purchasedAddressCount, setPurchasedAddressCount] = useState(0)
+  // Track purchased address IDs to determine if this is a renewal (no server installation charge)
+  const [purchasedAddressIds, setPurchasedAddressIds] = useState<string[]>([])
 
   // Get states for selected country (available for future state dropdown feature)
   const _availableStates = countryStates[formData.country] || countryStates['default']
@@ -230,19 +234,25 @@ function CheckoutContent() {
   const totalDiscountAmount = fullBasePrice * couponDiscountRate
 
   const basePrice = fullBasePrice - totalDiscountAmount
-  // For per-user plans (monthly/annual), multiply by user count
-  const quantity = isPerUserPlan ? (userCount || 0) : 1
+  // For per-user plans, multiply by user count
+  const quantity = isPerUserPlan ? (userCount !== '' && userCount >= 5 ? userCount : 0) : 1
   const subtotal = basePrice * quantity
+  // Total discount across all users (for display)
+  const totalDiscountDisplay = totalDiscountAmount * quantity
+  // Server Installation & Configuration charge - only for first purchase of an address
+  // Renewals (same address purchased again) don't include this charge
+  const isRenewal = selectedAddressId ? purchasedAddressIds.includes(selectedAddressId) : false
+  const implementationCharge = !isRenewal && !isFinalSettlement ? 5000 : 0
+  const subtotalWithImplementation = subtotal + implementationCharge
   const gstRate = 0.18 // 18% GST
-  const gstAmount = subtotal * gstRate
-  const total = subtotal + gstAmount
+  const gstAmount = subtotalWithImplementation * gstRate
+  const total = subtotalWithImplementation + gstAmount
 
   // Plan display names
   const getPlanDisplayName = () => {
     switch (planType) {
       case 'annual': return 'Annual Subscription'
-      case 'onetime': return 'One Time Payment'
-      case 'installment': return 'Installment Payment'
+      case 'onetime': return '5 Year Pack'
       default: return 'PowerCA Subscription'
     }
   }
@@ -252,8 +262,7 @@ function CheckoutContent() {
   const productDescription = isFinalSettlement
     ? 'Final settlement payment for PowerCA service'
     : planType === 'annual' ? 'Annual subscription with ongoing support'
-    : planType === 'onetime' ? 'One time payment - Lifetime access'
-    : planType === 'installment' ? 'Installment payment (10 months)'
+    : planType === 'onetime' ? '5 Year Pack - Per user pricing'
     : 'Installation and Ongoing Support & Update'
 
 
@@ -287,7 +296,10 @@ function CheckoutContent() {
       if (ref && cus) {
         setValidatingReferral(true)
         fetch(`/api/affiliate/validate-referral?ref=${ref}&cus=${cus}`)
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) throw new Error('Referral validation failed')
+            return res.json()
+          })
           .then(data => {
             if (data.success && data.valid) {
               setReferralInfo(prev => ({
@@ -321,7 +333,10 @@ function CheckoutContent() {
           if (parsed.ref && parsed.cus) {
             setValidatingReferral(true)
             fetch(`/api/affiliate/validate-referral?ref=${parsed.ref}&cus=${parsed.cus}`)
-              .then(res => res.json())
+              .then(res => {
+                if (!res.ok) throw new Error('Referral validation failed')
+                return res.json()
+              })
               .then(data => {
                 if (data.success && data.valid) {
                   setReferralInfo({
@@ -401,6 +416,7 @@ function CheckoutContent() {
       const fetchLastOrder = async () => {
         try {
           const response = await fetch('/api/user/last-order')
+          if (!response.ok) return
           const result = await response.json()
 
           if (result.hasOrder && result.orderData) {
@@ -436,6 +452,7 @@ function CheckoutContent() {
     setLoadingAddresses(true)
     try {
       const response = await fetch('/api/user/addresses')
+      if (!response.ok) throw new Error('Failed to fetch addresses')
       const result = await response.json()
 
       if (result.success && result.addresses) {
@@ -472,11 +489,13 @@ function CheckoutContent() {
         }
       }
 
-      // Fetch purchased addresses count for discount calculation
+      // Fetch purchased address IDs to detect renewals
       const purchasedResponse = await fetch('/api/user/purchased-addresses')
-      const purchasedResult = await purchasedResponse.json()
-      if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
-        setPurchasedAddressCount(purchasedResult.purchasedAddressIds.length)
+      if (purchasedResponse.ok) {
+        const purchasedResult = await purchasedResponse.json()
+        if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
+          setPurchasedAddressIds(purchasedResult.purchasedAddressIds)
+        }
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -509,7 +528,8 @@ function CheckoutContent() {
   // Address save handler - kept for future multi-address feature
   const _handleSaveAddress = async () => {
     // Validate required fields
-    if (!formData.firstName || !formData.firmName || !formData.address ||
+    const isStudent = (session?.user?.role as string) === 'student'
+    if (!formData.firstName || (!isStudent && !formData.firmName) || !formData.address ||
         !formData.city || !formData.state || !formData.postcode ||
         !formData.country || !formData.phone || !formData.email) {
       setError('Please fill all required fields before saving address')
@@ -636,8 +656,8 @@ function CheckoutContent() {
     }
 
     // Check user count for per-user plans
-    if (isPerUserPlan && (userCount === '' || userCount < 1)) {
-      newErrors.userCount = 'Please enter the number of users'
+    if (isPerUserPlan && (userCount === '' || userCount < 5)) {
+      newErrors.userCount = 'Minimum 5 users required'
     }
 
     // Payment gateway is always 'razorpay' now (Cashfree disabled)
@@ -672,7 +692,7 @@ function CheckoutContent() {
           productId: product.productId,
           planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type
           planPrice: selectedPlanPrice, // Send selected plan price
-          paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
+          paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
           ...formData,
           country: formData.country,
           address: formData.address,
@@ -791,7 +811,7 @@ function CheckoutContent() {
           productId: product.productId,
           planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type from pricing page
           planPrice: selectedPlanPrice, // Send selected plan price
-          paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
+          paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
           userCount: isPerUserPlan ? (userCount || 1) : 1, // Send user count for per-user plans
           ...formData,
           // Send address fields separately for storage
@@ -885,7 +905,7 @@ function CheckoutContent() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              paymentType: isFinalSettlement ? 'final_settlement' : 'initial_payment',
+              paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
               customerDetails: {
                 name: formData.firstName,
                 email: formData.email,
@@ -907,7 +927,7 @@ function CheckoutContent() {
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json()
             if (verifyData.success) {
-              router.push(`/payment-success?orderId=${verifyData.data?.orderId}&invoiceId=${verifyData.data?.invoiceNumber}`)
+              router.push(`/payment-success?orderId=${verifyData.data?.orderId}&invoiceId=${verifyData.data?.invoiceNumber}&planType=${verifyData.data?.planType || planType}&userCount=${verifyData.data?.userCount || quantity}`)
             } else {
               setError('Payment verification failed. Please contact support.')
               setLoading(false)
@@ -949,6 +969,11 @@ function CheckoutContent() {
         body: JSON.stringify({ code: couponCode.trim() })
       })
 
+      if (!response.ok) {
+        setCouponError('Failed to validate coupon code')
+        return
+      }
+
       const result = await response.json()
 
       if (result.success && result.coupon) {
@@ -981,7 +1006,7 @@ function CheckoutContent() {
       setUserCount('')
     } else {
       const value = parseInt(inputValue, 10)
-      if (!isNaN(value) && value >= 1) {
+      if (!isNaN(value) && value >= 5) {
         setUserCount(value)
       }
     }
@@ -1108,7 +1133,7 @@ function CheckoutContent() {
                   </div>
                   <div className="space-y-2.5">
                     {/* Full Name & Firm Name */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className={`grid grid-cols-1 ${(session?.user?.role as string) !== 'student' ? 'sm:grid-cols-2' : ''} gap-2.5`}>
                       <div>
                         <Label className="text-[15px] font-medium text-gray-700">Full Name</Label>
                         <Input
@@ -1117,14 +1142,16 @@ function CheckoutContent() {
                           className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                         />
                       </div>
-                      <div>
-                        <Label className="text-[15px] font-medium text-gray-700">Firm Name</Label>
-                        <Input
-                          value={formData.firmName}
-                          disabled
-                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
-                        />
-                      </div>
+                      {(session?.user?.role as string) !== 'student' && (
+                        <div>
+                          <Label className="text-[15px] font-medium text-gray-700">Firm Name</Label>
+                          <Input
+                            value={formData.firmName}
+                            disabled
+                            className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* GST No */}
@@ -1304,7 +1331,7 @@ function CheckoutContent() {
 
               {/* Purchase Plan */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Purchase Plan</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Subscription Plan</h3>
 
                 {/* Product Info */}
                 <div className="flex items-center gap-3 sm:gap-4 mb-4">
@@ -1325,10 +1352,7 @@ function CheckoutContent() {
                     <p className="text-xs sm:text-sm text-gray-600">{productDescription}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    {appliedCoupon && !isFinalSettlement && (
-                      <span className="text-xs text-gray-400 line-through block">₹{fullBasePrice.toLocaleString()}</span>
-                    )}
-                    <span className="text-lg font-bold text-purple-600">₹{basePrice.toLocaleString()}</span>
+                    <span className="text-lg font-bold text-purple-600">₹{fullBasePrice.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -1340,16 +1364,15 @@ function CheckoutContent() {
                         <Label htmlFor="userCount" className={`text-sm font-medium ${errors.userCount ? 'text-red-700' : 'text-blue-900'}`}>
                           Number of Users <span className="text-red-500">*</span>
                         </Label>
-                        <p className={`text-xs ${errors.userCount ? 'text-red-600' : 'text-blue-600'}`}>₹{basePrice.toLocaleString()} per user / year</p>
+                        <p className={`text-xs mt-0.5 ${errors.userCount ? 'text-red-500' : 'text-blue-700'}`}>Minimum 5 users</p>
                       </div>
                       <Input
                         id="userCount"
                         type="number"
-                        min="1"
+                        min="5"
                         value={userCount}
                         onChange={handleUserCountChange}
                         onWheel={(e) => e.currentTarget.blur()}
-                        placeholder="0"
                         className={`w-24 text-center text-lg font-bold border-2 bg-white ${errors.userCount ? 'border-red-400' : 'border-blue-300'}`}
                         required
                       />
@@ -1363,59 +1386,64 @@ function CheckoutContent() {
                   </div>
                 )}
 
-                <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
-                  {/* Show coupon discount (not for final settlement) */}
-                  {!isFinalSettlement && appliedCoupon && (
-                    <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium flex items-center gap-1">
-                        <Tag className="w-3 h-3" />
-                        Coupon: {appliedCoupon.code} ({appliedCoupon.discountPercentage}% off)
-                      </span>
-                      <span className="font-semibold">-₹{totalDiscountAmount.toLocaleString()}</span>
-                    </div>
-                  )}
+                <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {/* Show final settlement info */}
                   {isFinalSettlement && (
-                    <div className="flex justify-between text-xs sm:text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
+                    <div className="flex justify-between items-center text-xs sm:text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
                       <span className="font-medium">Final Settlement Payment</span>
-                      <span className="font-semibold">2nd of 2 payments</span>
+                      <span className="font-semibold text-right min-w-[100px]">2nd of 2 payments</span>
                     </div>
                   )}
-                  {/* Show per-user calculation for monthly/annual */}
-                  {isPerUserPlan && typeof userCount === 'number' && userCount > 1 ? (
+                  {/* Show original total and coupon discount when coupon applied */}
+                  {!isFinalSettlement && appliedCoupon ? (
                     <>
-                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                        <span>Price per User</span>
-                        <span className="font-semibold">₹{basePrice.toLocaleString()}</span>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                        <span>License Amount</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{(fullBasePrice * quantity).toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                        <span>Number of Users</span>
-                        <span className="font-semibold">× {userCount}</span>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                        <span className="font-medium flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Coupon: {appliedCoupon.code} ({appliedCoupon.discountPercentage}%)
+                        </span>
+                        <span className="font-semibold text-right min-w-[100px]">-₹{totalDiscountDisplay.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-xs sm:text-sm text-gray-700">
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
                         <span>Subtotal</span>
-                        <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{subtotal.toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
-                    <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                      <span>Base Price</span>
-                      <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                    <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-right min-w-[100px]">₹{subtotal.toLocaleString()}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                    <span>SGST & CGST (18%)</span>
-                    <span className="font-semibold">₹{gstAmount.toLocaleString()}</span>
+                  {implementationCharge > 0 && (
+                    <>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                        <span>Server Installation & Configuration</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{implementationCharge.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs sm:text-sm font-semibold text-gray-800 border-t border-gray-200 pt-2 mt-2">
+                        <span>Total</span>
+                        <span className="text-right min-w-[100px]">₹{subtotalWithImplementation.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className={`flex justify-between items-center text-xs sm:text-sm text-gray-700 ${implementationCharge > 0 ? '' : 'border-t border-gray-200 pt-2 mt-2'}`}>
+                    <span>GST (18%)</span>
+                    <span className="font-semibold text-right min-w-[100px]">₹{gstAmount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-base sm:text-lg font-bold border-t-2 border-gray-300 pt-2 mt-2 text-purple-700">
-                    <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                  <div className="flex justify-between items-center text-base sm:text-lg font-bold border-t-2 border-gray-300 pt-2 mt-2 text-purple-700">
+                    <span>Grand Total</span>
+                    <span className="text-right min-w-[100px]">₹{total.toLocaleString()}</span>
                   </div>
                   {/* Show selected address info */}
                   {selectedAddressId && savedAddresses.length > 0 && (
                     <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
                       <p className="text-xs text-purple-700 font-medium">
-                        Purchasing for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
+                        Subscription for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
                       </p>
                     </div>
                   )}

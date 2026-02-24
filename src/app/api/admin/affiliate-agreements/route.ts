@@ -12,18 +12,37 @@ export async function GET() {
 
     const supabase = createAdminClient()
 
-    // Fetch only affiliates who have downloaded the agreement (exclude "not started")
-    // Using affiliate_registrations table with agreement columns
-    const { data: agreements, error } = await supabase
+    // Try with company signing columns first, fallback if they don't exist yet
+    let agreements
+    const { data: fullData, error: fullError } = await supabase
       .from('affiliate_registrations')
-      .select('id, full_name, email, phone, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, created_at')
+      .select('id, full_name, email, phone, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, agreement_signing_method, agreement_company_signed_at, agreement_company_file_path, created_at')
       .not('agreement_downloaded_at', 'is', null)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching affiliate agreements:', error)
-      // If agreement columns don't exist yet, return empty array
-      if (error.message?.includes('agreement_downloaded_at') || error.code === '42703') {
+    if (fullError && fullError.message?.includes('does not exist')) {
+      // Company signing columns not yet added - fallback
+      const { data: basicData, error: basicError } = await supabase
+        .from('affiliate_registrations')
+        .select('id, full_name, email, phone, agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, agreement_signing_method, created_at')
+        .not('agreement_downloaded_at', 'is', null)
+        .order('created_at', { ascending: false })
+
+      if (basicError) {
+        console.error('Error fetching affiliate agreements:', basicError)
+        if (basicError.message?.includes('agreement_downloaded_at') || basicError.code === '42703') {
+          return NextResponse.json({
+            success: true,
+            agreements: [],
+            stats: { total: 0, draft: 0, signed: 0 }
+          })
+        }
+        return NextResponse.json({ error: 'Failed to fetch agreements' }, { status: 500 })
+      }
+      agreements = basicData
+    } else if (fullError) {
+      console.error('Error fetching affiliate agreements:', fullError)
+      if (fullError.code === '42703') {
         return NextResponse.json({
           success: true,
           agreements: [],
@@ -31,10 +50,13 @@ export async function GET() {
         })
       }
       return NextResponse.json({ error: 'Failed to fetch agreements' }, { status: 500 })
+    } else {
+      agreements = fullData
     }
 
     // Transform data with status
-    const transformedAgreements = (agreements || []).map(affiliate => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformedAgreements = (agreements || []).map((affiliate: any) => {
       let status: 'draft' | 'signed' = 'draft'
 
       if (affiliate.agreement_uploaded_at) {
@@ -51,6 +73,9 @@ export async function GET() {
         downloadedAt: affiliate.agreement_downloaded_at,
         uploadedAt: affiliate.agreement_uploaded_at,
         filePath: affiliate.agreement_file_path,
+        signingMethod: affiliate.agreement_signing_method || null,
+        companySignedAt: affiliate.agreement_company_signed_at || null,
+        companyFilePath: affiliate.agreement_company_file_path || null,
         createdAt: affiliate.created_at
       }
     })

@@ -39,7 +39,44 @@ export async function GET(_request: NextRequest) {
       })
     }
 
-    // Return referral information
+    // If referral is still 'pending', check if user actually has a successful payment
+    // (the status may not have been updated during payment verification)
+    if (referral.status === 'pending') {
+      const { data: paidPayment } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('email', userEmail)
+        .in('status', ['captured', 'paid', 'authorized', 'success'])
+        .limit(1)
+        .single()
+
+      if (paidPayment) {
+        // User has paid - update the referral status to 'converted'
+        await supabase
+          .from('affiliate_referrals')
+          .update({
+            status: 'converted',
+            converted_at: new Date().toISOString()
+          })
+          .eq('id', referral.id)
+
+        // Don't show referral info since payment is done
+        return NextResponse.json({
+          hasReferral: false,
+          referralInfo: null
+        })
+      }
+    }
+
+    // Only show referral info if status is still genuinely pending
+    if (referral.status !== 'pending') {
+      return NextResponse.json({
+        hasReferral: false,
+        referralInfo: null
+      })
+    }
+
+    // Return referral information for pending users
     return NextResponse.json({
       hasReferral: true,
       referralInfo: {

@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
+import { logger } from '@/lib/logger'
+
+// Safe JSON parse with fallback
+function safeJsonParse<T>(value: unknown, fallback: T): T {
+  if (typeof value !== 'string') return value as T ?? fallback
+  try {
+    return JSON.parse(value)
+  } catch {
+    logger.error('Failed to parse JSON field', { value: typeof value === 'string' ? value.substring(0, 100) : 'non-string' })
+    return fallback
+  }
+}
 
 // Helper function to generate slug from title
 function generateSlug(title: string): string {
@@ -43,7 +55,7 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching blog posts:', error)
+      logger.error('Error fetching blog posts:', error)
       return NextResponse.json(
         { posts: [], error: error.message },
         { status: 200 }
@@ -56,7 +68,7 @@ export async function GET(_request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Failed to fetch blog posts:', error)
+    logger.error('Failed to fetch blog posts:', error)
     return NextResponse.json(
       { posts: [], error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 200 }
@@ -127,15 +139,15 @@ export async function POST(request: NextRequest) {
         is_breaking: isBreaking || false,
         is_published: isPublished !== undefined ? isPublished : true,
         published_at: (isPublished !== undefined ? isPublished : true) ? new Date().toISOString() : null,
-        documents: documents ? JSON.parse(documents) : [],
-        key_dates: keyDates ? JSON.parse(keyDates) : [],
-        sidebar_summary: sidebarSummary ? JSON.parse(sidebarSummary) : {}
+        documents: documents ? safeJsonParse(documents, []) : [],
+        key_dates: keyDates ? safeJsonParse(keyDates, []) : [],
+        sidebar_summary: sidebarSummary ? safeJsonParse(sidebarSummary, {}) : {}
       })
       .select()
       .single()
 
     if (error) {
-      console.error('Error creating blog post:', error)
+      logger.error('Error creating blog post:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -148,7 +160,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Failed to create blog post:', error)
+    logger.error('Failed to create blog post:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
@@ -206,9 +218,9 @@ export async function PUT(request: NextRequest) {
     if (imageUrl !== undefined) updateData.image_url = imageUrl
     if (isBreaking !== undefined) updateData.is_breaking = isBreaking
     if (isPublished !== undefined) updateData.is_published = isPublished
-    if (documents !== undefined) updateData.documents = JSON.parse(documents)
-    if (keyDates !== undefined) updateData.key_dates = JSON.parse(keyDates)
-    if (sidebarSummary !== undefined) updateData.sidebar_summary = JSON.parse(sidebarSummary)
+    if (documents !== undefined) updateData.documents = safeJsonParse(documents, [])
+    if (keyDates !== undefined) updateData.key_dates = safeJsonParse(keyDates, [])
+    if (sidebarSummary !== undefined) updateData.sidebar_summary = safeJsonParse(sidebarSummary, {})
 
     const { data: updatedPost, error } = await supabase
       .from('blog_posts')
@@ -218,7 +230,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error updating blog post:', error)
+      logger.error('Error updating blog post:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -231,7 +243,7 @@ export async function PUT(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Failed to update blog post:', error)
+    logger.error('Failed to update blog post:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
@@ -276,7 +288,7 @@ export async function DELETE(request: NextRequest) {
         .eq('id', singleId)
 
       if (error) {
-        console.error('Error deleting blog post:', error)
+        logger.error('Error deleting blog post:', error)
         return NextResponse.json(
           { error: error.message },
           { status: 500 }
@@ -305,7 +317,7 @@ export async function DELETE(request: NextRequest) {
       .in('id', ids)
 
     if (error) {
-      console.error('Error deleting blog posts:', error)
+      logger.error('Error deleting blog posts:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -317,7 +329,7 @@ export async function DELETE(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Failed to delete blog post:', error)
+    logger.error('Failed to delete blog post:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }

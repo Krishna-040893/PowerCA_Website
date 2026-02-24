@@ -21,15 +21,16 @@ import {
   ChevronDown,
   ChevronRight,
   Mail,
-  Calendar,
-  CheckCircle,
-  Clock,
-  XCircle,
-  IndianRupee,
-  RotateCw,
   Trash2,
   Loader2,
+  Eye,
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
@@ -47,6 +48,17 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
+interface PaymentOrder {
+  order_id: string
+  amount: number
+  address_id: string | null
+  customer_city: string | null
+  payment_id: string | null
+  order_commission: number | null
+  order_commission_paid: boolean
+  created_at: string | null
+}
+
 interface Referral {
   id: string
   customer_id: string
@@ -55,11 +67,14 @@ interface Referral {
   referred_phone: string
   status: string
   created_at: string
-  converted_at: string | null
-  payment_amount: number | null
-  order_id: string | null
-  payment_id: string | null
+  total_payment_amount: number | null
   payment_count: number
+  payments: PaymentOrder[]
+  commission_amount: number | null
+  paid_commission: number
+  commission_status: string
+  last_commission_date: string | null
+  last_commission_set_date: string | null
 }
 
 interface AffiliateReferralGroup {
@@ -77,16 +92,291 @@ interface AffiliateReferralGroup {
   }
 }
 
+// Order detail dialog — read-only orders table + single total commission input
+function OrderDetailDialog({
+  referral,
+  open,
+  onClose,
+  onCommissionSaved,
+}: {
+  referral: Referral | null
+  open: boolean
+  onClose: () => void
+  onCommissionSaved: () => void
+}) {
+  const [commission, setCommission] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [dialogPage, setDialogPage] = useState(1)
+  const DIALOG_ITEMS_PER_PAGE = 10
+
+  useEffect(() => {
+    if (open) {
+      setCommission('')
+      setDialogPage(1)
+    }
+  }, [open])
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const handleSubmit = async () => {
+    if (!referral) return
+    const val = commission.trim()
+    if (!val) return
+
+    const amount = parseFloat(val)
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Enter a valid commission amount')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const response = await fetch('/api/admin/affiliate-referrals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          referralId: referral.id,
+          commissionAmount: amount,
+        }),
+      })
+
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        toast.error(result.error || 'Failed to save commission')
+        return
+      }
+
+      toast.success(`Commission ₹${amount.toLocaleString('en-IN')} submitted`)
+      setCommission('')
+      onCommissionSaved()
+      onClose()
+    } catch {
+      toast.error('Failed to save commission')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSubmit()
+  }
+
+  if (!referral) return null
+
+  const orders = referral.payments || []
+  const totalPages = Math.ceil(orders.length / DIALOG_ITEMS_PER_PAGE)
+  const paginatedOrders = orders.slice(
+    (dialogPage - 1) * DIALOG_ITEMS_PER_PAGE,
+    dialogPage * DIALOG_ITEMS_PER_PAGE
+  )
+  const lastCommPaidDate = referral.last_commission_date ? new Date(referral.last_commission_date) : null
+  const lastCommSetDate = referral.last_commission_set_date ? new Date(referral.last_commission_set_date) : null
+  const hasPaidCommission = referral.commission_amount !== null && referral.commission_amount !== undefined && referral.commission_amount > 0
+
+  // 3-state logic: Paid / Processing / Waiting
+  const getOrderStatus = (order: PaymentOrder): 'paid' | 'processing' | 'waiting' => {
+    if (!order.created_at) return 'waiting'
+    const orderDate = new Date(order.created_at)
+
+    // Orders before or on paid date = "Paid"
+    if (lastCommPaidDate && orderDate <= lastCommPaidDate) return 'paid'
+    // Orders after paid date but before or on set date = "Processing" (commission set, not yet paid)
+    if (lastCommSetDate && orderDate <= lastCommSetDate) return 'processing'
+    // Everything else = "Waiting"
+    return 'waiting'
+  }
+
+  const waitingOrders = orders.filter(o => getOrderStatus(o) === 'waiting')
+  const hasWaitingOrders = waitingOrders.length > 0
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white max-w-[95vw] sm:max-w-[580px] rounded-xl max-h-[85vh] overflow-y-auto p-4 sm:p-5">
+        <DialogHeader className="border-b pb-2">
+          <DialogTitle className="text-base font-bold">
+            Order Details — {referral.referred_name}
+          </DialogTitle>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500 mt-0.5">
+            <span>ID: <code className="bg-gray-100 px-1 py-0.5 rounded">{referral.customer_id}</code></span>
+            <span>{referral.referred_email}</span>
+          </div>
+        </DialogHeader>
+
+        {orders.length === 0 ? (
+          <div className="text-center py-6 text-gray-500 text-sm">No orders found</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs font-bold w-[40px] px-2">S.No</TableHead>
+                    <TableHead className="text-xs font-bold px-2">Location</TableHead>
+                    <TableHead className="text-xs font-bold px-2">Date</TableHead>
+                    <TableHead className="text-xs font-bold text-right px-2">Amount</TableHead>
+                    <TableHead className="text-xs font-bold text-center px-2">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedOrders.map((order, index) => {
+                    const amt = Math.round(order.amount / 1.18)
+                    const globalIndex = (dialogPage - 1) * DIALOG_ITEMS_PER_PAGE + index
+                    const status = getOrderStatus(order)
+                    return (
+                      <TableRow key={order.order_id || index}>
+                        <TableCell className="font-medium text-gray-500 text-sm px-2">{globalIndex + 1}</TableCell>
+                        <TableCell className="font-medium text-sm px-2">{order.customer_city || 'N/A'}</TableCell>
+                        <TableCell className="text-sm text-gray-600 px-2 whitespace-nowrap">
+                          {order.created_at
+                            ? new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-green-700 text-sm px-2">
+                          {formatCurrency(amt)}
+                        </TableCell>
+                        <TableCell className="text-center px-2">
+                          {status === 'paid' ? (
+                            <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100 text-[10px] px-1.5 py-0.5">
+                              Paid
+                            </Badge>
+                          ) : status === 'processing' ? (
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100 text-[10px] px-1.5 py-0.5">
+                              Processing
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-100 text-[10px] px-1.5 py-0.5">
+                              Waiting
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+
+              {/* Pagination inside dialog */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                  <span className="text-xs text-gray-500">
+                    {(dialogPage - 1) * DIALOG_ITEMS_PER_PAGE + 1}–{Math.min(dialogPage * DIALOG_ITEMS_PER_PAGE, orders.length)} of {orders.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDialogPage(p => Math.max(1, p - 1))}
+                      disabled={dialogPage === 1}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Prev
+                    </Button>
+                    <span className="text-xs text-gray-600 px-2">{dialogPage}/{totalPages}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDialogPage(p => Math.min(totalPages, p + 1))}
+                      disabled={dialogPage === totalPages}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Commission input — show when there are new waiting orders */}
+            {hasWaitingOrders ? (
+              <div className="mt-3 pt-3 border-t">
+                {hasPaidCommission && (
+                  <p className="text-xs text-orange-600 mb-2 font-medium">
+                    {waitingOrders.length} new order{waitingOrders.length > 1 ? 's' : ''} waiting for commission
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Commission:</label>
+                  <div className="relative flex-1">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={commission}
+                      onChange={(e) => setCommission(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      disabled={submitting}
+                      placeholder="Enter commission for new orders"
+                      className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={submitting || !commission.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 px-4"
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      'Submit'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : !hasPaidCommission ? (
+              <div className="mt-3 pt-3 border-t flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Commission:</label>
+                <div className="relative flex-1">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={commission}
+                    onChange={(e) => setCommission(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={submitting}
+                    placeholder="Enter total commission"
+                    className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitting || !commission.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 px-4"
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function AffiliateReferralsPage() {
   const [data, setData] = useState<AffiliateReferralGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedAffiliate, setExpandedAffiliate] = useState<string | null>(null)
-  const [syncingReferral, setSyncingReferral] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
+  const [viewReferral, setViewReferral] = useState<Referral | null>(null)
 
   const fetchReferrals = async () => {
     try {
@@ -131,31 +421,85 @@ export default function AffiliateReferralsPage() {
     setExpandedAffiliate(expandedAffiliate === affiliateId ? null : affiliateId)
   }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: 'outline' | 'default' | 'destructive'; icon: React.ComponentType<{ className?: string }>; label: string }> = {
-      pending: { variant: 'outline', icon: Clock, label: 'Pending' },
-      completed: { variant: 'default', icon: CheckCircle, label: 'Completed' },
-      converted: { variant: 'default', icon: IndianRupee, label: 'Paid' },
-      expired: { variant: 'destructive', icon: XCircle, label: 'Expired' },
-    }
-
-    const config = variants[status] || variants.pending
-    const Icon = config.icon
-
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1 w-fit">
-        <Icon className="w-3 h-3" />
-        {config.label}
-      </Badge>
-    )
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+    }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+  const getCommissionStatusBadge = (referral: Referral) => {
+    const orders = referral.payments || []
+
+    // No orders — use simple status
+    if (orders.length === 0) {
+      if (referral.commission_status === 'paid') {
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100">
+            Paid
+          </Badge>
+        )
+      }
+      if (referral.commission_status === 'processing') {
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100">
+            Processing
+          </Badge>
+        )
+      }
+      return (
+        <Badge variant="outline" className="text-gray-500 border-gray-300">
+          Pending
+        </Badge>
+      )
+    }
+
+    // Calculate per-order statuses
+    const lastCommPaidDate = referral.last_commission_date ? new Date(referral.last_commission_date) : null
+    const lastCommSetDate = referral.last_commission_set_date ? new Date(referral.last_commission_set_date) : null
+
+    let paidCount = 0
+    let processingCount = 0
+    let waitingCount = 0
+
+    orders.forEach(order => {
+      if (!order.created_at) { waitingCount++; return }
+      const orderDate = new Date(order.created_at)
+      if (lastCommPaidDate && orderDate <= lastCommPaidDate) paidCount++
+      else if (lastCommSetDate && orderDate <= lastCommSetDate) processingCount++
+      else waitingCount++
     })
+
+    // All paid — single green badge
+    if (paidCount === orders.length) {
+      return (
+        <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100">
+          Paid
+        </Badge>
+      )
+    }
+
+    // Show breakdown
+    return (
+      <div className="flex flex-wrap gap-1">
+        {paidCount > 0 && (
+          <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100 text-[10px] px-1.5 py-0.5">
+            {paidCount} Paid
+          </Badge>
+        )}
+        {processingCount > 0 && (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100 text-[10px] px-1.5 py-0.5">
+            {processingCount} Processing
+          </Badge>
+        )}
+        {waitingCount > 0 && (
+          <Badge className="bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-100 text-[10px] px-1.5 py-0.5">
+            {waitingCount} Pending
+          </Badge>
+        )}
+      </div>
+    )
   }
 
   // Calculate totals
@@ -168,43 +512,6 @@ export default function AffiliateReferralsPage() {
     }),
     { total: 0, pending: 0, completed: 0, converted: 0 }
   )
-
-  const syncReferralStatus = async (referral: Referral) => {
-    if (!referral.payment_id && !referral.order_id) {
-      toast.error('No payment information available for this referral')
-      return
-    }
-
-    setSyncingReferral(referral.id)
-    try {
-      // NextAuth automatically sends session cookie with fetch requests
-      const response = await fetch('/api/admin/payments/sync-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payment_id: referral.payment_id,
-          order_id: referral.order_id,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (response.ok && result.success) {
-        toast.success(`Status synced from Razorpay: ${result.data.razorpay_status}`)
-        // Refresh the referrals list
-        await fetchReferrals()
-      } else {
-        toast.error(result.error || 'Failed to sync status')
-      }
-    } catch (error) {
-      console.error('Error syncing referral status:', error)
-      toast.error('Failed to sync status from Razorpay')
-    } finally {
-      setSyncingReferral(null)
-    }
-  }
 
   // Get all referrals from the current expanded affiliate for selection purposes
   const getCurrentExpandedReferrals = () => {
@@ -419,7 +726,7 @@ export default function AffiliateReferralsPage() {
 
                     {/* Referrals Table */}
                     {expandedAffiliate === group.affiliate_id && (
-                      <div className="bg-white">
+                      <div className="bg-white overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -431,18 +738,19 @@ export default function AffiliateReferralsPage() {
                                   className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
                                 />
                               </TableHead>
+                              <TableHead className="text-base font-bold w-[60px]">S.No</TableHead>
                               <TableHead className="text-base font-bold">Customer ID</TableHead>
                               <TableHead className="text-base font-bold">Customer Name</TableHead>
                               <TableHead className="text-base font-bold">Email</TableHead>
                               <TableHead className="text-base font-bold">Phone</TableHead>
-                              <TableHead className="text-base font-bold">Status</TableHead>
-                              <TableHead className="text-base font-bold text-center">Payment Count</TableHead>
-                              <TableHead className="text-base font-bold">Created</TableHead>
-                              <TableHead className="text-base font-bold">Actions</TableHead>
+                              <TableHead className="text-base font-bold text-center">Orders</TableHead>
+                              <TableHead className="text-base font-bold text-right">Collection</TableHead>
+                              <TableHead className="text-base font-bold">Commission Status</TableHead>
+                              <TableHead className="text-base font-bold text-center">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {group.referrals.map((referral) => (
+                            {group.referrals.map((referral, index) => (
                               <TableRow key={referral.id} className={selectedIds.has(referral.id) ? 'bg-blue-50/50' : ''}>
                                 <TableCell>
                                   <Checkbox
@@ -451,6 +759,9 @@ export default function AffiliateReferralsPage() {
                                     aria-label={`Select ${referral.referred_name || referral.referred_email}`}
                                     className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
                                   />
+                                </TableCell>
+                                <TableCell className="font-medium text-gray-500">
+                                  {index + 1}
                                 </TableCell>
                                 <TableCell>
                                   <code className="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -470,34 +781,42 @@ export default function AffiliateReferralsPage() {
                                     {referral.referred_phone || 'N/A'}
                                   </span>
                                 </TableCell>
-                                <TableCell>{getStatusBadge(referral.status)}</TableCell>
                                 <TableCell className="text-center">
                                   {referral.payment_count > 0 ? (
-                                    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                                    <span className="font-semibold text-gray-900">
                                       {referral.payment_count}
                                     </span>
                                   ) : (
                                     <span className="text-gray-400">0</span>
                                   )}
                                 </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <Calendar className="w-4 h-4" />
-                                    {formatDate(referral.created_at)}
-                                  </div>
+                                <TableCell className="text-right">
+                                  {referral.total_payment_amount ? (
+                                    <span className="font-semibold text-green-700">
+                                      {formatCurrency(Math.round(referral.total_payment_amount / 1.18))}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400">-</span>
+                                  )}
                                 </TableCell>
                                 <TableCell>
-                                  {(referral.payment_id || referral.order_id) && (
+                                  {getCommissionStatusBadge(referral)}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {referral.payment_count > 0 ? (
                                     <Button
-                                      variant="outline"
                                       size="sm"
-                                      onClick={() => syncReferralStatus(referral)}
-                                      disabled={syncingReferral === referral.id}
-                                      className="bg-white hover:bg-gray-50"
-                                      title="Sync status from Razorpay"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setViewReferral(referral)
+                                      }}
+                                      className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
                                     >
-                                      <RotateCw className={`h-4 w-4 ${syncingReferral === referral.id ? 'animate-spin' : ''}`} />
+                                      <Eye className="w-4 h-4 mr-1.5" />
+                                      View
                                     </Button>
+                                  ) : (
+                                    <span className="text-gray-400">-</span>
                                   )}
                                 </TableCell>
                               </TableRow>
@@ -523,6 +842,16 @@ export default function AffiliateReferralsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Order Detail Dialog */}
+      <OrderDetailDialog
+        referral={viewReferral}
+        open={!!viewReferral}
+        onClose={() => setViewReferral(null)}
+        onCommissionSaved={() => {
+          fetchReferrals()
+        }}
+      />
     </AdminPageWrapper>
   )
 }

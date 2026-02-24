@@ -146,8 +146,8 @@ export async function PUT(
     const { data: updatedAddress, error } = await supabase
       .from('user_addresses')
       .update({
-        full_name,
-        firm_name,
+        full_name: full_name || '',
+        firm_name: firm_name || '',
         gst_no: gst_no || null,
         address,
         city,

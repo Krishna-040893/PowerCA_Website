@@ -16,15 +16,34 @@ export async function GET() {
     }
 
     const supabase = createAdminClient()
-    const { data: affiliate, error } = await supabase
+
+    // Try with company signing columns first, fallback if they don't exist yet
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let affiliate: any = null
+    const { data: fullData, error: fullError } = await supabase
       .from('affiliate_registrations')
-      .select('agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, full_name')
+      .select('agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, agreement_company_signed_at, agreement_company_file_path, full_name')
       .eq('email', session.user.email)
       .single()
 
-    if (error && error.code !== 'PGRST116') {
-      logger.error('Error fetching agreement status', error)
+    if (fullError && fullError.message?.includes('does not exist')) {
+      // Company signing columns not yet added - fallback
+      const { data: basicData, error: basicError } = await supabase
+        .from('affiliate_registrations')
+        .select('agreement_downloaded_at, agreement_uploaded_at, agreement_file_path, full_name')
+        .eq('email', session.user.email)
+        .single()
+
+      if (basicError && basicError.code !== 'PGRST116') {
+        logger.error('Error fetching agreement status', basicError)
+        return NextResponse.json({ error: 'Failed to fetch agreement status' }, { status: 500 })
+      }
+      affiliate = basicData
+    } else if (fullError && fullError.code !== 'PGRST116') {
+      logger.error('Error fetching agreement status', fullError)
       return NextResponse.json({ error: 'Failed to fetch agreement status' }, { status: 500 })
+    } else {
+      affiliate = fullData
     }
 
     return NextResponse.json({
@@ -32,7 +51,10 @@ export async function GET() {
       hasUploaded: !!affiliate?.agreement_uploaded_at,
       downloadedAt: affiliate?.agreement_downloaded_at,
       uploadedAt: affiliate?.agreement_uploaded_at,
-      filePath: affiliate?.agreement_file_path
+      filePath: affiliate?.agreement_file_path,
+      hasCompanySigned: !!affiliate?.agreement_company_signed_at,
+      companySignedAt: affiliate?.agreement_company_signed_at || null,
+      companyFilePath: affiliate?.agreement_company_file_path || null,
     })
   } catch (error) {
     logger.error('Error in affiliate agreement GET', error)

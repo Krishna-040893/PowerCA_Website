@@ -109,23 +109,18 @@ function LoginContent() {
         }
 
         // Check if user has a pending affiliate referral
-        // Skip referral redirect if user is going to app-checkout or app-download flow
-        const isAppDownloadFlow = callbackUrl.includes('/app-checkout') || callbackUrl.includes('/app-download')
+        try {
+          const referralResponse = await fetch('/api/user/referral-info')
+          const referralData = await referralResponse.json()
 
-        if (!isAppDownloadFlow) {
-          try {
-            const referralResponse = await fetch('/api/user/referral-info')
-            const referralData = await referralResponse.json()
-
-            if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
-              // Referral user - redirect to account page with billing tab
-              window.location.href = '/account?tab=billing'
-              return
-            }
-          } catch (referralError) {
-            console.error('Error checking referral info:', referralError)
-            // Continue with normal redirect if referral check fails
+          if (referralData.hasReferral && referralData.referralInfo?.status === 'pending') {
+            // Referral user - redirect to account page with billing tab
+            window.location.href = '/account?tab=billing'
+            return
           }
+        } catch (referralError) {
+          console.error('Error checking referral info:', referralError)
+          // Continue with normal redirect if referral check fails
         }
 
         // Use window.location.href for full page reload to ensure session is established

@@ -415,7 +415,6 @@ export default function AffiliateAccountPage() {
                   <p className="text-sm text-yellow-700">
                     <strong>What's next?</strong><br />
                     Our team will review your application and you'll receive an email notification once approved.
-                    This typically takes 1-2 business days.
                   </p>
                 </div>
               </div>
@@ -433,7 +432,7 @@ export default function AffiliateAccountPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">✓</span>
-                  Start referring clients and earning commissions
+                  Start referring clients and earning
                 </li>
               </ul>
             </div>
@@ -732,8 +731,7 @@ export default function AffiliateAccountPage() {
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer ID</th>
                       <th className="min-w-[200px] sm:min-w-[250px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Customer Details</th>
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Date</th>
-                      <th className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Payment Count</th>
-                      <th className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission</th>
+                      <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission</th>
                       <th className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-bold text-gray-800 whitespace-nowrap">Commission Status</th>
                     </tr>
                   </thead>
@@ -768,66 +766,27 @@ export default function AffiliateAccountPage() {
                               })}
                             </div>
                           </td>
-                          <td className="min-w-[100px] sm:min-w-[120px] px-3 sm:px-5 py-3 sm:py-4 text-center whitespace-nowrap">
-                            {referral.payment_info && referral.payment_info.payment_count > 0 ? (
-                              <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-[12px] sm:text-[13px] font-bold bg-blue-100 text-blue-700 border border-blue-300">
-                                {referral.payment_info.payment_count}
+                          <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
+                            {referral.commission_amount > 0 ? (
+                              <span className="text-[12px] sm:text-[13px] font-bold text-purple-700">
+                                ₹{referral.commission_amount.toLocaleString('en-IN')}
                               </span>
                             ) : (
-                              <span className="text-gray-400 font-medium">0</span>
+                              <span className="text-gray-400 font-medium">-</span>
                             )}
                           </td>
-                          <td className="min-w-[140px] sm:min-w-[180px] px-3 sm:px-5 py-3 sm:py-4 text-right whitespace-nowrap">
-                            <div className="text-[11px] sm:text-[13px]">
-                              {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
-                                <div className="space-y-1">
-                                  {/* Show paid commission if any */}
-                                  {referral.payment_info.paid_commission > 0 && (
-                                    <div className="flex items-center justify-end gap-1">
-                                      <span className="font-bold text-green-700">
-                                        ₹{referral.payment_info.paid_commission.toLocaleString('en-IN')}
-                                      </span>
-                                      <span className="text-[9px] text-green-600">({referral.payment_info.paid_order_count})</span>
-                                    </div>
-                                  )}
-                                  {/* Show pending commission if any */}
-                                  {referral.payment_info.pending_commission > 0 && (
-                                    <div className="flex items-center justify-end gap-1">
-                                      <span className="font-bold text-orange-600">
-                                        ₹{referral.payment_info.pending_commission.toLocaleString('en-IN')}
-                                      </span>
-                                      <span className="text-[9px] text-orange-500">({referral.payment_info.pending_order_count})</span>
-                                    </div>
-                                  )}
-                                  {/* Show total */}
-                                  <p className="text-[10px] text-gray-500 border-t border-gray-200 pt-1">
-                                    Total: ₹{parseFloat(referral.payment_info.commission_amount || '0').toLocaleString('en-IN')}
-                                  </p>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 font-medium">-</span>
-                              )}
-                            </div>
-                          </td>
                           <td className="min-w-[120px] sm:min-w-[150px] px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                            {referral.payment_info && referral.payment_info.payment_status === 'completed' ? (
-                              // Show commission status based on paid_commission and pending_commission
-                              referral.payment_info.pending_commission > 0 && referral.payment_info.paid_commission > 0 ? (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-300">
-                                  Partial
-                                </span>
-                              ) : referral.payment_info.commission_paid || referral.payment_info.pending_commission === 0 ? (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300">
-                                  ✓ Received
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300">
-                                  Pending
-                                </span>
-                              )
+                            {referral.commission_status === 'paid' ? (
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300">
+                                Received
+                              </span>
+                            ) : referral.commission_status === 'processing' ? (
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-300">
+                                Processing
+                              </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold bg-gray-100 text-gray-500 border border-gray-300 shadow-sm">
-                                Awaiting Payment
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[13px] font-bold shadow-sm bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300">
+                                Pending
                               </span>
                             )}
                           </td>

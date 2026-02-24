@@ -12,7 +12,6 @@ interface Subscription {
 
 function PricingContent() {
   const { data: session } = useSession()
-  const [activeTab, setActiveTab] = useState<'onetime' | 'installment'>('onetime')
   const [activeCard, setActiveCard] = useState<string | null>(null)
   const [loadingPlan, _setLoadingPlan] = useState<string | null>(null) // Track which plan button is loading
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null)
@@ -201,137 +200,6 @@ function PricingContent() {
             </div>
           )}
 
-          {/* Show single subscribed plan if user has subscription */}
-          {!loadingSubscription && activeSubscription && (
-            <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                {/* Show the active plan card */}
-                {(activeSubscription.plan_type === 'monthly') && (
-                  <div className="relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg bg-[#306bea] text-white border-2 border-[#306bea]">
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-green-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                        Active Plan
-                      </span>
-                    </div>
-                    <div className="relative z-10 flex flex-col">
-                      <div className="text-center mb-6 mt-4">
-                        <h3 className="text-lg md:text-xl font-semibold text-white">Monthly Subscription</h3>
-                      </div>
-                      <div className="p-4 text-center">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-2xl text-white">₹</span>
-                          <span className="font-bold text-4xl md:text-5xl text-white">100</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-3 text-white">/user/monthly</p>
-                        <p className="text-sm mt-1 text-white/70">+ Applicable Taxes</p>
-                      </div>
-                      <div className="space-y-3 mb-6">
-                        {['On Installation and Demo', 'Ongoing Support', 'Per user'].map((feature, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <svg className="w-5 h-5 flex-shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-base text-white/90">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => window.location.href = '/account'}
-                        className="w-full py-3.5 rounded-full text-lg font-medium shadow-lg bg-white text-[#306bea] hover:bg-gray-50 transition-colors"
-                      >
-                        Manage Subscription
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {(activeSubscription.plan_type === 'annual') && (
-                  <div className="relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg bg-[#306bea] text-white border-2 border-[#306bea]">
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-green-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                        Active Plan
-                      </span>
-                    </div>
-                    <div className="relative z-10 flex flex-col">
-                      <div className="text-center mb-6 mt-4">
-                        <h3 className="text-lg md:text-xl font-semibold text-white">Annual Subscription</h3>
-                      </div>
-                      <div className="p-4 text-center">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-2xl text-white">₹</span>
-                          <span className="font-bold text-4xl md:text-5xl text-white">1,200</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-3 text-white">/user/annual</p>
-                        <p className="text-sm mt-1 text-white/70">+ Applicable Taxes</p>
-                      </div>
-                      <div className="space-y-3 mb-6">
-                        {['On Installation and Demo', 'Ongoing Support', 'Per user'].map((feature, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <svg className="w-5 h-5 flex-shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-base text-white/90">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => window.location.href = '/account'}
-                        className="w-full py-3.5 rounded-full text-lg font-medium shadow-lg bg-white text-[#306bea] hover:bg-gray-50 transition-colors"
-                      >
-                        Manage Subscription
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {(activeSubscription.plan_type === 'onetime' || activeSubscription.plan_type === 'installment') && (
-                  <div className="relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg bg-[#306bea] text-white border-2 border-[#306bea]">
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-green-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                        Active Plan
-                      </span>
-                    </div>
-                    <div className="relative z-10 flex flex-col">
-                      <div className="text-center mb-6 mt-4">
-                        <h3 className="text-lg md:text-xl font-semibold text-white">
-                          {activeSubscription.plan_type === 'onetime' ? 'One Time Payment' : 'Installment Plan'}
-                        </h3>
-                      </div>
-                      <div className="p-4 text-center">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-2xl text-white">₹</span>
-                          <span className="font-bold text-4xl md:text-5xl text-white">
-                            {activeSubscription.plan_type === 'onetime' ? '1,20,000' : '12,000'}
-                          </span>
-                        </div>
-                        <p className="text-lg font-semibold mt-3 text-white">
-                          {activeSubscription.plan_type === 'onetime' ? 'Lifetime License' : '(10 Months)'}
-                        </p>
-                        <p className="text-sm mt-1 text-white/70">+ Applicable Taxes</p>
-                      </div>
-                      <div className="space-y-3 mb-6">
-                        {['On Installation and Demo', 'Ongoing Support', 'Upto 20 users'].map((feature, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <svg className="w-5 h-5 flex-shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-base text-white/90">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => window.location.href = '/account'}
-                        className="w-full py-3.5 rounded-full text-lg font-medium shadow-lg bg-white text-[#306bea] hover:bg-gray-50 transition-colors"
-                      >
-                        Manage Subscription
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Show all plans if no active subscription */}
           {!loadingSubscription && !activeSubscription && (
           <>
@@ -348,47 +216,40 @@ function PricingContent() {
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-6">
 
-            {/* Card 1 - Monthly License */}
+            {/* Card 1 - Server Installation & Configuration */}
             <div
-              className="relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg h-full flex flex-col bg-white border-2 border-gray-200 overflow-hidden"
+              className="relative rounded-2xl md:rounded-3xl shadow-lg h-full flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 overflow-hidden"
             >
-              {/* Decorative Background Pattern */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-50 to-blue-100 rounded-full translate-y-12 -translate-x-12 opacity-60"></div>
+              {/* Decorative Background Elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-200/40 to-indigo-200/40 rounded-full -translate-y-20 translate-x-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-200/30 to-blue-200/30 rounded-full translate-y-16 -translate-x-16"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-blue-100/20 rounded-full blur-xl"></div>
 
-              <div className="relative z-10 flex flex-col flex-1">
-                {/* Header */}
-                <div className="text-center mb-8">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <svg className="w-7 h-7 text-[#306bea]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#001525]">Monthly License</h3>
+              {/* Marketing Highlight */}
+              <div className="relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 bg-amber-100 border-b border-amber-200 h-[100px] flex flex-col justify-center">
+                <div className="absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                <p className="relative text-lg text-amber-700"><span className="font-bold">Super Discounted Offer</span> <span className="font-extrabold text-2xl text-amber-800">₹50,000</span> worth @ ₹5,000</p>
+              </div>
+
+              <div className="relative z-10 flex flex-col flex-1 justify-center items-center pt-3 px-6 pb-6 md:pt-4 md:px-8 md:pb-8">
+                {/* Icon */}
+                <div className="w-14 h-14 bg-gradient-to-br from-[#306bea] to-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
                 </div>
 
-                {/* Price Box */}
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 mb-6 border border-gray-200">
-                  <div className="text-center">
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-xl text-[#306bea] font-medium">₹</span>
-                      <span className="font-bold text-4xl md:text-5xl text-[#001525]">100</span>
-                    </div>
-                    <p className="text-[#306bea] font-semibold mt-2">/user/month</p>
-                    <p className="text-gray-400 text-sm mt-1">+ Applicable Taxes</p>
-                  </div>
-                </div>
+                {/* Title */}
+                <h3 className="text-lg md:text-xl font-semibold text-[#001525] leading-tight text-center mb-2">Server Installation & Configuration</h3>
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-[#306bea]/10 text-[#306bea] border border-[#306bea]/20 mb-6">One Time Charge</span>
 
-                {/* Info Section */}
-                <div className="flex items-center gap-3 bg-blue-50 rounded-xl p-4 mt-auto">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <svg className="w-5 h-5 text-[#306bea]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                {/* Price */}
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-2xl text-[#306bea]">₹</span>
+                    <span className="font-bold text-4xl md:text-5xl text-[#001525]">5,000</span>
                   </div>
-                  <p className="text-gray-600 text-sm leading-snug">
-                    Contact our team for Monthly Billing options.
-                  </p>
+                  <p className="text-sm mt-3 text-gray-400">+ Applicable Taxes</p>
                 </div>
               </div>
             </div>
@@ -396,25 +257,31 @@ function PricingContent() {
             {/* Card 2 - Annual Subscription */}
             <div
               onClick={() => setActiveCard('annual')}
-              className={`relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col ${
+              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
                 activeCard === 'annual'
                   ? 'bg-[#306bea] text-white border-2 border-[#306bea]'
                   : 'bg-white border-2 border-gray-200'
               }`}
             >
-              <div className="relative z-10 flex flex-col flex-1">
-                {/* Header - Fixed height for alignment */}
-                <div className="text-center mb-6 h-[70px]">
+              {/* Marketing Highlight */}
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'annual' ? 'bg-white/15 border-b border-white/20' : 'bg-emerald-100 border-b border-emerald-200'}`}>
+                <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'annual' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
+                <p className={`relative font-bold text-lg ${activeCard === 'annual' ? 'text-white' : 'text-emerald-700'}`}>Great Opportunity for Prop. Firms</p>
+                <p className={`relative text-sm mt-0.5 ${activeCard === 'annual' ? 'text-white/80' : 'text-emerald-600'}`}><span className="font-bold">Best Practices</span> at just <span className="font-extrabold text-lg">₹9,000</span></p>
+              </div>
+
+              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+                {/* Header */}
+                <div className="text-center mb-3">
                   <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>Annual License</h3>
-                  <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${activeCard === 'annual' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'}`}>Annual Subscription</span>
                 </div>
 
-                {/* Pricing Section Wrapper - Fixed height for alignment */}
-                <div className="h-[160px] flex flex-col justify-center">
+                {/* Pricing Section Wrapper */}
+                <div className="h-[130px] flex flex-col justify-center">
                   <div className="text-center">
                     <div className="flex items-baseline justify-center gap-1">
                       <span className={`text-2xl ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>1,200</span>
+                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>1,800</span>
                     </div>
                     <p className={`text-lg font-semibold mt-3 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>/user/annual</p>
                     <p className={`text-sm mt-1 ${activeCard === 'annual' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -423,7 +290,7 @@ function PricingContent() {
 
                 {/* Features */}
                 <div className="space-y-3 mb-6">
-                  {['On Installation and Demo', 'Ongoing Support', 'Per user'].map((feature, index) => (
+                  {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -437,7 +304,7 @@ function PricingContent() {
                 {!isAffiliate && (
                   <div className="mt-auto">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1200); }}
+                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1800); }}
                       disabled={loadingPlan === 'annual'}
                       className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
                         loadingPlan === 'annual'
@@ -459,21 +326,15 @@ function PricingContent() {
               </div>
             </div>
 
-            {/* Card 3 - One Time / Installment with Tabs (Highest Price) */}
+            {/* Card 3 - One Time Payment (5 Year Plan) */}
             <div
               onClick={() => setActiveCard('lifetime')}
-              className={`relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col ${
+              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
                 activeCard === 'lifetime'
                   ? 'bg-[#306bea] text-white border-2 border-[#306bea]'
                   : 'bg-white border-2 border-gray-200'
               }`}
             >
-              {/* Heading Tag */}
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                  Perpetual License
-                </span>
-              </div>
               {/* Background Pattern - Only show when active */}
               {activeCard === 'lifetime' && (
                 <div className="absolute inset-0 opacity-10 overflow-hidden rounded-3xl pointer-events-none">
@@ -487,75 +348,34 @@ function PricingContent() {
                 </div>
               )}
 
-              <div className="relative z-10 flex flex-col flex-1">
-                {/* Header - Fixed height for alignment */}
-                <div className="text-center mb-6 h-[70px] flex flex-col justify-center">
-                  <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>One Time Payment</h3>
+              {/* Marketing Highlight */}
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'lifetime' ? 'bg-white/15 border-b border-white/20' : 'bg-violet-100 border-b border-violet-200'}`}>
+                <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'lifetime' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
+                <p className={`relative font-bold text-lg leading-tight ${activeCard === 'lifetime' ? 'text-white' : 'text-violet-700'}`}>Economical & Inflation Protector</p>
+                <p className={`relative text-sm mt-0.5 ${activeCard === 'lifetime' ? 'text-white/80' : 'text-violet-600'}`}>Assured Support for 5 Years</p>
+              </div>
+
+              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+                {/* Header */}
+                <div className="text-center mb-3">
+                  <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>5 Year Plan</h3>
                 </div>
 
-                {/* Pricing Section Wrapper - Fixed height for alignment */}
-                <div className="h-[160px] flex flex-col justify-center">
-                  {/* Tabs */}
-                  <div className={`flex rounded-full p-1 mb-3 ${
-                    activeCard === 'lifetime' ? 'bg-white/20' : 'bg-gray-100'
-                  }`}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setActiveTab('onetime'); }}
-                      className={`flex-1 py-1.5 px-3 rounded-full text-sm font-medium transition-all ${
-                        activeTab === 'onetime'
-                          ? activeCard === 'lifetime'
-                            ? 'bg-white text-[#306bea]'
-                            : 'bg-[#306bea] text-white'
-                          : activeCard === 'lifetime'
-                            ? 'text-white hover:bg-white/10'
-                            : 'text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      Single
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setActiveTab('installment'); }}
-                      className={`flex-1 py-1.5 px-3 rounded-full text-sm font-medium transition-all ${
-                        activeTab === 'installment'
-                          ? activeCard === 'lifetime'
-                            ? 'bg-white text-[#306bea]'
-                            : 'bg-[#306bea] text-white'
-                          : activeCard === 'lifetime'
-                            ? 'text-white hover:bg-white/10'
-                            : 'text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      Installment
-                    </button>
-                  </div>
-
-                  {/* Pricing Content */}
+                {/* Pricing Section Wrapper */}
+                <div className="h-[130px] flex flex-col justify-center">
                   <div className="text-center">
-                    {activeTab === 'onetime' ? (
-                      <>
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>1,20,000</span>
-                        </div>
-                        {/* <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>One-Time Payment</p> */}
-                        <p className={`text-xs mt-0.5 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
-                          <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>12,000</span>
-                        </div>
-                        <p className={`text-sm font-semibold mt-2 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>(10 Months)</p>
-                        <p className={`text-xs mt-0.5 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
-                      </>
-                    )}
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className={`text-2xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>₹</span>
+                      <span className={`font-bold text-4xl md:text-5xl ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>6,000</span>
+                    </div>
+                    <p className={`text-lg font-semibold mt-3 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>/user/5 year</p>
+                    <p className={`text-sm mt-1 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
                   </div>
                 </div>
 
                 {/* Features */}
                 <div className="space-y-3 mb-6">
-                  {['On Installation and Demo', 'Ongoing Support', 'Upto 20 users'].map((feature, index) => (
+                  {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -571,20 +391,18 @@ function PricingContent() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        const currentPlanType = activeTab === 'onetime' ? 'onetime' : 'installment';
-                        const planPrice = activeTab === 'onetime' ? 120000 : 12000;
-                        handleOrderClick(currentPlanType, planPrice);
+                        handleOrderClick('onetime', 6000);
                       }}
-                      disabled={loadingPlan === 'onetime' || loadingPlan === 'installment'}
+                      disabled={loadingPlan === 'onetime'}
                       className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
-                        loadingPlan === 'onetime' || loadingPlan === 'installment'
+                        loadingPlan === 'onetime'
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : activeCard === 'lifetime'
                             ? 'bg-white text-[#306bea] hover:bg-gray-50'
                             : 'bg-[#306bea] text-white hover:bg-[#244b9b]'
                       } cursor-pointer`}
                     >
-                      {(loadingPlan === 'onetime' || loadingPlan === 'installment') ? 'Please wait...' : 'Order Now'}
+                      {loadingPlan === 'onetime' ? 'Please wait...' : 'Order Now'}
                     </button>
                     {!session && (
                       <p className={`text-sm text-center mt-2 ${activeCard === 'lifetime' ? 'text-white/80' : 'text-gray-500'}`}>
@@ -599,28 +417,28 @@ function PricingContent() {
             {/* Card 4 - Large Practitioner / Enterprise */}
             <div
               onClick={() => setActiveCard('enterprise')}
-              className={`relative rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col ${
+              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
                 activeCard === 'enterprise'
                   ? 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white border-2 border-purple-500'
                   : 'bg-white border-2 border-gray-200'
               }`}
             >
-              {/* Enterprise Tag */}
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                  Enterprise
-                </span>
+              {/* Marketing Highlight */}
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'enterprise' ? 'bg-white/15 border-b border-white/20' : 'bg-rose-100 border-b border-rose-200'}`}>
+                <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'enterprise' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
+                <p className={`relative font-bold text-lg ${activeCard === 'enterprise' ? 'text-white' : 'text-rose-700'}`}>Customizable & Scalable</p>
+                <p className={`relative text-sm mt-0.5 ${activeCard === 'enterprise' ? 'text-white/80' : 'text-rose-600'}`}>Your Extended IT Arm</p>
               </div>
 
-              <div className="relative z-10 flex flex-col flex-1">
-                {/* Header - Fixed height for alignment */}
-                <div className="text-center mb-6 h-[70px]">
+              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+                {/* Header */}
+                <div className="text-center mb-3">
                   <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'enterprise' ? 'text-white' : 'text-[#001525]'}`}>Large Practitioner</h3>
                   <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${activeCard === 'enterprise' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-700'}`}>20+ Users</span>
                 </div>
 
-                {/* Pricing Section - Fixed height for alignment */}
-                <div className="h-[160px] flex flex-col justify-center">
+                {/* Pricing Section */}
+                <div className="h-[130px] flex flex-col justify-center">
                   <div className="text-center">
                     <div className="flex items-baseline justify-center gap-1">
                       <span className={`font-bold text-3xl md:text-3xl ${activeCard === 'enterprise' ? 'text-white' : 'text-[#001525]'}`}>Custom Pricing</span>
@@ -660,39 +478,11 @@ function PricingContent() {
             </div>
 
           </div>
+
           </>
           )}
         </div>
       </div>
-
-      {/* Bottom CTA */}
-      {/* <div className="pb-12 md:pb-24">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
-          <div className="bg-white border-2 border-[#e5e7eb] rounded-3xl p-5 md:p-6 max-w-2xl mx-auto shadow-md hover:shadow-lg transition-shadow flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-7 h-7 md:w-8 md:h-8" viewBox="0 0 32 32" fill="none">
-                  <path d="M6 4C6 2.89543 6.89543 2 8 2H18L26 10V28C26 29.1046 25.1046 30 24 30H8C6.89543 30 6 29.1046 6 28V4Z" fill="#DC2626"/>
-                  <path d="M18 2L26 10H20C18.8954 10 18 9.10457 18 8V2Z" fill="#FCA5A5"/>
-                  <text x="16" y="22" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold">PDF</text>
-                </svg>
-              </div>
-              <div>
-                <p className="text-[#001525] font-semibold text-sm md:text-base">Power CA Pricing Policy</p>
-                <p className="text-gray-500 text-xs md:text-sm">View complete pricing details</p>
-              </div>
-            </div>
-            <a
-              href="/docs/PowerCA_Pricing_Agreement.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#306bea] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full text-sm font-semibold hover:bg-[#244b9b] transition-all hover:scale-105 whitespace-nowrap shadow-sm inline-block"
-            >
-              View
-            </a>
-          </div>
-        </div>
-      </div> */}
 
       {/* Enterprise Inquiry Modal */}
       {showEnterpriseModal && (

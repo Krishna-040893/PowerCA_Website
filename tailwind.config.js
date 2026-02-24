@@ -103,6 +103,7 @@ module.exports = {
         'bounce-slow': 'bounce-slow 2s ease-in-out infinite',
         'shine': 'shine 1.5s ease-in-out',
         'swing': 'swing 1s ease-in-out infinite',
+        'shimmer': 'shimmer 3s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -132,6 +133,11 @@ module.exports = {
         'swing': {
           '0%, 100%': { transform: 'rotate(-3deg)' },
           '50%': { transform: 'rotate(3deg)' },
+        },
+        'shimmer': {
+          '0%': { left: '-30%' },
+          '50%': { left: '110%' },
+          '100%': { left: '110%' },
         },
       },
     },

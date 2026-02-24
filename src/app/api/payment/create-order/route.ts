@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       // Payment type for two-stage payment tracking
       paymentType, // 'initial_payment' or 'final_settlement'
       // User count for per-user pricing plans
-      userCount
+      userCount,
     } = body
 
     // Validate amount is provided
@@ -196,7 +196,7 @@ export async function POST(req: NextRequest) {
         // Plan type for subscription tracking
         plan_type: planType || 'monthly',
         // User count for per-user pricing
-        user_count: userCount || 1
+        user_count: userCount || 1,
       }
 
       // Try to store with payment_type first
