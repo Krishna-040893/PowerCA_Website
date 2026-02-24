@@ -320,25 +320,17 @@ function AffiliateLoginContent() {
             </div>
 
             {/* Register as Affiliate Button */}
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-2xl border-2 border-purple-200">
-              <div className="text-center mb-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Not an Affiliate Partner yet?</h3>
-                <p className="text-sm text-gray-600">
-                  Join our affiliate partner and earn 10% commission on every referral!
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-12 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white rounded-full font-medium transition-all duration-200"
-                asChild
-              >
-                <Link href="/affiliate-register" className="flex items-center justify-center gap-2">
-                  <UserPlus className="w-5 h-5" />
-                  Register as Affiliate Partner
-                </Link>
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white rounded-full font-medium transition-all duration-200"
+              asChild
+            >
+              <Link href="/affiliate-register" className="flex items-center justify-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Register as Affiliate Partner
+              </Link>
+            </Button>
 
             {/* Client Login Link */}
             <div className="text-center pt-2">

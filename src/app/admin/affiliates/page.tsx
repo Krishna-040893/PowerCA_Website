@@ -2,18 +2,29 @@
 
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
-import {Card, CardContent, CardHeader } from '@/components/ui/card'
+import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
 import {Button  } from '@/components/ui/button'
-import {Textarea  } from '@/components/ui/textarea'
-import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Search  } from 'lucide-react'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Search, Trash2  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 import { formatPhone } from '@/lib/utils'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface AffiliateApplication {
   id: string
@@ -83,10 +94,12 @@ export default function AdminAffiliatesPage() {
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
-  const [adminNotes, setAdminNotes] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const ITEMS_PER_PAGE = 10
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 
   // Fetch data when authenticated
 
@@ -130,7 +143,6 @@ export default function AdminAffiliatesPage() {
         body: JSON.stringify({
           applicationId,
           status,
-          adminNotes,
           approvedBy: adminUser?.username || 'Admin'
         }),
       })
@@ -144,13 +156,11 @@ export default function AdminAffiliatesPage() {
             ? {
                 ...app,
                 status,
-                admin_notes: adminNotes,
                 referral_code: result.referral_code || app.referral_code
               }
             : app
         ))
         setSelectedApp(null)
-        setAdminNotes('')
 
         if (status === 'approved' && result.referral_code) {
           const appUrl = window.location.origin
@@ -227,6 +237,84 @@ export default function AdminAffiliatesPage() {
     (app.referral_code && app.referral_code.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  // Track scroll position for showing/hiding footer action bar
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main.overflow-y-auto')
+
+    const handleScroll = () => {
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop
+        setIsHeaderVisible(scrollTop < 100)
+      }
+    }
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll()
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
+  const currentPageItems = filteredApplications
+    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+
+  const allCurrentPageSelected = currentPageItems.length > 0 &&
+    currentPageItems.every(item => selectedIds.has(item.id))
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      const currentPageIds = currentPageItems.map(r => r.id)
+      setSelectedIds(new Set(currentPageIds))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean | 'indeterminate') => {
+    const newSelected = new Set(selectedIds)
+    if (checked === true) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/affiliates', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete affiliate applications')
+      }
+
+      toast.success(`Successfully deleted ${selectedIds.size} affiliate application(s)`)
+      setSelectedIds(new Set())
+      fetchApplications()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete affiliate applications')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -250,27 +338,61 @@ export default function AdminAffiliatesPage() {
         { label: 'Rejected', value: stats.rejected, color: 'bg-red-100 text-red-800' }
       ]}
       actions={
-        <Button
-          onClick={fetchApplications}
-          variant="outline"
-          disabled={loading}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2 flex-wrap items-center">
+          {selectedIds.size > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Affiliate Applications</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.size} affiliate application(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
+          <Button
+            onClick={fetchApplications}
+            variant="outline"
+            size="sm"
+            disabled={loading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       }
     >
         {/* Main Content Card */}
         <Card className="shadow-sm border border-gray-100">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              {/* <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">All Affiliates</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">
-                  Review affiliate applications and approve or reject them
-                </CardDescription>
-              </div> */}
-              <div className="relative w-full sm:w-64">
+          <CardContent>
+            {/* Search Filter */}
+            <div className="flex gap-2 mb-5">
+              <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
@@ -280,12 +402,11 @@ export default function AdminAffiliatesPage() {
                     setSearchTerm(e.target.value)
                     setCurrentPage(1) // Reset to first page on search
                   }}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 text-sm h-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
@@ -308,6 +429,14 @@ export default function AdminAffiliatesPage() {
                   <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={allCurrentPageSelected}
+                          onCheckedChange={handleSelectAll}
+                          aria-label="Select all"
+                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        />
+                      </TableHead>
                       <TableHead className="text-base font-bold">Applicant</TableHead>
                       <TableHead className="text-base font-bold">Email</TableHead>
                       <TableHead className="text-base font-bold">Phone</TableHead>
@@ -322,6 +451,14 @@ export default function AdminAffiliatesPage() {
                       .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                       .map((application) => (
                       <TableRow key={application.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(application.id)}
+                            onCheckedChange={(checked) => handleSelectOne(application.id, checked)}
+                            aria-label={`Select ${application.name}`}
+                            className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           {application.name}
                         </TableCell>
@@ -352,10 +489,7 @@ export default function AdminAffiliatesPage() {
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedApp(application)
-                                  setAdminNotes(application.admin_notes || '')
-                                }}
+                                onClick={() => setSelectedApp(application)}
                                 className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -490,18 +624,6 @@ export default function AdminAffiliatesPage() {
                                     </div>
                                   )}
 
-                                  {/* Admin Notes */}
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
-                                    <Textarea
-                                      value={adminNotes}
-                                      onChange={(e) => setAdminNotes(e.target.value)}
-                                      placeholder="Add notes about this application..."
-                                      rows={3}
-                                      className="mt-2"
-                                    />
-                                  </div>
-
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (
                                     <div className="flex justify-end gap-2 pt-4 border-t">
@@ -537,16 +659,32 @@ export default function AdminAffiliatesPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
+                  {/* Mobile Select All */}
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <Checkbox
+                      checked={allCurrentPageSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                    />
+                    <span className="text-sm text-gray-600">Select all on this page</span>
+                  </div>
                   {filteredApplications
                     .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                     .map((application) => (
-                    <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <Card key={application.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(application.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {/* Name and Status Badge */}
+                          {/* Checkbox and Name and Status Badge */}
                           <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <Checkbox
+                                checked={selectedIds.has(application.id)}
+                                onCheckedChange={(checked) => handleSelectOne(application.id, checked)}
+                                aria-label={`Select ${application.name}`}
+                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              />
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                   <Star className="h-4 w-4 text-blue-600" />
                                 </div>
@@ -597,10 +735,7 @@ export default function AdminAffiliatesPage() {
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedApp(application)
-                                  setAdminNotes(application.admin_notes || '')
-                                }}
+                                onClick={() => setSelectedApp(application)}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -735,18 +870,6 @@ export default function AdminAffiliatesPage() {
                                     </div>
                                   )}
 
-                                  {/* Admin Notes */}
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-900">Admin Notes</label>
-                                    <Textarea
-                                      value={adminNotes}
-                                      onChange={(e) => setAdminNotes(e.target.value)}
-                                      placeholder="Add notes about this application..."
-                                      rows={3}
-                                      className="mt-2"
-                                    />
-                                  </div>
-
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (
                                     <div className="flex justify-end gap-2 pt-4 border-t">
@@ -791,6 +914,61 @@ export default function AdminAffiliatesPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
+        {selectedIds.size > 0 && !isHeaderVisible && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] p-4 z-[9999] lg:left-64">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Clear
+                </Button>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
+                    Delete ({selectedIds.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-white">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Affiliate Applications</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete {selectedIds.size} affiliate application(s)?
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSelected}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        )}
     </AdminPageWrapper>
   )
 }

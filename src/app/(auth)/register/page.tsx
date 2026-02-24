@@ -99,10 +99,17 @@ function RegisterContent() {
         break
 
       case 'membershipNumber':
-        if (!value.trim()) {
-          error = 'Membership number is required'
-        } else if (!/^\d{6}$/.test(value.trim())) {
-          error = 'Membership number must be exactly 6 digits'
+        if (formData.professionalType === 'Others') {
+          // Membership number is optional for Others
+          if (value.trim() && !/^\d{6}$/.test(value.trim())) {
+            error = 'Membership number must be exactly 6 digits'
+          }
+        } else {
+          if (!value.trim()) {
+            error = 'Membership number is required'
+          } else if (!/^\d{6}$/.test(value.trim())) {
+            error = 'Membership number must be exactly 6 digits'
+          }
         }
         break
 
@@ -129,7 +136,9 @@ function RegisterContent() {
     const nameValid = validateField('name', formData.name)
     const mobileValid = validateField('mobile', formData.mobile)
     const emailValid = validateField('email', formData.email)
-    const membershipValid = validateField('membershipNumber', formData.membershipNumber)
+    const membershipValid = formData.professionalType === 'Others'
+      ? validateField('membershipNumber', formData.membershipNumber) // optional validation (allows empty)
+      : validateField('membershipNumber', formData.membershipNumber)
     const passwordValid = validateField('password', formData.password)
 
     return nameValid && mobileValid && emailValid && membershipValid && passwordValid
@@ -140,6 +149,10 @@ function RegisterContent() {
     // Clear error when user starts typing
     if (fieldErrors[field as keyof typeof fieldErrors]) {
       setFieldErrors(prev => ({ ...prev, [field]: '' }))
+    }
+    // Clear membership number error when switching to Others
+    if (field === 'professionalType' && value === 'Others') {
+      setFieldErrors(prev => ({ ...prev, membershipNumber: '' }))
     }
   }
 
@@ -252,9 +265,9 @@ function RegisterContent() {
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 px-3 sm:px-6 py-3 backdrop-blur-md border border-white/20 rounded-full transition-all duration-300"
+          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300">
+          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
           <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
@@ -359,34 +372,6 @@ function RegisterContent() {
                   )}
                 </div>
 
-                {/* Professional Type */}
-                {userType === 'professional' && (
-                  <div className="space-y-3">
-                    <Label className="text-gray-900 font-medium">Professional <span className="text-red-500">*</span></Label>
-                    <RadioGroup
-                      value={formData.professionalType}
-                      onValueChange={(value) => handleInputChange('professionalType', value)}
-                      className="flex flex-wrap gap-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="CA" id="ca" className="text-blue-600" />
-                        <Label htmlFor="ca" className="text-blue-600 font-medium">CA</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="CMA" id="cma" />
-                        <Label htmlFor="cma">CMA</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="CS" id="cs" />
-                        <Label htmlFor="cs">CS</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="NA" id="na" />
-                        <Label htmlFor="na">NA</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                )}
               </div>
 
               {/* Right Column */}
@@ -415,32 +400,6 @@ function RegisterContent() {
                     <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
                   )}
                 </div>
-
-                {/* Membership Number Field */}
-                {userType === 'professional' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
-                      Membership No <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        id="membershipNo"
-                        type="text"
-                        value={formData.membershipNumber}
-                        onChange={(e) => handleInputChange('membershipNumber', e.target.value)}
-                        onBlur={() => handleBlur('membershipNumber')}
-                        placeholder="Number"
-                        className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
-                          fieldErrors.membershipNumber ? 'border-red-500 focus:border-red-500' : ''
-                        }`}
-                      />
-                    </div>
-                    {fieldErrors.membershipNumber && (
-                      <p className="text-xs text-red-600 mt-1">{fieldErrors.membershipNumber}</p>
-                    )}
-                  </div>
-                )}
 
                 {/* Password Field */}
                 <div className="space-y-2">
@@ -481,8 +440,67 @@ function RegisterContent() {
                     </p>
                   )}
                 </div>
+
               </div>
             </div>
+
+            {/* Professional Type & Membership No - Same Row */}
+            {userType === 'professional' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="space-y-3">
+                  <Label className="text-gray-900 font-medium">Professional Type <span className="text-red-500">*</span></Label>
+                  <RadioGroup
+                    value={formData.professionalType}
+                    onValueChange={(value) => handleInputChange('professionalType', value)}
+                    className="flex flex-wrap gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="CA" id="ca" className="text-blue-600" />
+                      <Label htmlFor="ca" className={`font-medium cursor-pointer ${formData.professionalType === 'CA' ? 'text-blue-600' : 'text-gray-600'}`}>CA</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="CMA" id="cma" className="text-blue-600" />
+                      <Label htmlFor="cma" className={`font-medium cursor-pointer ${formData.professionalType === 'CMA' ? 'text-blue-600' : 'text-gray-600'}`}>CMA</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="CS" id="cs" className="text-blue-600" />
+                      <Label htmlFor="cs" className={`font-medium cursor-pointer ${formData.professionalType === 'CS' ? 'text-blue-600' : 'text-gray-600'}`}>CS</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Others" id="others" className="text-blue-600" />
+                      <Label htmlFor="others" className={`font-medium cursor-pointer ${formData.professionalType === 'Others' ? 'text-blue-600' : 'text-gray-600'}`}>Others</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
+                    Membership No {formData.professionalType !== 'Others' && <span className="text-red-500">*</span>}
+                    {formData.professionalType === 'Others' && <span className="text-gray-400 text-xs ml-1">(Optional)</span>}
+                  </Label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      id="membershipNo"
+                      type="text"
+                      value={formData.membershipNumber}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                        handleInputChange('membershipNumber', val)
+                      }}
+                      onBlur={() => handleBlur('membershipNumber')}
+                      maxLength={6}
+                      placeholder="Enter 6-digit number"
+                      className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        fieldErrors.membershipNumber ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
+                    />
+                  </div>
+                  {fieldErrors.membershipNumber && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.membershipNumber}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Terms and Conditions */}
             <div className="flex items-start space-x-3 pt-4">
@@ -494,11 +512,11 @@ function RegisterContent() {
               />
               <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
                 By creating an Account Means you agree to the{' '}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
+                <Link href="/terms" target="_blank" className="text-blue-600 hover:text-blue-800 underline">
                   Terms and Conditions
                 </Link>
                 , and our{' '}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
+                <Link href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-800 underline">
                   Privacy Policy
                 </Link>
               </label>

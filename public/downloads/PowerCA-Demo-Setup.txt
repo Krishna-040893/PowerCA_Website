@@ -1,0 +1,19 @@
+PowerCA Demo Version
+====================
+
+This is a placeholder file for the PowerCA Demo application.
+
+In production, replace this file with the actual installer:
+- PowerCA-Demo-Setup.exe (Windows)
+- PowerCA-Demo-Setup.dmg (macOS)
+- PowerCA-Demo-Setup.deb (Linux)
+
+Installation Instructions:
+1. Run the installer
+2. Follow the on-screen instructions
+3. Enter your license key when prompted
+4. Complete the setup
+
+For support, contact: contact@powerca.in
+
+Thank you for purchasing PowerCA Demo Version!

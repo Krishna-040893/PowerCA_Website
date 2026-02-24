@@ -100,6 +100,10 @@ module.exports = {
         'slide-in': 'slideIn 0.5s ease-out',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'bounce-slow': 'bounce-slow 2s ease-in-out infinite',
+        'shine': 'shine 1.5s ease-in-out',
+        'swing': 'swing 1s ease-in-out infinite',
+        'shimmer': 'shimmer 3s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -117,6 +121,23 @@ module.exports = {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
+        },
+        'bounce-slow': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+        'shine': {
+          '0%': { transform: 'translateX(-100%) skewX(-12deg)' },
+          '100%': { transform: 'translateX(100%) skewX(-12deg)' },
+        },
+        'swing': {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        },
+        'shimmer': {
+          '0%': { left: '-30%' },
+          '50%': { left: '110%' },
+          '100%': { left: '110%' },
         },
       },
     },

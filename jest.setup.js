@@ -1,6 +1,16 @@
 ﻿const { TextDecoder, TextEncoder } = require('util')
 const { ReadableStream, WritableStream, TransformStream } = require('stream/web')
 const { MessageChannel, MessagePort, MessageEvent } = require('worker_threads')
+const { setImmediate, clearImmediate } = require('timers')
+
+// Add missing Node.js globals for undici compatibility
+if (!globalThis.setImmediate) {
+  globalThis.setImmediate = setImmediate
+}
+
+if (!globalThis.clearImmediate) {
+  globalThis.clearImmediate = clearImmediate
+}
 
 if (!globalThis.TextEncoder) {
   globalThis.TextEncoder = TextEncoder
@@ -103,6 +113,9 @@ jest.mock('next-auth/react', () => ({
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
+process.env.NEXTAUTH_SECRET = 'test-nextauth-secret'
+process.env.NEXTAUTH_URL = 'http://localhost:3000'
 
 // Suppress console errors in tests
 const originalError = console.error

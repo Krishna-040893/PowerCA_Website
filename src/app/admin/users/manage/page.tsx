@@ -3,6 +3,7 @@
 import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
@@ -40,6 +41,8 @@ export default function AdminUserManagementPage() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [newRole, setNewRole] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -136,6 +139,15 @@ export default function AdminUserManagementPage() {
 
     return matchesSearch && matchesRole
   })
+
+  // Pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, roleFilter])
 
   const stats = {
     total: users.length,
@@ -286,7 +298,7 @@ export default function AdminUserManagementPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user) => (
+                    {paginatedUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell>{user.email}</TableCell>
@@ -336,6 +348,19 @@ export default function AdminUserManagementPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {filteredUsers.length > ITEMS_PER_PAGE && (
+              <div className="mt-4">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredUsers.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  itemName="users"
+                />
               </div>
             )}
           </CardContent>

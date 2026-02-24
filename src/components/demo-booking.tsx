@@ -30,10 +30,8 @@ interface TimeSlot {
 }
 
 const timeSlots: TimeSlot[] = [
-  { time: '10:00 AM - 11:00 AM', displayTime: '10:00 AM - 11:00 AM', startHour: 10 },
   { time: '11:00 AM - 12:00 PM', displayTime: '11:00 AM - 12:00 PM', startHour: 11 },
   { time: '02:00 PM - 03:00 PM', displayTime: '2:00 PM - 3:00 PM', startHour: 14 },
-  { time: '03:00 PM - 04:00 PM', displayTime: '3:00 PM - 4:00 PM', startHour: 15 },
   { time: '04:00 PM - 05:00 PM', displayTime: '4:00 PM - 5:00 PM', startHour: 16 }
 ]
 
@@ -89,12 +87,10 @@ export function DemoBooking() {
 
   const fetchBookedSlots = async (date: Date) => {
     try {
-      const _response = await fetch(`/api/bookings/supabase?date=${date.toISOString()}`)
-      // const _data = await _response.json()
-      // setBookedSlots(_data.bookedSlots || [])
-      setBookedSlots([])
+      const response = await fetch(`/api/booking?date=${date.toISOString()}`)
+      const data = await response.json()
+      setBookedSlots(data.bookedSlots || [])
     } catch {
-      console.error('Error fetching booked slots')
       setBookedSlots([])
     }
   }
@@ -122,7 +118,7 @@ export function DemoBooking() {
         ? format(selectedDate, 'yyyy-MM-dd')
         : selectedDate;
 
-      const response = await fetch('/api/bookings/supabase', {
+      const response = await fetch('/api/booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

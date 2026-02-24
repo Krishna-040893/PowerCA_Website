@@ -1,6 +1,6 @@
 'use client'
 
-import {useState, useEffect  } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function PromotionalBanner() {
   const [isVisible, setIsVisible] = useState(true)
@@ -25,38 +25,32 @@ export default function PromotionalBanner() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-0 w-full bg-slate-900 text-white py-2.5 px-4 text-center text-sm z-50">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-center gap-1 sm:gap-3 flex-wrap">
-          {/* NEW badge - smaller on mobile */}
-          <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-blue-600 text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wide">
-            NEW
+    <div className="fixed top-0 w-full bg-slate-900 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-center text-sm z-50">
+      <div className="container mx-auto pr-6 sm:pr-0">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-4">
+          {/* Promotional text - responsive */}
+          <span className="text-white font-medium text-[10px] sm:text-sm whitespace-nowrap">
+            Launch Offer – 100% for CAs
           </span>
 
-          {/* Promotional text - responsive */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-            <span className="text-white font-medium text-[11px] sm:text-sm">
-              Launch Offer – Free for CAs
-            </span>
-          </div>
-
-          {/* Click Here button - compact on mobile */}
+          {/* View Pricing button - visible on all screens */}
           <a
             href="/pricing"
-            className="inline-flex items-center px-2 sm:px-4 py-1 sm:py-1.5 bg-white text-slate-900 text-[10px] sm:text-xs font-bold rounded-full hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-sm whitespace-nowrap"
+            className="inline-flex items-center px-2 sm:px-4 py-0.5 sm:py-1.5 bg-white text-slate-900 text-[9px] sm:text-xs font-bold rounded-full hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-sm whitespace-nowrap"
           >
-            Click Here
+            View Pricing
           </a>
+
         </div>
       </div>
 
       {/* Close button */}
       <button
         onClick={() => setIsVisible(false)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors duration-200 p-1"
+        className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors duration-200 p-1"
         aria-label="Close banner"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>

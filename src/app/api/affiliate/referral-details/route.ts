@@ -6,7 +6,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 /**
  * GET /api/affiliate/referral-details
  * Fetches detailed referral information including payment status and commission data
- * for the logged-in affiliate
+ * for the logged-in affiliate.
+ * Commission amounts are set by admin (no auto-calculation).
  */
 export async function GET(_request: NextRequest) {
   try {
@@ -36,14 +37,7 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // Get affiliate profile (contains referral counters and commission data)
-    const { data: affiliateProfile } = await supabase
-      .from('affiliate_profiles')
-      .select('*')
-      .eq('referral_code', affiliateReg.referral_code)
-      .maybeSingle()
-
-    // Get all referrals for this affiliate using referral_code
+    // Get all referrals for this affiliate (includes commission_amount and commission_status)
     const { data: referrals, error: referralsError } = await supabase
       .from('affiliate_referrals')
       .select('*')
@@ -58,98 +52,99 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // For each referral, get payment information
-    const referralDetails = await Promise.all(
-      (referrals || []).map(async (referral) => {
-        // Get payment data from affiliate_referral_payments table
-        const { data: paymentData } = await supabase
+    // Get all paid payments grouped by email for collection amounts
+    const referredEmails = (referrals || [])
+      .map(r => r.referred_email)
+      .filter(Boolean)
+      .map((e: string) => e.toLowerCase())
+
+    // Get payments from payments table for collection totals
+    const { data: allPayments } = referredEmails.length > 0
+      ? await supabase
+          .from('payments')
+          .select('email, amount, order_id')
+          .in('email', referredEmails)
+      : { data: [] }
+
+    // Build collection map: email -> total amount (deduplicated by order_id)
+    const collectionByEmail = new Map<string, number>()
+    const processedOrderIds = new Set<string>()
+    allPayments?.forEach(p => {
+      if (p.order_id && processedOrderIds.has(p.order_id)) return
+      if (p.order_id) processedOrderIds.add(p.order_id)
+      const email = p.email?.toLowerCase()
+      if (email) {
+        collectionByEmail.set(email, (collectionByEmail.get(email) || 0) + (Number(p.amount) || 0))
+      }
+    })
+
+    // Get affiliate_referral_payments records as the source of truth for commission
+    const referralIds = (referrals || []).map(r => r.id)
+    const { data: referralPayments } = referralIds.length > 0
+      ? await supabase
           .from('affiliate_referral_payments')
-          .select('*')
-          .eq('referral_id', referral.id)
-          .maybeSingle()
+          .select('referral_id, commission_amount, commission_paid')
+          .in('referral_id', referralIds)
+      : { data: [] }
 
-        // If no payment in affiliate_referral_payments, check payment_orders
-        let paymentInfo = null
-        if (paymentData) {
-          paymentInfo = {
-            payment_id: paymentData.payment_id,
-            order_id: paymentData.order_id,
-            payment_amount: paymentData.payment_amount,
-            total_amount: paymentData.total_amount,
-            commission_amount: paymentData.commission_amount,
-            commission_rate: paymentData.commission_rate,
-            commission_paid: paymentData.commission_paid,
-            payment_status: paymentData.payment_status,
-            payment_completed_at: paymentData.payment_completed_at,
-            customer_firm_name: paymentData.customer_firm_name,
-            created_at: paymentData.created_at
-          }
-        } else if (referral.customer_id) {
-          // Fallback: Check payment_orders table for this customer
-          const { data: orderData } = await supabase
-            .from('payment_orders')
-            .select('*')
-            .eq('customer_id', referral.customer_id)
-            .eq('referral_code', affiliateReg.referral_code)
-            .maybeSingle()
+    // Build per-referral commission maps from affiliate_referral_payments
+    const totalCommByReferral = new Map<string, number>()
+    const paidCommByReferral = new Map<string, number>()
+    const processingCommByReferral = new Map<string, number>()
+    referralPayments?.forEach(p => {
+      const rid = p.referral_id
+      const amt = Number(p.commission_amount) || 0
+      totalCommByReferral.set(rid, (totalCommByReferral.get(rid) || 0) + amt)
+      if (p.commission_paid) {
+        paidCommByReferral.set(rid, (paidCommByReferral.get(rid) || 0) + amt)
+      } else {
+        processingCommByReferral.set(rid, (processingCommByReferral.get(rid) || 0) + amt)
+      }
+    })
 
-          if (orderData) {
-            // orderData.amount is TOTAL (including GST)
-            // Calculate base amount: base = total / 1.18
-            const totalAmount = parseFloat(orderData.amount)
-            const baseAmount = parseFloat((totalAmount / 1.18).toFixed(2))
-            const gstAmount = parseFloat((totalAmount - baseAmount).toFixed(2))
+    // Build referral details using affiliate_referral_payments as source of truth
+    const referralDetails = (referrals || []).map((referral) => {
+      const email = referral.referred_email?.toLowerCase()
+      const collection = email ? (collectionByEmail.get(email) || 0) : 0
+      const totalComm = totalCommByReferral.get(referral.id) || 0
+      const paidComm = paidCommByReferral.get(referral.id) || 0
+      const processingComm = processingCommByReferral.get(referral.id) || 0
 
-            // Calculate commission on BASE amount (10% by default)
-            const commissionRate = affiliateProfile?.commission_rate || 10.00
-            const commissionAmount = parseFloat((baseAmount * (commissionRate / 100)).toFixed(2))
+      // Derive status from actual payment records
+      let commissionStatus: string
+      if (totalComm === 0) {
+        commissionStatus = 'pending'
+      } else if (paidComm >= totalComm) {
+        commissionStatus = 'paid'
+      } else {
+        commissionStatus = 'processing'
+      }
 
-            paymentInfo = {
-              payment_id: null,
-              order_id: orderData.order_id,
-              payment_amount: baseAmount,           // Base amount (excluding GST)
-              gst_amount: gstAmount,                // 18% GST
-              total_amount: totalAmount,            // Total (including GST)
-              commission_amount: commissionAmount,   // 10% of base amount
-              commission_rate: commissionRate,
-              commission_paid: false,
-              payment_status: orderData.status === 'paid' ? 'completed' : orderData.status,
-              payment_completed_at: orderData.status === 'paid' ? orderData.updated_at : null,
-              customer_firm_name: orderData.firm_name || orderData.company,
-              created_at: orderData.created_at
-            }
-          }
-        }
+      return {
+        ...referral,
+        collection,
+        commission_amount: totalComm,
+        commission_status: commissionStatus,
+        paid_commission: paidComm,
+        processing_commission: processingComm,
+        has_payment: collection > 0,
+        payment_status: collection > 0 ? 'completed' : 'pending',
+      }
+    })
 
-        return {
-          ...referral,
-          payment_info: paymentInfo,
-          has_payment: !!paymentInfo,
-          payment_status: paymentInfo?.payment_status || 'pending'
-        }
-      })
-    )
-
-    // Calculate summary statistics
+    // Calculate summary statistics from affiliate_referral_payments
     const totalReferrals = referralDetails.length
-    const paidReferrals = referralDetails.filter(r =>
-      r.payment_info?.payment_status === 'completed'
-    )
-    const pendingReferrals = referralDetails.filter(r =>
-      !r.payment_info || r.payment_info.payment_status === 'pending'
-    )
+    const paidReferrals = referralDetails.filter(r => r.has_payment)
+    const pendingReferrals = referralDetails.filter(r => !r.has_payment)
 
-    const totalCommissionEarned = paidReferrals.reduce((sum, r) =>
-      sum + parseFloat(r.payment_info?.commission_amount || '0'), 0
-    )
+    // Total commission = sum from affiliate_referral_payments
+    const totalCommissionEarned = referralDetails.reduce((sum, r) => sum + r.commission_amount, 0)
 
-    const pendingCommission = paidReferrals
-      .filter(r => !r.payment_info?.commission_paid)
-      .reduce((sum, r) => sum + parseFloat(r.payment_info?.commission_amount || '0'), 0)
+    // Paid (received) commission = sum where commission_paid = true
+    const paidCommission = referralDetails.reduce((sum, r) => sum + r.paid_commission, 0)
 
-    const paidCommission = paidReferrals
-      .filter(r => r.payment_info?.commission_paid)
-      .reduce((sum, r) => sum + parseFloat(r.payment_info?.commission_amount || '0'), 0)
+    // Processing commission = sum where commission_paid = false
+    const pendingCommission = referralDetails.reduce((sum, r) => sum + r.processing_commission, 0)
 
     return NextResponse.json({
       success: true,
@@ -158,7 +153,6 @@ export async function GET(_request: NextRequest) {
         referral_code: affiliateReg.referral_code,
         full_name: affiliateReg.full_name,
         email: affiliateReg.email,
-        commission_rate: affiliateProfile?.commission_rate || 10.00
       },
       summary: {
         total_referrals: totalReferrals,

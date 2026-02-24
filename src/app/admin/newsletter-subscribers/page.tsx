@@ -8,9 +8,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, RefreshCw, Download, Mail, Search } from 'lucide-react'
+import { Loader2, RefreshCw, Download, Mail, Search, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { toast } from 'sonner'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface NewsletterSubscriber {
   id: string
@@ -30,6 +43,9 @@ export default function NewsletterSubscribersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 
   const fetchSubscribers = useCallback(async () => {
     if (!isAuthenticated) {
@@ -79,6 +95,78 @@ export default function NewsletterSubscribersPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated])
 
+  // Track scroll position for showing/hiding footer action bar
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main.overflow-y-auto')
+
+    const handleScroll = () => {
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop
+        setIsHeaderVisible(scrollTop < 100)
+      }
+    }
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll()
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      const currentPageIds = currentPageItems.map(r => r.id)
+      setSelectedIds(new Set(currentPageIds))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean | 'indeterminate') => {
+    const newSelected = new Set(selectedIds)
+    if (checked === true) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/admin/newsletter-subscribers', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete subscribers')
+      }
+
+      toast.success(`Successfully deleted ${selectedIds.size} subscriber(s)`)
+      setSelectedIds(new Set())
+      fetchSubscribers()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete subscribers')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const exportToCSV = () => {
     const headers = ['Email', 'Source', 'Status', 'Subscribed At']
     const csvContent = [
@@ -108,6 +196,12 @@ export default function NewsletterSubscribersPage() {
     const matchesSearch = sub.email.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesSearch
   })
+
+  const currentPageItems = filteredSubscribers
+    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+
+  const allCurrentPageSelected = currentPageItems.length > 0 &&
+    currentPageItems.every(item => selectedIds.has(item.id))
 
   const stats = {
     total: subscribers.length,
@@ -141,7 +235,43 @@ export default function NewsletterSubscribersPage() {
         { label: 'Today', value: stats.today, color: 'bg-orange-100 text-orange-800' }
       ]}
       actions={
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
+          {selectedIds.size > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Subscribers</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.size} subscriber(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -208,6 +338,14 @@ export default function NewsletterSubscribersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={allCurrentPageSelected}
+                          onCheckedChange={handleSelectAll}
+                          aria-label="Select all"
+                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        />
+                      </TableHead>
                       <TableHead className="text-base font-bold">Email</TableHead>
                       <TableHead className="text-base font-bold">Source</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
@@ -219,6 +357,14 @@ export default function NewsletterSubscribersPage() {
                       .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                       .map((subscriber) => (
                       <TableRow key={subscriber.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(subscriber.id)}
+                            onCheckedChange={(checked) => handleSelectOne(subscriber.id, checked)}
+                            aria-label={`Select ${subscriber.email}`}
+                            className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{subscriber.email}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{subscriber.source || 'website'}</Badge>
@@ -245,16 +391,32 @@ export default function NewsletterSubscribersPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
+                {/* Mobile Select All */}
+                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                  <Checkbox
+                    checked={allCurrentPageSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                  />
+                  <span className="text-sm text-gray-600">Select all on this page</span>
+                </div>
                 {filteredSubscribers
                   .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                   .map((subscriber) => (
-                  <Card key={subscriber.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <Card key={subscriber.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(subscriber.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                     <CardContent className="p-4">
                       <div className="space-y-3">
-                        {/* Email and Status */}
+                        {/* Checkbox and Email */}
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <Checkbox
+                              checked={selectedIds.has(subscriber.id)}
+                              onCheckedChange={(checked) => handleSelectOne(subscriber.id, checked)}
+                              aria-label={`Select ${subscriber.email}`}
+                              className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                            />
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
                               <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                                 <Mail className="h-4 w-4 text-blue-600" />
                               </div>
@@ -302,6 +464,61 @@ export default function NewsletterSubscribersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
+      {selectedIds.size > 0 && !isHeaderVisible && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] p-4 z-[9999] lg:left-64">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedIds(new Set())}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Clear
+              </Button>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Subscribers</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.size} subscriber(s)?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      )}
     </AdminPageWrapper>
   )
 }

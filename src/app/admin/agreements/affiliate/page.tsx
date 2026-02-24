@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,20 +9,23 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, RefreshCw, Download, Search, FileText, User, Mail, Phone, FileCheck, Clock } from 'lucide-react'
+import { Loader2, RefreshCw, Download, Search, FileText, User, Mail, Phone, FileCheck, Clock, Upload, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import { formatPhone } from '@/lib/utils'
 
 interface Agreement {
   id: string
   name: string
   email: string
   phone: string
-  role: string
   status: 'draft' | 'signed'
   downloadedAt: string | null
   uploadedAt: string | null
   filePath: string | null
+  signingMethod: string | null
+  companySignedAt: string | null
+  companyFilePath: string | null
   createdAt: string
 }
 
@@ -35,6 +38,9 @@ export default function AffiliateAgreementsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
+  const [uploadingCompanySignId, setUploadingCompanySignId] = useState<string | null>(null)
+  const companySignFileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedAgreementId, setSelectedAgreementId] = useState<string | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -111,7 +117,6 @@ export default function AffiliateAgreementsPage() {
     if (!filePath) return
 
     try {
-      // Download file from local folder
       const response = await fetch(`/api/admin/affiliate-agreements/download?path=${encodeURIComponent(filePath)}`, {
         headers: getAuthHeaders()
       })
@@ -133,7 +138,7 @@ export default function AffiliateAgreementsPage() {
   }
 
   const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Status', 'Downloaded At', 'Uploaded At']
+    const headers = ['Name', 'Email', 'Phone', 'Status', 'Downloaded At', 'Uploaded At', 'Signing Method']
     const csvContent = [
       headers.join(','),
       ...agreements.map(agreement => {
@@ -143,7 +148,8 @@ export default function AffiliateAgreementsPage() {
           agreement.phone || '',
           agreement.status,
           agreement.downloadedAt ? format(new Date(agreement.downloadedAt), 'yyyy-MM-dd HH:mm:ss') : '',
-          agreement.uploadedAt ? format(new Date(agreement.uploadedAt), 'yyyy-MM-dd HH:mm:ss') : ''
+          agreement.uploadedAt ? format(new Date(agreement.uploadedAt), 'yyyy-MM-dd HH:mm:ss') : '',
+          agreement.signingMethod || ''
         ].map(field => `"${field}"`).join(',')
       })
     ].join('\n')
@@ -157,6 +163,56 @@ export default function AffiliateAgreementsPage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  const handleCompanySignUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !selectedAgreementId) return
+
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file only')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB')
+      return
+    }
+
+    setUploadingCompanySignId(selectedAgreementId)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('affiliateId', selectedAgreementId)
+
+      const response = await fetch('/api/admin/affiliate-agreements/upload-company-signed', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        await fetchAgreements()
+        alert('Company-signed agreement uploaded successfully!')
+      } else {
+        alert(result.error || 'Failed to upload company-signed agreement')
+      }
+    } catch (err) {
+      console.error('Error uploading company-signed agreement:', err)
+      alert('Failed to upload. Please try again.')
+    } finally {
+      setUploadingCompanySignId(null)
+      setSelectedAgreementId(null)
+      if (companySignFileInputRef.current) {
+        companySignFileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const triggerCompanySignUpload = (agreementId: string) => {
+    setSelectedAgreementId(agreementId)
+    companySignFileInputRef.current?.click()
   }
 
   const filteredAgreements = agreements.filter(agreement => {
@@ -272,6 +328,7 @@ export default function AffiliateAgreementsPage() {
                       <TableHead className="text-base font-bold">Affiliate</TableHead>
                       <TableHead className="text-base font-bold">Contact</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Signing Method</TableHead>
                       <TableHead className="text-base font-bold">Downloaded</TableHead>
                       <TableHead className="text-base font-bold">Uploaded</TableHead>
                       <TableHead className="text-base font-bold">Actions</TableHead>
@@ -302,7 +359,7 @@ export default function AffiliateAgreementsPage() {
                             {agreement.phone && (
                               <div className="flex items-center gap-1 text-xs text-gray-600">
                                 <Phone className="h-3 w-3" />
-                                {agreement.phone}
+                                {formatPhone(agreement.phone)}
                               </div>
                             )}
                           </div>
@@ -312,6 +369,15 @@ export default function AffiliateAgreementsPage() {
                             {getStatusIcon(agreement.status)}
                             {getStatusBadge(agreement.status)}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {agreement.signingMethod ? (
+                            <Badge className={agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}>
+                              {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {agreement.downloadedAt ? (
@@ -332,18 +398,42 @@ export default function AffiliateAgreementsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {agreement.filePath ? (
-                            <Button
-                              size="sm"
-                              onClick={() => handleDownloadDocument(agreement.filePath!)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </Button>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {/* Download: company-signed file if available, otherwise affiliate's signed file */}
+                            {(agreement.companyFilePath || agreement.filePath) && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleDownloadDocument((agreement.companyFilePath || agreement.filePath)!)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </Button>
+                            )}
+                            {agreement.status === 'signed' && !agreement.companySignedAt ? (
+                              <Button
+                                size="sm"
+                                onClick={() => triggerCompanySignUpload(agreement.id)}
+                                disabled={uploadingCompanySignId === agreement.id}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                {uploadingCompanySignId === agreement.id ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Upload className="h-4 w-4 mr-1" />
+                                )}
+                                Company Sign
+                              </Button>
+                            ) : agreement.companySignedAt ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Company Signed
+                              </Badge>
+                            ) : null}
+                            {!agreement.filePath && !agreement.companySignedAt && (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -359,7 +449,6 @@ export default function AffiliateAgreementsPage() {
                   <Card key={agreement.id} className="border border-gray-200 shadow-sm">
                     <CardContent className="p-4">
                       <div className="space-y-3">
-                        {/* Name and Status */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
@@ -376,7 +465,6 @@ export default function AffiliateAgreementsPage() {
                           </div>
                         </div>
 
-                        {/* Contact Info */}
                         <div className="space-y-1 bg-gray-50 rounded-lg p-2.5">
                           <div className="flex items-center gap-2">
                             <Mail className="h-3.5 w-3.5 text-gray-400" />
@@ -385,13 +473,22 @@ export default function AffiliateAgreementsPage() {
                           {agreement.phone && (
                             <div className="flex items-center gap-2">
                               <Phone className="h-3.5 w-3.5 text-gray-400" />
-                              <span className="text-xs text-gray-700">{agreement.phone}</span>
+                              <span className="text-xs text-gray-700">{formatPhone(agreement.phone)}</span>
                             </div>
                           )}
                         </div>
 
-                        {/* Dates */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-500">Signing:</span>
+                            <span className="text-gray-700">
+                              {agreement.signingMethod ? (
+                                <Badge className={`text-[10px] ${agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}`}>
+                                  {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                                </Badge>
+                              ) : '-'}
+                            </span>
+                          </div>
                           <div>
                             <span className="text-gray-500">Downloaded:</span>
                             <p className="text-gray-700">
@@ -406,24 +503,45 @@ export default function AffiliateAgreementsPage() {
                           </div>
                         </div>
 
-                        {/* Action Button */}
-                        {agreement.filePath && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleDownloadDocument(agreement.filePath!)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download Document
-                          </Button>
-                        )}
+                        <div className="flex flex-col gap-2">
+                          {(agreement.companyFilePath || agreement.filePath) && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleDownloadDocument((agreement.companyFilePath || agreement.filePath)!)}
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download Document
+                            </Button>
+                          )}
+                          {agreement.status === 'signed' && !agreement.companySignedAt ? (
+                            <Button
+                              size="sm"
+                              onClick={() => triggerCompanySignUpload(agreement.id)}
+                              disabled={uploadingCompanySignId === agreement.id}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              {uploadingCompanySignId === agreement.id ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-1" />
+                              )}
+                              Upload Company Signed
+                            </Button>
+                          ) : agreement.companySignedAt ? (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 justify-center py-1">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Company Signed
+                            </Badge>
+                          ) : null}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              {/* Pagination - only show when more than 10 entries */}
+              {/* Pagination */}
               {filteredAgreements.length > ITEMS_PER_PAGE && (
                 <AdminPagination
                   currentPage={currentPage}
@@ -437,6 +555,15 @@ export default function AffiliateAgreementsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Hidden file input for company-signed upload */}
+      <input
+        ref={companySignFileInputRef}
+        type="file"
+        accept="application/pdf"
+        onChange={handleCompanySignUpload}
+        className="hidden"
+      />
     </AdminPageWrapper>
   )
 }

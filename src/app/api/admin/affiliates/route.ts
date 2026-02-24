@@ -3,6 +3,7 @@ import {requireAdminAuth, createUnauthorizedResponse  } from '@/lib/auth/admin-s
 import {createClient  } from '@supabase/supabase-js'
 import {sendAffiliateApprovalEmail  } from '@/lib/resend'
 import {logger  } from '@/lib/logger'
+import {createErrorResponse, ErrorType, handleConfigurationError, handleDatabaseError, isServiceConfigured  } from '@/lib/error-handler'
 
 // Helper function to create timeout signal (Safari < 16.4 compatible)
 function createTimeoutSignal(timeoutMs: number): AbortSignal {
@@ -290,6 +291,70 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
+    )
+  }
+}
+
+// Delete affiliate applications (Admin only)
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verify admin authentication using NextAuth session
+    const session = await requireAdminAuth()
+    if (!session) {
+      return createUnauthorizedResponse()
+    }
+
+    const body = await request.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Please provide an array of affiliate application IDs to delete.'
+      )
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!isServiceConfigured('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY') ||
+        supabaseUrl?.includes('YOUR_PROJECT_ID')) {
+      return handleConfigurationError('Database')
+    }
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return handleConfigurationError('Database')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      }
+    })
+
+    const { error } = await supabase
+      .from('affiliate_applications')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      return handleDatabaseError(error)
+    }
+
+    logger.info('Affiliate applications deleted successfully', { count: ids.length, ids })
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully deleted ${ids.length} affiliate application(s).`,
+      deletedCount: ids.length
+    })
+
+  } catch (error) {
+    return createErrorResponse(
+      ErrorType.INTERNAL,
+      error as Error
     )
   }
 }

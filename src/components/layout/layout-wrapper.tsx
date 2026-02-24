@@ -7,8 +7,8 @@ import {Footer  } from './footer'
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  // Hide header and footer on admin pages and book-demo page
-  const hideLayout = pathname?.startsWith('/admin') || pathname === '/book-demo'
+  // Hide header and footer on admin pages
+  const hideLayout = pathname?.startsWith('/admin')
 
   return (
     <>

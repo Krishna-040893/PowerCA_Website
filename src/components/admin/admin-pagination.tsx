@@ -19,8 +19,8 @@ export function AdminPagination({
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
 
-  // Don't show pagination if there's only one page or no items
-  if (totalItems === 0) {
+  // Don't show pagination if items fit in one page or no items
+  if (totalItems <= itemsPerPage) {
     return null
   }
 
