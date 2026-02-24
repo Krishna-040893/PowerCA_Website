@@ -64,12 +64,19 @@ export async function POST(req: NextRequest) {
       city,
       state,
       postcode,
-      gstNo,
+      gstNo: _gstNo,
       addressId, // Address ID from user_addresses table
-      // Discount fields for progressive pricing
+      // Discount fields for coupon-based pricing
       discountPercentage,
       discountAmount,
-      originalAmount
+      originalAmount,
+      // Coupon code information
+      couponCode,
+      couponDiscountPercentage,
+      // Payment type for two-stage payment tracking
+      paymentType, // 'initial_payment' or 'final_settlement'
+      // User count for per-user pricing plans
+      userCount,
     } = body
 
     // Validate amount is provided
@@ -131,41 +138,90 @@ export async function POST(req: NextRequest) {
       const customerEmail = customerDetails?.email || session.user.email || body.email
       const supabase = createAdminClient()
 
-      // Store pending order
+      // Delete any existing "created" (abandoned) orders for the same address and user
+      // This prevents duplicate orders when user abandons payment and tries again
+      if (addressId && session.user.id) {
+        const { error: deleteError } = await supabase
+          .from('payment_orders')
+          .delete()
+          .eq('address_id', addressId)
+          .eq('user_id', session.user.id)
+          .eq('status', 'created')
+          .eq('payment_type', paymentType || 'initial_payment')
+
+        if (deleteError) {
+          logger.debug('No existing abandoned orders to delete or delete failed', deleteError)
+        } else {
+          logger.info('Deleted existing abandoned order for same address', { addressId, paymentType })
+        }
+      }
+
+      // Calculate GST breakdown (18% GST)
+      const totalAmountRupees = amount / 100 // Convert paise to rupees
+      const baseAmount = parseFloat((totalAmountRupees / 1.18).toFixed(2))
+      const gstAmount = parseFloat((totalAmountRupees - baseAmount).toFixed(2))
+
+      // Base order data without payment_type (for fallback if column doesn't exist)
+      const baseOrderData = {
+        order_id: order.id,
+        amount: totalAmountRupees, // Store total amount in rupees
+        gst: gstAmount, // GST amount (18%)
+        currency: 'INR',
+        status: 'created',
+        customer_email: customerEmail,
+        customer_name: customerDetails?.name || session.user.name || body.name,
+        customer_phone: customerDetails?.phone || body.phone,
+        company: customerDetails?.company || body.company,
+        firm_name: customerDetails?.firmName || body.firmName,
+        gst_number: customerDetails?.gst,
+        product_id: productId || planId,
+        user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
+        // Add referral tracking
+        referral_code: referralInfo?.referralCode || null,
+        customer_id: referralInfo?.customerId || null,
+        is_affiliate_purchase: !!referralInfo?.referralCode,
+        // Add address fields
+        customer_address: address || body.address,
+        customer_city: city || body.city,
+        customer_state: state || body.state,
+        customer_postcode: postcode || body.postcode,
+        customer_country: country || body.country,
+        address_id: addressId || null,
+        // Coupon-based discount fields
+        discount_percentage: discountPercentage || 0,
+        discount_amount: discountAmount || 0,
+        original_amount: originalAmount || null,
+        coupon_code: couponCode || null,
+        coupon_discount_percentage: couponDiscountPercentage || 0,
+        // Plan type for subscription tracking
+        plan_type: planType || 'monthly',
+        // User count for per-user pricing
+        user_count: userCount || 1,
+      }
+
+      // Try to store with payment_type first
       const { error } = await supabase
         .from('payment_orders')
         .insert({
-          order_id: order.id,
-          amount: amount / 100, // Convert to rupees for storage
-          currency: 'INR',
-          status: 'created',
-          customer_email: customerEmail,
-          customer_name: customerDetails?.name || session.user.name || body.name,
-          customer_phone: customerDetails?.phone || body.phone,
-          company: customerDetails?.company || body.company,
-          firm_name: customerDetails?.firmName || body.firmName,
-          gst_number: customerDetails?.gst,
-          product_id: productId || planId,
-          user_id: session.user.id, // ✅ Always valid - auth check above ensures this exists
-          // Add referral tracking
-          referral_code: referralInfo?.referralCode || null,
-          customer_id: referralInfo?.customerId || null,
-          is_affiliate_purchase: !!referralInfo?.referralCode,
-          // Add address fields
-          customer_address: address || body.address,
-          customer_city: city || body.city,
-          customer_state: state || body.state,
-          customer_postcode: postcode || body.postcode,
-          customer_country: country || body.country,
-          address_id: addressId || null,
-          // Discount fields for progressive pricing
-          discount_percentage: discountPercentage || 0,
-          discount_amount: discountAmount || 0,
-          original_amount: originalAmount || null
+          ...baseOrderData,
+          // Payment type for two-stage payment tracking
+          payment_type: paymentType || 'initial_payment'
         })
 
       if (error) {
-        logger.error('Error storing order (non-critical)', error)
+        // If error might be due to missing payment_type column, try without it
+        if (error.message?.includes('payment_type') || error.code === '42703') {
+          logger.info('payment_type column may not exist, trying fallback insert')
+          const { error: fallbackError } = await supabase
+            .from('payment_orders')
+            .insert(baseOrderData)
+
+          if (fallbackError) {
+            logger.error('Error storing order (non-critical)', fallbackError)
+          }
+        } else {
+          logger.error('Error storing order (non-critical)', error)
+        }
         // Continue even if DB save fails - this is not critical
       }
     } catch (dbError) {

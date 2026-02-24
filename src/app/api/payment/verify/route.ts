@@ -34,8 +34,11 @@ export async function POST(req: NextRequest) {
       affiliateCode,
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature
+      razorpay_signature,
+      paymentType // 'initial_payment' or 'final_settlement'
     } = body
+
+    const isFinalSettlement = paymentType === 'final_settlement'
 
     // Normalize the payment data for compatibility
     const normalizedOrderId = orderId || razorpay_order_id
@@ -82,7 +85,14 @@ export async function POST(req: NextRequest) {
 
     // Get additional user data from headers or session
     const userData = req.headers.get('x-user-data')
-    const userInfo = userData ? JSON.parse(userData) : {}
+    let userInfo: Record<string, string> = {}
+    if (userData) {
+      try {
+        userInfo = JSON.parse(userData)
+      } catch {
+        logger.warn('Failed to parse x-user-data header, using empty object')
+      }
+    }
 
     // Prepare payment data
     // Amount received is TOTAL (including GST)
@@ -146,21 +156,87 @@ export async function POST(req: NextRequest) {
     // Create or update subscription for the user
     if (payment && session?.user?.id) {
       try {
-        // Check if user already has a subscription
+        // Get order data to determine plan type and user count
+        const { data: orderDataForSub } = await supabase
+          .from('payment_orders')
+          .select('*')
+          .eq('order_id', normalizedOrderId)
+          .single()
+
+        const planType = orderDataForSub?.plan_type || 'monthly'
+        const addressId = orderDataForSub?.address_id
+        const userCount = orderDataForSub?.user_count || 1
+
+        // Calculate next due date based on plan type
+        const now = new Date()
+        let nextDueDate: Date | null = null
+
+        switch (planType) {
+          case 'monthly':
+            nextDueDate = new Date(now)
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1)
+            break
+          case 'annual':
+            nextDueDate = new Date(now)
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1)
+            break
+          case 'onetime':
+            nextDueDate = null // Lifetime, no renewal
+            break
+          default:
+            nextDueDate = new Date(now)
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1)
+        }
+
+        // Check if user already has a subscription for this address
         const { data: existingSubscription } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', session.user.id)
+          .eq('address_id', addressId)
           .single()
 
-        if (!existingSubscription) {
-          // Create new subscription (first purchase - launch offer)
-          const subscriptionData = {
+        if (existingSubscription) {
+          // Build update data
+          const updateData: Record<string, unknown> = {
+            plan_type: planType,
+            user_count: userCount,
+            status: 'active',
+            current_period_start: now.toISOString(),
+            current_period_end: nextDueDate?.toISOString() || null,
+            next_due_date: nextDueDate?.toISOString() || null,
+            updated_at: now.toISOString()
+          }
+
+          // Update existing subscription with new plan type, user count, and next due date
+          const { data: updatedSubscription, error: updateError } = await supabase
+            .from('subscriptions')
+            .update(updateData)
+            .eq('id', existingSubscription.id)
+            .select()
+            .single()
+
+          if (updateError) {
+            logger.error('Failed to update subscription', updateError)
+          } else {
+            logger.info('✅ Subscription updated', {
+              subscriptionId: updatedSubscription.id,
+              userId: session.user.id,
+              planType: planType,
+              nextDueDate: nextDueDate?.toISOString()
+            })
+          }
+        } else {
+          // Create new subscription
+          const subscriptionData: Record<string, unknown> = {
             user_id: session.user.id,
-            plan: 'launch_offer',
-            status: 'ACTIVE',
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() // 1 year from now
+            address_id: addressId,
+            plan_type: planType,
+            user_count: userCount,
+            status: 'active',
+            current_period_start: now.toISOString(),
+            current_period_end: nextDueDate?.toISOString() || null,
+            next_due_date: nextDueDate?.toISOString() || null
           }
 
           const { data: newSubscription, error: subError } = await supabase
@@ -175,15 +251,10 @@ export async function POST(req: NextRequest) {
             logger.info('✅ Subscription created', {
               subscriptionId: newSubscription.id,
               userId: session.user.id,
-              plan: 'launch_offer',
-              validUntil: subscriptionData.current_period_end
+              planType: planType,
+              nextDueDate: nextDueDate?.toISOString()
             })
           }
-        } else {
-          logger.info('User already has active subscription', {
-            subscriptionId: existingSubscription.id,
-            plan: existingSubscription.plan
-          })
         }
       } catch (subscriptionError) {
         logger.error('Error handling subscription', subscriptionError)
@@ -193,6 +264,44 @@ export async function POST(req: NextRequest) {
 
     // Generate invoice
     const invoiceNumber = generateInvoiceNumber(isTestPayment)
+
+    // Get user_count, plan_type, coupon, and discount info from payment_orders for invoice
+    const { data: orderForInvoice } = await supabase
+      .from('payment_orders')
+      .select('*')
+      .eq('order_id', normalizedOrderId)
+      .single()
+    const invoiceUserCount = orderForInvoice?.user_count || 1
+    const invoicePlanType = orderForInvoice?.plan_type || 'onetime'
+    const invoiceDiscountPercentage = orderForInvoice?.discount_percentage || 0
+    const invoiceDiscountAmount = orderForInvoice?.discount_amount || 0
+    const invoiceOriginalAmount = orderForInvoice?.original_amount || null
+    const usedCouponCode = orderForInvoice?.coupon_code || null
+
+    // Increment coupon usage if a coupon was applied
+    if (usedCouponCode) {
+      try {
+        // Increment usage count for the coupon
+        const { data: coupon } = await supabase
+          .from('coupon_codes')
+          .select('usage_count')
+          .ilike('code', usedCouponCode)
+          .single()
+
+        if (coupon) {
+          await supabase
+            .from('coupon_codes')
+            .update({ usage_count: (coupon.usage_count || 0) + 1 })
+            .ilike('code', usedCouponCode)
+
+          logger.info('Coupon usage incremented', { couponCode: usedCouponCode })
+        }
+      } catch (couponError) {
+        logger.error('Failed to increment coupon usage (non-critical)', couponError)
+        // Continue - this is not critical to payment success
+      }
+    }
+
     // Use already calculated values (no need to recalculate GST)
     const subtotal = paymentAmount // Base amount (excluding GST)
     const gst = {
@@ -217,15 +326,26 @@ export async function POST(req: NextRequest) {
       paymentId: normalizedPaymentId,
       paymentDate: new Date(),
       items: [{
-        description: productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE',
-        quantity: 1,
-        rate: subtotal,
+        description: isFinalSettlement
+          ? 'PowerCA Final Settlement - Complete your service payment'
+          : (productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE'),
+        quantity: invoiceUserCount,
+        rate: invoiceUserCount > 1 ? Math.round(subtotal / invoiceUserCount) : subtotal,
         amount: subtotal,
       }],
       subtotal,
       ...gst,
       grandTotal,
-      isTestMode: isTestPayment
+      isTestMode: isTestPayment,
+      // User and plan details
+      user_count: invoiceUserCount,
+      planType: invoicePlanType,
+      // Discount details
+      discountPercentage: invoiceDiscountPercentage,
+      discountAmount: invoiceDiscountAmount,
+      originalAmount: invoiceOriginalAmount,
+      couponCode: usedCouponCode,
+      paymentType: orderForInvoice?.payment_type || paymentType || 'initial_payment'
     }
 
     // Generate PDF invoice and upload to storage
@@ -262,6 +382,7 @@ export async function POST(req: NextRequest) {
           gst: gst.totalTax,
           total: grandTotal,
           status: 'paid',
+          user_count: invoiceUserCount,
         })
 
       if (invoiceError) {
@@ -284,7 +405,7 @@ export async function POST(req: NextRequest) {
         await resend.emails.send({
           from: 'PowerCA <contact@powerca.in>',
           to: customerEmail,
-          subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Invoice ${invoiceNumber}`,
+          subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Receipt ${invoiceNumber}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -320,43 +441,34 @@ export async function POST(req: NextRequest) {
 
                   <div class="payment-details">
                     <h3>💳 Payment Summary</h3>
-                    <div class="detail-row">
-                      <span>📋 Invoice Number</span>
-                      <strong>${invoiceNumber}</strong>
-                    </div>
-                    <div class="detail-row">
-                      <span>🔗 Order ID</span>
-                      <span>${normalizedOrderId}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>💰 Payment ID</span>
-                      <span>${normalizedPaymentId}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>📅 Date</span>
-                      <span>${new Date().toLocaleDateString('en-IN')}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span>💵 Total Amount</span>
-                      <strong>₹${grandTotal.toFixed(2)}</strong>
-                    </div>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">📋 Receipt Number</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;"><strong>${invoiceNumber}</strong></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">🔗 Order ID</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${normalizedOrderId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">💰 Payment ID</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${normalizedPaymentId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; color: #555;">📅 Date</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #ecf0f1; text-align: right;">${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #555;">💵 Total Amount</td>
+                        <td style="padding: 8px 0; text-align: right;"><strong style="color: #667eea;">₹${grandTotal.toFixed(2)}</strong></td>
+                      </tr>
+                    </table>
                   </div>
 
-                  <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="color: #27ae60; margin-top: 0;">🎁 What's Next?</h3>
-                    <ul style="margin: 0; padding-left: 20px;">
-                      <li>📧 You'll receive implementation details within 24 hours</li>
-                      <li>🎓 Free training session will be scheduled</li>
-                      <li>🛠️ Complete setup and configuration included</li>
-                      <li>🎉 First year subscription is absolutely FREE!</li>
-                    </ul>
-                  </div>
-
-                  <p>📎 Your detailed invoice is attached as a PDF for your records.</p>
-                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong> 🚀</p>
+                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong></p>
                 </div>
                 <div class="footer">
-                  <p>© 2024 PowerCA - Complete CA Practice Management Solution<br>
+                  <p>© ${new Date().getFullYear()} PowerCA - Complete CA Practice Management Solution<br>
                   This is an automated email. Please do not reply to this message.</p>
                 </div>
               </div>
@@ -364,7 +476,7 @@ export async function POST(req: NextRequest) {
             </html>
           `,
           attachments: invoicePDF ? [{
-            filename: `PowerCA-Invoice-${invoiceNumber}.pdf`,
+            filename: `PowerCA-Receipt-${invoiceNumber}.pdf`,
             content: Buffer.from(invoicePDF).toString('base64'),
           }] : [],
         })
@@ -460,7 +572,8 @@ export async function POST(req: NextRequest) {
           }
 
           // Track payment referral for commission calculation
-          // Commission is 10% of base amount (excluding GST)
+          // Commission is 10% of BASE amount (excluding GST)
+          // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
           const commissionAmount = parseFloat((paymentAmount * 0.10).toFixed(2))
 
           const paymentReferralData = {
@@ -571,7 +684,8 @@ export async function POST(req: NextRequest) {
             // Create record in affiliate_referral_payments table
             try {
               const commissionRate = 10.00 // 10% commission
-              // Commission is calculated on BASE amount (excluding GST)
+              // Commission is 10% of BASE amount (excluding GST)
+              // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
               const commissionAmount = parseFloat((paymentAmount * (commissionRate / 100)).toFixed(2))
 
               const { data: affiliatePaymentRecord, error: paymentRecordError } = await supabase
@@ -618,6 +732,9 @@ export async function POST(req: NextRequest) {
                   payment_status: 'completed',
                   payment_completed_at: new Date().toISOString(),
 
+                  // Payment type for tracking two-stage commissions
+                  payment_type: paymentType || 'initial_payment',
+
                   // Additional data
                   notes: {
                     invoice_number: invoiceNumber,
@@ -663,6 +780,8 @@ export async function POST(req: NextRequest) {
         invoiceNumber: invoiceNumber,
         amount: grandTotal,
         currency: 'INR',
+        planType: invoicePlanType,
+        userCount: invoiceUserCount,
       },
     })
 

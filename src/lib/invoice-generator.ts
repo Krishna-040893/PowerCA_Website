@@ -45,6 +45,12 @@ export interface InvoiceData {
   discountPercentage?: number
   discountAmount?: number
   originalAmount?: number
+  couponCode?: string | null
+
+  // User/Plan Details
+  user_count?: number
+  planType?: string
+  paymentType?: string
 }
 
 export interface PaymentData {
@@ -108,7 +114,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Invoice - ${data.invoiceNumber}</title>
+  <title>Receipt - ${data.invoiceNumber}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -344,7 +350,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
     ${data.isTestMode ? `
     <!-- Test Mode Banner -->
     <div style="background: #fff3cd; color: #856404; padding: 15px; margin: -30px -30px 20px -30px; text-align: center; border-radius: 0; border: 2px solid #ffc107; font-weight: bold; font-size: 16px;">
-      🧪 TEST MODE INVOICE - NO REAL PAYMENT PROCESSED
+      🧪 TEST MODE RECEIPT - NO REAL PAYMENT PROCESSED
     </div>
     ` : ''}
     <!-- Header -->
@@ -360,7 +366,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
           </div>
         </div>
         <div class="invoice-title">
-          <h2>TAX INVOICE</h2>
+          <h2>PAYMENT RECEIPT</h2>
           <div class="invoice-number">${data.invoiceNumber}</div>
           <div>📅 ${formatDate(data.invoiceDate)}</div>
           ${data.dueDate ? `<div>Due: ${formatDate(data.dueDate)}</div>` : ''}
@@ -463,10 +469,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
         <div class="footer-section">
           <h4>📋 Terms & Conditions</h4>
           <p>
-            ✅ This is a computer-generated invoice.<br>
-            🎁 First year subscription is FREE with implementation.<br>
-            🔄 Renewal charges apply from second year onwards.<br>
-            📞 For queries, contact contact@powerca.in
+            This is a computer-generated invoice. For any queries or support, please contact us at contact@powerca.in or call +91 96295 14635.
           </p>
         </div>
 

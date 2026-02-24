@@ -50,63 +50,134 @@ export async function GET(_request: NextRequest) {
       logger.error('Error fetching user invoices', invoicesError)
     }
 
-    // Fetch payment_orders with address_id to get location from user_addresses
+    // Get order_ids from invoices for mapping
     const orderIds = invoices?.map(inv => {
       const payment = Array.isArray(inv.payments) ? inv.payments[0] : inv.payments
       return payment?.order_id
     }).filter(Boolean) || []
 
-    // Get payment_orders with address_id and discount info
-    let paymentOrders = null
-    if (orderIds.length > 0) {
-      const { data } = await supabase
+    // Fetch payment_orders using select('*') to avoid column name issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let allPaymentOrders: any[] = []
+
+    // Query by user_id first (most reliable - same approach as purchased-addresses route)
+    if (session.user?.id) {
+      const { data, error } = await supabase
         .from('payment_orders')
-        .select('order_id, address_id, customer_city, discount_percentage, discount_amount, original_amount')
-        .in('order_id', orderIds)
-      paymentOrders = data
+        .select('*')
+        .eq('user_id', session.user.id)
+
+      if (error) {
+        logger.error('payment_orders query by user_id failed', {
+          error: error.message,
+          code: error.code,
+        })
+      } else {
+        allPaymentOrders = data || []
+      }
     }
 
-    // Get all address_ids to fetch from user_addresses
-    const addressIds = paymentOrders?.map(po => po.address_id).filter(Boolean) || []
+    // Also query by order_id for records that might not have user_id (legacy)
+    if (orderIds.length > 0) {
+      const { data, error } = await supabase
+        .from('payment_orders')
+        .select('*')
+        .in('order_id', orderIds)
 
-    // Fetch user_addresses to get label/city
-    let userAddresses: { id: string; label: string | null; city: string }[] = []
-    if (addressIds.length > 0) {
+      if (error) {
+        logger.error('payment_orders query by order_id failed', {
+          error: error.message,
+          code: error.code,
+        })
+      } else if (data && data.length > 0) {
+        // Merge, avoiding duplicates
+        const existingIds = new Set(allPaymentOrders.map((po: { id: string }) => po.id))
+        const additional = data.filter((po: { id: string }) => !existingIds.has(po.id))
+        allPaymentOrders = [...allPaymentOrders, ...additional]
+      }
+    }
+
+    logger.info('Order data fetched', {
+      invoicesCount: invoices?.length || 0,
+      orderIdsCount: orderIds.length,
+      paymentOrdersCount: allPaymentOrders.length,
+      userId: session.user?.id || 'none',
+      paymentOrdersSample: allPaymentOrders.slice(0, 2).map((po: { id: string; order_id: string; customer_city: string; address_id: string }) => ({
+        id: po.id,
+        order_id: po.order_id,
+        city: po.customer_city,
+        address_id: po.address_id,
+      })),
+    })
+
+    // Fetch ALL user_addresses for this user
+    let userAddresses: { id: string; label: string | null; city: string; firm_name: string }[] = []
+    if (session.user?.id) {
       const { data } = await supabase
         .from('user_addresses')
-        .select('id, label, city')
-        .in('id', addressIds)
+        .select('id, label, city, firm_name')
+        .eq('user_id', session.user.id)
       userAddresses = data || []
     }
 
-    // Create a map of address_id to location (prefer label, fallback to city)
+    // Create address_id → location map (prefer label, fallback to city)
     const addressLocationMap: Record<string, string> = {}
+    const firmLocationMap: Record<string, string> = {}
     for (const addr of userAddresses) {
-      addressLocationMap[addr.id] = addr.label || addr.city
+      const location = addr.label || addr.city
+      addressLocationMap[addr.id] = location
+      if (addr.firm_name && location) {
+        firmLocationMap[addr.firm_name.toLowerCase()] = location
+      }
     }
 
-    // Create a map of order_id to location and discount info
+    // Build order_id → location map and order_id → details map
     const orderCityMap: Record<string, string> = {}
-    const orderDiscountMap: Record<string, { discountPercentage: number; discountAmount: number; originalAmount: number | null }> = {}
-    if (paymentOrders) {
-      for (const po of paymentOrders) {
-        if (po.order_id) {
-          // First try to get location from user_addresses via address_id
-          if (po.address_id && addressLocationMap[po.address_id]) {
-            orderCityMap[po.order_id] = addressLocationMap[po.address_id]
-          } else if (po.customer_city) {
-            // Fallback to customer_city from payment_orders
-            orderCityMap[po.order_id] = po.customer_city
-          }
-          // Store discount info
-          orderDiscountMap[po.order_id] = {
-            discountPercentage: po.discount_percentage || 0,
-            discountAmount: po.discount_amount || 0,
-            originalAmount: po.original_amount || null
-          }
+    const orderDetailsMap: Record<string, {
+      discountPercentage: number
+      discountAmount: number
+      originalAmount: number | null
+      paymentType: string
+      planType: string
+      userCount: number
+      firmName: string
+      addressId: string | null
+    }> = {}
+
+    for (const po of allPaymentOrders) {
+      const poOrderId = po.order_id
+      if (poOrderId) {
+        // Resolve location in priority order
+        if (po.address_id && addressLocationMap[po.address_id]) {
+          orderCityMap[poOrderId] = addressLocationMap[po.address_id]
+        } else if (po.customer_city) {
+          orderCityMap[poOrderId] = po.customer_city
+        } else if (po.customer_state) {
+          orderCityMap[poOrderId] = po.customer_state
+        } else if (po.firm_name && firmLocationMap[po.firm_name.toLowerCase()]) {
+          orderCityMap[poOrderId] = firmLocationMap[po.firm_name.toLowerCase()]
+        } else if (po.firm_name) {
+          orderCityMap[poOrderId] = po.firm_name
+        }
+
+        orderDetailsMap[poOrderId] = {
+          discountPercentage: po.discount_percentage || 0,
+          discountAmount: po.discount_amount || 0,
+          originalAmount: po.original_amount || null,
+          paymentType: po.payment_type || 'initial_payment',
+          planType: po.plan_type || 'annual',
+          userCount: po.user_count || 1,
+          firmName: po.firm_name || '',
+          addressId: po.address_id || null,
         }
       }
     }
+
+    logger.info('Location resolution', {
+      addressCount: userAddresses.length,
+      orderCityMapEntries: Object.keys(orderCityMap).length,
+      orderCityMap
+    })
 
     // Get billing address from the most recent payment, or from registration_forms if no payments
     let billingAddress = null
@@ -122,7 +193,6 @@ export async function GET(_request: NextRequest) {
         gstNumber: payments[0].gst_number,
       }
     } else {
-      // Fetch from registration_forms if no payment history
       const { data: userData, error: userError } = await supabase
         .from('registration_forms')
         .select('name, email, phone, firm_name, company, address, gst_number')
@@ -145,24 +215,47 @@ export async function GET(_request: NextRequest) {
     // Format order history
     const orderHistory = invoices?.map((invoice) => {
       const payment = Array.isArray(invoice.payments) ? invoice.payments[0] : invoice.payments
-      // Get city from payment_orders map
-      const location = payment?.order_id ? (orderCityMap[payment.order_id] || '') : ''
-      // Get discount info from payment_orders map
-      const discountInfo = payment?.order_id ? orderDiscountMap[payment.order_id] : null
+      const orderId = payment?.order_id || ''
+
+      // Get location from orderCityMap
+      let location = orderId ? (orderCityMap[orderId] || '') : ''
+
+      // Final fallback: if still no location and user has only 1 address, use it
+      if (!location && userAddresses.length === 1) {
+        location = userAddresses[0].label || userAddresses[0].city
+      }
+
+      const orderDetails = orderId ? orderDetailsMap[orderId] : null
+      const paidAt = payment?.created_at || invoice.issued_at
+      const planType = orderDetails?.planType || 'annual'
+
+      let renewalDate: string | null = null
+      if (planType === 'annual') {
+        const d = new Date(paidAt)
+        d.setFullYear(d.getFullYear() + 1)
+        renewalDate = d.toISOString()
+      }
+
       return {
         invoiceNumber: invoice.invoice_number,
-        orderId: payment?.order_id || 'N/A',
+        orderId: orderId || 'N/A',
         paymentId: payment?.payment_id || 'N/A',
         amount: invoice.amount,
         gst: invoice.gst,
         total: invoice.total,
         status: invoice.status,
         issuedAt: invoice.issued_at,
-        paidAt: payment?.created_at || invoice.issued_at,
-        location: location,
-        discountPercentage: discountInfo?.discountPercentage || 0,
-        discountAmount: discountInfo?.discountAmount || 0,
-        originalAmount: discountInfo?.originalAmount || null,
+        paidAt,
+        location,
+        discountPercentage: orderDetails?.discountPercentage || 0,
+        discountAmount: orderDetails?.discountAmount || 0,
+        originalAmount: orderDetails?.originalAmount || null,
+        paymentType: orderDetails?.paymentType || 'initial_payment',
+        planType,
+        userCount: orderDetails?.userCount || 1,
+        firmName: orderDetails?.firmName || '',
+        addressId: orderDetails?.addressId || null,
+        renewalDate,
       }
     }) || []
 
@@ -173,6 +266,10 @@ export async function GET(_request: NextRequest) {
         orderHistory,
         totalOrders: orderHistory.length,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      }
     })
 
   } catch (error) {

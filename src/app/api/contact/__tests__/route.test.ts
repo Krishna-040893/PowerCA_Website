@@ -8,6 +8,14 @@ jest.mock('@/lib/send-emails', () => ({
   sendWelcomeEmail: jest.fn(),
 }))
 
+// Mock rate limiting to prevent 429 responses in tests
+jest.mock('@/lib/middleware', () => ({
+  withRateLimit: jest.fn((handler: any) => handler),
+  RateLimits: {
+    contactForm: { points: 100, duration: 60 },
+  },
+}))
+
 const mockSendContactFormEmail = sendContactFormEmail as unknown as jest.Mock
 const mockSendWelcomeEmail = sendWelcomeEmail as unknown as jest.Mock
 

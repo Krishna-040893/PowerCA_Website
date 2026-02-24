@@ -461,7 +461,7 @@ export default function BlogPageClient() {
                     </div>
                   </div>
 
-                  <div className="p-3 sm:p-6 md:flex md:flex-col md:flex-1">
+                  <div className="p-3 sm:p-6 flex flex-col flex-1">
                     <h3 className="text-sm sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                       {post.title}
                     </h3>
@@ -470,11 +470,13 @@ export default function BlogPageClient() {
                         {post.subtitle}
                       </p>
                     )}
-                    <p className="text-gray-600 mb-2 sm:mb-4 line-clamp-2 text-[11px] sm:text-sm leading-relaxed md:flex-1">
-                      {post.excerpt}
-                    </p>
+                    <div className="flex-1">
+                      <p className="text-gray-600 mb-2 sm:mb-4 text-[11px] sm:text-sm leading-relaxed line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                    </div>
 
-                    <div className="md:mt-auto">
+                    <div className="mt-auto">
                       <div className="flex items-center justify-between text-[10px] sm:text-sm text-gray-500 mb-2 sm:mb-4">
                         <div className="flex items-center gap-1.5 sm:gap-4">
                           <div className="flex items-center gap-1 sm:gap-2">
@@ -509,7 +511,7 @@ export default function BlogPageClient() {
 
               return post.link ? (
                 <Link href={post.link} key={post.id}>
-                  <article className={`bg-white shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer md:h-full md:flex md:flex-col ${
+                  <article className={`bg-white shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer h-full flex flex-col ${
                     post.isBreaking ? 'border-red-200 ring-1 sm:ring-2 ring-red-100' : 'border-gray-100'
                   }`} style={{ borderRadius: '16px' }}>
                     {postContent}
@@ -518,7 +520,7 @@ export default function BlogPageClient() {
               ) : (
                 <article
                   key={post.id}
-                  className="bg-white shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group md:h-full md:flex md:flex-col"
+                  className="bg-white shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group h-full flex flex-col"
                   style={{ borderRadius: '16px' }}
                 >
                   {postContent}

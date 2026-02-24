@@ -87,6 +87,12 @@ export async function GET(_request: NextRequest) {
 // PATCH to update user role
 export async function PATCH(request: NextRequest) {
   try {
+    // Verify admin authentication
+    const auth = await requireAdminAuth()
+    if (!auth) {
+      return createUnauthorizedResponse()
+    }
+
     const body = await request.json()
     const { userId, newRole, adminId } = body
 

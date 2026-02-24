@@ -1,5 +1,6 @@
 import React from 'react'
 import {resend  } from './email'
+import {logger  } from './logger'
 
 interface ContactFormData {
   name: string
@@ -82,13 +83,13 @@ export async function sendAdminRegistrationNotification(data: AdminRegistrationN
     // Use noreply@ address to avoid FROM and TO being the same
     // This prevents email delivery issues with Resend and other email services
     const fromAddress = process.env.EMAIL_FROM || 'PowerCA Notifications <noreply@powerca.in>'
-    const toAddress = process.env.CONTACT_EMAIL || 'contact@powerca.in'
+    const toAddresses = ['contact@powerca.in', 'tbsindiaudt@gmail.com']
 
-    console.log('Sending admin notification email:', { from: fromAddress, to: toAddress })
+    logger.info('Sending admin notification email', { from: fromAddress, to: toAddresses })
 
     const result = await resend.emails.send({
       from: fromAddress,
-      to: toAddress,
+      to: toAddresses,
       subject: `🎉 New Registration: ${data.userName} (${data.userRole || 'User'})`,
       react: AdminRegistrationNotification({
         userName: data.userName,
@@ -103,7 +104,7 @@ export async function sendAdminRegistrationNotification(data: AdminRegistrationN
       }) as React.ReactElement,
     })
 
-    console.log('Admin notification email sent successfully:', result)
+    logger.info('Admin notification email sent successfully', { messageId: result.data?.id })
     return { success: true, data: result }
   } catch (error) {
     console.error('Failed to send admin registration notification:', error)

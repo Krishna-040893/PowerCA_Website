@@ -157,10 +157,12 @@ export async function POST(req: NextRequest) {
         totalTax: gstAmount
       }
 
-      // Get discount information from order data
+      // Get discount information and user details from order data
       const discountPercentage = orderData.discount_percentage || 0
       const discountAmount = orderData.discount_amount || 0
       const originalAmount = orderData.original_amount || 0
+      const userCount = orderData.user_count || 1
+      const planType = orderData.plan_type || 'onetime'
 
       const invoiceData = {
         invoiceNumber,
@@ -176,8 +178,8 @@ export async function POST(req: NextRequest) {
         paymentDate: new Date(),
         items: [{
           description: 'PowerCA Implementation - Complete setup with first year subscription FREE',
-          quantity: 1,
-          rate: subtotal,
+          quantity: userCount,
+          rate: userCount > 1 ? Math.round(subtotal / userCount) : subtotal,
           amount: subtotal,
         }],
         subtotal,
@@ -188,6 +190,9 @@ export async function POST(req: NextRequest) {
         discountPercentage,
         discountAmount,
         originalAmount,
+        // Include user and plan details
+        user_count: userCount,
+        planType: planType,
       }
 
       // Generate and upload invoice
@@ -220,6 +225,7 @@ export async function POST(req: NextRequest) {
               gst: gst.totalTax,
               total: totalAmount,
               status: 'paid',
+              user_count: orderData.user_count || 1,
             })
 
           if (invoiceError) {
@@ -365,6 +371,8 @@ export async function POST(req: NextRequest) {
               .eq('id', referralRecord.id)
 
             // Create affiliate payment record
+            // Commission is 10% of BASE amount (excluding GST)
+            // Example: Monthly ₹100 × 5 users = ₹500 base → Commission = ₹50
             const commissionAmount = parseFloat((paymentAmount * 0.10).toFixed(2))
 
             await supabase

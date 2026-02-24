@@ -310,6 +310,7 @@ export function initMonitoring() {
     logger.info('Monitoring service initialized')
     return monitoring
   }
+  return undefined
 }
 
 // Helper functions for common use cases

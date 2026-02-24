@@ -15,25 +15,29 @@ import {
   MapPin,
   ShoppingBag,
   Trash2,
-  LogOut,
   AlertCircle,
   Download,
   Package,
   Loader2,
-  Calendar,
-  IndianRupee,
   Save,
   Plus,
   Pencil,
-  ChevronDown,
   FileText,
   Upload,
-  CheckCircle2
+  CheckCircle2,
+  CreditCard,
+  Clock,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Building2,
+  Star
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import ProfilePhotoUpload from '@/components/profile-photo-upload'
+import { PageErrorBoundary } from '@/components/error-boundary'
 
 interface BillingAddress {
   name: string
@@ -59,6 +63,12 @@ interface OrderHistory {
   discountPercentage: number
   discountAmount: number
   originalAmount: number | null
+  paymentType: 'initial_payment' | 'final_settlement'
+  planType: string
+  userCount: number
+  firmName: string
+  addressId: string | null
+  renewalDate: string | null
 }
 
 interface UserData {
@@ -81,6 +91,12 @@ interface AgreementStatus {
   hasUploaded: boolean
   uploadedAt: string | null
   filePath: string | null
+  signingMethod: 'digital' | 'manual' | null
+  hasCompanySigned: boolean
+  companySignedAt: string | null
+  companyFilePath: string | null
+  hasFinalDownloaded: boolean
+  finalDownloadedAt: string | null
 }
 
 interface SavedAddress {
@@ -98,6 +114,16 @@ interface SavedAddress {
   is_default: boolean
   label?: string
   created_at: string
+}
+
+interface AddressPaymentStatus {
+  addressId: string
+  initialPaymentDate: string | null
+  initialPaymentId: string | null
+  finalSettlementDate: string | null
+  finalSettlementPaymentId: string | null
+  isFinalSettlementEnabled: boolean
+  daysUntilFinalSettlement: number | null
 }
 
 // Common spelling corrections for Indian cities
@@ -324,19 +350,46 @@ function AccountPageContent() {
       ? tabParam
       : 'profile'
   })
+
+  // Check if coming from pricing page with a plan selected
+  const paymentType = searchParams.get('paymentType')
+  const planPrice = searchParams.get('planPrice')
+
+  // Subscription state
+  interface SubscriptionData {
+    id: string
+    plan_type: string
+    status: string
+    created_at: string
+    current_period_start?: string
+    current_period_end?: string
+    next_due_date?: string
+    address_id?: string
+    user_addresses?: {
+      id: string
+      firm_name: string
+      city: string
+      label?: string
+    }
+  }
+  const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([])
+  const [_loadingSubscription, setLoadingSubscription] = useState(false)
+
   const [currentProfilePhotoUrl, setCurrentProfilePhotoUrl] = useState<string | null>(null)
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
   const [loadingAddresses, setLoadingAddresses] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [purchasedAddressIds, setPurchasedAddressIds] = useState<string[]>([])
+  const [addressPaymentStatus, setAddressPaymentStatus] = useState<AddressPaymentStatus[]>([])
   const [selectedLocationTab, setSelectedLocationTab] = useState<string>('')
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
-  const [expandedOrders, setExpandedOrders] = useState<string[]>([])
-  const [expandedAddresses, setExpandedAddresses] = useState<string[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const ordersPerPage = 5
+  const [_expandedAddresses, setExpandedAddresses] = useState<string[]>([])
 
+  // Pagination state for all tabs (pagination shows when entries exceed this limit)
+  const ITEMS_PER_PAGE = 10
+  const [orderHistoryPage, setOrderHistoryPage] = useState(1)
+  const [billingAddressPage, setBillingAddressPage] = useState<Record<string, number>>({}) // Per-location pagination
   // Agreement document state
   const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null)
   const [isLoadingAgreement, setIsLoadingAgreement] = useState(false)
@@ -347,15 +400,22 @@ function AccountPageContent() {
   // Handle tab change - update both state and URL
   const handleTabChange = (value: string) => {
     setActiveTab(value)
-    // Reset pagination when switching to orders tab
+    // Reset pagination when switching tabs
     if (value === 'orders') {
-      setCurrentPage(1)
+      setOrderHistoryPage(1)
+    } else if (value === 'billing') {
+      setBillingAddressPage({}) // Reset all location pages
     }
     // Update URL without full page reload
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', value)
     router.replace(`/account?${params.toString()}`, { scroll: false })
   }
+
+  // Check if user is a student (students use Full Name instead of Firm Name)
+  // Role may be 'student' at runtime even though TS type is narrower
+  const userRole = session?.user?.role as string | undefined
+  const isStudent = userRole === 'student' || userRole === 'Student'
 
   // Billing form state
   const [isSavingBilling, setIsSavingBilling] = useState(false)
@@ -382,9 +442,27 @@ function AccountPageContent() {
       fetchReferralInfo()
       fetchSavedAddresses()
       fetchAgreementStatus()
+      fetchSubscription()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.email])
+
+  // Fetch subscription data
+  const fetchSubscription = async () => {
+    setLoadingSubscription(true)
+    try {
+      const response = await fetch('/api/subscriptions/status')
+      const data = await response.json()
+
+      if (data.subscriptions && data.subscriptions.length > 0) {
+        setSubscriptions(data.subscriptions)
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error)
+    } finally {
+      setLoadingSubscription(false)
+    }
+  }
 
   const fetchSavedAddresses = async () => {
     setLoadingAddresses(true)
@@ -406,11 +484,60 @@ function AccountPageContent() {
       if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
         setPurchasedAddressIds(purchasedResult.purchasedAddressIds)
       }
+
+      // Fetch address payment status (for two-stage payment tracking)
+      const paymentStatusResponse = await fetch('/api/user/address-payment-status')
+      const paymentStatusResult = await paymentStatusResponse.json()
+      if (paymentStatusResult.success && paymentStatusResult.addressPaymentStatus) {
+        setAddressPaymentStatus(paymentStatusResult.addressPaymentStatus)
+      }
     } catch (error) {
       console.error('Error fetching addresses:', error)
     } finally {
       setLoadingAddresses(false)
     }
+  }
+
+  // Helper function to get payment status for an address
+  const getAddressPaymentStatus = (addressId: string): AddressPaymentStatus | undefined => {
+    return addressPaymentStatus.find(status => status.addressId === addressId)
+  }
+
+  // Helper function to get subscription for an address
+  const getAddressSubscription = (addressId: string): SubscriptionData | undefined => {
+    return subscriptions.find(sub => sub.address_id === addressId)
+  }
+
+  // Helper function to format next due date
+  const formatNextDueDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return 'N/A'
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return 'N/A'
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  }
+
+  // Helper function to check if due date is past
+  const isDueDatePast = (dateStr: string | undefined): boolean => {
+    if (!dateStr) return false
+    const dueDate = new Date(dateStr)
+    return dueDate < new Date()
+  }
+
+  // Helper function to group orders by location
+  const groupOrdersByLocation = (orders: OrderHistory[]): Record<string, OrderHistory[]> => {
+    return orders.reduce((groups, order) => {
+      // Use location, then firmName as fallback, then 'Other' as last resort
+      const location = order.location || order.firmName || 'Other'
+      if (!groups[location]) {
+        groups[location] = []
+      }
+      groups[location].push(order)
+      return groups
+    }, {} as Record<string, OrderHistory[]>)
   }
 
   const _handleDeleteAddress = async (addressId: string) => {
@@ -439,8 +566,10 @@ function AccountPageContent() {
 
   const handleEditAddress = (address: SavedAddress) => {
     // Load address data into form - use label as city if available for consistency
+    // For students, the input value is stored in full_name; for professionals, in firm_name
+    // Fallback handles old data where students had their name in firm_name
     setBillingForm({
-      firmName: address.firm_name,
+      firmName: address.firm_name || address.full_name,
       gstNo: address.gst_no || '',
       address: address.address,
       city: address.label || address.city,
@@ -469,7 +598,7 @@ function AccountPageContent() {
   const fetchUserData = async () => {
     try {
       setIsLoadingData(true)
-      const response = await fetch('/api/user/data')
+      const response = await fetch(`/api/user/data?t=${Date.now()}`, { cache: 'no-store' })
       const result = await response.json()
 
       if (result.success) {
@@ -503,6 +632,10 @@ function AccountPageContent() {
 
       if (result.success) {
         setAgreementStatus(result.data)
+        // Restore the signing method if user has already downloaded
+        if (result.data.signingMethod) {
+          setSigningMethod(result.data.signingMethod)
+        }
       }
     } catch (error) {
       console.error('Error fetching agreement status:', error)
@@ -512,18 +645,32 @@ function AccountPageContent() {
   }
 
   const handleAgreementDownload = async () => {
+    if (!signingMethod) {
+      toast.error('Please select a signing method first')
+      return
+    }
+
     try {
-      // Record the download action
+      // Record the download action with signing method
       await fetch('/api/user/agreement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'download' })
+        body: JSON.stringify({ action: 'download', signingMethod })
       })
+
+      // Determine which document to download based on signing method
+      const documentPath = signingMethod === 'digital'
+        ? '/docs/PowerCA_Pricing_Agreement_DSC.pdf'
+        : '/docs/PowerCA_Pricing_Agreement.pdf'
+
+      const documentName = signingMethod === 'digital'
+        ? 'PowerCA_Pricing_Agreement_DSC.pdf'
+        : 'PowerCA_Pricing_Agreement.pdf'
 
       // Trigger the actual download
       const link = document.createElement('a')
-      link.href = '/docs/PowerCA-Service-Agreement.pdf'
-      link.download = 'PowerCA-Service-Agreement.pdf'
+      link.href = documentPath
+      link.download = documentName
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -585,6 +732,39 @@ function AccountPageContent() {
       if (agreementFileInputRef.current) {
         agreementFileInputRef.current.value = ''
       }
+    }
+  }
+
+  const handleFinalDownload = async () => {
+    try {
+      // Record the final download action
+      await fetch('/api/user/agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'final_download' })
+      })
+
+      // Download the company-signed document
+      const response = await fetch('/api/user/agreement/download-company-signed')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'PowerCA_Agreement_Company_Signed.pdf'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        await fetchAgreementStatus()
+        toast.success('Company-signed agreement downloaded successfully!')
+      } else {
+        toast.error('Failed to download company-signed agreement.')
+      }
+    } catch (error) {
+      console.error('Error downloading company-signed agreement:', error)
+      toast.error('Failed to download agreement. Please try again.')
     }
   }
 
@@ -657,8 +837,8 @@ function AccountPageContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          full_name: session?.user?.name || '',
-          firm_name: billingForm.firmName,
+          full_name: isStudent ? billingForm.firmName : (session?.user?.name || ''),
+          firm_name: isStudent ? '' : billingForm.firmName,
           gst_no: billingForm.gstNo || null,
           address: billingForm.address,
           city: normalizedCity,
@@ -668,6 +848,7 @@ function AccountPageContent() {
           phone: session?.user?.phone || '',
           email: session?.user?.email || '',
           is_default: false,
+          is_student: isStudent,
           label: normalizedCity
         }),
       })
@@ -677,16 +858,29 @@ function AccountPageContent() {
       if (result.success) {
         toast.success(isEditing ? 'Address updated successfully!' : 'Billing address saved successfully!')
 
-        // For new addresses, redirect to checkout with the new address ID
+        // For new addresses, redirect to pricing page so user can select a subscription plan
+        // Only redirect to checkout if a specific plan is already selected (paymentType exists)
         if (!isEditing && result.address?.id) {
-          router.push(`/checkout?addressId=${result.address.id}`)
-          return
+          if (paymentType && planPrice) {
+            // If coming from pricing page with a plan already selected, go to checkout
+            const checkoutUrl = `/checkout?addressId=${result.address.id}&planType=${paymentType}&planPrice=${planPrice}`
+            router.push(checkoutUrl)
+            return
+          } else {
+            // First time user - redirect to pricing page to select a plan
+            // Store the new address ID so pricing page can pass it to checkout
+            sessionStorage.setItem('pendingAddressId', result.address.id)
+            localStorage.setItem('pendingAddressId', result.address.id)
+            toast.success('Now select your subscription plan!')
+            router.push('/pricing')
+            return
+          }
         }
 
-        // For edits, stay on the page
-        // Store the edited address ID and location before resetting
-        const editedAddressId = editingAddressId
-        const editedLocation = normalizedCity
+        // Stay on the page for both new addresses and edits
+        // Store the address ID and location before resetting
+        const addressId = isEditing ? editingAddressId : result.address?.id
+        const addressLocation = normalizedCity
 
         // Fetch updated addresses list
         await fetchSavedAddresses()
@@ -706,19 +900,27 @@ function AccountPageContent() {
         setShowAddressForm(false)
         setEditingAddressId(null)
 
-        // Set the current location tab to the edited address's location
-        if (editedLocation) {
-          setSelectedLocationTab(editedLocation)
+        // Set the current location tab to the address's location
+        if (addressLocation) {
+          setSelectedLocationTab(addressLocation)
         }
 
-        // Expand the edited address accordion
-        if (editedAddressId) {
+        // Expand the address accordion to show it's been created/updated
+        if (addressId) {
           setExpandedAddresses(prev =>
-            prev.includes(editedAddressId) ? prev : [...prev, editedAddressId]
+            prev.includes(addressId) ? prev : [...prev, addressId]
           )
         }
       } else {
-        toast.error(result.error || 'Failed to save billing address')
+        if (result.error === 'DUPLICATE_ADDRESS') {
+          toast.error(
+            isStudent
+              ? 'An address with the same name and location already exists'
+              : 'An address with the same firm name and location already exists'
+          )
+        } else {
+          toast.error(result.error || 'Failed to save billing address')
+        }
       }
     } catch (error) {
       console.error('Error saving billing address:', error)
@@ -730,7 +932,7 @@ function AccountPageContent() {
 
   const handleDownloadInvoice = async (invoiceNumber: string) => {
     try {
-      const response = await fetch(`/api/invoice/download/${invoiceNumber}`)
+      const response = await fetch(`/api/invoice/download/${invoiceNumber}?regenerate=true`)
 
       if (!response.ok) {
         throw new Error('Failed to download invoice')
@@ -769,6 +971,85 @@ function AccountPageContent() {
       month: 'short',
       year: 'numeric'
     })
+  }
+
+  // Pagination component
+  const PaginationControls = ({
+    currentPage,
+    totalPages,
+    onPageChange,
+    totalItems,
+    itemsPerPage
+  }: {
+    currentPage: number
+    totalPages: number
+    onPageChange: (page: number) => void
+    totalItems: number
+    itemsPerPage: number
+  }) => {
+    if (totalPages <= 1) return null
+
+    const startItem = (currentPage - 1) * itemsPerPage + 1
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-200">
+        <p className="text-sm text-gray-600">
+          Showing <span className="font-medium">{startItem}</span> to <span className="font-medium">{endItem}</span> of <span className="font-medium">{totalItems}</span> entries
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="h-8 px-3 text-sm"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+              // Show first, last, current, and adjacent pages
+              const showPage = page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1
+              const showEllipsis = page === 2 && currentPage > 3 || page === totalPages - 1 && currentPage < totalPages - 2
+
+              if (showEllipsis && !showPage) {
+                return <span key={page} className="px-1 text-gray-400">...</span>
+              }
+
+              if (!showPage) return null
+
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(page)}
+                  className={`h-8 w-8 p-0 text-sm ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </Button>
+              )
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="h-8 px-3 text-sm"
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (status === 'loading') {
@@ -814,15 +1095,6 @@ function AccountPageContent() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors w-full sm:w-auto"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
           </div>
         </div>
       </div>
@@ -890,16 +1162,16 @@ function AccountPageContent() {
             )}
 
             <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <User className="h-4 w-4 text-blue-600" />
                       Account Information
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Your personal details and account information</CardDescription>
+                    <CardDescription className="text-xs">Your personal details and account information</CardDescription>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs sm:text-sm w-fit">
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs w-fit">
                     {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
                   </Badge>
                 </div>
@@ -962,10 +1234,10 @@ function AccountPageContent() {
                 <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Service Agreement</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Pricing Agreement</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-500 mb-6">
-                    Download, sign, and upload your service agreement document
+                    Download, Sign and Upload your Pricing Agreement Document
                   </p>
 
                   {isLoadingAgreement ? (
@@ -975,12 +1247,12 @@ function AccountPageContent() {
                     </div>
                   ) : (
                     <div>
-                      {/* Horizontal Progress Steps - 3 Steps */}
+                      {/* Horizontal Progress Steps - 5 Steps */}
                       <div className="flex items-center justify-center mb-8">
                         {/* Step 1: Download */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
                               backgroundColor: agreementStatus?.hasDownloaded ? '#22c55e' : 'rgb(219, 230, 252)',
                               borderColor: agreementStatus?.hasDownloaded ? '#22c55e' : '#3b82f6',
@@ -988,87 +1260,126 @@ function AccountPageContent() {
                             }}
                           >
                             {agreementStatus?.hasDownloaded ? (
-                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             ) : (
-                              <Download className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
                             agreementStatus?.hasDownloaded ? 'text-green-600' : 'text-gray-900'
                           }`}>
                             Download
                           </p>
                         </div>
 
-                        {/* Connecting Line 1 */}
+                        {/* Line 1 */}
                         <div
-                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
                             agreementStatus?.hasDownloaded ? 'bg-green-500' : 'bg-gray-300'
                           }`}
-                          style={{ marginBottom: '24px' }}
+                          style={{ marginBottom: '20px' }}
                         />
 
                         {/* Step 2: Upload */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
                               backgroundColor: agreementStatus?.hasUploaded
                                 ? '#22c55e'
                                 : agreementStatus?.hasDownloaded
-                                  ? 'rgb(219, 230, 252)'
-                                  : '#f3f4f6',
+                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
                               borderColor: agreementStatus?.hasUploaded
                                 ? '#22c55e'
                                 : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6'
-                                  : '#d1d5db',
+                                  ? '#3b82f6' : '#d1d5db',
                               color: agreementStatus?.hasUploaded
                                 ? 'white'
                                 : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6'
-                                  : '#9ca3af'
+                                  ? '#3b82f6' : '#9ca3af'
                             }}
                           >
                             {agreementStatus?.hasUploaded ? (
-                              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             ) : (
-                              <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
                             agreementStatus?.hasUploaded
                               ? 'text-green-600'
                               : agreementStatus?.hasDownloaded
-                                ? 'text-gray-900'
-                                : 'text-gray-400'
+                                ? 'text-gray-900' : 'text-gray-400'
                           }`}>
                             Upload
                           </p>
                         </div>
 
-                        {/* Connecting Line 2 */}
+                        {/* Line 2 */}
                         <div
-                          className={`h-0.5 w-12 sm:w-20 md:w-28 mx-2 sm:mx-3 transition-all duration-300 ${
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
                             agreementStatus?.hasUploaded ? 'bg-green-500' : 'bg-gray-300'
                           }`}
-                          style={{ marginBottom: '24px' }}
+                          style={{ marginBottom: '20px' }}
                         />
 
-                        {/* Step 3: Completed */}
+                        {/* Step 3: Company Sign */}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
-                              backgroundColor: agreementStatus?.hasUploaded ? '#22c55e' : '#f3f4f6',
-                              borderColor: agreementStatus?.hasUploaded ? '#22c55e' : '#d1d5db',
-                              color: agreementStatus?.hasUploaded ? 'white' : '#9ca3af'
+                              backgroundColor: agreementStatus?.hasCompanySigned
+                                ? '#22c55e'
+                                : agreementStatus?.hasUploaded
+                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
+                              borderColor: agreementStatus?.hasCompanySigned
+                                ? '#22c55e'
+                                : agreementStatus?.hasUploaded
+                                  ? '#3b82f6' : '#d1d5db',
+                              color: agreementStatus?.hasCompanySigned
+                                ? 'white'
+                                : agreementStatus?.hasUploaded
+                                  ? '#3b82f6' : '#9ca3af'
                             }}
                           >
-                            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                            {agreementStatus?.hasCompanySigned ? (
+                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${
-                            agreementStatus?.hasUploaded ? 'text-green-600' : 'text-gray-400'
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium text-center ${
+                            agreementStatus?.hasCompanySigned
+                              ? 'text-green-600'
+                              : agreementStatus?.hasUploaded
+                                ? 'text-gray-900' : 'text-gray-400'
+                          }`} style={{ maxWidth: '60px' }}>
+                            {agreementStatus?.hasCompanySigned ? 'Approved' : 'Approval'}
+                          </p>
+                        </div>
+
+                        {/* Line 3 */}
+                        <div
+                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
+                            agreementStatus?.hasCompanySigned ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
+                          style={{ marginBottom: '20px' }}
+                        />
+
+                        {/* Step 4: Completed */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
+                            style={{
+                              backgroundColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#f3f4f6',
+                              borderColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#d1d5db',
+                              color: agreementStatus?.hasCompanySigned ? 'white' : '#9ca3af'
+                            }}
+                          >
+                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
+                            agreementStatus?.hasCompanySigned ? 'text-green-600' : 'text-gray-400'
                           }`}>
                             Completed
                           </p>
@@ -1154,7 +1465,6 @@ function AccountPageContent() {
                       ) : !agreementStatus?.hasUploaded ? (
                         /* Step 2 Content: Upload signed document */
                         <div>
-                          {/* File Upload Option */}
                           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-w-md mx-auto">
                             <div
                               className="flex flex-col items-center justify-center h-[100px] border-2 border-dashed border-gray-300 rounded-lg bg-white hover:border-purple-400 transition-colors cursor-pointer"
@@ -1196,17 +1506,39 @@ function AccountPageContent() {
                             </Button>
                           </div>
                         </div>
-                      ) : (
-                        /* Step 3 Content: Completed */
+                      ) : !agreementStatus?.hasCompanySigned ? (
+                        /* Step 3 Content: Waiting for company to sign */
                         <div className="text-center">
-                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300">
+                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
+                            <Clock className="w-6 h-6 text-blue-600" />
+                            <div className="text-left">
+                              <p className="font-semibold text-blue-800">Waiting for Company Signature</p>
+                              <p className="text-sm text-blue-700">
+                                Your signed document has been submitted. The company will review and sign it.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Step 4 Content: Completed with download */
+                        <div className="text-center">
+                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300 mb-4">
                             <CheckCircle2 className="w-6 h-6 text-green-600" />
                             <div className="text-left">
                               <p className="font-semibold text-green-800">Agreement Completed</p>
                               <p className="text-sm text-green-700">
-                                Signed on {formatDate(agreementStatus.uploadedAt || '')}
+                                Approved on {formatDate(agreementStatus.companySignedAt || '')}
                               </p>
                             </div>
+                          </div>
+                          <div>
+                            <Button
+                              onClick={handleFinalDownload}
+                              className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Agreement
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -1245,8 +1577,31 @@ function AccountPageContent() {
               }
             `}</style>
 
-            <div className={`grid gap-6 ${showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-              {/* Left Column - Saved Addresses */}
+            {/* Show selected plan banner when coming from pricing page */}
+            {paymentType && planPrice && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900">
+                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '5 Years Pack' : 'Subscription'}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/5 years' : ''}
+                    </p>
+                  </div>
+                  <div className="text-sm text-blue-600">
+                    Select an address below to continue
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={`grid gap-6 ${savedAddresses.length === 0 ? 'grid-cols-1' : showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Left Column - Saved Addresses (only show if user has addresses) */}
+              {savedAddresses.length > 0 && (
               <Card className="shadow-lg border-0 h-fit">
                 <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
                   <div className="flex items-start justify-between gap-4">
@@ -1275,7 +1630,7 @@ function AccountPageContent() {
                       className="bg-blue-600 hover:bg-blue-700 text-white text-sm shrink-0"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Add billing address
+                      Add Billing Address
                     </Button>
                   </div>
                 </CardHeader>
@@ -1307,10 +1662,6 @@ function AccountPageContent() {
                             <div className="flex gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                               {uniqueLocations.map((location) => {
                                 const isSelected = currentLocation === location
-                                // Count only "Not Ordered" addresses for this location
-                                const notOrderedCount = savedAddresses.filter(
-                                  a => (a.label || a.city) === location && !purchasedAddressIds.includes(a.id)
-                                ).length
                                 return (
                                   <button
                                     key={location}
@@ -1323,184 +1674,177 @@ function AccountPageContent() {
                                   >
                                     <MapPin className="w-4 h-4" />
                                     {location}
-                                    {notOrderedCount > 0 && (
-                                      <span className={`text-[10px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full ${isSelected ? 'bg-blue-500' : 'bg-blue-500 text-white'}`}>
-                                        {notOrderedCount}
-                                      </span>
-                                    )}
                                   </button>
                                 )
                               })}
                             </div>
 
-                            {/* Show Addresses for Selected Location */}
-                            <div className="space-y-4">
+                            {/* Show Addresses for Selected Location - Flat card view with pagination */}
+                            <div className="space-y-3 mt-3">
                               {(() => {
                                 const locationAddresses = savedAddresses.filter(
                                   address => (address.label || address.city) === currentLocation
                                 )
 
-                                return locationAddresses.map((address) => {
-                                  const originalIndex = savedAddresses.findIndex(a => a.id === address.id)
+                                // Pagination for addresses within this location
+                                const currentPageForLocation = billingAddressPage[currentLocation] || 1
+                                const totalAddresses = locationAddresses.length
+                                const totalPages = Math.ceil(totalAddresses / ITEMS_PER_PAGE)
+                                const paginatedAddresses = locationAddresses.slice(
+                                  (currentPageForLocation - 1) * ITEMS_PER_PAGE,
+                                  currentPageForLocation * ITEMS_PER_PAGE
+                                )
+
+                                return (
+                                  <>
+                                    {paginatedAddresses.map((address) => {
                                   const isBeingEdited = editingAddressId === address.id
-                                  const isExpanded = expandedAddresses.includes(address.id) || isBeingEdited
-                                  const isOrdered = purchasedAddressIds.includes(address.id)
-                                  // Use accordion for ordered addresses OR when there are more than 3 addresses
-                                  const useAccordion = isOrdered || locationAddresses.length > 3
+                                  const addrPaymentStatus = getAddressPaymentStatus(address.id)
+                                  const hasInitialPayment = !!addrPaymentStatus?.initialPaymentDate
 
-                                  // If accordion mode (ordered addresses or more than 3 total)
-                                  if (useAccordion) {
-                                    return (
-                                      <div
-                                        key={address.id}
-                                        className={`rounded-xl border transition-all overflow-hidden shadow-md ${
-                                          isBeingEdited
-                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
-                                            : 'border-gray-200 bg-white'
-                                        }`}
-                                      >
-                                        {/* Accordion Header - Always visible */}
-                                        <div
-                                          className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                                          onClick={() => {
-                                            setExpandedAddresses(prev =>
-                                              prev.includes(address.id)
-                                                ? prev.filter(id => id !== address.id)
-                                                : [...prev, address.id]
-                                            )
-                                          }}
-                                        >
-                                          <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-gray-900 truncate" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                            {address.gst_no && (
-                                              <p className="text-gray-600 truncate" style={{ fontSize: '14px' }}>GST: {address.gst_no}</p>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-2 shrink-0">
-                                            {isOrdered && (
-                                              <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>
-                                                ✓ Ordered
-                                              </span>
-                                            )}
-                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                                          </div>
-                                        </div>
+                                  // Get plan type from order history — match by addressId first, fallback to location
+                                  const addressLocation = address.label || address.city
+                                  const addressOrders = userData?.orderHistory?.filter(
+                                    order => order.addressId
+                                      ? order.addressId === address.id
+                                      : order.location === addressLocation
+                                  ) || []
+                                  const addressPlanType = addressOrders.length > 0 ? addressOrders[0].planType : null
 
-                                        {/* Accordion Content - Expandable */}
-                                        {isExpanded && (
-                                          <div className="px-4 pb-4 pt-2">
-                                            <div className="flex items-start gap-2">
-                                              <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
-                                                <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
-                                              </div>
-                                              {!isOrdered && (
-                                                <button
-                                                  type="button"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleEditAddress(address)
-                                                  }}
-                                                  className="text-blue-500 hover:text-blue-700 p-1"
-                                                  title="Edit address"
-                                                >
-                                                  <Pencil className="w-5 h-5" />
-                                                </button>
-                                              )}
-                                            </div>
-                                            {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
-                                            {!isOrdered && (
-                                              <div className="mt-4 w-full flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
-                                                    ○ Not Ordered
-                                                  </span>
-                                                  {originalIndex > 0 && (
-                                                    <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
-                                                      10% Off
-                                                    </span>
-                                                  )}
-                                                </div>
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    sessionStorage.setItem('checkoutAddressId', address.id)
-                                                    localStorage.setItem('checkoutAddressId', address.id)
-                                                    router.push(`/checkout?addressId=${address.id}`)
-                                                  }}
-                                                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
-                                                >
-                                                  Proceed to Order
-                                                </button>
-                                              </div>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  }
+                                  // Get subscription for this address
+                                  const addressSubscription = getAddressSubscription(address.id)
+                                  const nextDueDate = addressSubscription?.next_due_date
+                                  const isOverdue = isDueDatePast(nextDueDate)
 
-                                  // Normal card format (3 or fewer addresses)
                                   return (
                                     <div
                                       key={address.id}
-                                      className={`p-4 rounded-xl border transition-all shadow-md ${
+                                      className={`rounded-xl border transition-all p-4 ${
                                         isBeingEdited
-                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-lg'
-                                          : 'border-gray-200 bg-white'
+                                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                          : hasInitialPayment
+                                            ? 'border-green-300 bg-white'
+                                            : 'border-gray-200 bg-white hover:border-gray-300'
                                       }`}
                                     >
-                                      <div className="flex items-start gap-2">
-                                        <div className="flex-1 min-w-0" style={{ fontSize: '15px', lineHeight: '1.5' }}>
-                                          <p className="font-bold text-gray-900" style={{ fontSize: '18px' }}>{address.firm_name}</p>
-                                          {address.gst_no && (
-                                            <p className="text-gray-600">GST: {address.gst_no}</p>
+                                      {/* Main Row - All info in single line on desktop */}
+                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        {/* Left - Firm Name & Status */}
+                                        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                          <h3 className="font-bold text-gray-900 text-lg truncate">{address.firm_name || address.full_name}</h3>
+                                          {hasInitialPayment ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
+                                              <CheckCircle className="w-3 h-3" />
+                                              Paid
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 shrink-0">
+                                              Not Ordered
+                                            </span>
                                           )}
-                                          <p className="text-gray-600">{address.address}, {address.city}, {address.state}, {address.country} - {address.postcode}</p>
                                         </div>
+
+                                        {/* Right - Status/Actions */}
                                         <div className="flex items-center gap-2 shrink-0">
-                                          {isOrdered && (
-                                            <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-medium" style={{ fontSize: '14px' }}>✓ Ordered</span>
-                                          )}
-                                          {!isOrdered && (
-                                            <button
-                                              type="button"
-                                              onClick={() => handleEditAddress(address)}
-                                              className="text-blue-500 hover:text-blue-700 p-1"
-                                              title="Edit address"
-                                            >
-                                              <Pencil className="w-5 h-5" />
-                                            </button>
+                                          {hasInitialPayment ? (
+                                            <div className="flex items-center gap-1.5 text-green-600">
+                                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                              <span className="font-medium text-sm">Active</span>
+                                            </div>
+                                          ) : (
+                                            <>
+                                              <button
+                                                type="button"
+                                                onClick={() => handleEditAddress(address)}
+                                                className="text-gray-400 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded transition-colors"
+                                                title="Edit"
+                                              >
+                                                <Pencil className="w-4 h-4" />
+                                              </button>
+                                              <button
+                                                onClick={() => {
+                                                  if (paymentType && planPrice) {
+                                                    sessionStorage.setItem('checkoutAddressId', address.id)
+                                                    localStorage.setItem('checkoutAddressId', address.id)
+                                                    router.push(`/checkout?addressId=${address.id}&planType=${paymentType}&planPrice=${planPrice}`)
+                                                  } else {
+                                                    sessionStorage.setItem('pendingAddressId', address.id)
+                                                    localStorage.setItem('pendingAddressId', address.id)
+                                                    router.push('/pricing')
+                                                  }
+                                                }}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg transition-colors text-sm"
+                                              >
+                                                {paymentType ? 'Go to Checkout' : 'Order Now'}
+                                              </button>
+                                            </>
                                           )}
                                         </div>
                                       </div>
-                                      {/* Not Ordered + 10% Off on left, Proceed to Order on right */}
-                                      {!isOrdered && (
-                                        <div className="mt-4 w-full flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <span className="px-2 py-1 rounded bg-red-100 text-red-600 font-medium" style={{ fontSize: '14px' }}>
-                                              ○ Not Ordered
-                                            </span>
-                                            {originalIndex > 0 && (
-                                              <span className="text-green-600 font-medium" style={{ fontSize: '13px' }}>
-                                                10% Off
-                                              </span>
-                                            )}
+
+                                      {/* Details Row */}
+                                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+                                        {address.gst_no && (
+                                          <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">GST: {address.gst_no}</span>
+                                        )}
+                                        <span className="truncate">{address.address}, {address.city}, {address.state} - {address.postcode}</span>
+                                      </div>
+
+                                      {/* Subscription Info - Compact inline for paid */}
+                                      {hasInitialPayment && addressPlanType && (
+                                        <div className="mt-3 pt-3 border-t border-gray-100">
+                                          <div className="flex items-center justify-between gap-4">
+                                            {/* Left - Plan details */}
+                                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                                              {/* Plan */}
+                                              <div className="flex items-center gap-2">
+                                                <CreditCard className="w-4 h-4 text-blue-500" />
+                                                <span className="text-sm">
+                                                  <span className="font-medium text-gray-900">
+                                                    {addressPlanType === 'annual' && 'Annual'}
+                                                    {addressPlanType === 'onetime' && '5 Years Pack'}
+                                                    {!['annual', 'onetime'].includes(addressPlanType) && 'Annual'}
+                                                  </span>
+                                                  <span className="text-gray-500 ml-1">
+                                                    {addressPlanType === 'annual' && '₹1,800/user/yr'}
+                                                    {addressPlanType === 'onetime' && '₹6,000/user/5yrs'}
+                                                    {!['annual', 'onetime'].includes(addressPlanType) && '₹1,800/user/yr'}
+                                                  </span>
+                                                </span>
+                                              </div>
+
+                                              {/* Valid up to / Renewal date */}
+                                              {addressOrders.length > 0 && addressOrders[0].renewalDate && (
+                                                <div className="flex items-center gap-2">
+                                                  <Clock className={`w-4 h-4 ${isOverdue ? 'text-red-500' : 'text-blue-400'}`} />
+                                                  <span className="text-sm">
+                                                    <span className={isOverdue ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                                                      Valid up to: {formatDate(addressOrders[0].renewalDate)}
+                                                    </span>
+                                                  </span>
+                                                </div>
+                                              )}
+                                            </div>
                                           </div>
-                                          <button
-                                            onClick={() => {
-                                              sessionStorage.setItem('checkoutAddressId', address.id)
-                                              localStorage.setItem('checkoutAddressId', address.id)
-                                              router.push(`/checkout?addressId=${address.id}`)
-                                            }}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-2xl transition-colors text-center text-sm"
-                                          >
-                                            Proceed to Order
-                                          </button>
                                         </div>
                                       )}
                                     </div>
                                   )
-                                })
+                                })}
+                                    <PaginationControls
+                                      currentPage={currentPageForLocation}
+                                      totalPages={totalPages}
+                                      onPageChange={(page) => {
+                                        setBillingAddressPage(prev => ({
+                                          ...prev,
+                                          [currentLocation]: page
+                                        }))
+                                      }}
+                                      totalItems={totalAddresses}
+                                      itemsPerPage={ITEMS_PER_PAGE}
+                                    />
+                                  </>
+                                )
                               })()}
                             </div>
                           </>
@@ -1516,11 +1860,12 @@ function AccountPageContent() {
                   )}
                 </CardContent>
               </Card>
+              )}
 
               {/* Right Column - Add/Edit Form */}
               {(showAddressForm || savedAddresses.length === 0) && (
               <Card className="shadow-lg border-0 billing-form h-fit">
-                <CardHeader className="bg-blue-600/15 border-b py-3 sm:py-4">
+                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -1571,15 +1916,15 @@ function AccountPageContent() {
                 ) : (
                   <div className="space-y-3 sm:space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                      {/* Firm Name */}
+                      {/* Firm Name / Full Name (for students) */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          Firm Name <span className="text-red-500">*</span>
+                          {isStudent ? 'Full Name' : 'Firm Name'} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             value={billingForm.firmName}
                             onChange={(e) => handleBillingFormChange('firmName', e.target.value)}
-                            placeholder="Enter your firm"
+                            placeholder={isStudent ? 'Enter your full name' : 'Enter your firm'}
                             className="text-sm sm:text-base"
                           />
                       </div>
@@ -1587,7 +1932,7 @@ function AccountPageContent() {
                       {/* GST No */}
                       <div className="space-y-1">
                         <Label className="text-sm font-medium text-gray-700">
-                          GST No <span className="text-gray-400 text-xs">(Optional)</span>
+                          GST No <span className="text-red-400 text-xs">*</span>
                         </Label>
                         <Input
                             value={billingForm.gstNo}
@@ -1741,17 +2086,17 @@ function AccountPageContent() {
           {/* Order History Tab */}
           <TabsContent value="orders" className="space-y-6">
             <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <ShoppingBag className="h-4 w-4 text-green-600" />
                       Order History
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">View and download your invoices</CardDescription>
+                    <CardDescription className="text-xs">View and download your invoices</CardDescription>
                   </div>
                   {userData && userData.totalOrders > 0 && (
-                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                       {userData.totalOrders} {userData.totalOrders === 1 ? 'Order' : 'Orders'}
                     </Badge>
                   )}
@@ -1764,179 +2109,152 @@ function AccountPageContent() {
                     <span className="ml-3 text-sm sm:text-base text-gray-600">Loading order history...</span>
                   </div>
                 ) : userData && userData.orderHistory.length > 0 ? (
-                  <>
-                  <div className="space-y-2">
-                    {userData.orderHistory
-                      .slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage)
-                      .map((order) => {
-                      const isExpanded = expandedOrders.includes(order.invoiceNumber)
-                      return (
-                        <div
-                          key={order.invoiceNumber}
-                          className="border border-gray-200 rounded-lg hover:shadow-sm transition-shadow bg-white overflow-hidden"
-                        >
-                          {/* Clickable header row */}
-                          <div
-                            className="flex items-center justify-between gap-3 p-4 cursor-pointer"
-                            onClick={() => {
-                              setExpandedOrders(prev =>
-                                prev.includes(order.invoiceNumber)
-                                  ? prev.filter(id => id !== order.invoiceNumber)
-                                  : [...prev, order.invoiceNumber]
-                              )
-                            }}
-                          >
-                            {/* Left: Invoice info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-900 text-base">Invoice No: #{order.invoiceNumber}</p>
-                                {order.location && (
-                                  <span className="text-sm text-blue-600 flex items-center gap-0.5">
-                                    <MapPin className="h-4 w-4" />
-                                    {order.location}
-                                  </span>
-                                )}
-                                <Badge
-                                  className={`text-xs px-2 py-0.5 ${
-                                    order.status === 'paid'
-                                      ? 'bg-green-100 text-green-800 border-green-200'
-                                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                                  }`}
-                                >
-                                  {order.status === 'paid' ? '✓' : order.status}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">
-                                <span className="flex items-center">
-                                  <IndianRupee className="h-4 w-4" />
-                                  <span className="font-semibold text-green-700">{formatCurrency(order.total).replace('₹', '')}</span>
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  {formatDate(order.paidAt)}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Right: Expand icon */}
-                            <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                          </div>
-
-                          {/* Expandable details */}
-                          {isExpanded && (
-                            <div className="px-4 pb-4 pt-0 border-t border-gray-100 bg-gray-50">
-                              <div className="grid grid-cols-3 gap-4 py-3 text-sm">
-                                {order.originalAmount && order.discountAmount > 0 ? (
-                                  <>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Original Amount</p>
-                                      <p className="font-medium text-gray-400 line-through flex items-center">
-                                        <IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.originalAmount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Discount ({order.discountPercentage}%)</p>
-                                      <p className="font-medium text-green-600 flex items-center">
-                                        -<IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.discountAmount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-gray-500 mb-1">Discounted Amount</p>
-                                      <p className="font-medium text-gray-900 flex items-center">
-                                        <IndianRupee className="h-4 w-4" />
-                                        {formatCurrency(order.amount).replace('₹', '')}
-                                      </p>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div>
-                                    <p className="text-gray-500 mb-1">Amount</p>
-                                    <p className="font-medium text-gray-900 flex items-center">
-                                      <IndianRupee className="h-4 w-4" />
-                                      {formatCurrency(order.amount).replace('₹', '')}
-                                    </p>
-                                  </div>
-                                )}
-                                <div>
-                                  <p className="text-gray-500 mb-1">GST</p>
-                                  <p className="font-medium text-gray-900 flex items-center">
-                                    <IndianRupee className="h-4 w-4" />
-                                    {formatCurrency(order.gst).replace('₹', '')}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 mb-1">Total</p>
-                                  <p className="font-semibold text-green-700 flex items-center">
-                                    <IndianRupee className="h-4 w-4" />
-                                    {formatCurrency(order.total).replace('₹', '')}
-                                  </p>
-                                </div>
-                              </div>
-                              <p className="text-xs text-gray-400 font-mono mb-3">Order ID: {order.orderId}</p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDownloadInvoice(order.invoiceNumber)
-                                }}
-                                className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 text-sm py-2"
-                              >
-                                <Download className="h-4 w-4 mr-1.5" />
-                                Download Invoice
-                              </Button>
-                            </div>
-                          )}
-                        </div>
+                  <div className="space-y-3">
+                    {(() => {
+                      const groupedOrders = groupOrdersByLocation(userData.orderHistory)
+                      const locationKeys = Object.keys(groupedOrders)
+                      const totalLocations = locationKeys.length
+                      const totalPages = Math.ceil(totalLocations / ITEMS_PER_PAGE)
+                      const paginatedLocationKeys = locationKeys.slice(
+                        (orderHistoryPage - 1) * ITEMS_PER_PAGE,
+                        orderHistoryPage * ITEMS_PER_PAGE
                       )
-                    })}
+
+                      return (
+                        <>
+                          {paginatedLocationKeys.map((location) => {
+                            const orders = groupedOrders[location]
+                            const locationTotal = orders.reduce((sum, order) => sum + order.total, 0)
+
+                            return (
+                              <div key={location} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                                {/* Location Header */}
+                                <div className="bg-blue-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-blue-600" />
+                                    <span className="font-semibold text-blue-800">{location}</span>
+                                    <span className="text-xs text-gray-500">({orders.length})</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {orders.some(o => o.planType !== 'onetime') && (
+                                      <span className="flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                        Renewal available 15 days before expiry
+                                      </span>
+                                    )}
+                                    <span className="text-green-700 font-semibold text-sm">₹{formatCurrency(locationTotal).replace('₹', '')}</span>
+                                  </div>
+                                </div>
+
+                                {/* Orders Table */}
+                                <table className="w-full text-sm table-fixed">
+                                  <thead className="bg-gray-50 text-xs text-gray-600">
+                                    <tr>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[22%]">Firm</th>
+                                      <th className="text-left px-3 py-1.5 font-medium w-[10%]">Plan</th>
+                                      <th className="text-center px-3 py-1.5 font-medium hidden sm:table-cell w-[8%]">Users</th>
+                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[14%]">Subscription Date</th>
+                                      <th className="text-left px-3 py-1.5 font-medium hidden sm:table-cell w-[14%]">Valid up to</th>
+                                      <th className="text-center px-3 py-1.5 font-medium w-[32%]"></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {orders.map((order) => {
+                                      // Find matching saved address for this order's firm
+                                      const matchingAddress = order.addressId
+                                        ? savedAddresses.find(addr => addr.id === order.addressId)
+                                        : order.firmName
+                                          ? savedAddresses.find(addr => addr.firm_name === order.firmName)
+                                          : null
+
+                                      return (
+                                        <tr key={order.invoiceNumber} className="hover:bg-gray-50/50">
+                                          <td className="px-3 py-2 w-[22%]">
+                                            <span className="font-medium text-gray-900 truncate block">{order.firmName || '-'}</span>
+                                            <span className="sm:hidden block text-xs text-gray-500 mt-0.5">{formatDate(order.paidAt)}</span>
+                                            <span className="sm:hidden block text-xs text-purple-600 mt-0.5">{order.userCount} users</span>
+                                          </td>
+                                          <td className="px-3 py-2 w-[10%]">
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                              {order.planType === 'annual' && 'Annual'}
+                                              {order.planType === 'onetime' && '5 Years'}
+                                              {!['annual', 'onetime'].includes(order.planType) && 'Annual'}
+                                            </span>
+                                          </td>
+                                          <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[8%]">
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{order.userCount}</span>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">{formatDate(order.paidAt)}</td>
+                                          <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">
+                                            {order.planType === 'onetime' ? (
+                                              <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Lifetime</span>
+                                            ) : order.renewalDate ? (
+                                              <span className="text-xs">{formatDate(order.renewalDate)}</span>
+                                            ) : (
+                                              <span className="text-gray-400">-</span>
+                                            )}
+                                          </td>
+                                          <td className="px-3 py-2 text-right w-[32%]">
+                                            <div className="flex items-center justify-end gap-2">
+                                              <button
+                                                onClick={() => handleDownloadInvoice(order.invoiceNumber)}
+                                                className="inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 font-medium transition-colors"
+                                              >
+                                                <Download className="h-3.5 w-3.5" />
+                                                <span className="hidden sm:inline">Receipt</span>
+                                              </button>
+                                              {matchingAddress && order.planType !== 'onetime' && (() => {
+                                                const isWithinRenewalWindow = order.renewalDate
+                                                  ? (() => {
+                                                      const renewal = new Date(order.renewalDate)
+                                                      const now = new Date()
+                                                      const diffDays = Math.ceil((renewal.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                                                      return diffDays <= 15
+                                                    })()
+                                                  : false
+                                                return (
+                                                  <button
+                                                    onClick={() => {
+                                                      sessionStorage.setItem('checkoutAddressId', matchingAddress.id)
+                                                      localStorage.setItem('checkoutAddressId', matchingAddress.id)
+                                                      const renewPlanPrice = 1800
+                                                      const renewUserCount = order.userCount || 5
+                                                      router.push(`/checkout?addressId=${matchingAddress.id}&planType=annual&planPrice=${renewPlanPrice}&userCount=${renewUserCount}`)
+                                                    }}
+                                                    disabled={!isWithinRenewalWindow}
+                                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md font-medium transition-colors ${
+                                                      isWithinRenewalWindow
+                                                        ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                    }`}
+                                                    title={!isWithinRenewalWindow ? 'Renewal available 15 days before expiry' : 'Renew your subscription'}
+                                                  >
+                                                    <CreditCard className="h-3.5 w-3.5" />
+                                                    <span className="hidden sm:inline">Pay Now</span>
+                                                  </button>
+                                                )
+                                              })()}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      )
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )
+                          })}
+                          <PaginationControls
+                            currentPage={orderHistoryPage}
+                            totalPages={totalPages}
+                            onPageChange={setOrderHistoryPage}
+                            totalItems={totalLocations}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                          />
+                        </>
+                      )
+                    })()}
                   </div>
-
-                  {/* Pagination Controls */}
-                  {userData.orderHistory.length > ordersPerPage && (
-                    <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className="text-sm"
-                      >
-                        Previous
-                      </Button>
-
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.ceil(userData.orderHistory.length / ordersPerPage) }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={`w-9 h-9 text-sm ${
-                              currentPage === page
-                                ? 'bg-green-600 hover:bg-green-700 text-white'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(userData.orderHistory.length / ordersPerPage), prev + 1))}
-                        disabled={currentPage === Math.ceil(userData.orderHistory.length / ordersPerPage)}
-                        className="text-sm"
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  )}
-                  </>
                 ) : (
                   <div className="text-center py-8 sm:py-12">
                     <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3" />
@@ -1950,6 +2268,7 @@ function AccountPageContent() {
               </CardContent>
             </Card>
           </TabsContent>
+
         </Tabs>
       </main>
     </div>
@@ -1958,15 +2277,17 @@ function AccountPageContent() {
 
 export default function AccountPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading account...</p>
+    <PageErrorBoundary>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading account...</p>
+          </div>
         </div>
-      </div>
-    }>
-      <AccountPageContent />
-    </Suspense>
+      }>
+        <AccountPageContent />
+      </Suspense>
+    </PageErrorBoundary>
   )
 }

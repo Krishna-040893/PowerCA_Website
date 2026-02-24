@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, RefreshCw, Download, Search, FileText, User, Mail, Phone, FileCheck, Clock, AlertCircle } from 'lucide-react'
+import { Loader2, RefreshCw, Download, Search, FileText, User, Mail, Phone, FileCheck, Clock, AlertCircle, Upload, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 import { formatPhone } from '@/lib/utils'
@@ -25,6 +25,9 @@ interface Agreement {
   uploadedAt: string | null
   filePath: string | null
   signingMethod: string | null
+  companySignedAt: string | null
+  companyFilePath: string | null
+  finalDownloadedAt: string | null
   createdAt: string
 }
 
@@ -37,6 +40,9 @@ export default function AdminAgreementsPage() {
   const [statusFilter, setStatusFilter] = useState('signed')
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 10
+  const [uploadingCompanySignId, setUploadingCompanySignId] = useState<string | null>(null)
+  const companySignFileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedAgreementId, setSelectedAgreementId] = useState<string | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -118,7 +124,6 @@ export default function AdminAgreementsPage() {
     if (!filePath) return
 
     try {
-      // Download file from local folder
       const response = await fetch(`/api/admin/agreements/download?path=${encodeURIComponent(filePath)}`, {
         headers: getAuthHeaders()
       })
@@ -167,6 +172,56 @@ export default function AdminAgreementsPage() {
     document.body.removeChild(link)
   }
 
+  const handleCompanySignUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !selectedAgreementId) return
+
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file only')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB')
+      return
+    }
+
+    setUploadingCompanySignId(selectedAgreementId)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', selectedAgreementId)
+
+      const response = await fetch('/api/admin/agreements/upload-company-signed', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        await fetchAgreements()
+        alert('Company-signed agreement uploaded successfully!')
+      } else {
+        alert(result.error || 'Failed to upload company-signed agreement')
+      }
+    } catch (err) {
+      console.error('Error uploading company-signed agreement:', err)
+      alert('Failed to upload. Please try again.')
+    } finally {
+      setUploadingCompanySignId(null)
+      setSelectedAgreementId(null)
+      if (companySignFileInputRef.current) {
+        companySignFileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const triggerCompanySignUpload = (agreementId: string) => {
+    setSelectedAgreementId(agreementId)
+    companySignFileInputRef.current?.click()
+  }
+
   const filteredAgreements = agreements.filter(agreement => {
     const matchesSearch = agreement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          agreement.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -191,8 +246,8 @@ export default function AdminAgreementsPage() {
 
   return (
     <AdminPageWrapper
-      title="Service Agreements"
-      description="Manage user service agreement documents"
+      title="Client Agreements"
+      description="Manage client service agreement documents"
       stats={[
         { label: 'Total', value: stats.draft + stats.signed, color: 'bg-blue-100 text-blue-800' },
         { label: 'Draft', value: stats.draft, color: 'bg-yellow-100 text-yellow-800' },
@@ -278,6 +333,7 @@ export default function AdminAgreementsPage() {
                       <TableHead className="text-base font-bold">User</TableHead>
                       <TableHead className="text-base font-bold">Contact</TableHead>
                       <TableHead className="text-base font-bold">Status</TableHead>
+                      <TableHead className="text-base font-bold">Signing Method</TableHead>
                       <TableHead className="text-base font-bold">Downloaded</TableHead>
                       <TableHead className="text-base font-bold">Uploaded</TableHead>
                       <TableHead className="text-base font-bold">Actions</TableHead>
@@ -320,6 +376,15 @@ export default function AdminAgreementsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {agreement.signingMethod ? (
+                            <Badge className={agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}>
+                              {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {agreement.downloadedAt ? (
                             <span className="text-sm text-gray-600">
                               {format(new Date(agreement.downloadedAt), 'dd MMM yyyy')}
@@ -338,18 +403,42 @@ export default function AdminAgreementsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {agreement.filePath ? (
-                            <Button
-                              size="sm"
-                              onClick={() => handleViewDocument(agreement.filePath!)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </Button>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {/* Download: company-signed file if available, otherwise client's signed file */}
+                            {(agreement.companyFilePath || agreement.filePath) && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleViewDocument((agreement.companyFilePath || agreement.filePath)!)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </Button>
+                            )}
+                            {agreement.status === 'signed' && !agreement.companySignedAt ? (
+                              <Button
+                                size="sm"
+                                onClick={() => triggerCompanySignUpload(agreement.id)}
+                                disabled={uploadingCompanySignId === agreement.id}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                {uploadingCompanySignId === agreement.id ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Upload className="h-4 w-4 mr-1" />
+                                )}
+                                Company Sign
+                              </Button>
+                            ) : agreement.companySignedAt ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Company Signed
+                              </Badge>
+                            ) : null}
+                            {!agreement.filePath && !agreement.companySignedAt && (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -396,8 +485,18 @@ export default function AdminAgreementsPage() {
                           )}
                         </div>
 
-                        {/* Dates */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        {/* Signing Method & Dates */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-500">Signing:</span>
+                            <span className="text-gray-700">
+                              {agreement.signingMethod ? (
+                                <Badge className={`text-[10px] ${agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}`}>
+                                  {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
+                                </Badge>
+                              ) : '-'}
+                            </span>
+                          </div>
                           <div>
                             <span className="text-gray-500">Downloaded:</span>
                             <p className="text-gray-700">
@@ -412,17 +511,39 @@ export default function AdminAgreementsPage() {
                           </div>
                         </div>
 
-                        {/* Action Button */}
-                        {agreement.filePath && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleViewDocument(agreement.filePath!)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download Document
-                          </Button>
-                        )}
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2">
+                          {(agreement.companyFilePath || agreement.filePath) && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleViewDocument((agreement.companyFilePath || agreement.filePath)!)}
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download Document
+                            </Button>
+                          )}
+                          {agreement.status === 'signed' && !agreement.companySignedAt ? (
+                            <Button
+                              size="sm"
+                              onClick={() => triggerCompanySignUpload(agreement.id)}
+                              disabled={uploadingCompanySignId === agreement.id}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              {uploadingCompanySignId === agreement.id ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-1" />
+                              )}
+                              Upload Company Signed
+                            </Button>
+                          ) : agreement.companySignedAt ? (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 justify-center py-1">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Company Signed
+                            </Badge>
+                          ) : null}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -443,6 +564,15 @@ export default function AdminAgreementsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Hidden file input for company-signed upload */}
+      <input
+        ref={companySignFileInputRef}
+        type="file"
+        accept="application/pdf"
+        onChange={handleCompanySignUpload}
+        className="hidden"
+      />
     </AdminPageWrapper>
   )
 }

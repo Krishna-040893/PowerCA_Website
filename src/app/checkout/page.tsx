@@ -1,20 +1,19 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import {useState, useEffect, Suspense  } from 'react'
 import {useRouter, useSearchParams  } from 'next/navigation'
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import {Label  } from '@/components/ui/label'
 import {Checkbox  } from '@/components/ui/checkbox'
-import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus  } from 'lucide-react'
+import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus, Tag  } from 'lucide-react'
 import {useSession  } from 'next-auth/react'
 import {featuresConfig  } from '@/config/features'
 import Script from 'next/script'
 import Link from 'next/link'
 import {RazorpayPaymentResponse  } from '@/types/common'
 import Image from 'next/image'
+import { PageErrorBoundary } from '@/components/error-boundary'
 
 interface FormErrors {
   firstName?: string
@@ -28,6 +27,7 @@ interface FormErrors {
   postcode?: string
   terms?: string
   paymentGateway?: string
+  userCount?: string
 }
 
 interface ReferralInfo {
@@ -157,11 +157,40 @@ function CheckoutContent() {
   const [error, setError] = useState('')
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
-  const [quantity, setQuantity] = useState(1)
-  const [_couponCode, _setCouponCode] = useState('')
+  const userCountParam = searchParams.get('userCount')
+  const [userCount, setUserCount] = useState<number | ''>(() => {
+    const parsed = userCountParam ? parseInt(userCountParam, 10) : NaN
+    return !isNaN(parsed) && parsed >= 5 ? parsed : 5
+  })
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercentage: number; description?: string } | null>(null)
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [couponError, setCouponError] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
-  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
+  const [paymentGateway, _setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
+
+  // Check if this is a final settlement payment
+  const paymentType = searchParams.get('paymentType')
+  const isFinalSettlement = paymentType === 'final_settlement'
+
+  // Get plan details from URL params (from pricing page)
+  const planType = searchParams.get('planType')
+  const planPriceParam = searchParams.get('planPrice')
+
+  // Redirect to pricing if no plan is selected
+  useEffect(() => {
+    if (!planType || !planPriceParam) {
+      // No plan selected - redirect to pricing page to select a plan
+      router.push('/pricing')
+    }
+  }, [planType, planPriceParam, router])
+
+  const selectedPlanPrice = planPriceParam ? parseInt(planPriceParam, 10) : 0
+
+  // Check if this plan supports user count (per-user pricing)
+  const isPerUserPlan = planType === 'annual' || planType === 'onetime'
+
   const [formData, setFormData] = useState({
     firstName: '',
     firmName: '',
@@ -180,36 +209,61 @@ function CheckoutContent() {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [loadingAddresses, setLoadingAddresses] = useState(false)
-  const [savingAddress, setSavingAddress] = useState(false)
-  const [addressSaveSuccess, setAddressSaveSuccess] = useState(false)
-  const [purchasedAddressCount, setPurchasedAddressCount] = useState(0)
+  const [_savingAddress, setSavingAddress] = useState(false)
+  const [_addressSaveSuccess, setAddressSaveSuccess] = useState(false)
+  // Track purchased address IDs to determine if this is a renewal (no server installation charge)
+  const [purchasedAddressIds, setPurchasedAddressIds] = useState<string[]>([])
 
-  // Get states for selected country
-  const availableStates = countryStates[formData.country] || countryStates['default']
-  const hasStateDropdown = formData.country && countryStates[formData.country] !== undefined
+  // Get states for selected country (available for future state dropdown feature)
+  const _availableStates = countryStates[formData.country] || countryStates['default']
+  const _hasStateDropdown = formData.country && countryStates[formData.country] !== undefined
 
   // Get product details from config
   const product = featuresConfig.pricingPlans[0]
 
-  // Calculate pricing based on address position
-  // First address = full price, Second+ addresses = flat 10% discount
-  const getAddressIndex = () => {
-    if (!selectedAddressId || savedAddresses.length === 0) return 0
-    return savedAddresses.findIndex(addr => addr.id === selectedAddressId)
+  // Coupon-based discount logic
+  // Discounts are now applied via coupon codes from the database
+  // For final settlement, no discounts apply
+
+  // Use the plan price from URL (selected on pricing page)
+  const fullBasePrice = selectedPlanPrice
+
+  // Calculate coupon discount
+  const couponDiscountRate = isFinalSettlement ? 0 : (appliedCoupon ? appliedCoupon.discountPercentage / 100 : 0)
+  const totalDiscountPercentage = appliedCoupon ? appliedCoupon.discountPercentage : 0
+  const totalDiscountAmount = fullBasePrice * couponDiscountRate
+
+  const basePrice = fullBasePrice - totalDiscountAmount
+  // For per-user plans, multiply by user count
+  const quantity = isPerUserPlan ? (userCount !== '' && userCount >= 5 ? userCount : 0) : 1
+  const subtotal = basePrice * quantity
+  // Total discount across all users (for display)
+  const totalDiscountDisplay = totalDiscountAmount * quantity
+  // Server Installation & Configuration charge - only for first purchase of an address
+  // Renewals (same address purchased again) don't include this charge
+  const isRenewal = selectedAddressId ? purchasedAddressIds.includes(selectedAddressId) : false
+  const implementationCharge = !isRenewal && !isFinalSettlement ? 5000 : 0
+  const subtotalWithImplementation = subtotal + implementationCharge
+  const gstRate = 0.18 // 18% GST
+  const gstAmount = subtotalWithImplementation * gstRate
+  const total = subtotalWithImplementation + gstAmount
+
+  // Plan display names
+  const getPlanDisplayName = () => {
+    switch (planType) {
+      case 'annual': return 'Annual Subscription'
+      case 'onetime': return '5 Year Pack'
+      default: return 'PowerCA Subscription'
+    }
   }
 
-  const addressIndex = getAddressIndex()
-  const isFirstAddress = addressIndex === 0
-  const discountRate = isFirstAddress ? 0 : 0.10 // Flat 10% for 2nd address onwards
-  const discountPercentage = isFirstAddress ? 0 : 10 // For display: 0 for 1st, 10 for 2nd+
-
-  const fullBasePrice = 25000 // ₹25,000 base price
-  const discountAmount = fullBasePrice * discountRate
-  const basePrice = fullBasePrice - discountAmount
-  const subtotal = basePrice * quantity
-  const gstRate = 0.18 // 18% GST
-  const gstAmount = subtotal * gstRate
-  const total = subtotal + gstAmount
+  // Product name based on payment type and plan
+  const productName = isFinalSettlement ? 'PowerCA Final Settlement' : getPlanDisplayName()
+  const productDescription = isFinalSettlement
+    ? 'Final settlement payment for PowerCA service'
+    : planType === 'annual' ? 'Annual subscription with ongoing support'
+    : planType === 'onetime' ? '5 Year Pack - Per user pricing'
+    : 'Installation and Ongoing Support & Update'
 
 
   // Enforce authentication - redirect to login if not authenticated
@@ -242,7 +296,10 @@ function CheckoutContent() {
       if (ref && cus) {
         setValidatingReferral(true)
         fetch(`/api/affiliate/validate-referral?ref=${ref}&cus=${cus}`)
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) throw new Error('Referral validation failed')
+            return res.json()
+          })
           .then(data => {
             if (data.success && data.valid) {
               setReferralInfo(prev => ({
@@ -255,8 +312,11 @@ function CheckoutContent() {
               setError('Invalid referral link. Please contact your affiliate partner.')
             }
           })
-          .catch(_err => {
-            // Failed to validate referral
+          .catch(err => {
+            // Log referral validation failure for debugging
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Referral validation failed:', err)
+            }
           })
           .finally(() => {
             setValidatingReferral(false)
@@ -273,7 +333,10 @@ function CheckoutContent() {
           if (parsed.ref && parsed.cus) {
             setValidatingReferral(true)
             fetch(`/api/affiliate/validate-referral?ref=${parsed.ref}&cus=${parsed.cus}`)
-              .then(res => res.json())
+              .then(res => {
+                if (!res.ok) throw new Error('Referral validation failed')
+                return res.json()
+              })
               .then(data => {
                 if (data.success && data.valid) {
                   setReferralInfo({
@@ -287,7 +350,11 @@ function CheckoutContent() {
                   setReferralInfo(null)
                 }
               })
-              .catch(_err => {
+              .catch(err => {
+                // Log error and clear invalid referral data
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Stored referral validation failed:', err)
+                }
                 localStorage.removeItem('affiliate_referral')
                 setReferralInfo(null)
               })
@@ -299,7 +366,9 @@ function CheckoutContent() {
             localStorage.removeItem('affiliate_referral')
           }
         } catch (err) {
-          console.error('Error parsing affiliate referral from localStorage:', err)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error parsing affiliate referral from localStorage:', err)
+          }
           localStorage.removeItem('affiliate_referral')
         }
       }
@@ -347,6 +416,7 @@ function CheckoutContent() {
       const fetchLastOrder = async () => {
         try {
           const response = await fetch('/api/user/last-order')
+          if (!response.ok) return
           const result = await response.json()
 
           if (result.hasOrder && result.orderData) {
@@ -368,7 +438,9 @@ function CheckoutContent() {
           }
         } catch (err) {
           // Continue without auto-fill if there's an error
-          console.error('Error fetching last order for auto-fill:', err)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error fetching last order for auto-fill:', err)
+          }
         }
       }
 
@@ -380,6 +452,7 @@ function CheckoutContent() {
     setLoadingAddresses(true)
     try {
       const response = await fetch('/api/user/addresses')
+      if (!response.ok) throw new Error('Failed to fetch addresses')
       const result = await response.json()
 
       if (result.success && result.addresses) {
@@ -416,14 +489,18 @@ function CheckoutContent() {
         }
       }
 
-      // Fetch purchased addresses count for discount calculation
+      // Fetch purchased address IDs to detect renewals
       const purchasedResponse = await fetch('/api/user/purchased-addresses')
-      const purchasedResult = await purchasedResponse.json()
-      if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
-        setPurchasedAddressCount(purchasedResult.purchasedAddressIds.length)
+      if (purchasedResponse.ok) {
+        const purchasedResult = await purchasedResponse.json()
+        if (purchasedResult.success && purchasedResult.purchasedAddressIds) {
+          setPurchasedAddressIds(purchasedResult.purchasedAddressIds)
+        }
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching addresses:', error)
+      }
     } finally {
       setLoadingAddresses(false)
     }
@@ -448,9 +525,11 @@ function CheckoutContent() {
     setFormData(newData)
   }
 
-  const handleSaveAddress = async () => {
+  // Address save handler - kept for future multi-address feature
+  const _handleSaveAddress = async () => {
     // Validate required fields
-    if (!formData.firstName || !formData.firmName || !formData.address ||
+    const isStudent = (session?.user?.role as string) === 'student'
+    if (!formData.firstName || (!isStudent && !formData.firmName) || !formData.address ||
         !formData.city || !formData.state || !formData.postcode ||
         !formData.country || !formData.phone || !formData.email) {
       setError('Please fill all required fields before saving address')
@@ -508,14 +587,17 @@ function CheckoutContent() {
         setError(result.error || 'Failed to save address')
       }
     } catch (error) {
-      console.error('Error saving address:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving address:', error)
+      }
       setError('An error occurred while saving address')
     } finally {
       setSavingAddress(false)
     }
   }
 
-  const handleDeleteAddress = async (addressId: string) => {
+  // Address delete handler - kept for future multi-address feature
+  const _handleDeleteAddress = async (addressId: string) => {
     if (!confirm('Are you sure you want to delete this address?')) {
       return
     }
@@ -538,12 +620,15 @@ function CheckoutContent() {
         setError(result.error || 'Failed to delete address')
       }
     } catch (error) {
-      console.error('Error deleting address:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error deleting address:', error)
+      }
       setError('An error occurred while deleting address')
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  // Generic input change handler - kept for future form enhancements
+  const _handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
     // If country changes, reset the state field
@@ -568,6 +653,11 @@ function CheckoutContent() {
     if (!selectedAddressId) {
       setError('Please select a billing address to continue')
       return false
+    }
+
+    // Check user count for per-user plans
+    if (isPerUserPlan && (userCount === '' || userCount < 5)) {
+      newErrors.userCount = 'Minimum 5 users required'
     }
 
     // Payment gateway is always 'razorpay' now (Cashfree disabled)
@@ -600,7 +690,9 @@ function CheckoutContent() {
         body: JSON.stringify({
           amount: total,
           productId: product.productId,
-          planType: 'implementation',
+          planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type
+          planPrice: selectedPlanPrice, // Send selected plan price
+          paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
           ...formData,
           country: formData.country,
           address: formData.address,
@@ -610,10 +702,12 @@ function CheckoutContent() {
           gstNo: formData.gstNo,
           gstAmount: gstAmount,
           gstPercentage: gstRate * 100, // Convert 0.18 to 18
-          // Discount information for progressive pricing
-          discountPercentage: discountPercentage,
-          discountAmount: discountAmount,
+          // Coupon-based discount information
+          discountPercentage: totalDiscountPercentage,
+          discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
+          couponCode: appliedCoupon?.code || null,
+          couponDiscountPercentage: appliedCoupon?.discountPercentage || 0,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -715,7 +809,10 @@ function CheckoutContent() {
         body: JSON.stringify({
           amount: Math.round(total * 100), // Convert to paise
           productId: product.productId,
-          planType: 'implementation',
+          planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type from pricing page
+          planPrice: selectedPlanPrice, // Send selected plan price
+          paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
+          userCount: isPerUserPlan ? (userCount || 1) : 1, // Send user count for per-user plans
           ...formData,
           // Send address fields separately for storage
           country: formData.country,
@@ -725,10 +822,12 @@ function CheckoutContent() {
           postcode: formData.postcode,
           gstNo: formData.gstNo,
           addressId: selectedAddressId, // Track which address this purchase is for
-          // Discount information for progressive pricing
-          discountPercentage: discountPercentage,
-          discountAmount: discountAmount,
+          // Coupon-based discount information
+          discountPercentage: totalDiscountPercentage,
+          discountAmount: totalDiscountAmount,
           originalAmount: fullBasePrice,
+          couponCode: appliedCoupon?.code || null,
+          couponDiscountPercentage: appliedCoupon?.discountPercentage || 0,
           customerDetails: {
             name: formData.firstName,
             email: formData.email,
@@ -749,8 +848,11 @@ function CheckoutContent() {
 
       const orderData = await orderResponse.json()
 
-      // Log response for debugging
-      console.log('Razorpay Order Response:', orderData)
+      // Log response for debugging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.info('Razorpay Order Response:', orderData)
+      }
 
       if (!orderData.success && !orderData.orderId) {
         // Log full error details
@@ -777,7 +879,7 @@ function CheckoutContent() {
         currency: orderData.currency,
         order_id: orderData.orderId || orderData.id,
         name: 'PowerCA',
-        description: product.name || 'PowerCA Implementation',
+        description: productName,
         image: '/logo.png',
         prefill: {
           name: formData.firstName,
@@ -803,6 +905,7 @@ function CheckoutContent() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
               customerDetails: {
                 name: formData.firstName,
                 email: formData.email,
@@ -813,7 +916,7 @@ function CheckoutContent() {
                 address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
               },
               productDetails: {
-                name: product.name,
+                name: productName,
                 amount: total,
                 quantity: quantity,
                 gstAmount: gstAmount,
@@ -824,7 +927,7 @@ function CheckoutContent() {
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json()
             if (verifyData.success) {
-              router.push(`/payment-success?orderId=${verifyData.data?.orderId}&invoiceId=${verifyData.data?.invoiceNumber}`)
+              router.push(`/payment-success?orderId=${verifyData.data?.orderId}&invoiceId=${verifyData.data?.invoiceNumber}&planType=${verifyData.data?.planType || planType}&userCount=${verifyData.data?.userCount || quantity}`)
             } else {
               setError('Payment verification failed. Please contact support.')
               setLoading(false)
@@ -850,12 +953,64 @@ function CheckoutContent() {
     }
   }
 
-  const _handleApplyCoupon = () => {
-    // TODO: Implement coupon validation
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code')
+      return
+    }
+
+    setCouponLoading(true)
+    setCouponError('')
+
+    try {
+      const response = await fetch('/api/coupon/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim() })
+      })
+
+      if (!response.ok) {
+        setCouponError('Failed to validate coupon code')
+        return
+      }
+
+      const result = await response.json()
+
+      if (result.success && result.coupon) {
+        setAppliedCoupon(result.coupon)
+        setCouponCode('') // Clear input after successful application
+        setCouponError('')
+      } else {
+        setCouponError(result.error || 'Invalid coupon code')
+        setAppliedCoupon(null)
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error applying coupon:', error)
+      }
+      setCouponError('Failed to validate coupon code')
+    } finally {
+      setCouponLoading(false)
+    }
   }
 
-  const _incrementQuantity = () => setQuantity(prev => prev + 1)
-  const _decrementQuantity = () => setQuantity(prev => Math.max(1, prev - 1))
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCode('')
+    setCouponError('')
+  }
+
+  const handleUserCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value
+    if (inputValue === '') {
+      setUserCount('')
+    } else {
+      const value = parseInt(inputValue, 10)
+      if (!isNaN(value) && value >= 5) {
+        setUserCount(value)
+      }
+    }
+  }
 
   // Show loading screen while checking authentication
   if (checkingAuth) {
@@ -886,6 +1041,15 @@ function CheckoutContent() {
         .checkout-page input:-ms-input-placeholder,
         .checkout-page textarea:-ms-input-placeholder {
           color: #666D80 !important;
+        }
+        /* Hide number input arrows/spinners */
+        .checkout-page input[type="number"]::-webkit-outer-spin-button,
+        .checkout-page input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        .checkout-page input[type="number"] {
+          -moz-appearance: textfield;
         }
       `}</style>
       <Script
@@ -969,7 +1133,7 @@ function CheckoutContent() {
                   </div>
                   <div className="space-y-2.5">
                     {/* Full Name & Firm Name */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className={`grid grid-cols-1 ${(session?.user?.role as string) !== 'student' ? 'sm:grid-cols-2' : ''} gap-2.5`}>
                       <div>
                         <Label className="text-[15px] font-medium text-gray-700">Full Name</Label>
                         <Input
@@ -978,14 +1142,16 @@ function CheckoutContent() {
                           className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
                         />
                       </div>
-                      <div>
-                        <Label className="text-[15px] font-medium text-gray-700">Firm Name</Label>
-                        <Input
-                          value={formData.firmName}
-                          disabled
-                          className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
-                        />
-                      </div>
+                      {(session?.user?.role as string) !== 'student' && (
+                        <div>
+                          <Label className="text-[15px] font-medium text-gray-700">Firm Name</Label>
+                          <Input
+                            value={formData.firmName}
+                            disabled
+                            className="mt-1 text-sm sm:text-base bg-gray-50 border-gray-200 !h-11"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* GST No */}
@@ -1086,34 +1252,89 @@ function CheckoutContent() {
 
             {/* Right Column - Order Summary */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Apply Coupon
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Apply Coupon</h3>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Coupon code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6"
-                  >
-                    Apply
-                  </Button>
+              {/* Apply Coupon */}
+              {!isFinalSettlement && (
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <Tag className="w-5 h-5 text-purple-600" />
+                    Apply Coupon
+                  </h3>
+
+                  {appliedCoupon ? (
+                    // Show applied coupon
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 sm:p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="font-semibold text-green-700">{appliedCoupon.code}</p>
+                            <p className="text-xs text-green-600">{appliedCoupon.discountPercentage}% discount applied</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveCoupon}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Show coupon input
+                    <>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value)
+                            setCouponError('')
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleApplyCoupon()
+                            }
+                          }}
+                          className={`flex-1 ${couponError ? 'border-red-300' : ''}`}
+                          disabled={couponLoading}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 sm:px-6"
+                        >
+                          {couponLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            'Apply'
+                          )}
+                        </Button>
+                      </div>
+                      {couponError && (
+                        <p className="text-red-600 text-xs mt-2 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {couponError}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-2">
+                        Have a coupon code? Enter it above to get a discount.
+                      </p>
+                    </>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  If you have a coupon code, please apply it below.
-                </p>
-              </div>*/}
+              )}
 
               {/* Purchase Plan */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Purchase Plan</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Subscription Plan</h3>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                {/* Product Info */}
+                <div className="flex items-center gap-3 sm:gap-4 mb-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md flex-shrink-0">
                     <Image
                       src="/images/power-ca-logo-footer.png"
@@ -1124,71 +1345,105 @@ function CheckoutContent() {
                       unoptimized
                     />
                   </div>
-                  <div className="flex-1 w-full sm:w-auto">
-                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-2">Power CA Software</h4>
-                    <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
-                      <span className="text-xs sm:text-sm text-gray-600">Installation and Ongoing Support & Update</span>
-                      {/* <div className="flex items-center border-2 border-gray-300 rounded-lg shadow-sm">
-                        <button
-                          type="button"
-                          onClick={decrementQuantity}
-                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                          disabled={quantity <= 1}
-                        >
-                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                        <span className="px-3 sm:px-4 py-1 text-sm sm:text-base font-semibold min-w-[40px] text-center">{quantity}</span>
-                        <button
-                          type="button"
-                          onClick={incrementQuantity}
-                          className="p-1.5 sm:p-2 hover:bg-gray-100 transition-colors"
-                        >
-                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                      </div> */}
-                      <div className="sm:hidden ml-auto">
-                        <div className="text-right">
-                          {!isFirstAddress && selectedAddressId && (
-                            <span className="text-xs text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
-                          )}
-                          <span className="text-base font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm sm:text-base text-gray-900">
+                      {isFinalSettlement ? 'PowerCA Final Settlement' : 'Power CA Software'}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-gray-600">{productDescription}</p>
                   </div>
-                  <div className="hidden sm:block text-right">
-                    {!isFirstAddress && selectedAddressId && (
-                      <span className="text-sm text-gray-400 line-through block">₹{(fullBasePrice * quantity).toLocaleString()}</span>
-                    )}
-                    <span className="text-lg font-bold text-purple-600">₹{(basePrice * quantity).toLocaleString()}</span>
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-lg font-bold text-purple-600">₹{fullBasePrice.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2">
-                  {/* Show discount info for second+ address */}
-                  {!isFirstAddress && selectedAddressId && (
-                    <div className="flex justify-between text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <span className="font-medium">{discountPercentage}% Discount</span>
-                      <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
+                {/* User Count Input - Only for Monthly/Annual Plans */}
+                {isPerUserPlan && (
+                  <div className={`mb-4 p-3 rounded-lg border ${errors.userCount ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'}`}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <Label htmlFor="userCount" className={`text-sm font-medium ${errors.userCount ? 'text-red-700' : 'text-blue-900'}`}>
+                          Number of Users <span className="text-red-500">*</span>
+                        </Label>
+                        <p className={`text-xs mt-0.5 ${errors.userCount ? 'text-red-500' : 'text-blue-700'}`}>Minimum 5 users</p>
+                      </div>
+                      <Input
+                        id="userCount"
+                        type="number"
+                        min="5"
+                        value={userCount}
+                        onChange={handleUserCountChange}
+                        onWheel={(e) => e.currentTarget.blur()}
+                        className={`w-24 text-center text-lg font-bold border-2 bg-white ${errors.userCount ? 'border-red-400' : 'border-blue-300'}`}
+                        required
+                      />
+                    </div>
+                    {errors.userCount && (
+                      <p className="text-red-600 text-xs mt-2 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.userCount}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="border-t-2 border-gray-200 pt-3 sm:pt-4 space-y-2" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {/* Show final settlement info */}
+                  {isFinalSettlement && (
+                    <div className="flex justify-between items-center text-xs sm:text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
+                      <span className="font-medium">Final Settlement Payment</span>
+                      <span className="font-semibold text-right min-w-[100px]">2nd of 2 payments</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                    <span>Base Price</span>
-                    <span className="font-semibold">₹{basePrice.toLocaleString()}</span>
+                  {/* Show original total and coupon discount when coupon applied */}
+                  {!isFinalSettlement && appliedCoupon ? (
+                    <>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                        <span>License Amount</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{(fullBasePrice * quantity).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                        <span className="font-medium flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Coupon: {appliedCoupon.code} ({appliedCoupon.discountPercentage}%)
+                        </span>
+                        <span className="font-semibold text-right min-w-[100px]">-₹{totalDiscountDisplay.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                        <span>Subtotal</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{subtotal.toLocaleString()}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-right min-w-[100px]">₹{subtotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {implementationCharge > 0 && (
+                    <>
+                      <div className="flex justify-between items-center text-xs sm:text-sm text-gray-700">
+                        <span>Server Installation & Configuration</span>
+                        <span className="font-semibold text-right min-w-[100px]">₹{implementationCharge.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs sm:text-sm font-semibold text-gray-800 border-t border-gray-200 pt-2 mt-2">
+                        <span>Total</span>
+                        <span className="text-right min-w-[100px]">₹{subtotalWithImplementation.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className={`flex justify-between items-center text-xs sm:text-sm text-gray-700 ${implementationCharge > 0 ? '' : 'border-t border-gray-200 pt-2 mt-2'}`}>
+                    <span>GST (18%)</span>
+                    <span className="font-semibold text-right min-w-[100px]">₹{gstAmount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-xs sm:text-sm text-gray-700">
-                    <span>SGST & CGST (18%)</span>
-                    <span className="font-semibold">₹{gstAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-base sm:text-lg font-bold border-t-2 border-gray-300 pt-2 mt-2 text-purple-700">
-                    <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                  <div className="flex justify-between items-center text-base sm:text-lg font-bold border-t-2 border-gray-300 pt-2 mt-2 text-purple-700">
+                    <span>Grand Total</span>
+                    <span className="text-right min-w-[100px]">₹{total.toLocaleString()}</span>
                   </div>
                   {/* Show selected address info */}
                   {selectedAddressId && savedAddresses.length > 0 && (
                     <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
                       <p className="text-xs text-purple-700 font-medium">
-                        Purchasing for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
+                        Subscription for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
                       </p>
                     </div>
                   )}
@@ -1306,8 +1561,10 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <CheckoutContent />
-    </Suspense>
+    <PageErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <CheckoutContent />
+      </Suspense>
+    </PageErrorBoundary>
   )
 }

@@ -11,71 +11,29 @@ export function ClientLogos() {
   ]
 
   return (
-    <section className="py-10 bg-white overflow-hidden">
+    <section className="py-10 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#001525' }}>Trusted by</h2>
           <p className="text-xl text-blue-600 font-semibold">Chartered Accountants</p>
         </div>
 
-        {/* Scrolling Logos Container */}
-        <div className="relative">
-          <div className="flex items-center space-x-16 animate-scroll">
-            {/* First set of logos */}
-            {logos.map((logo, index) => (
-              <div key={`first-${index}`} className="flex-shrink-0 flex items-center justify-center min-w-[320px]">
-                <Image
-                  src={logo.src}
-                  alt={logo.name}
-                  width={logo.width}
-                  height={logo.height}
-                  className="h-12 w-auto object-contain filter opacity-70 hover:opacity-100 transition-opacity duration-300"
-                  priority={index < 2}
-                />
-              </div>
-            ))}
-
-            {/* Duplicate set for seamless loop */}
-            {logos.map((logo, index) => (
-              <div key={`second-${index}`} className="flex-shrink-0 flex items-center justify-center min-w-[320px]">
-                <Image
-                  src={logo.src}
-                  alt={logo.name}
-                  width={logo.width}
-                  height={logo.height}
-                  className="h-12 w-auto object-contain filter opacity-70 hover:opacity-100 transition-opacity duration-300"
-                />
-              </div>
-            ))}
-          </div>
+        {/* Static Logos Grid */}
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
+          {logos.map((logo, index) => (
+            <div key={index} className="flex items-center justify-center px-4">
+              <Image
+                src={logo.src}
+                alt={logo.name}
+                width={logo.width}
+                height={logo.height}
+                className="h-12 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity duration-300"
+                priority={index < 2}
+              />
+            </div>
+          ))}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .animate-scroll {
-          animation: scroll 18s linear infinite;
-        }
-
-        .animate-scroll:hover {
-          animation-play-state: paused;
-        }
-
-        /* Faster scroll on mobile */
-        @media (max-width: 768px) {
-          .animate-scroll {
-            animation: scroll 8s linear infinite;
-          }
-        }
-      `}</style>
     </section>
   )
 }

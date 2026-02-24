@@ -2,6 +2,7 @@
 
 import {useState, useEffect  } from 'react'
 import {AdminLayout  } from '@/components/admin/admin-layout'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 import { format } from 'date-fns'
 import {User, Mail, Phone,
   Calendar,
@@ -52,6 +53,8 @@ export default function AdminCustomersPage() {
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   useEffect(() => {
     fetchCustomers()
@@ -175,6 +178,15 @@ export default function AdminCustomersPage() {
     return matchesSearch && matchesRole
   })
 
+  // Pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, roleFilter])
+
   if (loading) {
     return (
       <AdminLayout>
@@ -264,8 +276,8 @@ export default function AdminCustomersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredCustomers.length > 0 ? (
-                  filteredCustomers.map((customer) => (
+                {paginatedCustomers.length > 0 ? (
+                  paginatedCustomers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
@@ -368,6 +380,19 @@ export default function AdminCustomersPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filteredCustomers.length > ITEMS_PER_PAGE && (
+            <div className="p-4 border-t">
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredCustomers.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+                itemName="customers"
+              />
+            </div>
+          )}
         </div>
 
         {/* Details Modal */}

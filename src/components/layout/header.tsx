@@ -23,8 +23,7 @@ export function Header() {
 
   return (
     <header
-      className="fixed w-full z-[60] bg-white"
-      style={{ top: 'var(--banner-height, 48px)' }}
+      className="sticky top-0 w-full z-[60] bg-white shadow-sm"
     >
       <div className="w-full px-4 sm:px-6 lg:px-6 xl:px-12">
         <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20 relative">
@@ -45,23 +44,40 @@ export function Header() {
           <nav className="hidden lg:flex items-center lg:space-x-3 xl:space-x-6 absolute left-1/2 -translate-x-1/2">
             {navigationConfig.mainNav.map((item, index) => {
               const isActive = pathname === item.href
+              const isHighlighted = 'highlighted' in item && item.highlighted
               return (
                 <motion.div
                   key={item.href}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  className={isHighlighted ? 'relative' : ''}
                 >
-                  <Link
-                    href={item.href}
-                    className={`font-medium transition-colors px-2 ${
-                      isActive
-                        ? 'text-[#2563eb] font-semibold text-[17px]'
-                        : 'text-gray-600 hover:text-[#2563eb] text-[15px]'
-                    }`}
-                  >
-                    {item.title}
-                  </Link>
+                  {isHighlighted ? (
+                    <Link
+                      href={item.href}
+                      className="relative group"
+                    >
+                      <motion.div
+                        className="relative px-4 py-2 rounded-full text-[13px] font-semibold bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md hover:shadow-lg transition-all"
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                      >
+                        {item.title}
+                      </motion.div>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`font-medium transition-colors px-2 ${
+                        isActive
+                          ? 'text-[#2563eb] font-semibold text-[17px]'
+                          : 'text-gray-600 hover:text-[#2563eb] text-[15px]'
+                      }`}
+                    >
+                      {item.title}
+                    </Link>
+                  )}
                 </motion.div>
               )
             })}
@@ -214,12 +230,15 @@ export function Header() {
             <nav className="flex flex-col space-y-4">
               {navigationConfig.mainNav.map((item) => {
                 const isActive = pathname === item.href
+                const isHighlighted = 'highlighted' in item && item.highlighted
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`font-medium transition-colors ${
-                      isActive
+                      isHighlighted
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg text-[15px] text-center inline-block shadow-md'
+                        : isActive
                         ? 'text-[#2563eb] font-semibold text-[17px]'
                         : 'text-gray-700 hover:text-[#2563eb] text-[15px]'
                     }`}
@@ -281,7 +300,7 @@ export function Header() {
                       </Button>
                     </div>
                     <Button className="w-full text-white rounded-full hover:opacity-90 transition-opacity px-[1.25rem] py-4" style={{ backgroundColor: '#155dfc' }} asChild>
-                      <Link href="/book-demo">Book Demo</Link>
+                      <Link href="/book-demo" onClick={() => setIsMobileMenuOpen(false)}>Book Demo</Link>
                     </Button>
                   </>
                 )}

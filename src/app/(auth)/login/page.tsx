@@ -327,7 +327,7 @@ function LoginContent() {
               <p className="text-gray-600">
                 Don't have an Account?{' '}
                 <Link
-                  href={callbackUrl && callbackUrl !== '/account' ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
+                  href={callbackUrl && callbackUrl !== '/account?tab=billing' ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
                   className="text-blue-600 hover:text-blue-800 font-medium underline"
                 >
                   Sign Up
@@ -340,7 +340,7 @@ function LoginContent() {
               <p className="text-gray-600 text-sm">
                 Are you an Affiliate Partner?{' '}
                 <Link
-                  href="/affiliate-login"
+                  href={callbackUrl && callbackUrl !== '/account?tab=billing' ? `/affiliate-login?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/affiliate-login'}
                   className="text-purple-600 hover:text-purple-800 font-medium underline"
                 >
                   Login Here

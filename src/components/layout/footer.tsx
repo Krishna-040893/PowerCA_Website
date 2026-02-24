@@ -153,11 +153,11 @@ export function Footer() {
             <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Quick Links</h3>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-300">
               <li><Link href="/" className="hover:text-blue-400 transition-colors">Home</Link></li>
-              <li><Link href="/about" className="hover:text-blue-400 transition-colors">About US</Link></li>
+              <li><Link href="/about" className="hover:text-blue-400 transition-colors">About</Link></li>
               <li><Link href="/modules" className="hover:text-blue-400 transition-colors">Modules</Link></li>
               <li><Link href="/pricing" className="hover:text-blue-400 transition-colors">Pricing</Link></li>
               <li><Link href="/blog" className="hover:text-blue-400 transition-colors">Blog</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-400 transition-colors">Contact us</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -172,7 +172,7 @@ export function Footer() {
           </div>
 
           {/* Newsletter & Blogs */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-1 lg:-ml-4">
             <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Subscribe to Our Newsletter</h3>
 
             {/* Newsletter Signup */}

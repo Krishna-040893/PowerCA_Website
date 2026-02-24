@@ -68,7 +68,7 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
 
         <div class="pricing-option">
           <div style="color: #666; font-size: 14px; margin-bottom: 10px;">MINIMUM COST</div>
-          <div class="price">₹12,000</div>
+          <div class="price">₹18,000</div>
           <div style="color: #666; font-size: 14px; margin-top: 5px;">+ Applicable Taxes</div>
         </div>
       </div>

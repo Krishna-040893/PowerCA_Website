@@ -1,7 +1,9 @@
 'use client'
 
 import {useState, useEffect  } from 'react'
+import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminLayout  } from '@/components/admin/admin-layout'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
@@ -35,10 +37,13 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const { adminUser } = useAdminAuth()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingUsers, setUpdatingUsers] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -77,7 +82,7 @@ export default function AdminUsersPage() {
         body: JSON.stringify({
           userId,
           newRole,
-          adminId: 'current-admin' // TODO: Get from session
+          adminId: adminUser?.username || 'admin'
         }),
       })
 
@@ -140,6 +145,10 @@ export default function AdminUsersPage() {
     'affiliate',
     'admin'
   ]
+
+  // Pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedUsers = users.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <AdminLayout>
@@ -207,7 +216,7 @@ export default function AdminUsersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => (
+                    {paginatedUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell>{user.email}</TableCell>
@@ -298,6 +307,19 @@ export default function AdminUsersPage() {
             {users.length > 0 && (
               <div className="mt-4 text-sm text-gray-600">
                 Total users: {users.length}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {users.length > ITEMS_PER_PAGE && (
+              <div className="mt-4">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={users.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  itemName="users"
+                />
               </div>
             )}
           </CardContent>

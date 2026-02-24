@@ -79,6 +79,8 @@ export async function POST(req: NextRequest) {
       discountPercentage,
       discountAmount,
       originalAmount,
+      // User count for per-user pricing plans
+      userCount
     } = body
 
     if (!amount || amount <= 0) {
@@ -258,9 +260,14 @@ export async function POST(req: NextRequest) {
         ? `${address}, ${city}, ${state} - ${postcode}`
         : null
 
+      // Calculate GST breakdown (18% GST)
+      const baseAmount = parseFloat((amount / 1.18).toFixed(2))
+      const calculatedGstAmount = parseFloat((amount - baseAmount).toFixed(2))
+
       const { error } = await supabase.from('payment_orders').insert({
         order_id: orderId,
         amount,
+        gst: gstAmount || calculatedGstAmount, // Use provided gstAmount or calculate
         currency: 'INR',
         status: 'created',
         customer_email: customerEmail,
@@ -284,6 +291,10 @@ export async function POST(req: NextRequest) {
         discount_percentage: discountPercentage || 0,
         discount_amount: discountAmount || 0,
         original_amount: originalAmount || null,
+        // Plan type for subscription tracking
+        plan_type: planType || 'monthly',
+        // User count for per-user pricing
+        user_count: userCount || 1
       })
 
       if (error) {

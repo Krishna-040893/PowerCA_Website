@@ -98,15 +98,12 @@ const nextConfig: NextConfig = {
       },
       {
         // Additional security for API routes with CORS support
+        // Note: CORS is handled dynamically - remove wildcard origin for security
         source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'no-store, max-age=0'
-          },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*'
           },
           {
             key: 'Access-Control-Allow-Methods',

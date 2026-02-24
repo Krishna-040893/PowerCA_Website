@@ -2,105 +2,43 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import {useState, useEffect, useRef  } from 'react'
 
 export default function AboutPage() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [currentMobileSlide, setCurrentMobileSlide] = useState(0)
-  const [selectedFilter, setSelectedFilter] = useState('all')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const filterRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setIsFilterOpen(false)
-      }
+  // Team data organized by departments
+  const teamDepartments = [
+    {
+      title: 'Leadership',
+      members: [
+        { name: 'Arul Maniam TS', role: 'Founder & CEO', gender: 'male' },
+        { name: 'Karthikeyan R', role: 'Manager', gender: 'male' },
+        { name: 'Thirunavukkarasu M', role: 'Manager', gender: 'male' }
+      ]
+    },
+    {
+      title: 'Development',
+      members: [
+        { name: 'Mansur Ali B', role: 'Developer', gender: 'male' },
+        { name: 'Maheshwari R', role: 'Developer', gender: 'female' },
+        { name: 'Vanithamani D', role: 'Developer', gender: 'female' }
+      ]
+    },
+    {
+      title: 'Design & Support',
+      members: [
+        { name: 'Karthikeyan G', role: 'Web Designer', gender: 'male' },
+        { name: 'Nikila R', role: 'Web Designer', gender: 'female' },
+        { name: 'Ramajayanthi G', role: 'Customer Support', gender: 'female' }
+      ]
+    },
+    {
+      title: 'Operations',
+      members: [
+        { name: 'Jagadeeswari M', role: 'Admin', gender: 'female' },
+        { name: 'Kaleeswari K', role: 'QA Testing', gender: 'female' },
+        { name: 'Satheeshkumar K', role: 'Database Admin', gender: 'male' }
+      ]
     }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
-  // Team members data - flat array of all members
-  const allTeamMembers = [
-    { name: 'Arul Maniam TS', role: 'Founder', category: 'founder', image: '/images/team/arul-maniam-ca.jpg', initials: 'AM' },
-    { name: 'Karthikeyan R', role: 'Manager', category: 'manager', image: '/images/team/karthikeyan-r.jpg', initials: 'KR' },
-    { name: 'Thirunavukkarasu M', role: 'Manager', category: 'manager', image: '/images/team/thirunavukkarasu.jpg', initials: 'TM' },
-    { name: 'Jagadeeswari M', role: 'Admin', category: 'admin', image: null, initials: 'JM' },
-    { name: 'Mansur Ali B', role: 'Developer', category: 'developers', image: '/images/team/mansur-ali-b.jpg', initials: 'MA' },
-    { name: 'Maheshwari R', role: 'Developer', category: 'developers', image: '/images/team/maheshwari-r.jpg', initials: 'MW' },
-    { name: 'Vanithamani D', role: 'Developer', category: 'developers', image: '/images/team/vanithamani-d.jpg', initials: 'VD' },
-    { name: 'Karthikeyan G', role: 'Web Designer', category: 'webdesigner', image: '/images/team/karthikeyan-g.jpg', initials: 'KG' },
-    { name: 'Nikila R', role: 'Web Designer', category: 'webdesigner', image: null, initials: 'NR' },
-    { name: 'Ramajayanthi G', role: 'Customer Support', category: 'customersupport', image: null, initials: 'RG' },
-    { name: 'Kaleeswari K', role: 'Testing', category: 'testing', image: null, initials: 'KK' },
-    { name: 'Satheeshkumar K', role: 'DBA', category: 'dba', image: null, initials: 'SK' }
   ]
-
-  // Filter categories
-  const filterCategories = [
-    { value: 'all', label: 'All' },
-    { value: 'founder', label: 'Founder' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'webdesigner', label: 'Web Designer' },
-    { value: 'testing', label: 'Testing' },
-    { value: 'customersupport', label: 'Coustomer Support' },
-    { value: 'dba', label: 'DBA' }
-  ]
-
-  // Filter members based on selected category
-  const filteredMembers = selectedFilter === 'all'
-    ? allTeamMembers
-    : allTeamMembers.filter(member => member.category === selectedFilter)
-
-  // Desktop: 5 members per slide
-  const membersPerSlide = 5
-  const totalSlides = Math.max(1, filteredMembers.length - membersPerSlide + 1)
-
-  // Mobile: 2 members per slide
-  const membersPerMobileSlide = 2
-  const totalMobileSlides = Math.ceil(filteredMembers.length / membersPerMobileSlide)
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % totalSlides)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
-  }
-
-  const nextMobileSlide = () => {
-    setCurrentMobileSlide((prev) => (prev + 1) % totalMobileSlides)
-  }
-
-  const prevMobileSlide = () => {
-    setCurrentMobileSlide((prev) => (prev - 1 + totalMobileSlides) % totalMobileSlides)
-  }
-
-  const goToMobileSlide = (index: number) => {
-    setCurrentMobileSlide(index)
-  }
-
-  const getVisibleMembers = () => {
-    return filteredMembers.slice(currentSlide, currentSlide + membersPerSlide)
-  }
-
-  const getVisibleMobileMembers = () => {
-    const startIndex = currentMobileSlide * membersPerMobileSlide
-    return filteredMembers.slice(startIndex, startIndex + membersPerMobileSlide)
-  }
-
-  const handleFilterChange = (category: string) => {
-    setSelectedFilter(category)
-    setCurrentSlide(0) // Reset to first slide when filter changes
-    setCurrentMobileSlide(0) // Reset mobile slide too
-    setIsFilterOpen(false)
-  }
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -268,249 +206,111 @@ export default function AboutPage() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
-          {/* Header - Responsive Layout */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            {/* Title and Description - Stacked until xl breakpoint */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
-              {/* Left - Title */}
-              <div className="pl-4 sm:pl-8 lg:pl-12">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold text-gray-900 leading-tight">
-                  Our Team Members
-                </h2>
-              </div>
+          {/* Header */}
+          <div className="text-center mb-10 sm:mb-12 lg:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold text-gray-900 leading-tight mb-4">
+              Our Team Members
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto">
+              A dedicated team of professionals working together to deliver excellence in practice management solutions.
+            </p>
+          </div>
 
-              {/* Right - Description */}
-              <div className="xl:flex xl:items-start pl-4 sm:pl-0">
-                <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-500 leading-relaxed">
-                  Efficient Communication, Centralized Data Management, and Seamless Interaction.
-                </p>
-              </div>
-            </div>
+          {/* Team Grid by Department - 4 columns on large screens */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+            {teamDepartments.map((department, deptIndex) => (
+              <div
+                key={deptIndex}
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                {/* Department Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-5 py-3">
+                  <h3 className="text-white font-semibold text-sm sm:text-base">{department.title}</h3>
+                </div>
 
-            {/* Filter Button - Right-aligned with spacing */}
-            <div className="flex justify-end relative pr-4 sm:pr-8 lg:pr-12" ref={filterRef}>
-              <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
-                >
-                  {filterCategories.find(cat => cat.value === selectedFilter)?.label || 'Filter'}
-                  <svg
-                    className={`ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                {/* Members List */}
+                <div className="divide-y divide-gray-100">
+                  {department.members.map((member, memberIndex) => (
+                    <div
+                      key={memberIndex}
+                      className="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-gray-50 transition-colors"
+                    >
+                      {/* Gender Avatar - Vector Illustration */}
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {member.gender === 'female' ? (
+                          <svg className="w-full h-full" viewBox="0 0 64 64" fill="none">
+                            {/* Background */}
+                            <circle cx="32" cy="32" r="32" fill="#FDF2F8"/>
+                            {/* Hair */}
+                            <path d="M16 28C16 18 22 10 32 10C42 10 48 18 48 28C48 30 47.5 32 47 34C46 36 44 38 44 42V46C44 48 43 50 41 50H23C21 50 20 48 20 46V42C20 38 18 36 17 34C16.5 32 16 30 16 28Z" fill="#5C3D2E"/>
+                            {/* Face */}
+                            <ellipse cx="32" cy="32" rx="12" ry="14" fill="#FDBCB4"/>
+                            {/* Hair bangs */}
+                            <path d="M20 24C20 20 24 14 32 14C40 14 44 20 44 24C44 26 42 28 40 28C38 28 36 24 32 24C28 24 26 28 24 28C22 28 20 26 20 24Z" fill="#5C3D2E"/>
+                            {/* Eyes */}
+                            <ellipse cx="27" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
+                            <ellipse cx="37" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
+                            {/* Smile */}
+                            <path d="M28 38C28 38 30 41 32 41C34 41 36 38 36 38" stroke="#E57373" strokeWidth="1.5" strokeLinecap="round"/>
+                            {/* Blush */}
+                            <ellipse cx="24" cy="35" rx="2.5" ry="1.5" fill="#FFCDD2" opacity="0.6"/>
+                            <ellipse cx="40" cy="35" rx="2.5" ry="1.5" fill="#FFCDD2" opacity="0.6"/>
+                            {/* Body/Shoulders */}
+                            <path d="M18 58C18 50 24 46 32 46C40 46 46 50 46 58V64H18V58Z" fill="#EC4899"/>
+                          </svg>
+                        ) : (
+                          <svg className="w-full h-full" viewBox="0 0 64 64" fill="none">
+                            {/* Background */}
+                            <circle cx="32" cy="32" r="32" fill="#EFF6FF"/>
+                            {/* Hair */}
+                            <path d="M18 26C18 18 24 12 32 12C40 12 46 18 46 26C46 28 45 30 44 30C43 30 42 28 42 26C42 20 38 16 32 16C26 16 22 20 22 26C22 28 21 30 20 30C19 30 18 28 18 26Z" fill="#4A3728"/>
+                            {/* Face */}
+                            <ellipse cx="32" cy="32" rx="12" ry="13" fill="#FDBCB4"/>
+                            {/* Short hair top */}
+                            <path d="M20 24C20 18 25 14 32 14C39 14 44 18 44 24C44 26 42 26 40 24C38 22 35 20 32 20C29 20 26 22 24 24C22 26 20 26 20 24Z" fill="#4A3728"/>
+                            {/* Eyes */}
+                            <ellipse cx="27" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
+                            <ellipse cx="37" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
+                            {/* Eyebrows */}
+                            <path d="M24 26L29 25" stroke="#4A3728" strokeWidth="1.5" strokeLinecap="round"/>
+                            <path d="M35 25L40 26" stroke="#4A3728" strokeWidth="1.5" strokeLinecap="round"/>
+                            {/* Smile */}
+                            <path d="M28 38C28 38 30 40 32 40C34 40 36 38 36 38" stroke="#D4A59A" strokeWidth="1.5" strokeLinecap="round"/>
+                            {/* Body/Shoulders */}
+                            <path d="M18 58C18 50 24 46 32 46C40 46 46 50 46 58V64H18V58Z" fill="#3B82F6"/>
+                          </svg>
+                        )}
+                      </div>
 
-                {/* Filter Dropdown */}
-                {isFilterOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-full sm:w-56 lg:w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20 max-h-80 overflow-y-auto">
-                    {filterCategories.map((category) => (
-                      <button
-                        key={category.value}
-                        onClick={() => handleFilterChange(category.value)}
-                        className={`w-full text-left px-4 py-2.5 sm:py-3 hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg text-sm sm:text-base ${
-                          selectedFilter === category.value
-                            ? 'bg-blue-50 text-blue-600 font-medium'
-                            : 'text-gray-700'
-                        }`}
-                      >
-                        {category.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-          {/* Team Members Carousel - Mobile View (Hidden on SM and up) */}
-          <div className="sm:hidden relative overflow-hidden mb-6">
-            <div className="grid grid-cols-2 gap-3">
-              {getVisibleMobileMembers().map((member, index) => {
-                const gradients = [
-                  'from-purple-100 to-pink-100',
-                  'from-green-100 to-teal-100',
-                  'from-blue-100 to-indigo-100',
-                  'from-yellow-100 to-orange-100'
-                ]
-                return (
-                  <div
-                    key={`mobile-${currentMobileSlide}-${index}`}
-                    className="bg-white rounded-2xl p-3 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform flex flex-col"
-                    style={{
-                      animation: 'slideInFromRight 0.5s ease-out'
-                    }}
-                  >
-                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-3 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
-                      {member.image ? (
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          width={300}
-                          height={300}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-gray-600 text-xl font-medium">{member.initials}</div>
-                        </div>
-                      )}
+                      {/* Name and Role */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-gray-900 font-medium text-xs sm:text-sm truncate">{member.name}</h4>
+                        <p className="text-gray-500 text-xs">{member.role}</p>
+                      </div>
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">{member.name}</h4>
-                    <p className="text-gray-500 text-xs">{member.role}</p>
-                  </div>
-                )
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Team Members Carousel - Desktop View (Hidden on mobile) */}
-          <div className="hidden sm:block relative overflow-hidden mb-6 sm:mb-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {getVisibleMembers().map((member, index) => {
-                const gradients = [
-                  'from-purple-100 to-pink-100',
-                  'from-green-100 to-teal-100',
-                  'from-blue-100 to-indigo-100',
-                  'from-yellow-100 to-orange-100'
-                ]
-                return (
-                  <div
-                    key={`desktop-${currentSlide}-${index}`}
-                    className="bg-white rounded-2xl p-2 sm:p-3 md:p-4 border border-gray-200 hover:shadow-lg transition-all duration-500 ease-in-out transform"
-                    style={{
-                      animation: 'slideInFromRight 0.5s ease-out'
-                    }}
-                  >
-                    <div className={`w-full aspect-square rounded-xl overflow-hidden mb-2 sm:mb-3 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
-                      {member.image ? (
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          width={300}
-                          height={300}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-gray-600 text-xl sm:text-2xl font-medium">{member.initials}</div>
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 mb-1">{member.name}</h4>
-                    <p className="text-gray-500 text-xs">{member.role}</p>
-                  </div>
-                )
-              })}
+          {/* Team Stats */}
+          <div className="mt-10 sm:mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">12+</div>
+              <div className="text-gray-500 text-xs sm:text-sm">Team Members</div>
             </div>
-          </div>
-
-          {/* Add keyframe animation styles */}
-          <style jsx>{`
-            @keyframes slideInFromRight {
-              0% {
-                opacity: 0;
-                transform: translateX(30px);
-              }
-              100% {
-                opacity: 1;
-                transform: translateX(0);
-              }
-            }
-          `}</style>
-
-          {/* Mobile Carousel Controls - Pagination Left, Arrows Right */}
-          <div className="sm:hidden flex justify-between items-center">
-            {/* Pagination Dots - Left */}
-            <div className="flex gap-1.5" role="tablist" aria-label="Team member navigation">
-              {Array.from({ length: totalMobileSlides }, (_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => goToMobileSlide(index)}
-                  aria-label={`Show team member slide ${index + 1}`}
-                  aria-pressed={index === currentMobileSlide}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentMobileSlide ? 'bg-gray-900' : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">20+</div>
+              <div className="text-gray-500 text-xs sm:text-sm">Years Experience</div>
             </div>
-
-            {/* Navigation Buttons - Right */}
-            <div className="flex gap-3">
-              <button
-                type="button"
-                aria-label="Show previous team members"
-                title="Show previous team members"
-                onClick={prevMobileSlide}
-                className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-600 hover:text-blue-600 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Show next team members"
-                title="Show next team members"
-                onClick={nextMobileSlide}
-                className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">4</div>
+              <div className="text-gray-500 text-xs sm:text-sm">Departments</div>
             </div>
-          </div>
-
-          {/* Desktop Carousel Controls - Centered Pagination with Arrows */}
-          <div className="hidden sm:grid mt-6 sm:mt-8 grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4">
-            <div />
-            <div className="flex justify-center space-x-1.5 sm:space-x-2">
-              {Array.from({ length: totalSlides }, (_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`rounded-full transition-all ${
-                    index === currentSlide
-                      ? 'w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-600'
-                      : 'w-2 h-2 sm:w-2 sm:h-2 bg-gray-300 opacity-80'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center justify-end gap-2 sm:gap-3 pr-4 sm:pr-8 lg:pr-12">
-              <button
-                onClick={prevSlide}
-                disabled={currentSlide === 0}
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-gray-300 bg-white flex items-center justify-center transition-colors ${
-                  currentSlide === 0
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              <button
-                onClick={nextSlide}
-                disabled={currentSlide >= totalSlides - 1}
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-colors ${
-                  currentSlide >= totalSlides - 1
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">24/7</div>
+              <div className="text-gray-500 text-xs sm:text-sm">Support</div>
             </div>
           </div>
         </div>

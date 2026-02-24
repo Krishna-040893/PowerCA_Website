@@ -114,11 +114,13 @@ export async function POST(request: Request) {
       phone,
       email,
       is_default,
+      is_student,
       label
     } = body
 
-    // Validation
-    if (!full_name || !firm_name || !address || !city || !state || !postcode || !country || !phone || !email) {
+    // Validation - for students, full_name is the primary field; for professionals, firm_name
+    const nameField = is_student ? full_name : firm_name
+    if (!nameField || !address || !city || !state || !postcode || !country || !phone || !email) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -126,6 +128,32 @@ export async function POST(request: Request) {
     }
 
     const supabase = createAdminClient()
+
+    // Normalize city/label for duplicate check
+    const normalizedLabel = label ? normalizeLocation(label) : normalizeLocation(city)
+
+    // Check for duplicate address (same name/firm + same location for same user)
+    const duplicateQuery = supabase
+      .from('user_addresses')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .or(`label.eq.${normalizedLabel},city.eq.${normalizedLabel}`)
+
+    // Check against the correct field based on user type
+    if (is_student) {
+      duplicateQuery.eq('full_name', full_name)
+    } else {
+      duplicateQuery.eq('firm_name', firm_name)
+    }
+
+    const { data: duplicateAddresses } = await duplicateQuery
+
+    if (duplicateAddresses && duplicateAddresses.length > 0) {
+      return NextResponse.json(
+        { success: false, error: 'DUPLICATE_ADDRESS' },
+        { status: 409 }
+      )
+    }
 
     // If this is the first address, make it default
     const { data: existingAddresses } = await supabase
@@ -139,8 +167,8 @@ export async function POST(request: Request) {
       .from('user_addresses')
       .insert({
         user_id: session.user.id,
-        full_name,
-        firm_name,
+        full_name: full_name || '',
+        firm_name: firm_name || '',
         gst_no: gst_no || null,
         address,
         city,

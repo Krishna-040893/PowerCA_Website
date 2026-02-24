@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2 } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -29,7 +29,7 @@ interface NavItem {
   icon: React.ElementType
   badge?: string | number
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements'
+  countKey?: 'bookings' | 'registrations' | 'affiliates' | 'pendingApprovals' | 'approvedAffiliates' | 'referrals' | 'pendingPayments' | 'affiliatePayments' | 'payments' | 'paymentOrders' | 'newsletterSubscribers' | 'blogPosts' | 'agreements' | 'enterpriseInquiries'
   subItems?: { title: string; href: string }[]
 }
 
@@ -46,11 +46,13 @@ interface Counts {
   approvedAffiliates: number
   referrals: number
   pendingPayments: number
+  affiliatePayments: number
   payments: number
   paymentOrders: number
   newsletterSubscribers: number
   blogPosts: number
   agreements: number
+  enterpriseInquiries: number
 }
 
 const getBaseNavigation = (): NavSection[] => [
@@ -77,6 +79,7 @@ const getBaseNavigation = (): NavSection[] => [
         ]
       },
       { title: 'Newsletter Subscribers', href: '/admin/newsletter-subscribers', icon: Mail, countKey: 'newsletterSubscribers', badgeVariant: 'default' },
+      { title: 'Enterprise Inquiries', href: '/admin/enterprise-inquiries', icon: Building2, countKey: 'enterpriseInquiries', badgeVariant: 'default' },
     ]
   },
   {
@@ -98,7 +101,7 @@ const getBaseNavigation = (): NavSection[] => [
       { title: 'All Affiliates', href: '/admin/affiliates', icon: Handshake, countKey: 'affiliates', badgeVariant: 'default' },
       { title: 'Approved', href: '/admin/affiliates/approve', icon: UserCheck, countKey: 'approvedAffiliates', badgeVariant: 'default' },
       { title: 'Affiliate Referrals', href: '/admin/affiliate-referrals', icon: UsersRound, countKey: 'referrals', badgeVariant: 'default' },
-      { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Wallet, countKey: 'pendingPayments', badgeVariant: 'default' },
+      { title: 'Affiliate Payments', href: '/admin/affiliate-payments', icon: Wallet, countKey: 'affiliatePayments', badgeVariant: 'default' },
     ]
   },
 ]
@@ -107,7 +110,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
   const { isAuthenticated, isLoading, adminUser, handleLogout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Agreements']) // Default expanded
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]) // No dropdown expanded by default
 
   // Initialize counts from localStorage if available
   const [counts, setCounts] = useState<Counts>(() => {
@@ -129,11 +132,13 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       approvedAffiliates: 0,
       referrals: 0,
       pendingPayments: 0,
+      affiliatePayments: 0,
       payments: 0,
       paymentOrders: 0,
       newsletterSubscribers: 0,
       blogPosts: 0,
-      agreements: 0
+      agreements: 0,
+      enterpriseInquiries: 0
     }
   })
   const pathname = usePathname()
@@ -164,12 +169,14 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       }
     }
 
-    if (isAuthenticated) {
-      fetchCounts()
-      // Refresh counts every 30 seconds
-      const interval = setInterval(fetchCounts, 30000)
-      return () => clearInterval(interval)
+    if (!isAuthenticated) {
+      return undefined
     }
+
+    fetchCounts()
+    // Refresh counts every 30 seconds
+    const interval = setInterval(fetchCounts, 30000)
+    return () => clearInterval(interval)
   }, [isAuthenticated])
 
   // Compute navigation with counts using useMemo to prevent unnecessary re-renders
@@ -196,6 +203,30 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
       setCollapsed(true)
     }
   }, [])
+
+  // Auto-expand dropdown when navigating to a child page
+  useEffect(() => {
+    const baseNav = getBaseNavigation()
+
+    // Find if current pathname matches any subItem
+    for (const section of baseNav) {
+      for (const item of section.items) {
+        if (item.subItems) {
+          const isOnSubPage = item.subItems.some(sub => pathname === sub.href)
+          if (isOnSubPage) {
+            // Expand this menu if not already expanded
+            setExpandedMenus(prev => {
+              if (!prev.includes(item.title)) {
+                return [...prev, item.title]
+              }
+              return prev
+            })
+            break
+          }
+        }
+      }
+    }
+  }, [pathname])
 
   // Save collapsed state
   const toggleCollapsed = () => {
@@ -342,9 +373,9 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                           )}
                         </button>
                         {/* Sub-items */}
-                        {isExpanded && (!collapsed || sidebarOpen) && (
+                        {isExpanded && (!collapsed || sidebarOpen) && item.subItems && (
                           <div className="ml-4 mt-1 space-y-1 border-l border-slate-700 pl-3">
-                            {item.subItems!.map((subItem) => {
+                            {item.subItems.map((subItem) => {
                               const isSubActive = pathname === subItem.href
                               return (
                                 <Link

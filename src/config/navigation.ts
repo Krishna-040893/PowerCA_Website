@@ -31,7 +31,6 @@ export const navigationConfig = {
       items: [
         { title: 'Modules', href: '/modules' },
         { title: 'Pricing', href: '/pricing' },
-        { title: 'Book Demo', href: '/book-demo' },
       ],
     },
     {
