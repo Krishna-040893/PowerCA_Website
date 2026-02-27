@@ -139,7 +139,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
   try {
     await resend.emails.send({
       from: `PowerCA Bookings <${fromEmail}>`,
-      to: 'contact@powerca.in',
+      to: ['contact@powerca.in', 'tbsindiaudt@gmail.com'],
       subject: `New Demo Booking - ${name} - ${date} at ${time}`,
       html: teamNotificationHtml,
     })

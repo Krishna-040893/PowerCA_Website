@@ -103,7 +103,7 @@ export default function Home() {
       />
       <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-16 md:py-20 lg:py-[100px] flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative py-3 sm:py-4 md:py-5 lg:py-8 flex items-center justify-center overflow-hidden bg-white">
         {/* Optimized background image using next/image */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">

@@ -9,16 +9,16 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 // Content Security Policy for different environments with reporting
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com https://sdk.cashfree.com https://*.cashfree.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.live https://browser.sentry-cdn.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.live https://browser.sentry-cdn.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai;
   img-src 'self' data: https: blob:;
-  connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com https://api.cashfree.com https://*.cashfree.com https://cashfreelogo.cashfree.com wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://vercel.live https://*.vercel.live https://*.sentry.io https://sentry.io;
-  frame-src 'self' https://api.razorpay.com https://*.razorpay.com https://*.cashfree.com https://vercel.live https://www.google.com https://*.google.com;
+  connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://vercel.live https://*.vercel.live https://*.sentry.io https://sentry.io;
+  frame-src 'self' https://api.razorpay.com https://*.razorpay.com https://vercel.live https://www.google.com https://*.google.com;
   media-src 'self';
   object-src 'none';
   base-uri 'self';
-  form-action 'self' https://*.cashfree.com https://api.razorpay.com https://*.razorpay.com;
+  form-action 'self' https://api.razorpay.com https://*.razorpay.com;
   frame-ancestors 'none';
   upgrade-insecure-requests;
   report-uri /api/csp-report;
@@ -157,14 +157,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'razorpay.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cashfreelogo.cashfree.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'merchant.cashfree.com',
       },
     ],
     // Configure allowed quality values for Next.js 16+ compatibility
