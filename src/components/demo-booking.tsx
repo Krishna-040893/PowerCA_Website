@@ -35,10 +35,12 @@ const timeSlots: TimeSlot[] = [
   { time: '04:00 PM - 05:00 PM', displayTime: '4:00 PM - 5:00 PM', startHour: 16 }
 ]
 
+const SLOT_CAPACITY = 5
+
 export function DemoBooking() {
   const [selectedDate, setSelectedDate] = useState<Value>(null)
   const [selectedTime, setSelectedTime] = useState<string>('')
-  const [bookedSlots, setBookedSlots] = useState<string[]>([])
+  const [slotCounts, setSlotCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [step, setStep] = useState(1)
@@ -85,13 +87,22 @@ export function DemoBooking() {
     }
   }, [selectedDate])
 
+  // Auto-deselect time if slot becomes full after re-fetch
+  useEffect(() => {
+    if (selectedTime && (slotCounts[selectedTime] || 0) >= SLOT_CAPACITY) {
+      setSelectedTime('')
+    }
+  }, [slotCounts, selectedTime])
+
   const fetchBookedSlots = async (date: Date) => {
     try {
-      const response = await fetch(`/api/booking?date=${date.toISOString()}`)
+      const dateParam = format(date, 'yyyy-MM-dd')
+      const response = await fetch(`/api/booking?date=${encodeURIComponent(dateParam)}`)
+      if (!response.ok) throw new Error('Failed to fetch slots')
       const data = await response.json()
-      setBookedSlots(data.bookedSlots || [])
+      setSlotCounts(data.slotCounts || {})
     } catch {
-      setBookedSlots([])
+      setSlotCounts({})
     }
   }
 
@@ -129,7 +140,13 @@ export function DemoBooking() {
         })
       })
 
-      const result = await response.json()
+      let result;
+      try {
+        result = await response.json()
+      } catch {
+        toast.error('Server returned an unexpected response. Please try again.')
+        return
+      }
 
       if (result.success) {
         setShowConfirmation(true)
@@ -143,25 +160,31 @@ export function DemoBooking() {
         // Auto-hide confirmation after 10 seconds
         setTimeout(() => setShowConfirmation(false), 10000)
       } else {
-        console.error('Booking failed:', result)
-        let errorMsg = 'Failed to book demo. '
+        // Handle error from both direct responses and createErrorResponse format
+        const details = result.details || result.error?.type || result.error?.code
+        // Extract message: could be result.error (string), result.error.message (object), or result.message
+        const errorMessage = typeof result.error === 'string'
+          ? result.error
+          : result.error?.message || result.message
 
-        if (result.details) {
-          // Extract meaningful error message
-          if (result.details.includes('database')) {
-            errorMsg += 'Database connection issue. Please try again in a moment.'
-          } else if (result.details.includes('validation')) {
-            errorMsg += 'Please check all required fields are filled correctly.'
-          } else if (result.details.includes('email')) {
-            errorMsg += 'Email service is temporarily unavailable, but your booking will be saved.'
-          } else {
-            errorMsg += result.error || 'Please try again later.'
+        if (details === 'duplicate') {
+          toast.error('You have already booked this time slot. Please select a different time.')
+          setStep(1)
+          setSelectedTime('')
+        } else if (details === 'slot_full') {
+          toast.error('This time slot is now fully booked. Please select a different time.')
+          setStep(1)
+          setSelectedTime('')
+          if (selectedDate instanceof Date) {
+            fetchBookedSlots(selectedDate)
           }
+        } else if (details === 'database' || details === 'DATABASE_ERROR' || details === 'CONFIGURATION_ERROR') {
+          toast.error('Failed to book demo. Service is temporarily unavailable. Please try again in a moment.')
+        } else if (details === 'validation' || details === 'VALIDATION_ERROR') {
+          toast.error('Failed to book demo. Please check all required fields are filled correctly.')
         } else {
-          errorMsg += result.error || 'Please try again.'
+          toast.error(errorMessage || 'Failed to book demo. Please try again later.')
         }
-
-        toast.error(errorMsg)
       }
     } catch (error) {
       console.error('Booking error:', error)
@@ -216,32 +239,6 @@ export function DemoBooking() {
             </h1>
             <p className="text-sm sm:text-base text-white/90 px-4">
               Schedule a personalized demo and discover how PowerCA can transform your practice
-            </p>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="flex justify-center mb-4 sm:mb-6">
-            <div className="flex items-center space-x-2 sm:space-x-4 bg-white/10 backdrop-blur-md px-3 sm:px-6 py-3 sm:py-4 rounded-full border border-white/20">
-              <div className={`flex items-center ${step >= 1 ? 'text-white' : 'text-white/50'}`}>
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold ${step >= 1 ? 'bg-white text-purple-600' : 'bg-white/20 text-white/60'}`}>
-                  1
-                </div>
-                <span className="ml-1.5 sm:ml-2 font-medium text-xs sm:text-base hidden sm:inline">Select Date & Time</span>
-              </div>
-              <div className={`w-8 sm:w-20 h-0.5 ${step >= 2 ? 'bg-white' : 'bg-white/30'}`} />
-              <div className={`flex items-center ${step >= 2 ? 'text-white' : 'text-white/50'}`}>
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold ${step >= 2 ? 'bg-white text-purple-600' : 'bg-white/20 text-white/60'}`}>
-                  2
-                </div>
-                <span className="ml-1.5 sm:ml-2 font-medium text-xs sm:text-base hidden sm:inline">Your Details</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Step Labels */}
-          <div className="text-center mb-4 sm:hidden">
-            <p className="text-white text-sm font-medium">
-              {step === 1 ? 'Step 1: Select Date & Time' : 'Step 2: Your Details'}
             </p>
           </div>
 
@@ -361,18 +358,19 @@ export function DemoBooking() {
                       availableSlots.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1 sm:pr-2">
                           {availableSlots.map((slot) => {
-                            const isBooked = bookedSlots.includes(slot.time)
+                            const count = slotCounts[slot.time] || 0
+                            const isFull = count >= SLOT_CAPACITY
                             return (
                               <motion.button
                                 key={slot.time}
-                                whileHover={{ scale: isBooked ? 1 : 1.05 }}
-                                whileTap={{ scale: isBooked ? 1 : 0.95 }}
-                                onClick={() => !isBooked && setSelectedTime(slot.time)}
-                                disabled={isBooked}
+                                whileHover={{ scale: isFull ? 1 : 1.05 }}
+                                whileTap={{ scale: isFull ? 1 : 0.95 }}
+                                onClick={() => !isFull && setSelectedTime(slot.time)}
+                                disabled={isFull}
                                 className={`
                                   px-2 sm:px-3 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm
-                                  ${isBooked
-                                    ? 'bg-red-50 text-red-400 cursor-not-allowed line-through border border-red-200'
+                                  ${isFull
+                                    ? 'bg-red-50 text-red-400 cursor-not-allowed border border-red-200'
                                     : selectedTime === slot.time
                                       ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
                                       : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
@@ -383,8 +381,8 @@ export function DemoBooking() {
                                   <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                                   <span>{slot.displayTime}</span>
                                 </div>
-                                {isBooked && (
-                                  <span className="block text-[10px] sm:text-xs mt-1">Already Booked</span>
+                                {isFull && (
+                                  <span className="block text-[10px] sm:text-xs mt-1">Slot Full</span>
                                 )}
                               </motion.button>
                             )

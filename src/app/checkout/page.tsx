@@ -168,7 +168,7 @@ function CheckoutContent() {
   const [couponError, setCouponError] = useState('')
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null)
   const [validatingReferral, setValidatingReferral] = useState(false)
-  const [paymentGateway, _setPaymentGateway] = useState<'razorpay' | 'cashfree'>('razorpay')
+  const [paymentGateway] = useState<'razorpay'>('razorpay')
 
   // Check if this is a final settlement payment
   const paymentType = searchParams.get('paymentType')
@@ -660,7 +660,6 @@ function CheckoutContent() {
       newErrors.userCount = 'Minimum 5 users required'
     }
 
-    // Payment gateway is always 'razorpay' now (Cashfree disabled)
     if (!agreeToTerms) newErrors.terms = 'You must agree to the terms and conditions'
 
     setErrors(newErrors)
@@ -676,126 +675,8 @@ function CheckoutContent() {
     })
   }
 
-  const handleCashfreePayment = async () => {
-    if (!validateForm()) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      // Create order on backend for Cashfree
-      const orderResponse = await fetch('/api/payment/cashfree/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: total,
-          productId: product.productId,
-          planType: isFinalSettlement ? 'final_settlement' : planType, // Use selected plan type
-          planPrice: selectedPlanPrice, // Send selected plan price
-          paymentType: isFinalSettlement ? 'final_settlement' : (isRenewal ? 'renewal' : 'initial_payment'),
-          ...formData,
-          country: formData.country,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          postcode: formData.postcode,
-          gstNo: formData.gstNo,
-          gstAmount: gstAmount,
-          gstPercentage: gstRate * 100, // Convert 0.18 to 18
-          // Coupon-based discount information
-          discountPercentage: totalDiscountPercentage,
-          discountAmount: totalDiscountAmount,
-          originalAmount: fullBasePrice,
-          couponCode: appliedCoupon?.code || null,
-          couponDiscountPercentage: appliedCoupon?.discountPercentage || 0,
-          customerDetails: {
-            name: formData.firstName,
-            email: formData.email,
-            phone: formData.phone,
-            company: formData.company,
-            firmName: formData.firmName,
-            gst: formData.gstNo,
-            address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.postcode}`,
-          },
-          referralInfo: referralInfo ? {
-            referralCode: referralInfo.ref,
-            customerId: referralInfo.cus,
-            validated: referralInfo.validated
-          } : undefined
-        })
-      })
-
-      const orderData = await orderResponse.json()
-
-      if (!orderData.success || !orderData.paymentSessionId) {
-        let errorMessage = typeof orderData.error === 'object'
-          ? orderData.error?.message || JSON.stringify(orderData.error)
-          : orderData.error || 'Failed to create Cashfree order'
-
-        // Log full error details to console for debugging
-        console.error('Cashfree Payment Error Details:', {
-          fullResponse: orderData,
-          error: orderData.error,
-          amount: total,
-          environment: orderData.error?.environment
-        })
-
-        // Check if it's an amount limit error in sandbox mode
-        if (orderData.error?.code === 'AMOUNT_LIMIT_EXCEEDED') {
-          errorMessage = `⚠️ Cashfree ${orderData.error?.environment === 'sandbox' ? 'Test' : ''} Account Limit Exceeded\n\n${errorMessage}\n\nTip: For real payments, please use Razorpay or contact admin to configure Cashfree Production credentials.`
-        }
-
-        // If there's a fullError object with more details, include it
-        if (orderData.error?.fullError) {
-          const cashfreeError = orderData.error.fullError
-          if (cashfreeError.message || cashfreeError.error_description) {
-            errorMessage += `\n\nCashfree Error: ${cashfreeError.message || cashfreeError.error_description || JSON.stringify(cashfreeError)}`
-          }
-        }
-
-        throw new Error(errorMessage)
-      }
-
-      // Initialize Cashfree SDK
-      // IMPORTANT: Use 'sandbox' mode for TEST credentials to avoid authentication errors
-      // The environment returned from backend determines the correct mode
-
-      const cashfree = await window.Cashfree({
-        mode: orderData.environment === 'production' ? 'production' : 'sandbox'
-      })
-
-      const checkoutOptions = {
-        paymentSessionId: orderData.paymentSessionId,
-        redirectTarget: '_self' as const,
-        returnUrl: `${window.location.origin}/payment-success?gateway=cashfree&orderId=${orderData.orderId || ''}`
-      }
-
-      // Initialize Cashfree checkout - redirects immediately to payment gateway
-      // Note: With redirectTarget '_self', the page redirects immediately.
-      // Payment completion is handled via returnUrl and webhook, not promise result.
-      cashfree.checkout(checkoutOptions).catch((error: Error) => {
-        // Check if it's an authentication error
-        if (error.message?.toLowerCase().includes('authentication')) {
-          setError(`Payment gateway authentication failed. This may be due to incorrect credentials in ${orderData.environment} mode. Please contact support or try Razorpay payment method.`)
-        } else {
-          setError(error.message || 'Failed to initialize payment. Please try again.')
-        }
-        setLoading(false)
-      })
-
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
-      setError(errorMessage)
-      setLoading(false)
-    }
-  }
-
   const handlePayment = async () => {
-    if (paymentGateway === 'cashfree') {
-      return handleCashfreePayment()
-    }
-
-    // Original Razorpay payment flow
+    // Razorpay payment flow
     if (!validateForm()) return
 
     setLoading(true)
@@ -1054,10 +935,6 @@ function CheckoutContent() {
       `}</style>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-      />
-      <Script
-        src="https://sdk.cashfree.com/js/v3/cashfree.js"
         strategy="lazyOnload"
       />
 
@@ -1456,7 +1333,7 @@ function CheckoutContent() {
                   Payment Gateway
                 </h3>
 
-                {/* Payment Gateway - Razorpay Only (Cashfree disabled - KYC under review) */}
+                {/* Payment Gateway */}
                 <div className="max-w-md">
                   {/* Razorpay Option */}
                   <div className="border-2 rounded-lg p-4 border-purple-500 bg-purple-50">

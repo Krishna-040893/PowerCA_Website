@@ -395,7 +395,7 @@ export default function ContactPage() {
   return (
     <div className="bg-white relative w-full min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative py-3 sm:py-4 md:py-5 lg:py-8 flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
@@ -415,7 +415,7 @@ export default function ContactPage() {
       </section>
 
       {/* Main Content Section */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-6 py-10 sm:py-12 md:py-16 lg:py-20 mb-8 sm:mb-12 md:mb-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-6 py-4 sm:py-5 md:py-6 lg:py-8 mb-8 sm:mb-12 md:mb-16">
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-start">
           {/* Contact Info - Left Column */}

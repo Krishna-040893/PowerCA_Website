@@ -120,7 +120,7 @@ export default function ModulesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative py-3 sm:py-4 md:py-5 lg:py-8 flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
@@ -162,7 +162,7 @@ export default function ModulesPage() {
       </section>
 
       {/* Modules Section */}
-      <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
+      <section className="pt-4 sm:pt-5 md:pt-6 lg:pt-8 pb-6 sm:pb-8 bg-white">
         <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="grid lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-start mb-8 sm:mb-10 md:mb-12 lg:mb-16">
             {/* Left Content - Title */}
