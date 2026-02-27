@@ -57,8 +57,6 @@ function PaymentSuccessContent() {
     const testParam = searchParams.get('test')
     const invoiceNumber = searchParams.get('invoiceNumber') || searchParams.get('invoiceId')
     const amount = parseFloat(searchParams.get('amount') || '0')
-    const gateway = searchParams.get('gateway')
-    const orderId = searchParams.get('orderId')
 
     if (testParam === 'true') {
       setIsTestMode(true)
@@ -80,31 +78,8 @@ function PaymentSuccessContent() {
       })
     }
 
-    // Handle Cashfree payments - process payment and generate invoice
-    if (gateway === 'cashfree' && orderId) {
-      // First try to fetch existing invoice if invoiceNumber is provided
-      if (invoiceNumber) {
-        fetch(`/api/invoice/${invoiceNumber}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              setReceiptData(data.data)
-              setIsLoading(false)
-            } else {
-              // Receipt not found, process payment
-              processPayment(orderId)
-            }
-          })
-          .catch(() => {
-            processPayment(orderId)
-          })
-      } else {
-        // No receipt number, process payment directly
-        processPayment(orderId)
-      }
-    }
-    // Fetch receipt data if invoice number is provided (Razorpay flow)
-    else if (invoiceNumber) {
+    // Fetch receipt data if invoice number is provided
+    if (invoiceNumber) {
       fetch(`/api/invoice/${invoiceNumber}`)
         .then(res => res.json())
         .then(data => {
@@ -118,56 +93,6 @@ function PaymentSuccessContent() {
         })
     } else {
       setIsLoading(false)
-    }
-
-    async function processPayment(orderId: string) {
-      try {
-        const res = await fetch('/api/payment/cashfree/process-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId })
-        })
-        const data = await res.json()
-
-        if (data.success) {
-          setPaymentStatus('success')
-          // Fetch the generated receipt
-          if (data.invoiceNumber) {
-            const receiptRes = await fetch(`/api/invoice/${data.invoiceNumber}`)
-            const receiptResponse = await receiptRes.json()
-            if (receiptResponse.success) {
-              setReceiptData(receiptResponse.data)
-            }
-          }
-        } else {
-          // Handle different payment statuses
-          // Extract error message properly (could be string or object from createErrorResponse)
-          const errorData = data.error
-          const errorMsg = typeof errorData === 'object' && errorData?.message
-            ? errorData.message
-            : typeof errorData === 'string'
-            ? errorData
-            : 'Payment processing failed'
-          const status = data.status || 'UNKNOWN'
-
-          // Determine payment status based on error
-          if (errorMsg === 'Payment not completed' || status === 'CREATED' || status === 'ACTIVE') {
-            setPaymentStatus('cancelled')
-            setErrorMessage('Payment was not completed. You may have cancelled the payment or closed the payment window.')
-          } else if (status === 'PENDING') {
-            setPaymentStatus('pending')
-            setErrorMessage('Your payment is being processed. Please wait or check back in a few minutes.')
-          } else {
-            setPaymentStatus('failed')
-            setErrorMessage(errorMsg)
-          }
-        }
-      } catch {
-        setPaymentStatus('failed')
-        setErrorMessage('Unable to verify payment status. Please contact support if amount was deducted.')
-      } finally {
-        setIsLoading(false)
-      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

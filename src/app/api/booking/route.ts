@@ -3,6 +3,14 @@ import { createClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/logger'
 import { createErrorResponse, ErrorType } from '@/lib/error-handler'
 
+const SLOT_CAPACITY = 5
+
+function normalizeDateString(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})/)
+  return match ? match[1] : null
+}
+
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -34,28 +42,40 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabaseClient()
     if (!supabase) {
-      return NextResponse.json({ bookedSlots: [] })
+      return NextResponse.json({ slotCounts: {} })
     }
 
-    // Parse the date to get just the date portion
-    const dateObj = new Date(date)
-    const dateStr = dateObj.toISOString().split('T')[0]
+    const dateStr = normalizeDateString(date)
+    if (!dateStr) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Date must be in YYYY-MM-DD format'
+      )
+    }
 
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('time')
       .eq('date', dateStr)
+      .neq('status', 'CANCELLED')
 
     if (error) {
       logger.error('Failed to fetch booked slots', error)
-      return NextResponse.json({ bookedSlots: [] })
+      return NextResponse.json({ slotCounts: {} })
     }
 
-    const bookedSlots = bookings?.map(b => b.time) || []
-    return NextResponse.json({ bookedSlots })
+    // Aggregate booking counts per time slot
+    const slotCounts: Record<string, number> = {}
+    if (bookings) {
+      for (const b of bookings) {
+        slotCounts[b.time] = (slotCounts[b.time] || 0) + 1
+      }
+    }
+
+    return NextResponse.json({ slotCounts })
   } catch (error) {
     logger.error('Failed to fetch booked slots', error instanceof Error ? error : new Error('Unknown error'))
-    return NextResponse.json({ bookedSlots: [] })
+    return NextResponse.json({ slotCounts: {} })
   }
 }
 
@@ -73,6 +93,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const normalizedDate = normalizeDateString(date)
+    if (!normalizedDate) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid date format. Use YYYY-MM-DD.', details: 'validation' },
+        { status: 400 }
+      )
+    }
+
     const supabase = getSupabaseClient()
     if (!supabase) {
       return NextResponse.json(
@@ -81,15 +109,66 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const normalizedEmail = email.toLowerCase().trim()
+
+    // Check for duplicate booking (same email + date + time, non-cancelled)
+    const { data: existingBooking, error: dupError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .eq('date', normalizedDate)
+      .eq('time', time)
+      .neq('status', 'CANCELLED')
+      .limit(1)
+      .maybeSingle()
+
+    if (dupError) {
+      logger.error('Failed to check duplicate booking', dupError)
+      return NextResponse.json(
+        { success: false, error: 'Failed to verify booking availability', details: 'database' },
+        { status: 500 }
+      )
+    }
+
+    if (existingBooking) {
+      return NextResponse.json(
+        { success: false, error: 'You have already booked this time slot. Please select a different time.', details: 'duplicate' },
+        { status: 409 }
+      )
+    }
+
+    // Check slot capacity
+    const { count, error: countError } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('date', normalizedDate)
+      .eq('time', time)
+      .neq('status', 'CANCELLED')
+
+    if (countError) {
+      logger.error('Failed to check slot capacity', countError)
+      return NextResponse.json(
+        { success: false, error: 'Failed to verify slot availability', details: 'database' },
+        { status: 500 }
+      )
+    }
+
+    if ((count ?? 0) >= SLOT_CAPACITY) {
+      return NextResponse.json(
+        { success: false, error: 'This time slot is fully booked. Please select a different time.', details: 'slot_full' },
+        { status: 409 }
+      )
+    }
+
     // Insert booking into Supabase
     const { error } = await supabase
       .from('bookings')
       .insert([{
         name,
-        email,
+        email: normalizedEmail,
         phone,
         firm_name: firmName,
-        date,
+        date: normalizedDate,
         time,
         message: message || null,
         type: 'demo',
@@ -103,28 +182,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try to send confirmation email (non-blocking)
+    // Send confirmation email to user + team notification (non-blocking, dynamic import)
     try {
-      const { Resend } = await import('resend')
-      const resendApiKey = process.env.RESEND_API_KEY
-      if (resendApiKey) {
-        const resend = new Resend(resendApiKey)
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
-          to: email,
-          subject: 'Demo Booking Confirmation - PowerCA',
-          html: `
-            <h2>Demo Booking Confirmed!</h2>
-            <p>Dear ${name},</p>
-            <p>Your demo has been scheduled successfully.</p>
-            <p><strong>Date:</strong> ${date}</p>
-            <p><strong>Time:</strong> ${time}</p>
-            <p>We look forward to showing you PowerCA!</p>
-            <br/>
-            <p>Best regards,<br/>Team PowerCA</p>
-          `,
-        })
-      }
+      const { sendBookingConfirmationEmail } = await import('@/lib/resend')
+      await sendBookingConfirmationEmail({
+        name,
+        email,
+        phone,
+        firmName,
+        date: normalizedDate,
+        time,
+        message,
+      })
     } catch (emailError) {
       logger.error('Failed to send booking confirmation email', emailError instanceof Error ? emailError : new Error('Unknown error'))
       // Don't fail the booking if email fails

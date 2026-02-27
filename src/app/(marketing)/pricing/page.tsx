@@ -131,7 +131,7 @@ function PricingContent() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-8 sm:py-10 md:py-12 lg:py-14">
+      <section className="relative py-4 sm:py-5 md:py-6 lg:py-8">
         <div
           className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-6"
           style={{
@@ -144,7 +144,7 @@ function PricingContent() {
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="text-center">
             {/* Badge */}
-            <div className="mb-6 sm:mb-8">
+            <div className="mb-3 sm:mb-4">
               <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" viewBox="0 0 24 24">
                   <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -158,14 +158,14 @@ function PricingContent() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[2.5rem] 2xl:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 lg:mb-10 font-inter px-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[2.5rem] 2xl:text-5xl font-semibold text-gray-900 leading-tight mb-3 sm:mb-4 lg:mb-5 font-inter px-2">
               Choose Your Perfect
               <br />
               <span className="text-blue-600">Pricing Plan</span>
             </h1>
 
             {/* Description */}
-            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
+            <div className="mb-3 sm:mb-4 md:mb-5 max-w-5xl mx-auto px-2">
               <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-xl text-gray-600 leading-relaxed font-inter">
                 Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.
               </p>
@@ -175,7 +175,7 @@ function PricingContent() {
       </section>
 
       {/* Pricing Cards */}
-      <div className="relative py-8 sm:py-10 md:py-16 lg:py-24">
+      <div className="relative py-4 sm:py-5 md:py-6 lg:py-8">
         <div className="max-w-[1500px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
           {/* Loading state */}

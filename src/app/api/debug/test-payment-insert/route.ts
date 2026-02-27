@@ -3,13 +3,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * Debug endpoint to test payment insert
- * Tests if we can insert a payment record with Cashfree payment structure
+ * Tests if we can insert a payment record
  */
 export async function GET() {
   try {
     const supabase = createAdminClient()
 
-    // Test data matching what we try to insert from Cashfree
+    // Test data matching payment record structure
     const testPaymentData = {
       user_id: null, // Allow null for guest purchases
       order_id: `TEST_${Date.now()}`,
