@@ -42,7 +42,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-14 md:py-16 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative py-3 sm:py-4 md:py-5 lg:py-8 flex items-center justify-center overflow-hidden bg-white">
         {/* Background image with responsive padding */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
@@ -99,7 +99,7 @@ export default function AboutPage() {
       </section>
 
       {/* Elevate your practice to the next level with PowerCA */}
-      <section className="pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-6 sm:pb-8 bg-white">
+      <section className="pt-4 sm:pt-5 md:pt-6 lg:pt-8 pb-6 sm:pb-8 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-8 gap-6 sm:gap-8 lg:gap-4 xl:gap-6 2xl:gap-12 items-start">
             {/* Left Content - Title */}

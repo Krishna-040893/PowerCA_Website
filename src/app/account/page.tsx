@@ -71,6 +71,75 @@ interface OrderHistory {
   renewalDate: string | null
 }
 
+type AgreementPlanVariant = 'annual' | 'year'
+
+const resolveAgreementPlanVariant = (
+  orders: OrderHistory[] | undefined,
+  fallbackPlanType: string | null
+): AgreementPlanVariant => {
+  const normalize = (value: string | null | undefined) => value?.trim().toLowerCase() || ''
+
+  const isYearPlan = (planType: string | null | undefined) => {
+    const normalized = normalize(planType)
+    return (
+      normalized.includes('year') ||
+      ['onetime', 'one_time', 'lifetime', '5year', '5years', '5-year', '5_year'].includes(normalized)
+    )
+  }
+
+  const sortedOrders = [...(orders || [])].sort((a, b) => {
+    const aTime = new Date(a.paidAt || a.issuedAt).getTime()
+    const bTime = new Date(b.paidAt || b.issuedAt).getTime()
+    return bTime - aTime
+  })
+
+  const firstPaidOrder =
+    sortedOrders.find(order => order.paymentType === 'initial_payment') ||
+    sortedOrders[0]
+
+  const sourcePlanType = firstPaidOrder?.planType || fallbackPlanType
+  return isYearPlan(sourcePlanType) ? 'year' : 'annual'
+}
+
+const getAgreementDocumentForPlan = (
+  signingMethod: 'digital' | 'manual',
+  planVariant: AgreementPlanVariant
+) => {
+  if (signingMethod === 'digital') {
+    return planVariant === 'annual'
+      ? {
+          path: '/docs/PowerCA_Pricing_Agreement_DSC_Annual.pdf',
+          name: 'PowerCA_Pricing_Agreement_DSC_Annual.pdf'
+        }
+      : {
+          path: '/docs/PowerCA_Pricing_Agreement_DSC_Year.pdf',
+          name: 'PowerCA_Pricing_Agreement_DSC_Year.pdf'
+        }
+  }
+
+  return planVariant === 'annual'
+    ? {
+        path: '/docs/PowerCA_Pricing_Agreement_Annual.pdf',
+        name: 'PowerCA_Pricing_Agreement_Annual.pdf'
+      }
+    : {
+        path: '/docs/PowerCA_Pricing_Agreement_Year.pdf',
+        name: 'PowerCA_Pricing_Agreement_Year.pdf'
+      }
+}
+
+const getLegacyAgreementDocument = (signingMethod: 'digital' | 'manual') => {
+  return signingMethod === 'digital'
+    ? {
+        path: '/docs/PowerCA_Pricing_Agreement_DSC.pdf',
+        name: 'PowerCA_Pricing_Agreement_DSC.pdf'
+      }
+    : {
+        path: '/docs/PowerCA_Pricing_Agreement.pdf',
+        name: 'PowerCA_Pricing_Agreement.pdf'
+      }
+}
+
 interface UserData {
   billingAddress: BillingAddress | null
   orderHistory: OrderHistory[]
@@ -396,6 +465,8 @@ function AccountPageContent() {
   const [isUploadingAgreement, setIsUploadingAgreement] = useState(false)
   const [signingMethod, setSigningMethod] = useState<'digital' | 'manual' | null>(null)
   const agreementFileInputRef = useRef<HTMLInputElement>(null)
+  const agreementPlanVariant = resolveAgreementPlanVariant(userData?.orderHistory, paymentType)
+  const agreementPlanLabel = agreementPlanVariant === 'annual' ? 'Annual' : 'Year'
 
   // Handle tab change - update both state and URL
   const handleTabChange = (value: string) => {
@@ -509,7 +580,7 @@ function AccountPageContent() {
   }
 
   // Helper function to format next due date
-  const formatNextDueDate = (dateStr: string | undefined): string => {
+  const _formatNextDueDate = (dateStr: string | undefined): string => {
     if (!dateStr) return 'N/A'
     const date = new Date(dateStr)
     if (isNaN(date.getTime())) return 'N/A'
@@ -651,26 +722,35 @@ function AccountPageContent() {
     }
 
     try {
+      const selectedDocument = getAgreementDocumentForPlan(signingMethod, agreementPlanVariant)
+      const legacyDocument = getLegacyAgreementDocument(signingMethod)
+      let documentToDownload = selectedDocument
+
       // Record the download action with signing method
       await fetch('/api/user/agreement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'download', signingMethod })
+        body: JSON.stringify({
+          action: 'download',
+          signingMethod,
+          planVariant: agreementPlanVariant
+        })
       })
 
-      // Determine which document to download based on signing method
-      const documentPath = signingMethod === 'digital'
-        ? '/docs/PowerCA_Pricing_Agreement_DSC.pdf'
-        : '/docs/PowerCA_Pricing_Agreement.pdf'
-
-      const documentName = signingMethod === 'digital'
-        ? 'PowerCA_Pricing_Agreement_DSC.pdf'
-        : 'PowerCA_Pricing_Agreement.pdf'
+      // Fall back to legacy filename if the new plan-specific file is not available yet.
+      try {
+        const checkResponse = await fetch(selectedDocument.path, { method: 'HEAD' })
+        if (!checkResponse.ok) {
+          documentToDownload = legacyDocument
+        }
+      } catch {
+        documentToDownload = legacyDocument
+      }
 
       // Trigger the actual download
       const link = document.createElement('a')
-      link.href = documentPath
-      link.download = documentName
+      link.href = documentToDownload.path
+      link.download = documentToDownload.name
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -1390,6 +1470,9 @@ function AccountPageContent() {
                       {!agreementStatus?.hasDownloaded ? (
                         /* Step 1 Content: Choose & Download */
                         <div className="text-center">
+                          <p className="text-xs sm:text-sm text-gray-600 mb-3">
+                            Agreement Type: <span className="font-semibold text-gray-900">{agreementPlanLabel}</span>
+                          </p>
                           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-4">
                             {/* Option 1: Digital Signature */}
                             <div
