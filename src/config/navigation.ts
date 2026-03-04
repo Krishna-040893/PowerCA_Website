@@ -24,6 +24,11 @@ export const navigationConfig = {
       title: 'Contact',
       href: '/contact',
     },
+    {
+      title: 'Affiliate Program',
+      href: '/about-affiliate',
+      highlighted: true,
+    },
   ],
   footerNav: [
     {
