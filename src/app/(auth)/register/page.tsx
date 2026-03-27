@@ -150,8 +150,9 @@ function RegisterContent() {
     if (fieldErrors[field as keyof typeof fieldErrors]) {
       setFieldErrors(prev => ({ ...prev, [field]: '' }))
     }
-    // Clear membership number error when switching to Others
+    // Clear membership number when switching to Others (not accepted for Others)
     if (field === 'professionalType' && value === 'Others') {
+      setFormData(prev => ({ ...prev, membershipNumber: '' }))
       setFieldErrors(prev => ({ ...prev, membershipNumber: '' }))
     }
   }
@@ -472,33 +473,34 @@ function RegisterContent() {
                     </div>
                   </RadioGroup>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
-                    Membership No {formData.professionalType !== 'Others' && <span className="text-red-500">*</span>}
-                    {formData.professionalType === 'Others' && <span className="text-gray-400 text-xs ml-1">(Optional)</span>}
-                  </Label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <Input
-                      id="membershipNo"
-                      type="text"
-                      value={formData.membershipNumber}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 6)
-                        handleInputChange('membershipNumber', val)
-                      }}
-                      onBlur={() => handleBlur('membershipNumber')}
-                      maxLength={6}
-                      placeholder="Enter 6-digit number"
-                      className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
-                        fieldErrors.membershipNumber ? 'border-red-500 focus:border-red-500' : ''
-                      }`}
-                    />
+                {formData.professionalType !== 'Others' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
+                      Membership No <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <Input
+                        id="membershipNo"
+                        type="text"
+                        value={formData.membershipNumber}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                          handleInputChange('membershipNumber', val)
+                        }}
+                        onBlur={() => handleBlur('membershipNumber')}
+                        maxLength={6}
+                        placeholder="Enter 6-digit number"
+                        className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                          fieldErrors.membershipNumber ? 'border-red-500 focus:border-red-500' : ''
+                        }`}
+                      />
+                    </div>
+                    {fieldErrors.membershipNumber && (
+                      <p className="text-xs text-red-600 mt-1">{fieldErrors.membershipNumber}</p>
+                    )}
                   </div>
-                  {fieldErrors.membershipNumber && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.membershipNumber}</p>
-                  )}
-                </div>
+                )}
               </div>
             )}
 
