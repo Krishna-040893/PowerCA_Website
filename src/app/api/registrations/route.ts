@@ -101,8 +101,14 @@ async function handleRegistration(request: NextRequest) {
       body.agreedToTerms ?? body.agreed_to_terms ?? body.terms
     )
 
+    // Normalize professionalType: client sends 'Others', DB expects 'NA'
+    let finalProfessionalType = professionalType
+    if (role === 'professional' && (professionalType === 'Others' || professionalType === 'NA')) {
+      finalProfessionalType = 'NA'
+    }
+
     let finalMembershipNumber = membershipNumber
-    if (role === 'professional' && !finalMembershipNumber && professionalType === 'NA') {
+    if (role === 'professional' && !finalMembershipNumber && finalProfessionalType === 'NA') {
       finalMembershipNumber = 'NA'
     }
 
@@ -117,10 +123,18 @@ async function handleRegistration(request: NextRequest) {
       )
     }
 
-    if (role === 'professional' && (!professionalType || !finalMembershipNumber)) {
+    if (role === 'professional' && !finalProfessionalType) {
       return createErrorResponse(
         ErrorType.VALIDATION,
-        'Professional type and membership number are required for professional registrations.',
+        'Professional type is required for professional registrations.',
+        { statusCode: 400 }
+      )
+    }
+
+    if (role === 'professional' && finalProfessionalType !== 'NA' && !finalMembershipNumber) {
+      return createErrorResponse(
+        ErrorType.VALIDATION,
+        'Membership number is required for CA, CMA, and CS registrations.',
         { statusCode: 400 }
       )
     }
@@ -181,7 +195,7 @@ async function handleRegistration(request: NextRequest) {
       phone,
       password_hash: hashedPassword,
       role,
-      professional_type: role === 'professional' ? professionalType : null,
+      professional_type: role === 'professional' ? finalProfessionalType : null,
       membership_number: role === 'professional' ? finalMembershipNumber : null,
       registration_number: role === 'student' ? registrationNumber : null,
       institute_name: role === 'student' ? instituteName : null,
@@ -294,7 +308,7 @@ async function handleRegistration(request: NextRequest) {
         email,
         phone,
         password_hash: hashedPassword,
-        professional_type: professionalType,
+        professional_type: finalProfessionalType,
         membership_number: finalMembershipNumber,
         agreed_to_terms: agreedToTerms
       }
@@ -322,7 +336,7 @@ async function handleRegistration(request: NextRequest) {
         return handleDatabaseError(professionalError)
       }
 
-      logger.info('Professional registration completed', { userId: newUser.id, professionalType })
+      logger.info('Professional registration completed', { userId: newUser.id, professionalType: finalProfessionalType })
     } else {
       const studentData = {
         name,
@@ -362,7 +376,7 @@ async function handleRegistration(request: NextRequest) {
 
     // Send confirmation email to client
     await sendConfirmationEmail(email, name, role, {
-      professionalType: role === 'professional' ? professionalType : null,
+      professionalType: role === 'professional' ? finalProfessionalType : null,
       membershipNumber: role === 'professional' ? finalMembershipNumber : null,
       registrationNumber: role === 'student' ? registrationNumber : null,
       instituteName: role === 'student' ? instituteName : null,
@@ -376,7 +390,7 @@ async function handleRegistration(request: NextRequest) {
         userEmail: email,
         userPhone: phone,
         userRole: role,
-        professionalType: role === 'professional' ? professionalType : undefined,
+        professionalType: role === 'professional' ? finalProfessionalType : undefined,
         membershipNo: role === 'professional' ? finalMembershipNumber : undefined,
         registrationNo: role === 'student' ? registrationNumber : undefined,
         instituteName: role === 'student' ? instituteName : undefined,
