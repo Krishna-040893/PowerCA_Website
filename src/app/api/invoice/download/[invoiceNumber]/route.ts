@@ -34,7 +34,7 @@ export async function GET(
         return new NextResponse(new Uint8Array(cachedPDF), {
           headers: {
             'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="PowerCA-Invoice-${invoiceNumber}.pdf"`,
+            'Content-Disposition': `attachment; filename="PowerCA-Receipt-${invoiceNumber}.pdf"`,
             'Cache-Control': 'public, max-age=31536000, immutable',
           },
         })
@@ -185,7 +185,7 @@ export async function GET(
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="PowerCA-Invoice-${invoiceNumber}.pdf"`,
+        'Content-Disposition': `attachment; filename="PowerCA-Receipt-${invoiceNumber}.pdf"`,
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     })

@@ -158,8 +158,8 @@ export async function POST(req: NextRequest) {
 
       // Calculate GST breakdown (18% GST)
       const totalAmountRupees = amount / 100 // Convert paise to rupees
-      const baseAmount = parseFloat((totalAmountRupees / 1.18).toFixed(2))
-      const gstAmount = parseFloat((totalAmountRupees - baseAmount).toFixed(2))
+      const baseAmount = Math.floor(totalAmountRupees / 1.18)
+      const gstAmount = totalAmountRupees - baseAmount
 
       // Base order data without payment_type (for fallback if column doesn't exist)
       const baseOrderData = {
