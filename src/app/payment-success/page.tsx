@@ -341,7 +341,7 @@ function PaymentSuccessContent() {
                         switch (pt) {
                           case 'monthly': return 'Monthly Subscription'
                           case 'annual': return 'Annual Subscription'
-                          case 'onetime': return '5 Year Pack'
+                          case 'onetime': return '2 Year Pack'
                           default: return 'PowerCA Implementation'
                         }
                       }
