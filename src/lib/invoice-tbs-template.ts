@@ -25,7 +25,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     switch (planType) {
       case 'monthly': return 'Monthly Subscription'
       case 'annual': return 'Annual Subscription'
-      case 'onetime': return '5 Year Pack'
+      case 'onetime': return '2 Year Pack'
       case 'final_settlement': return 'Final Settlement'
       default: return 'PowerCA Implementation'
     }
@@ -35,7 +35,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     switch (planType) {
       case 'monthly': return 'Monthly subscription with ongoing support'
       case 'annual': return 'Annual subscription with ongoing support'
-      case 'onetime': return '5 Year Pack - Per user pricing'
+      case 'onetime': return '2 Year Pack - Per user pricing'
       case 'final_settlement': return 'Final settlement payment for PowerCA service'
       default: return 'Installation and Ongoing Support & Update'
     }

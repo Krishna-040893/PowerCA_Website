@@ -78,7 +78,7 @@ export function generateInvoiceNumber(isTest: boolean = false): string {
 // Calculate GST (18% - 9% CGST + 9% SGST for intra-state, 18% IGST for inter-state)
 export function calculateGST(amount: number, isInterState: boolean = false) {
   const gstRate = 0.18 // 18% GST
-  const taxAmount = amount * gstRate
+  const taxAmount = Math.ceil(amount * gstRate)
 
   if (isInterState) {
     return {
@@ -91,7 +91,7 @@ export function calculateGST(amount: number, isInterState: boolean = false) {
       totalTax: taxAmount,
     }
   } else {
-    const halfTax = taxAmount / 2
+    const halfTax = Math.ceil(taxAmount / 2)
     return {
       igstRate: 0,
       igstAmount: 0,

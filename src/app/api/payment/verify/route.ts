@@ -99,10 +99,10 @@ export async function POST(req: NextRequest) {
     const totalAmount = productDetails?.amount || 59000 // Total amount in rupees (including 18% GST) - 50000 base + 18% GST
 
     // Calculate base amount (excluding GST): base = total / 1.18
-    const paymentAmount = parseFloat((totalAmount / 1.18).toFixed(2))
+    const paymentAmount = Math.floor(totalAmount / 1.18)
 
-    // Calculate GST amount: 18% of base amount
-    const gstAmount = parseFloat((totalAmount - paymentAmount).toFixed(2))
+    // Calculate GST amount: 18% of base amount (rounded up)
+    const gstAmount = totalAmount - paymentAmount
 
     const customerEmail = customerDetails?.email || session?.user?.email || userInfo.email || 'guest@powerca.in'
     const customerName = customerDetails?.name || session?.user?.name || userInfo.name || 'Customer'
