@@ -832,14 +832,14 @@ export default function AffiliateProfilePage() {
                         return (
                           <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                             {planType === 'annual' && 'Annual'}
-                            {planType === 'onetime' && '5 Year Pack'}
+                            {planType === 'onetime' && '2 Year Pack'}
                             {!['annual', 'onetime'].includes(planType) && 'Annual'}
                           </span>
                         )
                       }
 
                       const renderRenewal = (order: AffiliateClient) => {
-                        if (order.planType === 'onetime') return <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Lifetime</span>
+                        if (order.planType === 'onetime') return <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">2 Years</span>
                         if (order.renewalDate) return <span className="text-xs text-gray-600">{new Date(order.renewalDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                         return <span className="text-gray-400">-</span>
                       }

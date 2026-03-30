@@ -245,14 +245,14 @@ function CheckoutContent() {
   const implementationCharge = !isRenewal && !isFinalSettlement ? 5000 : 0
   const subtotalWithImplementation = subtotal + implementationCharge
   const gstRate = 0.18 // 18% GST
-  const gstAmount = subtotalWithImplementation * gstRate
+  const gstAmount = Math.ceil(subtotalWithImplementation * gstRate)
   const total = subtotalWithImplementation + gstAmount
 
   // Plan display names
   const getPlanDisplayName = () => {
     switch (planType) {
       case 'annual': return 'Annual Subscription'
-      case 'onetime': return '5 Year Pack'
+      case 'onetime': return '2 Year Pack'
       default: return 'PowerCA Subscription'
     }
   }
@@ -262,7 +262,7 @@ function CheckoutContent() {
   const productDescription = isFinalSettlement
     ? 'Final settlement payment for PowerCA service'
     : planType === 'annual' ? 'Annual subscription with ongoing support'
-    : planType === 'onetime' ? '5 Year Pack - Per user pricing'
+    : planType === 'onetime' ? '2 Year Pack - Per user pricing'
     : 'Installation and Ongoing Support & Update'
 
 
@@ -887,7 +887,7 @@ function CheckoutContent() {
       setUserCount('')
     } else {
       const value = parseInt(inputValue, 10)
-      if (!isNaN(value) && value >= 5) {
+      if (!isNaN(value) && value >= 1) {
         setUserCount(value)
       }
     }
@@ -1164,7 +1164,7 @@ function CheckoutContent() {
                     <>
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Enter coupon code"
+                          placeholder=""
                           value={couponCode}
                           onChange={(e) => {
                             setCouponCode(e.target.value)
@@ -1246,7 +1246,7 @@ function CheckoutContent() {
                       <Input
                         id="userCount"
                         type="number"
-                        min="5"
+                        min="1"
                         value={userCount}
                         onChange={handleUserCountChange}
                         onWheel={(e) => e.currentTarget.blur()}
@@ -1254,6 +1254,12 @@ function CheckoutContent() {
                         required
                       />
                     </div>
+                    {userCount !== '' && userCount >= 1 && userCount < 5 && (
+                      <p className="text-amber-600 text-xs mt-2 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Please add minimum 5 users
+                      </p>
+                    )}
                     {errors.userCount && (
                       <p className="text-red-600 text-xs mt-2 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />

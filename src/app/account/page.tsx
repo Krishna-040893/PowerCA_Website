@@ -1022,7 +1022,7 @@ function AccountPageContent() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `PowerCA-Invoice-${invoiceNumber}.pdf`
+      a.download = `PowerCA-Receipt-${invoiceNumber}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -1669,10 +1669,10 @@ function AccountPageContent() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-blue-900">
-                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '5 Years Pack' : 'Subscription'}
+                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '2 Years Pack' : 'Subscription'}
                     </p>
                     <p className="text-sm text-blue-700">
-                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/5 years' : ''}
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/2 years' : ''}
                     </p>
                   </div>
                   <div className="text-sm text-blue-600">
@@ -1856,9 +1856,9 @@ function AccountPageContent() {
                                                     router.push('/pricing')
                                                   }
                                                 }}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg transition-colors text-sm"
+                                                className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 text-white font-bold py-2.5 px-6 rounded-full transition-all shadow-lg hover:shadow-xl hover:scale-105 text-sm animate-pulse hover:animate-none"
                                               >
-                                                {paymentType ? 'Go to Checkout' : 'Order Now'}
+                                                {paymentType ? '🛒 Go to Checkout' : '🛒 Order Now'}
                                               </button>
                                             </>
                                           )}
@@ -1885,7 +1885,7 @@ function AccountPageContent() {
                                                 <span className="text-sm">
                                                   <span className="font-medium text-gray-900">
                                                     {addressPlanType === 'annual' && 'Annual'}
-                                                    {addressPlanType === 'onetime' && '5 Years Pack'}
+                                                    {addressPlanType === 'onetime' && '2 Years Pack'}
                                                     {!['annual', 'onetime'].includes(addressPlanType) && 'Annual'}
                                                   </span>
                                                   <span className="text-gray-500 ml-1">
@@ -2260,7 +2260,7 @@ function AccountPageContent() {
                                           <td className="px-3 py-2 w-[10%]">
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                                               {order.planType === 'annual' && 'Annual'}
-                                              {order.planType === 'onetime' && '5 Years'}
+                                              {order.planType === 'onetime' && '2 Years'}
                                               {!['annual', 'onetime'].includes(order.planType) && 'Annual'}
                                             </span>
                                           </td>
@@ -2270,7 +2270,7 @@ function AccountPageContent() {
                                           <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">{formatDate(order.paidAt)}</td>
                                           <td className="px-3 py-2 text-gray-600 hidden sm:table-cell w-[14%]">
                                             {order.planType === 'onetime' ? (
-                                              <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Lifetime</span>
+                                              <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">2 Years</span>
                                             ) : order.renewalDate ? (
                                               <span className="text-xs">{formatDate(order.renewalDate)}</span>
                                             ) : (
