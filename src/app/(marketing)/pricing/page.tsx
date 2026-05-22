@@ -286,7 +286,7 @@ function PricingContent() {
                   <div className="text-center">
                     <div className="flex flex-col items-center gap-1">
                       <span className={`line-through text-4xl md:text-[2.75rem] font-bold ${activeCard === 'annual' ? 'text-white/50' : 'text-gray-400'}`}>₹3,000</span>
-                      <span className={`text-[2.1875rem] md:text-[2.5rem] font-bold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>₹1,800</span>
+                      <span className={`text-[2.1875rem] md:text-[2.5rem] font-bold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>₹1,500</span>
                     </div>
                     <p className={`text-lg font-semibold mt-3 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>/user/annual</p>
                     <p className={`text-sm mt-1 ${activeCard === 'annual' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -309,7 +309,7 @@ function PricingContent() {
                 {!isAffiliate && (
                   <div className="mt-auto">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1800); }}
+                      onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1500); }}
                       disabled={loadingPlan === 'annual'}
                       className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
                         loadingPlan === 'annual'
