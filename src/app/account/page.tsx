@@ -1889,9 +1889,9 @@ function AccountPageContent() {
                                                     {!['annual', 'onetime'].includes(addressPlanType) && 'Annual'}
                                                   </span>
                                                   <span className="text-gray-500 ml-1">
-                                                    {addressPlanType === 'annual' && '₹1,800/user/yr'}
+                                                    {addressPlanType === 'annual' && '₹1,500/user/yr'}
                                                     {addressPlanType === 'onetime' && '₹6,000/user/5yrs'}
-                                                    {!['annual', 'onetime'].includes(addressPlanType) && '₹1,800/user/yr'}
+                                                    {!['annual', 'onetime'].includes(addressPlanType) && '₹1,500/user/yr'}
                                                   </span>
                                                 </span>
                                               </div>
@@ -2300,7 +2300,7 @@ function AccountPageContent() {
                                                     onClick={() => {
                                                       sessionStorage.setItem('checkoutAddressId', matchingAddress.id)
                                                       localStorage.setItem('checkoutAddressId', matchingAddress.id)
-                                                      const renewPlanPrice = 1800
+                                                      const renewPlanPrice = 1500
                                                       const renewUserCount = order.userCount || 5
                                                       router.push(`/checkout?addressId=${matchingAddress.id}&planType=annual&planPrice=${renewPlanPrice}&userCount=${renewUserCount}`)
                                                     }}
