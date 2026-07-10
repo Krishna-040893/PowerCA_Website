@@ -6,6 +6,7 @@ import {SessionProvider  } from '@/components/providers/session-provider'
 import {ConditionalLayoutWrapper  } from '@/components/layout/conditional-layout-wrapper'
 import {GoogleAnalytics  } from '@/components/google-analytics'
 import {GoogleTagManager, GoogleTagManagerNoscript  } from '@/components/google-tag-manager'
+import {FacebookPixel, FacebookPixelNoscript  } from '@/components/facebook-pixel'
 import { GlobalErrorBoundary } from '@/components/error-boundary'
 import { MonitoringProvider } from '@/components/monitoring-provider'
 import { BrowserCheck } from '@/components/browser-check'
@@ -85,6 +86,8 @@ export default function RootLayout({
           <BrowserCheck />
           <GoogleTagManager />
           <GoogleTagManagerNoscript />
+          <FacebookPixel />
+          <FacebookPixelNoscript />
           <GoogleAnalytics />
           <SessionProvider>
             <MonitoringProvider>
