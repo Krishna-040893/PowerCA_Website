@@ -6,6 +6,7 @@ import { ProfessionRotator } from '@/components/home/profession-rotator'
 import { BenefitsAccordion } from '@/components/home/benefits-accordion'
 import TestimonialsSection from '@/components/testimonials-section'
 import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
+import { OverviewCarousel } from '@/components/sections/overview-carousel'
 import './testimonial-scroll.css'
 
 // Enable static generation for homepage
@@ -108,10 +109,10 @@ export default function Home() {
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
             <Image
-              src="/images/hero-bg.jpg"
+              src="/images/hero-mosaic-bg.jpg"
               alt="PowerCA Practice Management Software Dashboard for Chartered Accountants"
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
               quality={90}
               sizes="100vw"
@@ -636,6 +637,52 @@ export default function Home() {
           {/* Benefits Accordion Component */}
           <div className="mt-6 sm:mt-8">
             <BenefitsAccordion />
+          </div>
+        </div>
+      </section>
+
+      {/* PowerCA Overview Carousel Section */}
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden">
+        <div className="relative rounded-2xl overflow-hidden py-10 sm:py-12 md:py-16 lg:py-20" style={{
+          backgroundImage: 'url(/images/glance-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          <div className="absolute inset-0 bg-white/10"></div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
+            <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12">
+              {/* Left Content - Title */}
+              <div className="lg:col-span-4">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-normal" style={{ color: '#001525' }}>
+                  PowerCA at a Glance
+                </h2>
+              </div>
+
+              {/* Center Content - Description */}
+              <div className="lg:col-span-5">
+                <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
+                  Browse the posters covering each part of PowerCA and see how the modules fit into your day-to-day practice.
+                </p>
+              </div>
+
+              {/* Right Content - Action */}
+              <div className="lg:col-span-3 flex lg:justify-end">
+                <Link
+                  href="/book-demo"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer text-sm sm:text-base whitespace-nowrap w-full sm:w-auto"
+                >
+                  Book a Demo
+                  <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10">
+            <OverviewCarousel />
           </div>
         </div>
       </section>
