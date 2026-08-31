@@ -71,3 +71,6 @@ ADMIN_CREDENTIALS.md
 /uploads/*
 !/uploads/.gitkeep
 
+
+# Design source files (full-resolution, optimised copies live in public/images)
+docs/Frame*.jpg
