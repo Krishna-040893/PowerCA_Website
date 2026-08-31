@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, RefreshCw, Plus, Trash2, Upload, X, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react'
+import { Loader2, RefreshCw, Plus, Trash2, Upload, X, ArrowUp, ArrowDown, Eye, EyeOff, Pencil } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +41,10 @@ export default function AdminPostersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [editing, setEditing] = useState<Poster | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editAltText, setEditAltText] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
 
   const [title, setTitle] = useState('')
   const [altText, setAltText] = useState('')
@@ -140,7 +144,7 @@ export default function AdminPostersPage() {
     }
   }
 
-  const updatePoster = async (id: string, changes: Record<string, unknown>) => {
+  const updatePoster = async (id: string, changes: Record<string, unknown>): Promise<boolean> => {
     setBusyId(id)
     try {
       const response = await fetch('/api/admin/posters', {
@@ -152,14 +156,46 @@ export default function AdminPostersPage() {
 
       if (!response.ok) {
         toast.error(data.error || 'Failed to update poster')
-        return
+        return false
       }
 
       fetchPosters()
+      return true
     } catch {
       toast.error('Failed to update poster')
+      return false
     } finally {
       setBusyId(null)
+    }
+  }
+
+  const openEdit = (poster: Poster) => {
+    setEditing(poster)
+    setEditTitle(poster.title)
+    setEditAltText(poster.alt_text)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editing) return
+    if (!editTitle.trim()) {
+      toast.error('Enter a title')
+      return
+    }
+    if (!editAltText.trim()) {
+      toast.error('Enter alt text so the poster is accessible')
+      return
+    }
+
+    setIsSavingEdit(true)
+    const ok = await updatePoster(editing.id, {
+      title: editTitle.trim(),
+      altText: editAltText.trim(),
+    })
+    setIsSavingEdit(false)
+
+    if (ok) {
+      toast.success('Poster updated')
+      setEditing(null)
     }
   }
 
@@ -310,8 +346,18 @@ export default function AdminPostersPage() {
                     variant="outline"
                     disabled={busyId === poster.id}
                     onClick={() => updatePoster(poster.id, { isPublished: !poster.is_published })}
+                    aria-label={poster.is_published ? 'Hide from homepage' : 'Show on homepage'}
                   >
                     {poster.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busyId === poster.id}
+                    onClick={() => openEdit(poster)}
+                    aria-label="Edit title and description"
+                  >
+                    <Pencil className="h-4 w-4" />
                   </Button>
 
                   <AlertDialog>
@@ -430,6 +476,63 @@ export default function AdminPostersPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit an existing poster's wording. The image itself is not replaced -
+          delete and re-add for that. */}
+      <Dialog open={editing !== null} onOpenChange={(open) => { if (!open) setEditing(null) }}>
+        <DialogContent className="bg-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Poster</DialogTitle>
+          </DialogHeader>
+
+          {editing && (
+            <div className="space-y-4">
+              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 max-h-56">
+                <Image
+                  src={editing.image_url}
+                  alt={editing.alt_text}
+                  fill
+                  className="object-contain"
+                  sizes="480px"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Title</label>
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description / alt text</label>
+                <Textarea
+                  value={editAltText}
+                  onChange={(e) => setEditAltText(e.target.value)}
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Shown under the title on the homepage carousel, and read by search engines and screen readers.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditing(null)} disabled={isSavingEdit}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveEdit} disabled={isSavingEdit}>
+                  {isSavingEdit ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminPageWrapper>

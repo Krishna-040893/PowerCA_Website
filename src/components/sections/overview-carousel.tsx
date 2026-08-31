@@ -102,6 +102,7 @@ export function OverviewCarousel() {
   const pausedRef = useRef(false)
 
   const [posters, setPosters] = useState<Poster[]>(fallbackPosters)
+  const [loaded, setLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -124,7 +125,9 @@ export function OverviewCarousel() {
         const data = await response.json()
         const uploaded: ApiPoster[] = data?.posters ?? []
 
-        if (!cancelled && uploaded.length > 0) {
+        if (cancelled) return
+
+        if (uploaded.length > 0) {
           setPosters(uploaded.map((poster) => ({
             src: poster.image_url,
             title: poster.title,
@@ -133,7 +136,9 @@ export function OverviewCarousel() {
           })))
         }
       } catch {
-        // Keep the fallback posters on screen.
+        // Keep the bundled posters on screen.
+      } finally {
+        if (!cancelled) setLoaded(true)
       }
     }
 
@@ -239,7 +244,7 @@ export function OverviewCarousel() {
     return () => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
     }
-  }, [posters, updateActive])
+  }, [posters, loaded, updateActive])
 
   const nudge = (direction: -1 | 1) => {
     const track = trackRef.current
@@ -281,9 +286,9 @@ export function OverviewCarousel() {
           className="text-sm sm:text-base font-bold tracking-normal uppercase text-center transition-opacity duration-300"
           style={{ color: '#001525' }}
         >
-          {caption?.title}
+          {loaded ? caption?.title : ''}
         </p>
-        {caption?.description && (
+        {loaded && caption?.description && (
           <p
             key={caption.description}
             className="max-w-4xl text-sm sm:text-base leading-relaxed text-gray-600 text-center transition-opacity duration-300"
@@ -296,7 +301,9 @@ export function OverviewCarousel() {
       {/* Strip */}
       <div
         ref={trackRef}
-        className="flex items-center gap-14 sm:gap-16 md:gap-20 overflow-x-hidden py-16 sm:py-20"
+        className={`flex items-center gap-14 sm:gap-16 md:gap-20 overflow-x-hidden py-16 sm:py-20 transition-opacity duration-300 ${
+          loaded ? 'opacity-100' : 'opacity-0'
+        }`}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => {
           setPaused(false)
