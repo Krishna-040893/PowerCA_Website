@@ -3,7 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { requireAdminAuth, createUnauthorizedResponse } from '@/lib/auth/admin-session'
 import { logger } from '@/lib/logger'
 
-const BUCKET = 'posters'
+const BUCKET = 'socialmedia-posters'
 const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 

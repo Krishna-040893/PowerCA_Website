@@ -8,6 +8,7 @@ type Poster = {
   src: string
   alt: string
   title: string
+  description?: string
 }
 
 // Fallback slides shipped with the site, used until posters are uploaded from
@@ -128,6 +129,7 @@ export function OverviewCarousel() {
             src: poster.image_url,
             title: poster.title,
             alt: poster.alt_text || poster.title,
+            description: poster.alt_text || undefined,
           })))
         }
       } catch {
@@ -267,15 +269,28 @@ export function OverviewCarousel() {
       aria-roledescription="carousel"
       aria-label="PowerCA posters"
     >
-      {/* Title of the featured (or hovered) poster */}
-      <div className="h-8 sm:h-9 flex items-center justify-center mb-5 sm:mb-6 px-4">
+      {/* Title and description of the featured (or hovered) poster. The image's
+          alt text already carries this for screen readers, so this block is
+          hidden from them to avoid it being announced twice. */}
+      <div
+        className="min-h-[72px] sm:min-h-[80px] flex flex-col items-center justify-start gap-2 mb-5 sm:mb-6 px-4"
+        aria-hidden="true"
+      >
         <p
           key={caption?.title}
-          className="text-xs sm:text-sm font-semibold tracking-[0.18em] uppercase text-center transition-opacity duration-300"
+          className="text-sm sm:text-base font-bold tracking-normal uppercase text-center transition-opacity duration-300"
           style={{ color: '#001525' }}
         >
           {caption?.title}
         </p>
+        {caption?.description && (
+          <p
+            key={caption.description}
+            className="max-w-4xl text-sm sm:text-base leading-relaxed text-gray-600 text-center transition-opacity duration-300"
+          >
+            {caption.description}
+          </p>
+        )}
       </div>
 
       {/* Strip */}
