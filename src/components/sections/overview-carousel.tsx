@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type Poster = {
   src: string
   alt: string
   title: string
   description?: string
+  category?: string
 }
 
 // Fallback slides shipped with the site, used until posters are uploaded from
@@ -63,17 +65,14 @@ type ApiPoster = {
   title: string
   alt_text: string
   image_url: string
+  category: string | null
 }
 
-// The strip renders the posters three times over so it can wrap around without
-// the seam ever being visible.
-const REPEAT = 3
-const SCROLL_SPEED = 0.6 // px per frame, right to left
-const NUDGE_STEP = 14 // px per frame while a control button is catching up
+const ADVANCE_MS = 4500
 
-function ArrowIcon() {
+function ArrowIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
     </svg>
   )
@@ -81,8 +80,24 @@ function ArrowIcon() {
 
 function ExpandIcon() {
   return (
-    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4" />
+    </svg>
+  )
+}
+
+function FilterIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16M7 12h10M10 19h4" />
+    </svg>
+  )
+}
+
+function ChevronIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
     </svg>
   )
 }
@@ -95,25 +110,37 @@ function CloseIcon() {
   )
 }
 
-export function OverviewCarousel() {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const frameRef = useRef<number | null>(null)
-  const pendingRef = useRef(0)
-  const pausedRef = useRef(false)
+function DownloadIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0 4-4m-4 4-4-4m-5 7v2a1 1 0 001 1h16a1 1 0 001-1v-2" />
+    </svg>
+  )
+}
 
-  const [posters, setPosters] = useState<Poster[]>(fallbackPosters)
+export function OverviewCarousel() {
+  const [allPosters, setAllPosters] = useState<Poster[]>(fallbackPosters)
+  const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [isHovering, setIsHovering] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
+  const reducedMotion = useRef(false)
+  const barRef = useRef<HTMLSpanElement>(null)
+  const filterRef = useRef<HTMLDivElement>(null)
+  const pausedRef = useRef(false)
 
   // The enlarged view is portalled to <body>, so it can only render client-side.
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    setMounted(true)
+    reducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
 
   // Swap in the posters managed from the admin portal once they arrive. The
-  // bundled fallback stays on screen if none are published or the fetch fails,
-  // so the section never renders empty.
+  // bundled set stays as a fallback if none are published or the fetch fails,
+  // but is never shown while the request is still in flight.
   useEffect(() => {
     let cancelled = false
 
@@ -124,16 +151,24 @@ export function OverviewCarousel() {
 
         const data = await response.json()
         const uploaded: ApiPoster[] = data?.posters ?? []
+        const preferred: string = data?.defaultCategory || 'all'
 
         if (cancelled) return
 
         if (uploaded.length > 0) {
-          setPosters(uploaded.map((poster) => ({
+          setAllPosters(uploaded.map((poster) => ({
             src: poster.image_url,
             title: poster.title,
             alt: poster.alt_text || poster.title,
             description: poster.alt_text || undefined,
+            category: poster.category || undefined,
           })))
+          setActiveIndex(0)
+
+          // Only honour the preference if that category still has posters.
+          if (preferred !== 'all' && uploaded.some((poster) => poster.category === preferred)) {
+            setActiveCategory(preferred)
+          }
         }
       } catch {
         // Keep the bundled posters on screen.
@@ -149,6 +184,82 @@ export function OverviewCarousel() {
     }
   }, [])
 
+  const categories = Array.from(
+    new Set(allPosters.map((poster) => poster.category).filter((c): c is string => Boolean(c)))
+  )
+
+  const posters = activeCategory === 'all'
+    ? allPosters
+    : allPosters.filter((poster) => poster.category === activeCategory)
+
+  const step = useCallback((direction: -1 | 1) => {
+    setActiveIndex((current) => (current + direction + posters.length) % posters.length)
+  }, [posters.length])
+
+  // Hovering the gallery, or opening the enlarged view, holds the progress bar
+  // where it is. Kept in a ref so it never restarts the animation frame loop.
+  useEffect(() => {
+    pausedRef.current = isHovering || lightboxIndex !== null
+  }, [isHovering, lightboxIndex])
+
+  // The progress bar drives the rotation: it fills over ADVANCE_MS and advances
+  // when it reaches the end. Written straight to the element's transform, so
+  // filling the bar costs no React renders.
+  useEffect(() => {
+    if (!loaded || posters.length < 2 || reducedMotion.current) return
+
+    let elapsed = 0
+    let last = performance.now()
+    let frame = 0
+
+    const tick = (now: number) => {
+      const delta = now - last
+      last = now
+      if (!pausedRef.current) elapsed += delta
+
+      const progress = Math.min(1, elapsed / ADVANCE_MS)
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${progress})`
+      }
+
+      if (progress >= 1) {
+        step(1)
+        return
+      }
+
+      frame = requestAnimationFrame(tick)
+    }
+
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [loaded, activeIndex, posters.length, step])
+
+  // Close the filter on an outside click or Escape.
+  useEffect(() => {
+    if (!filterOpen) return
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setFilterOpen(false)
+      }
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFilterOpen(false)
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [filterOpen])
+
+  // Start again from the first poster whenever the filter changes.
+  useEffect(() => {
+    setActiveIndex(0)
+  }, [activeCategory])
+
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
 
   const stepLightbox = useCallback((direction: -1 | 1) => {
@@ -158,12 +269,11 @@ export function OverviewCarousel() {
     })
   }, [posters.length])
 
-  // While the enlarged view is open, hold the strip still, lock the page behind
-  // it and let the keyboard drive it.
+  // While the enlarged view is open, lock the page behind it and let the
+  // keyboard drive it.
   useEffect(() => {
     if (lightboxIndex === null) return
 
-    pausedRef.current = true
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
@@ -178,94 +288,48 @@ export function OverviewCarousel() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previousOverflow
-      pausedRef.current = false
     }
   }, [lightboxIndex, closeLightbox, stepLightbox])
 
-  // Whichever card sits nearest the middle of the strip is the featured one.
-  const updateActive = useCallback(() => {
-    const track = trackRef.current
-    if (!track) return
+  const caption = posters[activeIndex]
 
-    const middle = track.scrollLeft + track.clientWidth / 2
-    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-poster-card]'))
+  const downloadPoster = useCallback(async () => {
+    if (!caption) return
 
-    let nearest = 0
-    let smallest = Number.POSITIVE_INFINITY
+    const fileName = `${caption.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'powerca-poster'}.png`
 
-    cards.forEach((card) => {
-      const centre = card.offsetLeft + card.offsetWidth / 2
-      const distance = Math.abs(centre - middle)
-      if (distance < smallest) {
-        smallest = distance
-        nearest = Number(card.dataset.index ?? 0)
-      }
-    })
+    try {
+      const response = await fetch(caption.src)
+      if (!response.ok) throw new Error('Unable to download poster')
 
-    setActiveIndex(nearest)
-  }, [])
-
-  // Continuous right-to-left drift, wrapping seamlessly between repeats.
-  useEffect(() => {
-    const track = trackRef.current
-    if (!track || posters.length === 0) return
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const setWidth = track.scrollWidth / REPEAT
-
-    // Start in the middle copy so there is room to scroll either way.
-    track.scrollLeft = setWidth
-    updateActive()
-
-    const step = () => {
-      const width = track.scrollWidth / REPEAT
-
-      if (pendingRef.current !== 0) {
-        const move = Math.sign(pendingRef.current) * Math.min(Math.abs(pendingRef.current), NUDGE_STEP)
-        track.scrollLeft += move
-        pendingRef.current -= move
-      } else if (!pausedRef.current && !prefersReducedMotion) {
-        track.scrollLeft += SCROLL_SPEED
-      }
-
-      // Keep the viewport inside the middle copy.
-      if (track.scrollLeft >= width * 2) {
-        track.scrollLeft -= width
-      } else if (track.scrollLeft <= 0) {
-        track.scrollLeft += width
-      }
-
-      updateActive()
-      frameRef.current = requestAnimationFrame(step)
+      const image = await response.blob()
+      const objectUrl = URL.createObjectURL(image)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch {
+      // Local images can still be downloaded directly if fetching a remote
+      // image is blocked by its host's CORS policy.
+      const link = document.createElement('a')
+      link.href = caption.src
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
     }
+  }, [caption])
 
-    frameRef.current = requestAnimationFrame(step)
-
-    return () => {
-      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
-    }
-  }, [posters, loaded, updateActive])
-
-  const nudge = (direction: -1 | 1) => {
-    const track = trackRef.current
-    if (!track) return
-
-    const card = track.querySelector<HTMLElement>('[data-poster-card]')
-    const distance = card ? card.offsetWidth + 24 : 240
-    pendingRef.current += direction * distance
-  }
-
-  const setPaused = (value: boolean) => {
-    pausedRef.current = value
-  }
-
-  // Repeat the posters so the strip can loop without a visible jump.
-  const strip = Array.from({ length: REPEAT }).flatMap((_, copy) =>
-    posters.map((poster, index) => ({ poster, key: `${copy}-${poster.src}-${index}` }))
-  )
-
-  const captionIndex = hoveredIndex ?? activeIndex
-  const caption = posters[captionIndex % posters.length]
+  // The next few posters, shown as thumbnails beside the featured one. Never
+  // wrap into the selected poster (or a duplicate) when a category has fewer
+  // than seven posters.
+  const upcoming = Array.from({ length: Math.min(6, Math.max(0, posters.length - 1)) }, (_, offset) => {
+    const index = (activeIndex + offset + 1) % posters.length
+    return { poster: posters[index], index }
+  })
 
   return (
     <div
@@ -274,114 +338,239 @@ export function OverviewCarousel() {
       aria-roledescription="carousel"
       aria-label="PowerCA posters"
     >
-      {/* Title and description of the featured (or hovered) poster. The image's
-          alt text already carries this for screen readers, so this block is
-          hidden from them to avoid it being announced twice. */}
-      <div
-        className="min-h-[72px] sm:min-h-[80px] flex flex-col items-center justify-start gap-2 mb-5 sm:mb-6 px-4"
-        aria-hidden="true"
-      >
-        <p
-          key={caption?.title}
-          className="text-sm sm:text-base font-bold tracking-normal uppercase text-center transition-opacity duration-300"
-          style={{ color: '#001525' }}
-        >
-          {loaded ? caption?.title : ''}
-        </p>
-        {loaded && caption?.description && (
-          <p
-            key={caption.description}
-            className="max-w-4xl text-sm sm:text-base leading-relaxed text-gray-600 text-center transition-opacity duration-300"
-          >
-            {caption.description}
-          </p>
-        )}
-      </div>
-
-      {/* Strip */}
-      <div
-        ref={trackRef}
-        className={`flex items-center gap-14 sm:gap-16 md:gap-20 overflow-x-hidden py-16 sm:py-20 transition-opacity duration-300 ${
-          loaded ? 'opacity-100' : 'opacity-0'
-        }`}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => {
-          setPaused(false)
-          setHoveredIndex(null)
-        }}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
-      >
-        {strip.map(({ poster, key }, position) => {
-          const posterIndex = position % posters.length
-          const isFeatured = hoveredIndex === null
-            ? activeIndex === position
-            : hoveredIndex === posterIndex
-
-          return (
-            // The card keeps a fixed width and a square box at all times. The
-            // featured state is a transform and a filter only, so nothing here
-            // ever reflows the strip or changes the section's height.
+      {/* Category filter. Only shown once posters carry categories. */}
+      {loaded && categories.length > 0 && (
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <div className="relative" ref={filterRef}>
             <button
-              key={key}
               type="button"
-              data-poster-card
-              data-index={position}
-              onMouseEnter={() => setHoveredIndex(posterIndex)}
-              onTouchStart={() => setHoveredIndex(posterIndex)}
-              onClick={() => setLightboxIndex(posterIndex)}
-              aria-label={`View ${poster.title} at full size`}
-              className={`group relative shrink-0 w-[150px] sm:w-[190px] md:w-[220px] aspect-square rounded-xl overflow-hidden cursor-pointer transition-[transform,filter,opacity,box-shadow] duration-500 ease-out will-change-transform ring-2 ${
-                isFeatured
-                  ? 'grayscale-0 opacity-100 scale-[1.35] z-10 shadow-lg ring-[#155dfc]'
-                  : 'grayscale opacity-60 scale-100 ring-transparent hover:opacity-90'
-              }`}
+              onClick={() => setFilterOpen((open) => !open)}
+              aria-haspopup="listbox"
+              aria-expanded={filterOpen}
+              className="inline-flex items-center gap-2 h-11 pl-4 pr-3 rounded-full border-2 bg-white/80 text-sm font-medium text-[#001525] hover:bg-white transition-colors duration-200 cursor-pointer"
+              style={{ borderColor: '#B6C9F3' }}
             >
-              <Image
-                src={poster.src}
-                alt={poster.alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 150px, 220px"
-                loading="lazy"
-                quality={85}
-              />
+              <FilterIcon />
+              {activeCategory === 'all' ? 'All posters' : activeCategory}
+              <ChevronIcon className={`w-4 h-4 transition-transform duration-200 ${filterOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-              {/* Expand affordance, shown on the poster being looked at */}
-              <span
-                className={`absolute inset-0 flex items-center justify-center bg-[#001525]/45 transition-opacity duration-300 ${
-                  isFeatured ? 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100' : 'opacity-0'
-                }`}
+            {filterOpen && (
+              <ul
+                role="listbox"
+                className="absolute left-1/2 -translate-x-1/2 top-full z-30 mt-2 min-w-[220px] max-h-64 overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
               >
-                <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-md">
+                {['all', ...categories].map((name) => {
+                  const count = name === 'all'
+                    ? allPosters.length
+                    : allPosters.filter((poster) => poster.category === name).length
+                  const selected = activeCategory === name
+
+                  return (
+                    <li key={name}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        onClick={() => {
+                          setActiveCategory(name)
+                          // The new list is shorter than the old one more often
+                          // than not, so start it from the top rather than an
+                          // index that may no longer exist.
+                          setActiveIndex(0)
+                          setFilterOpen(false)
+                        }}
+                        className={`flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left text-sm cursor-pointer transition-colors ${
+                          selected ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-[#001525] hover:bg-gray-50'
+                        }`}
+                      >
+                        <span>{name === 'all' ? 'All posters' : name}</span>
+                        <span className="text-xs text-gray-400 tabular-nums">{count}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Featured poster on the left, upcoming ones as shorter thumbnails on
+          the right, with the controls tucked underneath them. */}
+      <div
+        className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        onFocusCapture={() => setIsHovering(true)}
+        onBlurCapture={() => setIsHovering(false)}
+      >
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 md:h-[420px] lg:h-[460px]">
+          {/* Featured, with its progress bar underneath */}
+          <div className="w-full md:w-[400px] lg:w-[440px] md:h-full shrink-0 flex flex-col gap-3">
+            {/* The poster opens the enlarged view; the call to action sits on
+                top of it, so the two are siblings rather than nested. */}
+            <div className="group relative w-full aspect-square md:aspect-auto md:flex-1 md:min-h-0 rounded-2xl overflow-hidden shadow-md ring-[3px] ring-[#155dfc]">
+              {caption && (
+                <Image
+                  key={caption.src}
+                  src={caption.src}
+                  alt={caption.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 460px"
+                  quality={90}
+                />
+              )}
+
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(activeIndex)}
+                aria-label={`View ${caption?.title ?? 'poster'} at full size`}
+                className="absolute inset-0 w-full h-full cursor-pointer"
+              >
+                <span className="absolute inset-0 bg-[#001525]/35 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void downloadPoster()}
+                aria-label={`Download ${caption?.title ?? 'poster'}`}
+                title="Download poster"
+                className="absolute right-3 bottom-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-blue-600 shadow-md transition-colors hover:bg-blue-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
+              >
+                <DownloadIcon />
+              </button>
+
+              {/* Expand cue above the call to action. The wrapper ignores
+                  pointer events so clicks fall through to the poster button;
+                  only the link itself is clickable. */}
+              <span className="absolute inset-0 z-10 hidden md:flex flex-col items-center justify-center gap-3 pointer-events-none opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity duration-300">
+                <span className="flex w-11 h-11 rounded-full bg-white items-center justify-center text-blue-600 shadow-md">
                   <ExpandIcon />
                 </span>
+                <Link
+                  href="/book-demo"
+                  className="pointer-events-auto inline-flex items-center justify-center h-10 px-4 bg-white text-[#001525] font-medium rounded-full shadow-md hover:bg-blue-600 hover:text-white transition-colors duration-200 cursor-pointer text-xs sm:text-sm whitespace-nowrap"
+                >
+                  Book a Demo
+                  <span className="ml-2"><ArrowIcon className="w-4 h-4" /></span>
+                </Link>
               </span>
-            </button>
-          )
-        })}
-      </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <button
-          type="button"
-          onClick={() => nudge(-1)}
-          aria-label="Scroll posters left"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
-          style={{ borderColor: '#B6C9F3' }}
-        >
-          <span className="rotate-180 flex"><ArrowIcon /></span>
-        </button>
-        <button
-          type="button"
-          onClick={() => nudge(1)}
-          aria-label="Scroll posters right"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
-          style={{ borderColor: '#B6C9F3' }}
-        >
-          <ArrowIcon />
-        </button>
+              {/* On phones there is no hover, so the call to action sits inside
+                  the poster along its bottom edge. Tapping the poster itself
+                  already opens the enlarged view, so no expand button here. */}
+              <div className="md:hidden absolute inset-x-0 bottom-0 z-10 flex justify-center p-3 bg-gradient-to-t from-[#001525]/70 via-[#001525]/40 to-transparent">
+                <Link
+                  href="/book-demo"
+                  className="inline-flex items-center justify-center h-9 px-4 bg-white text-[#001525] font-medium rounded-full shadow-md cursor-pointer text-xs whitespace-nowrap"
+                >
+                  Book a Demo
+                  <span className="ml-1.5"><ArrowIcon className="w-3.5 h-3.5" /></span>
+                </Link>
+              </div>
+            </div>
+
+            {/* How long until the next poster takes over */}
+            <span
+              className="block w-full h-1.5 rounded-full bg-[#001525]/10 overflow-hidden pointer-events-none shrink-0"
+              aria-hidden="true"
+            >
+              <span
+                ref={barRef}
+                className="block h-full rounded-full origin-left will-change-transform"
+                style={{ backgroundColor: '#155dfc', transform: 'scaleX(0)' }}
+              />
+            </span>
+          </div>
+
+          {/* Upcoming thumbnails, then the selected poster's copy beside the
+              controls */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex gap-2 sm:gap-3 md:gap-4">
+              {upcoming.map(({ poster, index }, slot) => (
+                <button
+                  key={`${poster.src}-${index}`}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`Show ${poster.title}`}
+                  className={`group relative flex-1 min-w-0 aspect-square rounded-2xl overflow-hidden shadow-sm cursor-pointer transition-all duration-500 grayscale hover:grayscale-0 opacity-80 hover:opacity-100 ${
+                    slot === 4 ? 'hidden lg:block' : slot === 5 ? 'hidden xl:block' : ''
+                  }`}
+                >
+                  <Image
+                    src={poster.src}
+                    alt={poster.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 45vw, 220px"
+                    loading="lazy"
+                    quality={85}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Copy on the left, controls on the right. The image's alt text
+                already carries the copy for screen readers, so the visible
+                block is hidden from them to avoid it being announced twice. */}
+            <div className="flex flex-col gap-5 pt-12">
+              <div className="flex-1 min-w-0" aria-hidden="true">
+                <p
+                  key={caption?.title}
+                  className="text-sm sm:text-base font-bold tracking-normal uppercase transition-opacity duration-300 text-[#001525] md:text-[#155dfc]"
+                >
+                  {loaded ? caption?.title : ''}
+                </p>
+                {loaded && caption?.description && (
+                  <p
+                    key={caption.description}
+                    className="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 transition-opacity duration-300"
+                  >
+                    {caption.description}
+                  </p>
+                )}
+              </div>
+
+              <div className="shrink-0 flex items-center gap-3 self-center sm:self-start">
+                <button
+                  type="button"
+                  onClick={() => step(-1)}
+                  aria-label="Previous poster"
+                  className="w-11 h-11 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
+                  style={{ borderColor: '#B6C9F3' }}
+                >
+                  <span className="rotate-180 flex"><ArrowIcon /></span>
+                </button>
+                <p
+                  className="text-sm sm:text-base font-semibold tabular-nums select-none min-w-[3.5rem] text-center"
+                  style={{ color: '#001525' }}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {loaded ? (
+                    <>
+                      {activeIndex + 1}
+                      <span className="text-gray-400 mx-1">/</span>
+                      {posters.length}
+                    </>
+                  ) : null}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => step(1)}
+                  aria-label="Next poster"
+                  className="w-11 h-11 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
+                  style={{ borderColor: '#B6C9F3' }}
+                >
+                  <ArrowIcon />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Enlarged, readable view of a single poster. Rendered into <body> so it
