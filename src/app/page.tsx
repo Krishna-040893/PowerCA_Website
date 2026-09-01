@@ -6,6 +6,7 @@ import { ProfessionRotator } from '@/components/home/profession-rotator'
 import { BenefitsAccordion } from '@/components/home/benefits-accordion'
 import TestimonialsSection from '@/components/testimonials-section'
 import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
+import { OverviewCarousel } from '@/components/sections/overview-carousel'
 import './testimonial-scroll.css'
 
 // Enable static generation for homepage
@@ -108,10 +109,10 @@ export default function Home() {
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
             <Image
-              src="/images/hero-bg.jpg"
+              src="/images/hero-mosaic-bg.jpg"
               alt="PowerCA Practice Management Software Dashboard for Chartered Accountants"
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
               quality={90}
               sizes="100vw"
@@ -636,6 +637,29 @@ export default function Home() {
           {/* Benefits Accordion Component */}
           <div className="mt-6 sm:mt-8">
             <BenefitsAccordion />
+          </div>
+        </div>
+      </section>
+
+      {/* PowerCA Overview Carousel Section */}
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden">
+        <div className="relative rounded-2xl overflow-hidden py-10 sm:py-12 md:py-16 lg:py-20" style={{
+          backgroundImage: 'url(/images/glance-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          <div className="absolute inset-0 bg-white/10"></div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
+            <div className="mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-normal text-center" style={{ color: '#001525' }}>
+                PowerCA at a Glance
+              </h2>
+            </div>
+          </div>
+
+          <div className="px-3 sm:px-4 lg:px-5 relative z-10">
+            <OverviewCarousel />
           </div>
         </div>
       </section>

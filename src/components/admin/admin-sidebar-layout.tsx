@@ -6,7 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2 } from 'lucide-react'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2, Images } from 'lucide-react'
 import {Button  } from '@/components/ui/button'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
@@ -86,6 +86,12 @@ const getBaseNavigation = (): NavSection[] => [
     title: 'Blogs',
     items: [
       { title: 'Blog Posts', href: '/admin/blog', icon: Globe, countKey: 'blogPosts', badgeVariant: 'default' },
+    ]
+  },
+  {
+    title: 'Website',
+    items: [
+      { title: 'Homepage Posters', href: '/admin/posters', icon: Images },
     ]
   },
   {
