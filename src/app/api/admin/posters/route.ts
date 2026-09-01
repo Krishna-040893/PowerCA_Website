@@ -7,6 +7,13 @@ const BUCKET = 'socialmedia-posters'
 const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
+const MISSING_CATEGORY_HINT =
+  'The category column does not exist yet. Run supabase/migrations/063_add_category_to_posters.sql in the Supabase SQL editor, then try again.'
+
+function isMissingCategory(message: string) {
+  return message.includes('category') && (message.includes('does not exist') || message.includes('schema cache'))
+}
+
 function getServiceClient(): SupabaseClient | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -66,6 +73,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file')
     const title = String(formData.get('title') ?? '').trim()
     const altText = String(formData.get('altText') ?? '').trim()
+    const category = String(formData.get('category') ?? '').trim()
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'An image file is required' }, { status: 400 })
@@ -114,6 +122,7 @@ export async function POST(request: NextRequest) {
         alt_text: altText,
         image_url: publicUrl,
         storage_path: storagePath,
+        category: category || null,
         display_order: displayOrder,
         is_published: true,
       })
@@ -124,7 +133,10 @@ export async function POST(request: NextRequest) {
       // Don't leave the uploaded file orphaned if the row insert failed.
       await supabase.storage.from(BUCKET).remove([storagePath])
       logger.error('Failed to create poster', { error: error.message })
-      return NextResponse.json({ error: 'Failed to save poster' }, { status: 500 })
+      return NextResponse.json(
+        { error: isMissingCategory(error.message) ? MISSING_CATEGORY_HINT : 'Failed to save poster' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ poster: data })
@@ -148,7 +160,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, title, altText, isPublished, displayOrder } = body
+    const { id, title, altText, category, isPublished, displayOrder } = body
 
     if (!id) {
       return NextResponse.json({ error: 'Poster id is required' }, { status: 400 })
@@ -157,6 +169,7 @@ export async function PATCH(request: NextRequest) {
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = String(title).trim()
     if (altText !== undefined) updateData.alt_text = String(altText).trim()
+    if (category !== undefined) updateData.category = String(category).trim() || null
     if (isPublished !== undefined) updateData.is_published = Boolean(isPublished)
     if (displayOrder !== undefined) updateData.display_order = Number(displayOrder)
 
@@ -173,7 +186,10 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to update poster', { error: error.message })
-      return NextResponse.json({ error: 'Failed to update poster' }, { status: 500 })
+      return NextResponse.json(
+        { error: isMissingCategory(error.message) ? MISSING_CATEGORY_HINT : 'Failed to update poster' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ poster: data })
