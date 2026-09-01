@@ -41,14 +41,12 @@ CREATE POLICY "Public can read published posters" ON public.posters
   FOR SELECT
   USING (is_published = true);
 
--- Public bucket for the poster images themselves.
+-- Public bucket for the poster images themselves. Created by hand in the
+-- dashboard; this is here so the migration also works on a fresh project.
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('posters', 'posters', true)
+VALUES ('socialmedia-posters', 'socialmedia-posters', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Anyone may read poster files. Uploads and deletes are performed server-side
--- with the service role key, so no write policy is granted to anon here.
-DROP POLICY IF EXISTS "Public read poster images" ON storage.objects;
-CREATE POLICY "Public read poster images" ON storage.objects
-  FOR SELECT
-  USING (bucket_id = 'posters');
+-- A public bucket already serves its objects over the public URL, so no read
+-- policy is required. Uploads and deletes are performed server-side with the
+-- service role key, which bypasses RLS, so no write policy is granted either.
