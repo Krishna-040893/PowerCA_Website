@@ -47,8 +47,8 @@ export function Footer() {
         {/* Three columns: navigation, brand and contact, address. */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           {/* Navigation, with the account pages in a second column */}
-          <nav className="flex flex-wrap gap-x-12 gap-y-8 text-sm text-gray-300">
-            <div className="flex flex-col gap-3">
+          <nav className="order-2 flex flex-wrap justify-center gap-x-12 gap-y-8 text-sm text-gray-300 md:order-1 md:justify-start">
+            <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <h3 className="mb-1 text-sm font-semibold text-white">Quick Links</h3>
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href} className="w-fit hover:text-white transition-colors">
@@ -56,7 +56,7 @@ export function Footer() {
                 </Link>
               ))}
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <h3 className="mb-1 text-sm font-semibold text-white">Your Account</h3>
               {accountLinks.map((link) => (
                 <Link key={link.href} href={link.href} className="w-fit hover:text-white transition-colors">
@@ -67,7 +67,7 @@ export function Footer() {
           </nav>
 
           {/* Brand, contact and social */}
-          <div className="flex flex-col items-center text-center">
+          <div className="order-1 flex flex-col items-center text-center md:order-2">
             <Link href="/" className="mb-5">
               <Image
                 src="/footer/Power CA Logo Only-05.png"
@@ -104,7 +104,7 @@ export function Footer() {
           </div>
 
           {/* Address */}
-          <div className="text-center md:text-right">
+          <div className="order-3 text-center md:text-right">
             <h3 className="text-sm font-semibold text-white">Address</h3>
             <address className="mt-4 text-sm not-italic leading-relaxed text-gray-300">
               No. 130, II Floor, Muneer Complex,

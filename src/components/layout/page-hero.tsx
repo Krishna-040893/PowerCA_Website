@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { Reveal } from '@/components/ui/reveal'
 
 interface PageHeroProps {
   /** Small uppercase pill above the headline. */
@@ -69,7 +70,7 @@ export function PageHero({
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
-        <div className="max-w-6xl mx-auto text-center">
+        <Reveal className="max-w-6xl mx-auto text-center">
           {badge && (
             <div className="mb-5 sm:mb-7">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-3 sm:px-4 py-1.5 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] sm:tracking-[0.14em] text-gray-500 shadow-[0_1px_2px_rgba(16,24,40,0.04)] backdrop-blur-sm">
@@ -99,7 +100,7 @@ export function PageHero({
           )}
 
           {children}
-        </div>
+        </Reveal>
       </div>
     </section>
   )

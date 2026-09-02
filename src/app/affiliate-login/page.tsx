@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { signIn, signOut } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, AlertCircle, UserPlus } from 'lucide-react'
 
 function AffiliateLoginContent() {
   const [email, setEmail] = useState('')
@@ -139,59 +139,42 @@ function AffiliateLoginContent() {
         }}
       />
 
-      {/* PowerCA Logo */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1 }}
-        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
-      >
-        <Link href="/" className="block">
-          <Image
-            src="/images/powerca-logo-main.png"
-            alt="PowerCA"
-            width={200}
-            height={60}
-            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
-            priority
-          />
-        </Link>
-      </motion.div>
-
-      {/* Back to Home Button */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
-      >
-        <Link
-          href="/"
-          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </div>
-          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
-            Back to Home
-          </span>
-        </Link>
-      </motion.div>
 
       {/* Login Form */}
       <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 pt-20 sm:pt-6 relative z-10">
+        <div className="w-full max-w-md">
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-lg bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border-2 border-purple-100"
+          className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_32px_64px_-24px_rgba(16,24,40,0.35)] backdrop-blur-sm sm:p-8"
         >
+          {/* Brand */}
+          <div className="mb-6 flex justify-center">
+            <Image
+              src="/images/powerca-logo-main.png"
+              alt="PowerCA"
+              width={200}
+              height={58}
+              className="h-10 w-auto"
+              priority
+            />
+          </div>
+
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="mb-2 text-2xl font-semibold tracking-tight text-[#001525] font-inter">
               Welcome Back, Partner!
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm text-gray-500">
               Sign in to access your affiliate dashboard
             </p>
           </div>
@@ -210,11 +193,10 @@ function AffiliateLoginContent() {
 
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-900 font-medium">
+              <Label htmlFor="email" className="text-[13px] font-medium text-[#001525]">
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="email"
                   name="email"
@@ -233,7 +215,7 @@ function AffiliateLoginContent() {
                   }}
                   onBlur={handleEmailBlur}
                   placeholder="Enter Your Email"
-                  className={`pl-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl ${emailError ? 'border-red-500' : ''}`}
+                  className={`h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 ${emailError ? 'border-red-500' : ''}`}
                   required
                 />
               </div>
@@ -244,11 +226,10 @@ function AffiliateLoginContent() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-900 font-medium">
+              <Label htmlFor="password" className="text-[13px] font-medium text-[#001525]">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   id="password"
                   name="password"
@@ -263,18 +244,18 @@ function AffiliateLoginContent() {
                     }
                   }}
                   placeholder="Enter Your Password"
-                  className="pl-10 pr-10 h-12 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl"
+                  className="h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 pr-11 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#001525]"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -288,13 +269,13 @@ function AffiliateLoginContent() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                 />
-                <Label htmlFor="remember" className="text-sm text-gray-700">
+                <Label htmlFor="remember" className="text-sm text-gray-600">
                   Remember me
                 </Label>
               </div>
               <Link
                 href="/forgot-password"
-                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                className="text-sm font-medium text-purple-600 underline-offset-4 transition-colors hover:text-purple-800 hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -304,7 +285,7 @@ function AffiliateLoginContent() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+              className="h-12 md:h-12 w-full rounded-full bg-[#001525] text-sm font-medium text-white transition-colors hover:bg-[#00223a]"
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
@@ -312,10 +293,10 @@ function AffiliateLoginContent() {
             {/* Affiliate Registration CTA */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">New to Affiliate Program?</span>
+                <span className="bg-white px-4 text-xs uppercase tracking-wide text-gray-400">New to Affiliate Program?</span>
               </div>
             </div>
 
@@ -323,22 +304,22 @@ function AffiliateLoginContent() {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white rounded-full font-medium transition-all duration-200"
+              className="h-12 md:h-12 w-full rounded-full border border-gray-200 bg-white text-sm font-medium text-[#001525] transition-colors hover:border-gray-300 hover:bg-gray-50"
               asChild
             >
               <Link href="/affiliate-register" className="flex items-center justify-center gap-2">
-                <UserPlus className="w-5 h-5" />
+                <UserPlus className="h-4 w-4" />
                 Register as Affiliate Partner
               </Link>
             </Button>
 
             {/* Client Login Link */}
             <div className="text-center pt-2">
-              <p className="text-gray-600 text-sm">
+              <p className="text-sm text-gray-500">
                 Are you a regular client?{' '}
                 <Link
                   href="/login"
-                  className="text-blue-600 hover:text-blue-800 font-medium underline"
+                  className="font-medium text-purple-600 underline-offset-4 transition-colors hover:text-purple-800 hover:underline"
                 >
                   Login Here
                 </Link>
@@ -346,6 +327,7 @@ function AffiliateLoginContent() {
             </div>
           </form>
         </motion.div>
+        </div>
       </div>
     </div>
   )

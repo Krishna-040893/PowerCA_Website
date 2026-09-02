@@ -3,6 +3,7 @@
 import { Network } from 'lucide-react'
 import Image from 'next/image'
 import { PageHero } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 import { SectionHeader } from '@/components/home/section-header'
 
 interface ModuleCardProps {
@@ -147,12 +148,13 @@ export default function ModulesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {modules.map((module, index) => (
-              <ModuleCard
-                key={index}
-                iconSrc={module.iconSrc}
-                title={module.title}
-                description={module.description}
-              />
+              <Reveal key={index} delay={(index % 4) * 0.05}>
+                <ModuleCard
+                  iconSrc={module.iconSrc}
+                  title={module.title}
+                  description={module.description}
+                />
+              </Reveal>
             ))}
           </div>
         </div>

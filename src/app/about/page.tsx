@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SectionHeader } from '@/components/home/section-header'
 import { PageHero, heroButtonClass } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 
 // Illustrated avatar, shared by every member card.
 function MemberAvatar({ gender }: { gender: string }) {
@@ -132,7 +133,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-10 xl:gap-12 items-start">
             {/* Left - Image */}
-            <div className="lg:col-span-2">
+            <Reveal className="lg:col-span-2">
               <Image
                 src="/images/about-mask-group.png"
                 alt="PowerCA Team"
@@ -141,10 +142,10 @@ export default function AboutPage() {
                 className="w-full h-auto rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-16px_rgba(16,24,40,0.18)]"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px"
               />
-            </div>
+            </Reveal>
 
             {/* Right - Text */}
-            <div className="lg:col-span-3">
+            <Reveal delay={0.05} className="lg:col-span-3">
               <p className="text-[15px] sm:text-[17px] text-gray-500 leading-relaxed mb-6 sm:mb-8">
                 The concept for this software was envisioned over two decades ago, inspired by the need to bring structure and efficiency to professional audit practices. For years the idea matured through research, real-world experience, and continuous refinement. Advancements in technology have now made it possible to deliver the full vision as a robust, cloud-ready solution. In 2025, we proudly launch it for practicing professionals, turning a long-standing dream into a practical, modern reality.
               </p>
@@ -188,7 +189,7 @@ export default function AboutPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -219,9 +220,9 @@ export default function AboutPage() {
 
           {/* One card per department, in the module-card style. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
-            {teamDepartments.map((department) => (
+            {teamDepartments.map((department, index) => (
+              <Reveal key={department.title} delay={(index % 4) * 0.05} className="h-full">
               <div
-                key={department.title}
                 className="group h-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
               >
                 {/* Tinted title band, so each card reads as its own group. */}
@@ -245,10 +246,11 @@ export default function AboutPage() {
                   ))}
                 </ul>
               </div>
+              </Reveal>
             ))}
           </div>
           {/* Team Stats - one strip, divided, rather than four separate boxes */}
-          <div className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 divide-y divide-x divide-gray-100 sm:divide-y-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
+          <Reveal className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 divide-y divide-x divide-gray-100 sm:divide-y-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
             {[
               { value: '12+', label: 'Team Members' },
               { value: '20+', label: 'Years Experience' },
@@ -260,7 +262,7 @@ export default function AboutPage() {
                 <div className="mt-1 text-xs sm:text-sm text-gray-500">{stat.label}</div>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -277,6 +279,7 @@ export default function AboutPage() {
           {/* Mission, Vision & Values Cards */}
           <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
             {/* Mission Card */}
+            <Reveal className="h-full">
             <div className="group h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]">
               <div className="mb-6 sm:mb-7 flex h-11 w-11 items-center justify-center rounded-[6px] bg-blue-50">
                 <Image
@@ -292,8 +295,10 @@ export default function AboutPage() {
                 Develop a comprehensive and efficient practice management solution that streamlines operations, ensures compliance with regulations, prioritizes data security and privacy, promotes integration and collaboration, provides analytics and business intelligence, offers a user-friendly interface, and commits to continuous improvement and innovation in professional practice.
               </p>
             </div>
+            </Reveal>
 
             {/* Vision Card */}
+            <Reveal delay={0.05} className="h-full">
             <div className="group h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]">
               <div className="mb-6 sm:mb-7 flex h-11 w-11 items-center justify-center rounded-[6px] bg-blue-50">
                 <Image
@@ -309,9 +314,11 @@ export default function AboutPage() {
                 Create a revolutionizing application, transforming the way professionals manage their practice by delivering a comprehensive, user-friendly, and innovative solution that optimizes processes, ensures regulatory compliance, enables secure data management, promotes seamless collaboration, and empowers data-driven decision-making for sustainable growth and success of professionals.
               </p>
             </div>
+            </Reveal>
 
             {/* Values Card */}
-            <div className="bg-white border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-lg transition-shadow sm:col-span-2 md:col-span-1" style={{ borderColor: '#B6C9F3' }}>
+            <Reveal delay={0.1} className="sm:col-span-2 md:col-span-1">
+            <div className="h-full bg-white border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-lg transition-shadow sm:col-span-2 md:col-span-1" style={{ borderColor: '#B6C9F3' }}>
               <div className="mb-6 sm:mb-7 flex h-11 w-11 items-center justify-center rounded-[6px] bg-blue-50">
                 <Image
                   src="/images/values-icon.svg"
@@ -337,6 +344,7 @@ export default function AboutPage() {
                 </ul>
               </div>
             </div>
+            </Reveal>
           </div>
         </div>
       </section>
