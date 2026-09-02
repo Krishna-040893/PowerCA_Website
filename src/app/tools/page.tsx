@@ -2,6 +2,8 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { SectionHeader } from '@/components/home/section-header'
+import { PageHero } from '@/components/layout/page-hero'
 import {
   Calculator,
   Receipt,
@@ -125,39 +127,35 @@ export default function ToolsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Free Tax & Financial Calculators
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Professional calculators designed for Chartered Accountants. Accurate calculations with latest Indian tax rates and compliance rules.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-                <span className="text-2xl">🇮🇳</span>
-                <span className="text-sm font-semibold">India Specific</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-                <span className="text-2xl">📊</span>
-                <span className="text-sm font-semibold">FY 2024-25 Updated</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-                <span className="text-2xl">✅</span>
-                <span className="text-sm font-semibold">100% Accurate</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-                <span className="text-2xl">🆓</span>
-                <span className="text-sm font-semibold">Always Free</span>
-              </div>
+      <PageHero
+        badge={{
+          icon: <Calculator className="w-3 h-3 sm:w-3.5 sm:h-3.5" />,
+          label: 'Free Tools for Professionals',
+        }}
+        title="Free Tax &"
+        accent="Financial Calculators"
+        description="Professional calculators designed for Chartered Accountants. Accurate calculations with latest Indian tax rates and compliance rules."
+      >
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          {[
+            { emoji: '🇮🇳', label: 'India Specific' },
+            { emoji: '📊', label: 'FY 2024-25 Updated' },
+            { emoji: '✅', label: '100% Accurate' },
+            { emoji: '🆓', label: 'Always Free' },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center gap-2 rounded-full border border-gray-100 bg-white px-4 py-2 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]"
+            >
+              <span className="text-xl">{item.emoji}</span>
+              <span className="text-sm font-semibold text-[#001525]">{item.label}</span>
             </div>
-          </div>
+          ))}
         </div>
-      </section>
+      </PageHero>
 
       {/* Calculators Grid */}
-      <section className="py-16">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px]">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {calculators.map((calc) => {
@@ -202,9 +200,11 @@ export default function ToolsPage() {
       </section>
 
       {/* Coming Soon Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-gray-50">
         <div className="container mx-auto px-6 lg:px-8">
-          <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">Coming Soon</h2>
+          <div className="mb-12">
+            <SectionHeader title="Coming" emphasis="Soon" />
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {upcomingCalculators.map((calc) => {
               const Icon = calc.icon
@@ -223,9 +223,11 @@ export default function ToolsPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
         <div className="container mx-auto px-6 lg:px-8">
-          <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">Why Use PowerCA Calculators?</h2>
+          <div className="mb-12">
+            <SectionHeader title="Why Use PowerCA" emphasis="Calculators?" />
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
@@ -271,9 +273,9 @@ export default function ToolsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-blue-600">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-blue-600">
         <div className="container mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
+          <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-normal tracking-tight leading-[1.15] text-white font-inter mb-4">
             Need More Than Just Calculators?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
@@ -295,10 +297,10 @@ export default function ToolsPage() {
       </section>
 
       {/* SEO Content */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-gray-50">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="max-w-4xl mx-auto prose prose-gray">
-            <h2 className="text-2xl font-semibold mb-4 leading-normal">About Our Tax Calculators</h2>
+            <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-normal tracking-tight leading-[1.15] text-[#001525] font-inter mb-4">About Our Tax Calculators</h2>
             <p className="text-gray-600 mb-4">
               PowerCA's suite of tax and financial calculators are designed specifically for Chartered Accountants and tax professionals in India.
               Each calculator is meticulously updated to reflect the latest changes in Indian tax laws, including GST rates, income tax slabs for FY 2024-25,

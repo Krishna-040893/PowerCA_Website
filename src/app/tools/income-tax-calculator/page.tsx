@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Calculator, RefreshCw, Download } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 import Link from 'next/link'
 
 export default function IncomeTaxCalculatorPage() {
@@ -198,17 +199,10 @@ https://powerca.in/tools/income-tax-calculator`
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
-      <div className="container mx-auto px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Income Tax Calculator India 2024-25
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Calculate your income tax for FY 2024-25 (AY 2025-26). Compare New vs Old tax regime instantly.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pb-12">
+      <PageHero title="Income Tax Calculator India 2024-25" description="Calculate your income tax for FY 2024-25 (AY 2025-26). Compare New vs Old tax regime instantly." />
+
+      <div className="container mx-auto px-6 lg:px-8 pt-4">
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Calculator Input */}

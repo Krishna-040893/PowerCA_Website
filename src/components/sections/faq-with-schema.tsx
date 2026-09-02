@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SectionHeader } from '@/components/home/section-header'
 
 interface FAQItem {
   question: string
@@ -11,6 +12,8 @@ interface FAQItem {
 
 interface FAQSectionProps {
   title?: string
+  /** Closing words of the title, set in bold. */
+  titleEmphasis?: string
   description?: string
   faqs: FAQItem[]
   className?: string
@@ -18,6 +21,7 @@ interface FAQSectionProps {
 
 export function FAQWithSchema({
   title = 'Frequently Asked Questions',
+  titleEmphasis,
   description,
   faqs,
   className
@@ -58,17 +62,14 @@ export function FAQWithSchema({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <section className={cn('py-10 sm:py-12 md:py-14 lg:py-16', className)}>
+      <section className={cn('py-7 sm:py-10 md:py-12 lg:py-[60px]', className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              {title}
-            </h2>
-            {description && (
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-                {description}
-              </p>
-            )}
+          <div className="mb-8 sm:mb-10 lg:mb-12">
+            <SectionHeader
+              title={title}
+              emphasis={titleEmphasis}
+              description={description}
+            />
           </div>
 
           <div className="max-w-7xl mx-auto">
@@ -78,11 +79,14 @@ export function FAQWithSchema({
                 return (
                   <div
                     key={`faq-${index}-${faq.question.substring(0, 20)}`}
-                    className="border border-gray-200 rounded-lg overflow-hidden h-auto"
+                    className={cn(
+                      'rounded-2xl border border-gray-200 bg-white h-auto transition-shadow',
+                      isOpen ? 'shadow-md' : 'shadow-sm hover:shadow-md'
+                    )}
                   >
                     <button
                       onClick={() => toggleAccordion(index)}
-                      className="w-full px-4 sm:px-5 lg:px-6 py-3 sm:py-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                      className="w-full rounded-2xl px-4 sm:px-5 lg:px-6 py-3 sm:py-4 text-left flex items-center justify-between"
                       aria-expanded={isOpen}
                       aria-controls={`faq-answer-${index}`}
                     >
@@ -100,11 +104,11 @@ export function FAQWithSchema({
                     <div
                       id={`faq-answer-${index}`}
                       className={cn(
-                        'px-4 sm:px-5 lg:px-6 bg-white overflow-hidden transition-all duration-300 ease-in-out',
-                        isOpen ? 'py-3 sm:py-4 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
+                        'px-4 sm:px-5 lg:px-6 overflow-hidden transition-all duration-300 ease-in-out',
+                        isOpen ? 'pb-4 sm:pb-5 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
                       )}
                     >
-                      <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                      <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
                         {faq.answer}
                       </p>
                     </div>

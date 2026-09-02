@@ -299,7 +299,15 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  /* The scale tailwind.config maps rounded-sm/md/lg/xl onto. It is also
+     declared in the @theme block above, which Tailwind v3 does not process, so
+     without these the four utilities resolve to an undefined var and drop out
+     entirely - every rounded-lg/xl on the site renders square. */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --background: #F8FBFC; /* site-wide half-white ground */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -373,6 +381,7 @@
   }
   body {
     @apply font-inter;
+    background-color: #F8FBFC;
   }
   code, pre {
     @apply font-mono;
@@ -448,3 +457,4 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.5) rgba(51, 65, 85, 0.3);
 }
+

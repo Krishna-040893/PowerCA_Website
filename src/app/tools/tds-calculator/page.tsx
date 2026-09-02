@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calculator, RefreshCw, Download, Info } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 import Link from 'next/link'
 
 const tdsRates = [
@@ -105,17 +106,10 @@ https://powerca.in/tools/tds-calculator`
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
-      <div className="container mx-auto px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            TDS Calculator India 2024-25
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Calculate TDS on various payments as per Income Tax Act. Free online tool for CAs and businesses.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pb-12">
+      <PageHero title="TDS Calculator India 2024-25" description="Calculate TDS on various payments as per Income Tax Act. Free online tool for CAs and businesses." />
+
+      <div className="container mx-auto px-6 lg:px-8 pt-4">
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Calculator Input */}
