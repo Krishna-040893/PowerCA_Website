@@ -884,10 +884,14 @@ export default function AdminBlogPage() {
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium mb-2">Featured Image</label>
+              <label className="block text-sm font-medium mb-1">Featured Image</label>
+              {/* The article hero crops to 21:9, so ask for that shape here. */}
+              <p className="text-xs text-gray-500 mb-2">
+                Recommended 1920 x 820 px (21:9). Other sizes are cropped to this shape from the centre.
+              </p>
 
               {imagePreview ? (
-                <div className="relative w-full h-48 border-2 border-gray-300 rounded-lg overflow-hidden">
+                <div className="relative w-full aspect-[21/9] border-2 border-gray-300 rounded-lg overflow-hidden">
                   <Image
                     src={imagePreview}
                     alt="Preview"
@@ -905,13 +909,13 @@ export default function AdminBlogPage() {
                 </div>
               ) : (
                 <div className="w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <label className="flex flex-col items-center justify-center w-full aspect-[21/9] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-10 h-10 mb-3 text-gray-400" />
                       <p className="mb-2 text-sm text-gray-500">
                         <span className="font-semibold">Click to upload</span> or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP (MAX. 10MB)</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP (MAX. 10MB) &middot; 1920 x 820 px recommended</p>
                     </div>
                     <input
                       type="file"

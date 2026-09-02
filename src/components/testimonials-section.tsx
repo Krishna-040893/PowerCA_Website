@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SectionHeader } from '@/components/home/section-header'
 
 interface Testimonial {
   name: string
@@ -52,47 +53,30 @@ export default function TestimonialsSection() {
 
   return (
     <div>
-      {/* Desktop/Tablet Header - Hidden on Mobile */}
-      <div className="hidden sm:grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center mb-8 sm:mb-12 lg:mb-16">
-        {/* Left Content - Title */}
-        <div className="lg:col-span-6">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2rem] xl:text-[2rem] 2xl:text-[42px] font-semibold font-inter leading-tight" style={{ color: '#001525' }}>
-            What Practicing Chartered Accountants Say!
-          </h2>
-        </div>
-
-        {/* Right Content - Description */}
-        <div className="lg:col-span-6">
-          <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-lg text-gray-600 leading-relaxed">
-            Don't just take our word for it. Here's what our clients have to say about PowerCA.
-          </p>
-        </div>
-      </div>
-
-      {/* Mobile Header - Only on Mobile */}
-      <div className="sm:hidden mb-6">
-        <h2 className="text-2xl font-semibold font-inter leading-tight mb-3" style={{ color: '#001525' }}>
-          What Practicing Chartered Accountants Say!
-        </h2>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          Don't just take our word for it. Here's what our clients have to say about PowerCA.
-        </p>
+      {/* Shared centred header, same as the other homepage sections. */}
+      <div className="mb-6 sm:mb-12 lg:mb-16">
+        <SectionHeader
+          title="What Practicing Chartered"
+          emphasis="Accountants Say"
+          trailing="!"
+          description="Don't just take our word for it. Here's what our clients have to say about PowerCA."
+        />
       </div>
 
       {/* Desktop/Tablet Testimonial Cards - Hidden on Mobile */}
-      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
         {testimonials.map((testimonial, index) => (
-          <div key={index} className="bg-white rounded-2xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm">
+          <div key={index} className="h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]">
             <div className="flex items-center mb-4 sm:mb-6">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-300 mr-3 sm:mr-4 flex items-center justify-center text-white font-semibold text-sm sm:text-base">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-50 mr-3 sm:mr-4 flex items-center justify-center text-blue-600 font-semibold text-sm sm:text-base">
                 {testimonial.initial}
               </div>
               <div>
-                <h3 className="font-semibold text-base sm:text-lg text-gray-900">{testimonial.name}</h3>
+                <h3 className="font-semibold text-base sm:text-lg text-[#001525] font-inter">{testimonial.name}</h3>
                 <p className="text-gray-500 text-xs sm:text-sm">{testimonial.title}, {testimonial.company}</p>
               </div>
             </div>
-            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+            <p className="text-sm leading-relaxed text-gray-500 font-inter">
               {testimonial.content}
             </p>
           </div>
@@ -101,17 +85,17 @@ export default function TestimonialsSection() {
 
       {/* Mobile Single Testimonial Card - Only on Mobile */}
       <div className="sm:hidden mb-6">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
           <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-10 h-10 rounded-full bg-blue-50 mr-3 flex items-center justify-center text-blue-600 font-semibold text-sm">
               {testimonials[currentMobileIndex].initial}
             </div>
             <div>
-              <h3 className="font-semibold text-base text-gray-900">{testimonials[currentMobileIndex].name}</h3>
+              <h3 className="font-semibold text-base text-[#001525] font-inter">{testimonials[currentMobileIndex].name}</h3>
               <p className="text-gray-500 text-xs">{testimonials[currentMobileIndex].title}, {testimonials[currentMobileIndex].company}</p>
             </div>
           </div>
-          <p className="text-gray-600 leading-relaxed text-sm">
+          <p className="text-sm leading-relaxed text-gray-500 font-inter">
             {testimonials[currentMobileIndex].content}
           </p>
         </div>

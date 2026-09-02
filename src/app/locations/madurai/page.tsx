@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { CheckCircle2, TrendingUp, ShoppingBag, Flower2, Building2 } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
   title: 'CA Software in Madurai - PowerCA for Temple City Chartered Accountants',
@@ -59,46 +60,39 @@ export default function MaduraiPage() {
         </div>
 
         {/* Hero Section */}
-        <section className="pt-12 pb-16">
-          <div className="container mx-auto px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                CA Software for <span className="text-blue-600">Madurai</span> - The Temple City
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                PowerCA - Designed for Chartered Accountants in Madurai serving temples, trusts, trading businesses, and textile merchants. Complete Tamil support.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/book-demo">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                    Book Madurai Demo (மதுரை)
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button size="lg" variant="outline">
-                    View Pricing
-                  </Button>
-                </Link>
-              </div>
+        <PageHero
+          title={<>CA Software for <span className="text-blue-600">Madurai</span> - The Temple City</>}
+          description={<>PowerCA - Designed for Chartered Accountants in Madurai serving temples, trusts, trading businesses, and textile merchants. Complete Tamil support.</>}
+        >
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/book-demo">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                      Book Madurai Demo (மதுரை)
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button size="lg" variant="outline">
+                      View Pricing
+                    </Button>
+                  </Link>
+                </div>
 
-              {/* Trust Badges */}
-              <div className="flex flex-wrap justify-center gap-6 mt-12">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
-                  <span className="text-gray-700 font-semibold">Temple Trust Ready</span>
+                {/* Trust Badges */}
+                <div className="flex flex-wrap justify-center gap-6 mt-12">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-blue-600" />
+                    <span className="text-gray-700 font-semibold">Temple Trust Ready</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5 text-green-600" />
+                    <span className="text-gray-700 font-semibold">Trading Focus</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Flower2 className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700 font-semibold">Jasmine Trade Support</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5 text-green-600" />
-                  <span className="text-gray-700 font-semibold">Trading Focus</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Flower2 className="h-5 w-5 text-purple-600" />
-                  <span className="text-gray-700 font-semibold">Jasmine Trade Support</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        </PageHero>
 
         {/* Local Features Section */}
         <section className="py-16 bg-white">

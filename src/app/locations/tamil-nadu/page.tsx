@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { MapPin, Users, Building2, Factory, Gem, Shirt, ShoppingBag, TrendingUp } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
   title: 'CA Software in Tamil Nadu - PowerCA for Chartered Accountants Across TN',
@@ -102,18 +103,17 @@ export default function TamilNaduPage() {
         </div>
 
         {/* Hero Section */}
-        <section className="pt-12 pb-16">
-          <div className="container mx-auto px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                CA Software for <span className="text-blue-600">Tamil Nadu</span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-4">
-                PowerCA - Comprehensive practice management software for Chartered Accountants across Tamil Nadu
-              </p>
-              <p className="text-lg text-gray-600 mb-8">
+        <PageHero
+          title={<>CA Software for <span className="text-blue-600">Tamil Nadu</span></>}
+          description={
+            <>
+              PowerCA - Comprehensive practice management software for Chartered Accountants across Tamil Nadu
+              <span className="mt-2 block">
                 தமிழ்நாட்டில் உள்ள சார்ட்டர்ட் அக்கவுண்டன்ட்களுக்கான முழுமையான மென்பொருள்
-              </p>
+              </span>
+            </>
+          }
+        >
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/book-demo">
                   <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
@@ -142,9 +142,7 @@ export default function TamilNaduPage() {
                   <span className="text-gray-700 font-semibold">TN GST Compliant</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
+        </PageHero>
 
         {/* Features for Tamil Nadu */}
         <section className="py-16 bg-white">
