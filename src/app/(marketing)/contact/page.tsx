@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { PageHero } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 
 function HeroSection() {
   return (
@@ -296,12 +297,12 @@ export default function ContactPage() {
 
         {/* Form beside a tall image card, as in the reference */}
         <div className="grid gap-6 lg:grid-cols-3 items-stretch">
-          <div className="lg:col-span-2">
+          <Reveal className="lg:col-span-2">
             <ContactForm />
-          </div>
+          </Reveal>
 
           {/* The office on the map, beside the form. */}
-          <div className="relative min-h-[320px] lg:min-h-0 overflow-hidden rounded-2xl border border-gray-100">
+          <Reveal delay={0.05} className="relative min-h-[320px] lg:min-h-0 overflow-hidden rounded-2xl border border-gray-100">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d608.3352149153551!2d77.2527547!3d10.5836394!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba9cdb2ca3bf08f%3A0x5f8035bea3394e46!2sTBS%20Technologies%20Private%20Limited!5e1!3m2!1sen!2sin!4v1761385887270!5m2!1sen!2sin"
               className="absolute inset-0 h-full w-full"
@@ -314,13 +315,13 @@ export default function ContactPage() {
             <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/70 bg-white/90 px-4 py-1.5 text-xs font-medium text-[#001525] shadow-sm backdrop-blur-sm">
               Find us here
             </span>
-          </div>
+          </Reveal>
         </div>
 
         {/* Ways to reach us */}
         <div className="mt-10 sm:mt-12 lg:mt-16 grid gap-8 sm:gap-10 sm:grid-cols-3">
-          {contactChannels.map((channel) => (
-            <div key={channel.title} className="flex flex-col items-center text-center">
+          {contactChannels.map((channel, index) => (
+            <Reveal key={channel.title} delay={index * 0.05} className="flex flex-col items-center text-center">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-[#001525]">
                 {channel.icon}
               </span>
@@ -340,7 +341,7 @@ export default function ContactPage() {
                   )
                 )}
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
 

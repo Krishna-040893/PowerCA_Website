@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '@/components/ui/input'
@@ -334,88 +333,61 @@ export default function AffiliateRegisterPage() {
         }}
       />
 
-      {/* PowerCA Logo */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1 }}
-        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
-      >
-        <Link href="/" className="block">
-          <Image
-            src="/images/powerca-logo-main.png"
-            alt="PowerCA"
-            width={200}
-            height={60}
-            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
-            priority
-          />
-        </Link>
-      </motion.div>
-
-      {/* Back to Login Button */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
-      >
-        <Link
-          href="/affiliate-login"
-          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </div>
-          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
-            Back to Login
-          </span>
-        </Link>
-      </motion.div>
 
       {/* Registration Form */}
       <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 pt-24 sm:pt-6 pb-8 relative z-10">
+        <div className="w-full max-w-5xl">
+          <Link
+            href="/affiliate-login"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Login
+          </Link>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-5xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-purple-100 overflow-hidden"
+          className="w-full max-w-5xl overflow-hidden rounded-3xl border border-white/60 bg-white/95 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_32px_64px_-24px_rgba(16,24,40,0.35)] backdrop-blur-sm"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-5">
-            <h1 className="text-xl sm:text-2xl font-bold text-center">
+          <div className="px-6 pb-6 pt-8 text-center sm:px-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-[#001525] font-inter">
               Join PowerCA Affiliate Program
             </h1>
+            <p className="mt-2 text-sm text-gray-500">
+              Three short steps and your partner account is ready
+            </p>
           </div>
 
           {/* Progress Steps */}
-          <div className="bg-white px-4 sm:px-8 py-4 border-b">
-            <div className="flex items-center justify-between sm:justify-center max-w-3xl mx-auto">
+          <div className="border-y border-gray-100 bg-gray-50/60 px-6 py-5 sm:px-8">
+            <div className="mx-auto flex max-w-2xl items-start justify-between">
               {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center">
+                <div key={step.number} className="flex flex-1 items-start last:flex-none">
                   {/* Step Circle and Label */}
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${
                         currentStep > step.number
-                          ? 'bg-green-500 border-green-500 text-white'
+                          ? 'bg-emerald-500 text-white'
                           : currentStep === step.number
-                          ? 'bg-purple-600 border-purple-600 text-white'
-                          : 'bg-gray-100 border-gray-300 text-gray-400'
+                          ? 'bg-[#001525] text-white'
+                          : 'border border-gray-200 bg-white text-gray-300'
                       }`}
                     >
                       {currentStep > step.number ? (
-                        <Check className="w-4 h-4 sm:w-6 sm:h-6" />
+                        <Check className="h-4 w-4" />
                       ) : (
-                        <step.icon className="w-4 h-4 sm:w-6 sm:h-6" />
+                        <step.icon className="h-4 w-4" />
                       )}
                     </div>
-                    <div className="mt-1.5 sm:mt-2 text-center">
+                    <div className="mt-2.5 text-center">
                       <p
-                        className={`text-[10px] sm:text-sm font-medium ${
-                          currentStep >= step.number ? 'text-gray-900' : 'text-gray-400'
+                        className={`whitespace-nowrap text-[11px] sm:text-xs font-medium leading-tight ${
+                          currentStep >= step.number ? 'text-[#001525]' : 'text-gray-400'
                         }`}
-                        style={{ maxWidth: '60px' }}
                       >
                         {step.title}
                       </p>
@@ -425,10 +397,9 @@ export default function AffiliateRegisterPage() {
                   {/* Connecting Line */}
                   {index < steps.length - 1 && (
                     <div
-                      className={`h-0.5 w-8 sm:w-24 md:w-32 mx-1 sm:mx-4 transition-all duration-300 ${
-                        currentStep > step.number ? 'bg-green-500' : 'bg-gray-300'
+                      className={`mx-2 mt-5 h-px flex-1 transition-colors duration-300 sm:mx-4 ${
+                        currentStep > step.number ? 'bg-emerald-500' : 'bg-gray-200'
                       }`}
-                      style={{ marginBottom: '20px' }}
                     />
                   )}
                 </div>
@@ -467,7 +438,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.fullName}
                           onChange={(e) => handleInputChange('fullName', e.target.value)}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Enter your full name"
                         />
                         {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
@@ -480,7 +451,7 @@ export default function AffiliateRegisterPage() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="your@email.com"
                         />
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -503,7 +474,7 @@ export default function AffiliateRegisterPage() {
                               handleInputChange('country', name)
                               handleInputChange('state', '')
                             }}
-                            className="flex gap-0 [&>input]:h-12 [&>input]:bg-purple-50 [&>input]:border-2 [&>input]:border-purple-200 [&>input]:rounded-r-xl [&>input]:focus:border-purple-400 [&>input]:placeholder:text-gray-400 placeholder:text-sm [&>input]:caret-purple-600 [&>input]:selection:bg-purple-200 [&>input]:selection:text-purple-900 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-purple-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+                            className="flex gap-0 [&>input]:h-12 [&>input]:bg-white [&>input]:border [&>input]:border-gray-200 [&>input]:rounded-r-xl [&>input]:focus:border-[#001525] [&>input]:placeholder:text-gray-400 placeholder:text-sm [&>input]:caret-purple-600 [&>input]:selection:bg-purple-200 [&>input]:selection:text-purple-900 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border [&>.PhoneInputCountry]:border-gray-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-6 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
                             numberInputProps={{
                               className: "flex-1"
                             }}
@@ -521,7 +492,7 @@ export default function AffiliateRegisterPage() {
                             type={showPassword ? 'text' : 'password'}
                             value={formData.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
-                            className="h-12 md:h-10 pr-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 md:h-12 pr-10 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                             placeholder="Minimum 8 characters"
                           />
                           <button
@@ -544,7 +515,7 @@ export default function AffiliateRegisterPage() {
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={formData.confirmPassword}
                             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                            className="h-12 md:h-10 pr-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="h-12 md:h-12 pr-10 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                             placeholder="Re-enter password"
                           />
                           <button
@@ -565,7 +536,7 @@ export default function AffiliateRegisterPage() {
                             id="state"
                             value={formData.state}
                             onChange={(e) => handleInputChange('state', e.target.value)}
-                            className="mt-1.5 h-12 md:h-10 w-full bg-purple-50 border-2 border-purple-200 focus:border-purple-400 rounded-xl px-3 text-sm outline-none appearance-none"
+                            className="mt-1.5 h-12 md:h-12 w-full rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] px-3 text-sm outline-none appearance-none"
                           >
                             <option value="">Select state</option>
                             {countryStates[formData.country].map(s => (
@@ -578,7 +549,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.state}
                             onChange={(e) => handleInputChange('state', e.target.value)}
-                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm"
+                            className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm"
                             placeholder="Your state"
                           />
                         )}
@@ -592,7 +563,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Your city"
                         />
                         {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
@@ -657,7 +628,7 @@ export default function AffiliateRegisterPage() {
                               type="text"
                               value={formData.firmName}
                               onChange={(e) => handleInputChange('firmName', e.target.value)}
-                              className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                              className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                               placeholder={formData.businessType === 'company' ? 'Your company name' : 'Your firm name'}
                             />
                             {errors.firmName && <p className="text-red-500 text-sm mt-1">{errors.firmName}</p>}
@@ -673,7 +644,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.designation}
                             onChange={(e) => handleInputChange('designation', e.target.value)}
-                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                             placeholder="Your role/designation"
                           />
                         </div>
@@ -688,7 +659,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.experience}
                             onChange={(e) => handleInputChange('experience', e.target.value)}
-                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                             placeholder="e.g., 5 years"
                           />
                         </div>
@@ -703,7 +674,7 @@ export default function AffiliateRegisterPage() {
                             type="text"
                             value={formData.monthlyLeads}
                             onChange={(e) => handleInputChange('monthlyLeads', e.target.value)}
-                            className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                            className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                             placeholder="e.g., 10-15 referrals"
                           />
                         </div>
@@ -716,7 +687,7 @@ export default function AffiliateRegisterPage() {
                           id="promotionMethod"
                           value={formData.promotionMethod}
                           onChange={(e) => handleInputChange('promotionMethod', e.target.value)}
-                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           rows={4}
                           placeholder="Describe your promotion strategy (min 50 characters)..."
                         />
@@ -733,7 +704,7 @@ export default function AffiliateRegisterPage() {
                           id="targetAudience"
                           value={formData.targetAudience}
                           onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           rows={4}
                           placeholder="Describe your target audience..."
                         />
@@ -772,7 +743,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.accountNumber}
                           onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Enter account number"
                           maxLength={18}
                         />
@@ -788,7 +759,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.ifscCode}
                           onChange={(e) => handleInputChange('ifscCode', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Enter IFSC code"
                           maxLength={11}
                         />
@@ -804,7 +775,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.panNumber}
                           onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Enter PAN number"
                           maxLength={10}
                         />
@@ -820,7 +791,7 @@ export default function AffiliateRegisterPage() {
                           type="text"
                           value={formData.gstNumber}
                           onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
-                          className="mt-1.5 h-12 md:h-10 border bg-purple-50 border-purple-200 focus:border-purple-400 rounded-xl placeholder:text-gray-400 placeholder:text-sm caret-purple-600 selection:bg-purple-200 selection:text-purple-900"
+                          className="mt-1.5 h-12 md:h-12 rounded-xl border border-gray-200 bg-white focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 text-[#001525] placeholder:text-gray-400 placeholder:text-sm caret-[#001525]"
                           placeholder="Enter GST number"
                           maxLength={15}
                         />
@@ -832,18 +803,18 @@ export default function AffiliateRegisterPage() {
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex flex-row justify-between gap-2 sm:gap-4 mt-4 pt-4 border-t">
+              <div className="mt-6 flex flex-row items-center justify-between gap-3 border-t border-gray-100 pt-6">
                 <button
                   type="button"
                   onClick={handleBack}
                   disabled={currentStep === 1}
-                  className={`inline-flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full font-medium transition-all duration-200 text-sm sm:text-base ${
+                  className={`inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-sm font-medium transition-colors ${
                     currentStep === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white border-2 border-purple-200 text-gray-700 hover:border-purple-400 hover:bg-purple-50'
+                      ? 'cursor-not-allowed border border-gray-100 bg-gray-50 text-gray-300'
+                      : 'border border-gray-200 bg-white text-[#001525] hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <ArrowLeft className="h-4 w-4" />
                   <span className="hidden sm:inline">Previous</span>
                   <span className="sm:hidden">Prev</span>
                 </button>
@@ -852,27 +823,27 @@ export default function AffiliateRegisterPage() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+                    className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#001525] px-7 text-sm font-medium text-white transition-colors hover:bg-[#00223a]"
                   >
                     <span className="hidden sm:inline">Next Step</span>
                     <span className="sm:hidden">Next</span>
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </button>
                 ) : (
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex items-center justify-center gap-1 sm:gap-2 px-4 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-medium hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#001525] px-7 text-sm font-medium text-white transition-colors hover:bg-[#00223a] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+                        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                         <span className="hidden sm:inline">Registering...</span>
                         <span className="sm:hidden">Loading...</span>
                       </div>
                     ) : (
                       <>
-                        <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Check className="h-4 w-4" />
                         <span className="hidden sm:inline">Complete Registration</span>
                         <span className="sm:hidden">Submit</span>
                       </>
@@ -883,6 +854,7 @@ export default function AffiliateRegisterPage() {
             </form>
           </div>
         </motion.div>
+        </div>
       </div>
     </div>
   )

@@ -5,8 +5,9 @@ import {motion, AnimatePresence  } from 'framer-motion'
 import Calendar from 'react-calendar'
 import { format, addDays, isSunday, isBefore, startOfDay, isToday  } from 'date-fns'
 import {useForm  } from 'react-hook-form'
-import {Calendar as CalendarIcon, Clock, User, Building, Phone, Mail, MessageSquare, CheckCircle, X, ArrowLeft, AlertCircle  } from 'lucide-react'
+import {Clock, CheckCircle, X, ArrowLeft, AlertCircle, MapPin  } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import 'react-calendar/dist/Calendar.css'
 import {toast  } from 'sonner'
 import PhoneInput from 'react-phone-number-input'
@@ -33,6 +34,30 @@ const timeSlots: TimeSlot[] = [
   { time: '11:00 AM - 12:00 PM', displayTime: '11:00 AM - 12:00 PM', startHour: 11 },
   { time: '02:00 PM - 03:00 PM', displayTime: '2:00 PM - 3:00 PM', startHour: 14 },
   { time: '04:00 PM - 05:00 PM', displayTime: '4:00 PM - 5:00 PM', startHour: 16 }
+]
+
+// The accounts linked from the booking card, same set as the footer.
+const demoSocialLinks = [
+  {
+    label: 'Facebook',
+    href: 'https://www.instagram.com/powerca24/',
+    path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/power-ca-tbs25100',
+    path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+  },
+  {
+    label: 'X',
+    href: 'https://x.com/Powerca_24',
+    path: 'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z',
+  },
+  {
+    label: 'YouTube',
+    href: 'https://www.youtube.com/@powerCA-24',
+    path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+  },
 ]
 
 const SLOT_CAPACITY = 5
@@ -206,57 +231,102 @@ export function DemoBooking() {
   }
 
   return (
-    <div className="relative min-h-screen">
-      {/* Background Image - Same as login */}
+    <div className="relative">
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/login-bg.png')"
-        }}
+        style={{ backgroundImage: "url('/images/login-bg.png')" }}
       />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-7 sm:py-10 md:py-12 lg:py-[60px]">
         {/* Back to Home Button */}
-        <div className="mb-3">
+        <div className="mb-4 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#001525] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 text-white" />
-            <span className="text-white font-medium text-sm">Back to Home</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium">Back to Home</span>
           </Link>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-5xl mx-auto"
+          className="max-w-6xl mx-auto"
         >
-          {/* Header */}
-          <div className="text-center mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
-              Book Your Free Demo
-            </h1>
-            <p className="text-sm sm:text-base text-white/90 px-4">
-              Schedule a personalized demo and discover how PowerCA can transform your practice
-            </p>
-          </div>
+          {/* Two panels in one card: who you are meeting on the left, the
+              booking itself on the right. */}
+          <div className="grid overflow-hidden rounded-3xl bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_24px_64px_-32px_rgba(16,24,40,0.30)] lg:grid-cols-[360px_1fr]">
+            <aside className="border-b border-gray-100 p-6 text-center sm:p-8 lg:border-b-0 lg:border-r lg:p-10 lg:text-left">
+              <Image
+                src="/images/powerca-logo-horizontal.png"
+                alt="PowerCA"
+                width={200}
+                height={60}
+                className="mx-auto h-10 w-auto lg:mx-0"
+              />
 
-          {/* Booking Form */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+              <p className="mt-7 text-[11px] font-medium uppercase tracking-[0.14em] text-gray-400">
+                Practice management for Chartered Accountants
+              </p>
+
+              <h1 className="mt-3 text-[30px] sm:text-[34px] font-normal leading-[1.2] tracking-tight text-[#001525] font-inter">
+                Book Your
+                <span className="mt-1 block font-semibold">Free Demo</span>
+              </h1>
+
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-gray-500 font-inter lg:mx-0">
+                Schedule a personalized demo and discover how PowerCA can transform your practice
+              </p>
+
+              <div className="mt-7 flex flex-wrap justify-center gap-3 lg:flex-col lg:items-start lg:justify-start lg:gap-3.5">
+                <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 lg:rounded-none lg:bg-transparent lg:items-start lg:px-0 lg:py-0">
+                  <Clock className="h-4 w-4 shrink-0 text-gray-400 lg:mt-0.5" />
+                  <span className="text-sm text-gray-500">
+                    <span className="font-medium text-[#001525]">Monday - Saturday</span>
+                    <span className="mx-1.5 text-gray-300">|</span>
+                    <span>1 hour session</span>
+                  </span>
+                </span>
+                <span className="inline-flex items-start gap-2 text-left">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <span className="max-w-[280px] text-sm leading-relaxed text-gray-500">
+                    No. 130, II Floor, Muneer Complex, Palani Road, Udumalpet.
+                  </span>
+                </span>
+              </div>
+
+              <div className="mt-8 flex items-center justify-center gap-3 lg:justify-start">
+                {demoSocialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:border-[#001525] hover:text-[#001525]"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={social.path} />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </aside>
+
+            <div className="p-6 sm:p-8 lg:p-10">
             {step === 1 ? (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="p-4 sm:p-6"
               >
-                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Calendar */}
+                <h2 className="mb-6 text-lg sm:text-xl font-semibold text-[#001525] font-inter">
+                  Select Date &amp; Time
+                </h2>
+
+                <div>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
-                      <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary-600" />
-                      Select Date
-                    </h2>
                     <div className="calendar-wrapper">
                       <style jsx global>{`
                         .react-calendar {
@@ -264,7 +334,7 @@ export function DemoBooking() {
                           border: none;
                           border-radius: 12px;
                           padding: 12px;
-                          background: #f9fafb;
+                          background: transparent;
                           font-family: inherit;
                         }
                         @media (min-width: 640px) {
@@ -285,20 +355,27 @@ export function DemoBooking() {
                             font-size: 14px;
                           }
                         }
+                        .react-calendar__tile {
+                          background: #f3f4f6;
+                          margin-bottom: 6px;
+                        }
                         .react-calendar__tile:hover {
-                          background: #dbeafe !important;
+                          background: #e5e7eb !important;
                         }
                         .react-calendar__tile--active {
-                          background: linear-gradient(to right, #2563eb, #1d4ed8) !important;
+                          background: #001525 !important;
                           color: white !important;
                         }
                         .react-calendar__tile--active:hover {
-                          background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+                          background: #00223a !important;
                         }
                         .react-calendar__tile--now {
-                          background: #eff6ff;
-                          font-weight: bold;
-                          color: #2563eb;
+                          font-weight: 600;
+                          color: #001525;
+                        }
+                        .react-calendar__month-view__days__day--neighboringMonth,
+                        .react-calendar__tile:disabled {
+                          background: transparent;
                         }
                         .sunday-disabled {
                           color: #ef4444 !important;
@@ -310,9 +387,10 @@ export function DemoBooking() {
                           cursor: not-allowed !important;
                         }
                         .react-calendar__navigation button {
-                          color: #2563eb;
+                          color: #001525;
                           font-size: 16px;
                           font-weight: 600;
+                          border-radius: 9999px;
                         }
                         @media (min-width: 640px) {
                           .react-calendar__navigation button {
@@ -320,13 +398,17 @@ export function DemoBooking() {
                           }
                         }
                         .react-calendar__navigation button:hover {
-                          background: #dbeafe;
+                          background: #f3f4f6;
                         }
                         .react-calendar__month-view__weekdays {
                           text-transform: uppercase;
                           font-size: 10px;
                           font-weight: 600;
-                          color: #6b7280;
+                          color: #9ca3af;
+                          padding-bottom: 8px;
+                        }
+                        .react-calendar__month-view__weekdays abbr {
+                          text-decoration: none;
                         }
                         @media (min-width: 640px) {
                           .react-calendar__month-view__weekdays {
@@ -349,14 +431,11 @@ export function DemoBooking() {
                   </div>
 
                   {/* Time Slots */}
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
-                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary-600" />
-                      Select Time
-                    </h2>
+                  <div className="mt-8">
+                    <h3 className="mb-4 text-base font-semibold text-[#001525] font-inter">Available Times</h3>
                     {selectedDate ? (
                       availableSlots.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1 sm:pr-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           {availableSlots.map((slot) => {
                             const count = slotCounts[slot.time] || 0
                             const isFull = count >= SLOT_CAPACITY
@@ -368,12 +447,12 @@ export function DemoBooking() {
                                 onClick={() => !isFull && setSelectedTime(slot.time)}
                                 disabled={isFull}
                                 className={`
-                                  px-2 sm:px-3 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm
+                                  h-12 rounded-xl px-3 text-sm font-medium transition-colors
                                   ${isFull
-                                    ? 'bg-red-50 text-red-400 cursor-not-allowed border border-red-200'
+                                    ? 'bg-red-50 text-red-400 cursor-not-allowed'
                                     : selectedTime === slot.time
-                                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                                      : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                      ? 'bg-[#001525] text-white'
+                                      : 'bg-gray-100 text-[#001525] hover:bg-gray-200'
                                   }
                                 `}
                               >
@@ -389,7 +468,7 @@ export function DemoBooking() {
                           })}
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center h-48 bg-yellow-50 rounded-lg border border-yellow-200 px-4">
+                        <div className="flex items-center justify-center rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-6">
                           <div className="text-center">
                             <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-600 mx-auto mb-2 sm:mb-3" />
                             <p className="text-gray-700 font-medium text-sm sm:text-base">No available time slots for this date</p>
@@ -402,8 +481,8 @@ export function DemoBooking() {
                         </div>
                       )
                     ) : (
-                      <div className="flex items-center justify-center h-48 bg-gray-50 rounded-lg">
-                        <p className="text-gray-500 text-sm sm:text-base">Please select a date first</p>
+                      <div className="flex items-center justify-center rounded-xl bg-gray-50 py-6">
+                        <p className="text-sm text-gray-500">Please select a date first</p>
                       </div>
                     )}
                   </div>
@@ -415,9 +494,9 @@ export function DemoBooking() {
                     onClick={() => setStep(2)}
                     disabled={!selectedDate || !selectedTime}
                     className={`
-                      w-full sm:w-auto px-6 sm:px-8 py-3 rounded-full font-semibold transition-all text-sm sm:text-base
+                      h-12 w-full rounded-full px-8 text-sm font-medium transition-colors sm:w-auto
                       ${selectedDate && selectedTime
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200'
+                        ? 'bg-[#001525] text-white hover:bg-[#00223a]'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }
                     `}
@@ -430,20 +509,23 @@ export function DemoBooking() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="p-4 sm:p-6"
               >
+                <h2 className="mb-6 text-lg sm:text-xl font-semibold text-[#001525] font-inter">
+                  Your Details
+                </h2>
+
                 {/* Selected DateTime Display */}
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                <div className="mb-6 rounded-xl bg-gray-50 p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-600">Selected Date & Time</p>
-                      <p className="text-sm sm:text-lg font-semibold text-gray-900">
+                      <p className="text-xs uppercase tracking-wide text-gray-400">Selected Date &amp; Time</p>
+                      <p className="mt-1 text-sm sm:text-base font-semibold text-[#001525]">
                         {selectedDate && format(selectedDate as Date, 'EEEE, MMMM d, yyyy')} at {selectedTime}
                       </p>
                     </div>
                     <button
                       onClick={() => setStep(1)}
-                      className="text-primary-600 hover:text-primary-700 font-medium text-sm self-start sm:self-auto"
+                      className="self-start text-sm font-medium text-gray-500 underline-offset-4 transition-colors hover:text-[#001525] hover:underline sm:self-auto"
                     >
                       Change
                     </button>
@@ -451,16 +533,15 @@ export function DemoBooking() {
                 </div>
 
                 {/* Contact Form */}
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                        <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                      <label className="mb-1.5 block text-[13px] font-medium text-[#001525]">
                         Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('name', { required: 'Name is required' })}
-                        className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 outline-none transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         placeholder="John Doe"
                       />
                       {errors.name && (
@@ -469,8 +550,7 @@ export function DemoBooking() {
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                        <Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                      <label className="mb-1.5 block text-[13px] font-medium text-[#001525]">
                         Email Address <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -482,7 +562,7 @@ export function DemoBooking() {
                           }
                         })}
                         type="email"
-                        className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 outline-none transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         placeholder="john@example.com"
                       />
                       {errors.email && (
@@ -491,8 +571,7 @@ export function DemoBooking() {
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                        <Phone className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                      <label className="mb-1.5 block text-[13px] font-medium text-[#001525]">
                         Phone Number <span className="text-red-500">*</span>
                       </label>
                       <PhoneInput
@@ -515,13 +594,12 @@ export function DemoBooking() {
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                        <Building className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                      <label className="mb-1.5 block text-[13px] font-medium text-[#001525]">
                         Firm Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('firmName', { required: 'Firm name is required' })}
-                        className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 outline-none transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         placeholder="ABC & Associates"
                       />
                       {errors.firmName && (
@@ -531,24 +609,23 @@ export function DemoBooking() {
                   </div>
 
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                      <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                    <label className="mb-1.5 block text-[13px] font-medium text-[#001525]">
                       Message (Optional)
                     </label>
                     <textarea
                       {...register('message')}
                       rows={3}
-                      className="w-full px-3 py-2 text-sm sm:text-base rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all resize-none"
+                      className="w-full resize-none rounded-xl border border-gray-200 bg-white p-4 text-sm text-[#001525] placeholder:text-gray-400 outline-none transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                       placeholder="Tell us about your requirements or any specific features you're interested in..."
                     />
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-0 pt-2 sm:pt-0">
+                  <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between sm:gap-0">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-gray-600 hover:text-gray-800 transition-all text-sm sm:text-base border border-gray-300 sm:border-0"
+                      className="h-12 w-full rounded-full border border-gray-200 px-6 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-[#001525] sm:w-auto"
                     >
                       Back
                     </button>
@@ -556,10 +633,10 @@ export function DemoBooking() {
                       type="submit"
                       disabled={loading}
                       className={`
-                        w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold transition-all text-sm sm:text-base
+                        h-12 w-full rounded-full px-8 text-sm font-medium transition-colors sm:w-auto
                         ${loading
-                          ? 'bg-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200'
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-[#001525] text-white hover:bg-[#00223a]'
                         }
                       `}
                     >
@@ -569,6 +646,7 @@ export function DemoBooking() {
                 </form>
               </motion.div>
             )}
+            </div>
           </div>
         </motion.div>
       </div>

@@ -7,6 +7,7 @@ import {Search, Calendar, User, AlertCircle, SlidersHorizontal, Loader2, Chevron
 import {Button  } from '@/components/ui/button'
 import {Input  } from '@/components/ui/input'
 import { PageHero } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 
 const POSTS_PER_PAGE = 8
 
@@ -415,7 +416,7 @@ export default function BlogPageClient() {
           {/* Blog Posts Grid */}
           {!loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pb-6 sm:pb-8">
-              {currentPosts.map((post) => {
+              {currentPosts.map((post, index) => {
                 const postContent = (
                   <>
                     <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100">
@@ -467,13 +468,17 @@ export default function BlogPageClient() {
                 )
 
                 return post.link ? (
-                  <Link href={post.link} key={post.id} className="group flex h-full flex-col">
-                    {postContent}
-                  </Link>
+                  <Reveal key={post.id} delay={(index % 3) * 0.05} className="h-full">
+                    <Link href={post.link} className="group flex h-full flex-col">
+                      {postContent}
+                    </Link>
+                  </Reveal>
                 ) : (
-                  <article key={post.id} className="group flex h-full flex-col">
-                    {postContent}
-                  </article>
+                  <Reveal key={post.id} delay={(index % 3) * 0.05} className="h-full">
+                    <article className="group flex h-full flex-col">
+                      {postContent}
+                    </article>
+                  </Reveal>
                 )
               })}
             </div>

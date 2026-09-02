@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Lock, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSearchParams, useRouter } from 'next/navigation'
 
@@ -104,24 +104,6 @@ function ResetPasswordForm() {
         }}
       />
 
-      {/* PowerCA Logo */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1 }}
-        className="absolute left-6 top-6 z-20"
-      >
-        <Link href="/" className="block">
-          <Image
-            src="/images/powerca-logo-main.png"
-            alt="PowerCA"
-            width={200}
-            height={60}
-            className="h-12 w-auto filter brightness-0 invert"
-            priority
-          />
-        </Link>
-      </motion.div>
 
       {/* Back to Login Button */}
       <motion.div
@@ -145,12 +127,33 @@ function ResetPasswordForm() {
 
       {/* Reset Password Form */}
       <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
+        <div className="w-full max-w-md">
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-lg bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-blue-100"
+          className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_32px_64px_-24px_rgba(16,24,40,0.35)] backdrop-blur-sm sm:p-8"
         >
+          {/* Brand */}
+          <div className="mb-6 flex justify-center">
+            <Image
+              src="/images/powerca-logo-main.png"
+              alt="PowerCA"
+              width={200}
+              height={58}
+              className="h-10 w-auto"
+              priority
+            />
+          </div>
+
           {success ? (
             // Success Message
             <div className="text-center">
@@ -181,7 +184,7 @@ function ResetPasswordForm() {
             // Reset Password Form
             <>
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <h1 className="mb-2 text-2xl font-semibold tracking-tight text-[#001525] font-inter">
                   Reset Your Password
                 </h1>
                 <p className="text-gray-600">
@@ -202,25 +205,24 @@ function ResetPasswordForm() {
 
                 {/* New Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-900 font-medium">
+                  <Label htmlFor="password" className="text-[13px] font-medium text-[#001525]">
                     New Password
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter new password"
-                      className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                       required
                       minLength={8}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#001525]"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -236,24 +238,23 @@ function ResetPasswordForm() {
 
                 {/* Confirm Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-gray-900 font-medium">
+                  <Label htmlFor="confirmPassword" className="text-[13px] font-medium text-[#001525]">
                     Confirm Password
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
-                      className="pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl"
+                      className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#001525]"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -268,7 +269,7 @@ function ResetPasswordForm() {
                 <Button
                   type="submit"
                   disabled={isLoading || !token}
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="h-12 md:h-12 w-full rounded-full bg-[#001525] text-sm font-medium text-white transition-colors hover:bg-[#00223a]"
                 >
                   {isLoading ? 'Resetting Password...' : 'Reset Password'}
                 </Button>
@@ -289,6 +290,7 @@ function ResetPasswordForm() {
             </>
           )}
         </motion.div>
+        </div>
       </div>
     </div>
   )
