@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionHeader } from '@/components/home/section-header'
+import { Reveal } from '@/components/ui/reveal'
 
 interface FAQItem {
   question: string
@@ -77,8 +78,8 @@ export function FAQWithSchema({
               {faqs.map((faq, index) => {
                 const isOpen = openIndices.has(index)
                 return (
+                  <Reveal key={`faq-${index}-${faq.question.substring(0, 20)}`} delay={(index % 2) * 0.05}>
                   <div
-                    key={`faq-${index}-${faq.question.substring(0, 20)}`}
                     className={cn(
                       'rounded-2xl border border-gray-200 bg-white h-auto transition-shadow',
                       isOpen ? 'shadow-md' : 'shadow-sm hover:shadow-md'
@@ -113,6 +114,7 @@ export function FAQWithSchema({
                       </p>
                     </div>
                   </div>
+                  </Reveal>
                 )
               })}
             </div>

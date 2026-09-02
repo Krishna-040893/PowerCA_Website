@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { PageHero } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 
 interface Subscription {
   id: string
@@ -194,6 +195,7 @@ function PricingContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
 
             {/* Card 1 - Server Installation & Configuration */}
+            <Reveal className="h-full">
             <div
               className="relative rounded-2xl h-full flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-gray-100 overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]"
             >
@@ -236,8 +238,10 @@ function PricingContent() {
                 </div>
               </div>
             </div>
+            </Reveal>
 
             {/* Card 2 - Annual Subscription */}
+            <Reveal delay={0.05} className="h-full">
             <div
               onClick={() => setActiveCard('annual')}
               className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
@@ -307,8 +311,10 @@ function PricingContent() {
                 )}
               </div>
             </div>
+            </Reveal>
 
             {/* Card 3 - One Time Payment (5 Year Plan) */}
+            <Reveal delay={0.1} className="h-full">
             <div
               onClick={() => setActiveCard('lifetime')}
               className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
@@ -395,8 +401,10 @@ function PricingContent() {
                 )}
               </div>
             </div>
+            </Reveal>
 
             {/* Card 4 - Large Practitioner / Enterprise */}
+            <Reveal delay={0.15} className="h-full">
             <div
               onClick={() => setActiveCard('enterprise')}
               className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
@@ -458,6 +466,7 @@ function PricingContent() {
                 )}
               </div>
             </div>
+            </Reveal>
 
           </div>
 

@@ -4,6 +4,7 @@ import { ClientLogos } from '@/components/client-logos'
 import { ProfessionRotator } from '@/components/home/profession-rotator'
 import { BenefitsAccordion } from '@/components/home/benefits-accordion'
 import { SectionHeader } from '@/components/home/section-header'
+import { Reveal } from '@/components/ui/reveal'
 import TestimonialsSection from '@/components/testimonials-section'
 import { FAQWithSchema, powerCAFAQs } from '@/components/sections/faq-with-schema'
 import { OverviewCarousel } from '@/components/sections/overview-carousel'
@@ -275,7 +276,7 @@ export default function Home() {
       </section>
 
       {/* Client Logos Section */}
-      <ClientLogos />
+      <Reveal><ClientLogos /></Reveal>
 
 
       {/* Streamline Your Practice - Text Only Section */}
@@ -299,7 +300,7 @@ export default function Home() {
           />
 
           {/* Modules Workflow Image */}
-          <div className="mt-6 sm:mt-8 lg:mt-10 flex justify-center">
+          <Reveal className="mt-6 sm:mt-8 lg:mt-10 flex justify-center">
             <div className="relative max-w-4xl w-full">
               <Image
                 src="/images/power-ca-modules-workflow.png"
@@ -312,7 +313,7 @@ export default function Home() {
                 quality={85}
               />
             </div>
-          </div>
+          </Reveal>
           </div>
         </div>
       </section>
@@ -330,9 +331,9 @@ export default function Home() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-            {featuredModules.map((module) => (
+            {featuredModules.map((module, index) => (
+              <Reveal key={module.title} delay={(index % 3) * 0.05} className="h-full">
               <div
-                key={module.title}
                 className="group h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
               >
                 <div className="mb-6 sm:mb-7 flex h-11 w-11 items-center justify-center rounded-[6px] bg-blue-50">
@@ -354,6 +355,7 @@ export default function Home() {
                   {module.description}
                 </p>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -385,7 +387,7 @@ export default function Home() {
 
             <div className="grid lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-16 items-start">
               {/* Left Content - 5 Steps - Wider */}
-              <div className="lg:col-span-2">
+              <Reveal className="lg:col-span-2">
                 {/* Step 1 */}
                 <div className="grid grid-cols-12 gap-2 sm:gap-3 md:gap-4 items-start pb-2 sm:pb-3">
                   <div className="col-span-2 sm:col-span-1">
@@ -534,10 +536,10 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Reveal>
 
               {/* Right Content - Professional Image */}
-              <div className="lg:col-span-1 flex justify-center lg:justify-end mt-8 lg:mt-0">
+              <Reveal delay={0.05} className="lg:col-span-1 flex justify-center lg:justify-end mt-8 lg:mt-0">
                 <div className="w-full max-w-lg">
                   <Image
                     src="/images/start-using-power-ca-today.jpg"
@@ -550,7 +552,7 @@ export default function Home() {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
                   />
                 </div>
-              </div>
+              </Reveal>
             </div>
           </div>
         </div>
@@ -567,7 +569,7 @@ export default function Home() {
 
           {/* Benefits Accordion Component */}
           <div className="mt-6 sm:mt-8">
-            <BenefitsAccordion />
+            <Reveal><BenefitsAccordion /></Reveal>
           </div>
         </div>
       </section>
@@ -595,7 +597,7 @@ export default function Home() {
           </div>
 
           <div className="px-3 sm:px-4 lg:px-5 relative z-10">
-            <OverviewCarousel />
+            <Reveal><OverviewCarousel /></Reveal>
           </div>
         </div>
       </section>
@@ -603,7 +605,7 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
-          <TestimonialsSection />
+          <Reveal><TestimonialsSection /></Reveal>
         </div>
       </section>
 
@@ -630,7 +632,7 @@ export default function Home() {
             {/* Three Content Grid - Equal Spans */}
             <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 mt-8 sm:mt-12 lg:mt-16 items-center">
               {/* Left Content - Description */}
-              <div className="lg:col-span-4">
+              <Reveal className="lg:col-span-4">
                 <p className="text-[15px] sm:text-[17px] leading-relaxed text-[#001525] font-inter">
                   Our Power CA software product operates on a client-server model, wherein the system is divided into two main components: the client and the server.
                 </p>
@@ -644,10 +646,10 @@ export default function Home() {
                     Our software ensures scalability and robust security measures, providing users with efficient access to centralized data and functionalities while maintaining a secure and reliable environment for collaborative use.
                   </p>
                 </div>
-              </div>
+              </Reveal>
 
               {/* Center Content - Features List */}
-              <div className="lg:col-span-4">
+              <Reveal delay={0.05} className="lg:col-span-4">
                 <div className="space-y-3 sm:space-y-4">
                   {clientServerFeatures.map((feature) => (
                     <div
@@ -671,10 +673,10 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Reveal>
 
               {/* Right Content - Server Network Diagram */}
-              <div className="lg:col-span-4 flex justify-center mt-6 lg:mt-0">
+              <Reveal delay={0.1} className="lg:col-span-4 flex justify-center mt-6 lg:mt-0">
                 <div className="max-w-lg w-full rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
                   <Image
                     src="/images/server-network-diagram.png"
@@ -687,7 +689,7 @@ export default function Home() {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                   />
                 </div>
-              </div>
+              </Reveal>
             </div>
           </div>
         </div>

@@ -20,7 +20,7 @@ export function ConditionalLayoutWrapper({ children }: ConditionalLayoutWrapperP
   }
 
   // Pages that should not have min-h-screen on main (to avoid extra space before footer)
-  const noMinHeightPages = ['/affiliate/referral', '/download-error']
+  const noMinHeightPages = ['/affiliate/referral', '/download-error', '/book-demo']
   const shouldSkipMinHeight = noMinHeightPages.some(page => pathname.startsWith(page))
 
   return (
