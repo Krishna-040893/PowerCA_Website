@@ -39,12 +39,17 @@ export function BenefitsAccordion() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {benefits.map((benefit, index) => (
-        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+        <div
+          key={index}
+          className={`rounded-2xl border border-gray-200 bg-white transition-shadow ${
+            openBenefit === index ? 'shadow-md' : 'shadow-sm hover:shadow-md'
+          }`}
+        >
           <button
             onClick={() => toggleBenefit(index)}
-            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+            className="w-full rounded-2xl px-6 py-4 text-left flex items-center justify-between"
           >
             <div className="flex items-start gap-4">
               <span className="text-2xl font-bold text-[#155dfc]">{benefit.number}</span>
@@ -57,8 +62,8 @@ export function BenefitsAccordion() {
             />
           </button>
           {openBenefit === index && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-              <p className="text-gray-600 ml-12">{benefit.description}</p>
+            <div className="px-6 pb-5">
+              <p className="text-gray-500 leading-relaxed ml-12">{benefit.description}</p>
             </div>
           )}
         </div>

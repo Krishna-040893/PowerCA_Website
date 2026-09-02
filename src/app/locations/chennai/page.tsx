@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
   title: 'CA Software in Chennai - PowerCA Practice Management for Tamil Nadu CAs',
@@ -58,46 +59,39 @@ export default function ChennaiPage() {
         </div>
 
         {/* Hero Section */}
-        <section className="pt-12 pb-16">
-          <div className="container mx-auto px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                Advanced CA Software for <span className="text-blue-600">Chennai</span> Professionals
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Tailored for Chartered Accountants in Chennai and Tamil Nadu. Complete practice management with Tamil Nadu GST compliance built-in
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/book-demo">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                    Book Chennai Demo
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button size="lg" variant="outline">
-                    View Pricing
-                  </Button>
-                </Link>
-              </div>
+        <PageHero
+          title={<>Advanced CA Software for <span className="text-blue-600">Chennai</span> Professionals</>}
+          description={<>Tailored for Chartered Accountants in Chennai and Tamil Nadu. Complete practice management with Tamil Nadu GST compliance built-in</>}
+        >
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/book-demo">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                      Book Chennai Demo
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button size="lg" variant="outline">
+                      View Pricing
+                    </Button>
+                  </Link>
+                </div>
 
-              {/* Trust Badges */}
-              <div className="flex flex-wrap justify-center gap-6 mt-12">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <span className="text-gray-700 font-semibold">Tamil Nadu Ready</span>
+                {/* Trust Badges */}
+                <div className="flex flex-wrap justify-center gap-6 mt-12">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-blue-600" />
+                    <span className="text-gray-700 font-semibold">Tamil Nadu Ready</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    <span className="text-gray-700 font-semibold">Tamil & English Support</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700 font-semibold">TN GST Compliant</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <span className="text-gray-700 font-semibold">Tamil & English Support</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  <span className="text-gray-700 font-semibold">TN GST Compliant</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        </PageHero>
 
         {/* Local Features Section */}
         <section className="py-16 bg-white">

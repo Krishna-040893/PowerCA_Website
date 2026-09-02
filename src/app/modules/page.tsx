@@ -2,6 +2,8 @@
 
 import { Network } from 'lucide-react'
 import Image from 'next/image'
+import { PageHero } from '@/components/layout/page-hero'
+import { SectionHeader } from '@/components/home/section-header'
 
 interface ModuleCardProps {
   iconSrc: string;
@@ -11,22 +13,24 @@ interface ModuleCardProps {
 
 function ModuleCard({ iconSrc, title, description }: ModuleCardProps) {
   return (
-    <div className="bg-white border-2 rounded-2xl p-4 sm:p-5 md:p-6 h-full" style={{ borderColor: '#b6c9f3' }}>
-      <div className="bg-white border-2 rounded-[10px] p-1.5 sm:p-2 w-fit mb-3 sm:mb-4 md:mb-5" style={{ borderColor: '#b6c9f3' }}>
+    <div className="group h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]">
+      {/* Soft neutral chip so the icons read as one set rather than competing
+          with the card's own border. */}
+      <div className="mb-6 sm:mb-7 flex h-11 w-11 items-center justify-center rounded-[6px] bg-blue-50">
         <Image
           src={iconSrc}
           alt={`${title} icon`}
           width={32}
           height={32}
-          className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8"
+          className="h-6 w-6"
         />
       </div>
 
-      <h3 className="text-lg sm:text-xl md:text-[24px] font-medium text-[#001525] leading-tight sm:leading-[36px] mb-3 sm:mb-4 md:mb-5 font-inter">
+      <h3 className="mb-2 text-lg sm:text-xl font-semibold leading-snug text-[#001525] font-inter">
         {title}
       </h3>
 
-      <p className="text-sm sm:text-base text-[#666d80] leading-relaxed sm:leading-[30px] text-justify font-inter">
+      <p className="text-sm leading-relaxed text-gray-500 font-inter">
         {description}
       </p>
     </div>
@@ -120,68 +124,28 @@ export default function ModulesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-3 sm:py-4 md:py-5 lg:py-8 flex items-center justify-center overflow-hidden bg-white">
-        {/* Background image with responsive padding */}
-        <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
-          <div
-            className="w-full h-full rounded-2xl"
-            style={{
-              backgroundImage: 'url(/modules-hero-bg.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          ></div>
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
-          <div className="max-w-6xl mx-auto text-center">
-            {/* Badge */}
-            <div className="mb-6 sm:mb-8">
-              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
-                <Network className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                Tailored Modules for Total Control
-              </span>
-            </div>
-
-            {/* Main Heading */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6 sm:mb-8 font-inter px-2">
-              Elevate Your Practice with
-              <br />
-              <span className="text-blue-600">Power CA Modules</span>
-            </h1>
-
-            {/* Description */}
-            <div className="mb-8 sm:mb-10 md:mb-12 max-w-5xl mx-auto px-2">
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed font-inter">
-                Optimize your practice with powerful management tools that streamline operations and enhance client services.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        backgroundImage="/modules-hero-bg.jpg"
+        badge={{
+          icon: <Network className="w-3 h-3 sm:w-3.5 sm:h-3.5" />,
+          label: 'Tailored Modules for Total Control',
+        }}
+        title="Elevate Your Practice with"
+        accent="Power CA Modules"
+        description="Optimize your practice with powerful management tools that streamline operations and enhance client services."
+      />
 
       {/* Modules Section */}
-      <section className="pt-4 sm:pt-5 md:pt-6 lg:pt-8 pb-6 sm:pb-8 bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
         <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
-          <div className="grid lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-start mb-8 sm:mb-10 md:mb-12 lg:mb-16">
-            {/* Left Content - Title */}
-            <div className="lg:col-span-2">
-              <h2 className="font-semibold leading-normal text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-gray-900 font-inter">
-                Explore Power CA Modules
-              </h2>
-            </div>
-
-            {/* Center Content - Description */}
-            <div className="lg:col-span-2">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed font-inter">
-                Discover the full potential of Power CA through its modules, designed to streamline operations, increase productivity, and enhance your practice with comprehensive tools.
-              </p>
-            </div>
-
+          <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <SectionHeader
+              title="Explore Power CA"
+              emphasis="Modules"
+              description="Discover the full potential of Power CA through its modules, designed to streamline operations, increase productivity, and enhance your practice with comprehensive tools."
+            />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {modules.map((module, index) => (
               <ModuleCard
                 key={index}

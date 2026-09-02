@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
+import { PageHero } from '@/components/layout/page-hero'
 
 interface Subscription {
   id: string
@@ -129,53 +130,29 @@ function PricingContent() {
   }, [session])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FBFC]">
       {/* Hero Section */}
-      <section className="relative py-4 sm:py-5 md:py-6 lg:py-8">
-        <div
-          className="absolute inset-0 rounded-2xl mx-3 sm:mx-4 md:mx-6 lg:mx-6"
-          style={{
-            backgroundImage: 'url("/images/pricing-hero-bg.jpg")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-6">
-          <div className="text-center">
-            {/* Badge */}
-            <div className="mb-3 sm:mb-4">
-              <span className="inline-flex items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-100 border border-blue-200 text-blue-700 rounded-full text-xs sm:text-sm font-medium font-inter">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" viewBox="0 0 24 24">
-                  <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M6 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M6 13L14.5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M6 13H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M9 13C15.667 13 15.667 3 9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Simple Plans, Clear Value
-              </span>
-            </div>
-
-            {/* Main Heading */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[2.5rem] 2xl:text-5xl font-semibold text-gray-900 leading-tight mb-3 sm:mb-4 lg:mb-5 font-inter px-2">
-              Choose Your Perfect
-              <br />
-              <span className="text-blue-600">Pricing Plan</span>
-            </h1>
-
-            {/* Description */}
-            <div className="mb-3 sm:mb-4 md:mb-5 max-w-5xl mx-auto px-2">
-              <p className="text-sm sm:text-base md:text-lg lg:text-base xl:text-base 2xl:text-xl text-gray-600 leading-relaxed font-inter">
-                Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        backgroundImage="/images/pricing-hero-bg.jpg"
+        badge={{
+          icon: (
+            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 3H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 13L14.5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 13H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M9 13C15.667 13 15.667 3 9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ),
+          label: 'Simple Plans, Clear Value',
+        }}
+        title="Choose Your Perfect"
+        accent="Pricing Plan"
+        description="Pick a plan that grows with you. Our pricing is straightforward—no hidden charges, just the features you need to succeed."
+      />
 
       {/* Pricing Cards */}
-      <div className="relative py-4 sm:py-5 md:py-6 lg:py-8">
+      <div className="relative py-7 sm:py-10 md:py-12 lg:py-[60px]">
         <div className="max-w-[1700px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
           {/* Loading state */}
@@ -218,7 +195,7 @@ function PricingContent() {
 
             {/* Card 1 - Server Installation & Configuration */}
             <div
-              className="relative rounded-2xl md:rounded-3xl shadow-lg h-full flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 overflow-hidden"
+              className="relative rounded-2xl h-full flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-gray-100 overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]"
             >
               {/* Decorative Background Elements */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-200/40 to-indigo-200/40 rounded-full -translate-y-20 translate-x-20"></div>
@@ -228,7 +205,7 @@ function PricingContent() {
               {/* Marketing Highlight */}
               <div className="relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 bg-amber-100 border-b border-amber-200 h-[100px] flex flex-col justify-center">
                 <div className="absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
-                <p className="relative text-base text-amber-700 font-bold">Base Server cost</p>
+                <p className="relative text-base text-amber-700 font-semibold">Base Server cost</p>
                 <p className="relative mt-1"><span className="text-base font-bold text-amber-700">MRP:</span> <span className="font-extrabold text-3xl text-amber-800 line-through">₹50,000</span></p>
               </div>
 
@@ -263,16 +240,16 @@ function PricingContent() {
             {/* Card 2 - Annual Subscription */}
             <div
               onClick={() => setActiveCard('annual')}
-              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
+              className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
                 activeCard === 'annual'
-                  ? 'bg-[#306bea] text-white border-2 border-[#306bea]'
-                  : 'bg-white border-2 border-gray-200'
+                  ? 'bg-[#306bea] text-white border border-[#306bea]'
+                  : 'bg-white border border-gray-100'
               }`}
             >
               {/* Marketing Highlight */}
               <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'annual' ? 'bg-white/15 border-b border-white/20' : 'bg-emerald-100 border-b border-emerald-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'annual' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
-                <p className={`relative font-bold text-lg ${activeCard === 'annual' ? 'text-white' : 'text-emerald-700'}`}>Great Opportunity for Prop. Firms</p>
+                <p className={`relative font-semibold text-base ${activeCard === 'annual' ? 'text-white' : 'text-emerald-700'}`}>Great Opportunity for Prop. Firms</p>
               </div>
 
               <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
@@ -296,11 +273,11 @@ function PricingContent() {
                 {/* Features */}
                 <div className="space-y-3 mb-6 mt-10">
                   {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div key={index} className="flex items-start gap-3">
+                      <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className={`text-base ${activeCard === 'annual' ? 'text-white/90' : 'text-[#666d80]'}`}>{feature}</span>
+                      <span className={`text-[15px] leading-relaxed ${activeCard === 'annual' ? 'text-white/90' : 'text-gray-500'}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -311,7 +288,7 @@ function PricingContent() {
                     <button
                       onClick={(e) => { e.stopPropagation(); handleOrderClick('annual', 1500); }}
                       disabled={loadingPlan === 'annual'}
-                      className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
+                      className={`w-full h-12 rounded-full text-base font-medium shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-colors ${
                         loadingPlan === 'annual'
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : activeCard === 'annual'
@@ -334,10 +311,10 @@ function PricingContent() {
             {/* Card 3 - One Time Payment (5 Year Plan) */}
             <div
               onClick={() => setActiveCard('lifetime')}
-              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
+              className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
                 activeCard === 'lifetime'
-                  ? 'bg-[#306bea] text-white border-2 border-[#306bea]'
-                  : 'bg-white border-2 border-gray-200'
+                  ? 'bg-[#306bea] text-white border border-[#306bea]'
+                  : 'bg-white border border-gray-100'
               }`}
             >
               {/* Background Pattern - Only show when active */}
@@ -356,7 +333,7 @@ function PricingContent() {
               {/* Marketing Highlight */}
               <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'lifetime' ? 'bg-white/15 border-b border-white/20' : 'bg-violet-100 border-b border-violet-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'lifetime' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
-                <p className={`relative font-bold text-lg leading-tight ${activeCard === 'lifetime' ? 'text-white' : 'text-violet-700'}`}>Economical & Inflation Protector</p>
+                <p className={`relative font-semibold text-base leading-tight ${activeCard === 'lifetime' ? 'text-white' : 'text-violet-700'}`}>Economical & Inflation Protector</p>
                 <p className={`relative text-sm mt-0.5 ${activeCard === 'lifetime' ? 'text-white/80' : 'text-violet-600'}`}>Assured Support for 2 Years</p>
               </div>
 
@@ -381,11 +358,11 @@ function PricingContent() {
                 {/* Features */}
                 <div className="space-y-3 mb-6 mt-10">
                   {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div key={index} className="flex items-start gap-3">
+                      <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className={`text-base ${activeCard === 'lifetime' ? 'text-white/90' : 'text-[#666d80]'}`}>{feature}</span>
+                      <span className={`text-[15px] leading-relaxed ${activeCard === 'lifetime' ? 'text-white/90' : 'text-gray-500'}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -399,7 +376,7 @@ function PricingContent() {
                         handleOrderClick('onetime', 3000);
                       }}
                       disabled={loadingPlan === 'onetime'}
-                      className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
+                      className={`w-full h-12 rounded-full text-base font-medium shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-colors ${
                         loadingPlan === 'onetime'
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : activeCard === 'lifetime'
@@ -422,16 +399,16 @@ function PricingContent() {
             {/* Card 4 - Large Practitioner / Enterprise */}
             <div
               onClick={() => setActiveCard('enterprise')}
-              className={`relative rounded-2xl md:rounded-3xl shadow-lg cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden ${
+              className={`relative rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_24px_48px_-20px_rgba(16,24,40,0.28)] ${
                 activeCard === 'enterprise'
                   ? 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white border-2 border-purple-500'
-                  : 'bg-white border-2 border-gray-200'
+                  : 'bg-white border border-gray-100'
               }`}
             >
               {/* Marketing Highlight */}
               <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'enterprise' ? 'bg-white/15 border-b border-white/20' : 'bg-rose-100 border-b border-rose-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'enterprise' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
-                <p className={`relative font-bold text-lg ${activeCard === 'enterprise' ? 'text-white' : 'text-rose-700'}`}>Customizable & Scalable</p>
+                <p className={`relative font-semibold text-base ${activeCard === 'enterprise' ? 'text-white' : 'text-rose-700'}`}>Customizable & Scalable</p>
                 <p className={`relative text-sm mt-0.5 ${activeCard === 'enterprise' ? 'text-white/80' : 'text-rose-600'}`}>Your Extended IT Arm</p>
               </div>
 
@@ -455,11 +432,11 @@ function PricingContent() {
                 {/* Features */}
                 <div className="space-y-3 mb-6">
                   {['Priority Support 24/7', 'Customization', 'Unlimited Users'].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <svg className={`w-5 h-5 flex-shrink-0 ${activeCard === 'enterprise' ? 'text-white' : 'text-purple-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div key={index} className="flex items-start gap-3">
+                      <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'enterprise' ? 'text-white' : 'text-purple-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className={`text-base ${activeCard === 'enterprise' ? 'text-white/90' : 'text-[#666d80]'}`}>{feature}</span>
+                      <span className={`text-[15px] leading-relaxed ${activeCard === 'enterprise' ? 'text-white/90' : 'text-gray-500'}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -469,7 +446,7 @@ function PricingContent() {
                   <div className="mt-auto">
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowEnterpriseModal(true); }}
-                      className={`w-full py-3.5 rounded-full text-lg font-medium shadow-lg transition-colors ${
+                      className={`w-full h-12 rounded-full text-base font-medium shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-colors ${
                         activeCard === 'enterprise'
                           ? 'bg-white text-purple-600 hover:bg-gray-50'
                           : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700'

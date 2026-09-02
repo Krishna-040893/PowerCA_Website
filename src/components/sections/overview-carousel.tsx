@@ -347,7 +347,7 @@ export function OverviewCarousel() {
               onClick={() => setFilterOpen((open) => !open)}
               aria-haspopup="listbox"
               aria-expanded={filterOpen}
-              className="inline-flex items-center gap-2 h-11 pl-4 pr-3 rounded-full border-2 bg-white/80 text-sm font-medium text-[#001525] hover:bg-white transition-colors duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2 h-11 pl-4 pr-3 rounded-full border border-gray-200 bg-white text-sm font-medium text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06)] hover:border-gray-300 transition-colors duration-200 cursor-pointer"
               style={{ borderColor: '#B6C9F3' }}
             >
               <FilterIcon />
@@ -410,7 +410,7 @@ export function OverviewCarousel() {
           <div className="w-full md:w-[400px] lg:w-[440px] md:h-full shrink-0 flex flex-col gap-3">
             {/* The poster opens the enlarged view; the call to action sits on
                 top of it, so the two are siblings rather than nested. */}
-            <div className="group relative w-full aspect-square md:aspect-auto md:flex-1 md:min-h-0 rounded-2xl overflow-hidden shadow-md ring-[3px] ring-[#155dfc]">
+            <div className="group relative w-full aspect-square md:aspect-auto md:flex-1 md:min-h-0 rounded-2xl overflow-hidden border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-16px_rgba(16,24,40,0.25)]">
               {caption && (
                 <Image
                   key={caption.src}
@@ -474,7 +474,7 @@ export function OverviewCarousel() {
 
             {/* How long until the next poster takes over */}
             <span
-              className="block w-full h-1.5 rounded-full bg-[#001525]/10 overflow-hidden pointer-events-none shrink-0"
+              className="block w-full h-1 rounded-full bg-gray-200 overflow-hidden pointer-events-none shrink-0"
               aria-hidden="true"
             >
               <span
@@ -487,15 +487,15 @@ export function OverviewCarousel() {
 
           {/* Upcoming thumbnails, then the selected poster's copy beside the
               controls */}
-          <div className="flex-1 min-w-0 flex flex-col">
-            <div className="flex gap-2 sm:gap-3 md:gap-4">
+          <div className="flex-1 min-w-0 flex flex-col md:h-full">
+            <div className="flex gap-2 sm:gap-3 md:gap-4 shrink-0">
               {upcoming.map(({ poster, index }, slot) => (
                 <button
                   key={`${poster.src}-${index}`}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   aria-label={`Show ${poster.title}`}
-                  className={`group relative flex-1 min-w-0 aspect-square rounded-2xl overflow-hidden shadow-sm cursor-pointer transition-all duration-500 grayscale hover:grayscale-0 opacity-80 hover:opacity-100 ${
+                  className={`group relative flex-1 min-w-0 aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] cursor-pointer transition-all duration-300 opacity-90 hover:opacity-100 hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.18)] ${
                     slot === 4 ? 'hidden lg:block' : slot === 5 ? 'hidden xl:block' : ''
                   }`}
                 >
@@ -515,30 +515,32 @@ export function OverviewCarousel() {
             {/* Copy on the left, controls on the right. The image's alt text
                 already carries the copy for screen readers, so the visible
                 block is hidden from them to avoid it being announced twice. */}
-            <div className="flex flex-col gap-5 pt-12">
-              <div className="flex-1 min-w-0" aria-hidden="true">
+            <div className="flex flex-1 min-h-0 flex-col gap-5 pt-6 sm:pt-8">
+              <div className="min-w-0 max-w-3xl" aria-hidden="true">
                 <p
                   key={caption?.title}
-                  className="text-sm sm:text-base font-bold tracking-normal uppercase transition-opacity duration-300 text-[#001525] md:text-[#155dfc]"
+                  className="text-lg sm:text-xl font-semibold leading-snug tracking-tight text-[#001525] transition-opacity duration-300 font-inter"
                 >
                   {loaded ? caption?.title : ''}
                 </p>
                 {loaded && caption?.description && (
                   <p
                     key={caption.description}
-                    className="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 transition-opacity duration-300"
+                    className="mt-2 text-[15px] leading-relaxed text-gray-500 transition-opacity duration-300 font-inter"
                   >
                     {caption.description}
                   </p>
                 )}
               </div>
 
-              <div className="shrink-0 flex items-center gap-3 self-center sm:self-start">
+              {/* Pinned to the foot of the column so it lines up with the
+                  featured poster's progress bar. */}
+              <div className="mt-auto shrink-0 flex items-center gap-3 self-center sm:self-start">
                 <button
                   type="button"
                   onClick={() => step(-1)}
                   aria-label="Previous poster"
-                  className="w-11 h-11 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
+                  className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-all duration-200 hover:border-blue-200 hover:text-blue-600 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_10px_24px_-10px_rgba(16,24,40,0.35)] cursor-pointer"
                   style={{ borderColor: '#B6C9F3' }}
                 >
                   <span className="rotate-180 flex"><ArrowIcon /></span>
@@ -561,7 +563,7 @@ export function OverviewCarousel() {
                   type="button"
                   onClick={() => step(1)}
                   aria-label="Next poster"
-                  className="w-11 h-11 rounded-full border-2 bg-white/80 flex items-center justify-center text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
+                  className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-all duration-200 hover:border-blue-200 hover:text-blue-600 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_10px_24px_-10px_rgba(16,24,40,0.35)] cursor-pointer"
                   style={{ borderColor: '#B6C9F3' }}
                 >
                   <ArrowIcon />

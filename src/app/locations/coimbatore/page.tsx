@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { CheckCircle2, TrendingUp, Shield, Factory, Shirt, Home } from 'lucide-react'
+import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
   title: 'CA Software in Coimbatore - PowerCA for Tamil Nadu Chartered Accountants',
@@ -59,46 +60,39 @@ export default function CoimbatorePage() {
         </div>
 
         {/* Hero Section */}
-        <section className="pt-12 pb-16">
-          <div className="container mx-auto px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                CA Software for <span className="text-blue-600">Coimbatore's</span> Manchester of South India
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                PowerCA - Designed for Chartered Accountants serving Coimbatore's textile, manufacturing, and engineering industries. Complete Tamil language support included.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/book-demo">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                    Book Coimbatore Demo (கோயம்புத்தூர்)
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button size="lg" variant="outline">
-                    View Pricing
-                  </Button>
-                </Link>
-              </div>
+        <PageHero
+          title={<>CA Software for <span className="text-blue-600">Coimbatore's</span> Manchester of South India</>}
+          description={<>PowerCA - Designed for Chartered Accountants serving Coimbatore's textile, manufacturing, and engineering industries. Complete Tamil language support included.</>}
+        >
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/book-demo">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                      Book Coimbatore Demo (கோயம்புத்தூர்)
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button size="lg" variant="outline">
+                      View Pricing
+                    </Button>
+                  </Link>
+                </div>
 
-              {/* Trust Badges */}
-              <div className="flex flex-wrap justify-center gap-6 mt-12">
-                <div className="flex items-center gap-2">
-                  <Shirt className="h-5 w-5 text-blue-600" />
-                  <span className="text-gray-700 font-semibold">Textile Industry Ready</span>
+                {/* Trust Badges */}
+                <div className="flex flex-wrap justify-center gap-6 mt-12">
+                  <div className="flex items-center gap-2">
+                    <Shirt className="h-5 w-5 text-blue-600" />
+                    <span className="text-gray-700 font-semibold">Textile Industry Ready</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Factory className="h-5 w-5 text-green-600" />
+                    <span className="text-gray-700 font-semibold">Manufacturing Focus</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700 font-semibold">Tamil Support</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Factory className="h-5 w-5 text-green-600" />
-                  <span className="text-gray-700 font-semibold">Manufacturing Focus</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  <span className="text-gray-700 font-semibold">Tamil Support</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        </PageHero>
 
         {/* Local Features Section */}
         <section className="py-16 bg-white">
