@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Reveal } from '@/components/ui/reveal'
 import type { ReactNode } from 'react'
 
 interface SectionHeaderProps {
@@ -25,7 +26,7 @@ export function SectionHeader({
   cta,
 }: SectionHeaderProps) {
   return (
-    <div className="mx-auto max-w-6xl text-center">
+    <Reveal className="mx-auto max-w-6xl text-center">
       <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-normal tracking-tight leading-[1.15] text-[#001525] font-inter">
         {title}
         {emphasis && <> <span className="font-semibold">{emphasis}</span></>}
@@ -57,6 +58,6 @@ export function SectionHeader({
           </Link>
         </div>
       )}
-    </div>
+    </Reveal>
   )
 }

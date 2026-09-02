@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { SectionHeader } from '@/components/home/section-header'
 import { PageHero } from '@/components/layout/page-hero'
+import { Reveal } from '@/components/ui/reveal'
 import {
   Calculator,
   Receipt,
@@ -158,10 +159,11 @@ export default function ToolsPage() {
       <section className="py-7 sm:py-10 md:py-12 lg:py-[60px]">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {calculators.map((calc) => {
+            {calculators.map((calc, index) => {
               const Icon = calc.icon
               return (
-                <Card key={calc.title} className="relative overflow-hidden hover:shadow-xl transition-shadow">
+                <Reveal key={calc.title} delay={(index % 3) * 0.05}>
+                <Card className="relative h-full overflow-hidden hover:shadow-xl transition-shadow">
                   {calc.popular && (
                     <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                       POPULAR
@@ -193,6 +195,7 @@ export default function ToolsPage() {
                     </Link>
                   </div>
                 </Card>
+                </Reveal>
               )
             })}
           </div>

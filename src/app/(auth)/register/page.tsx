@@ -12,7 +12,7 @@ import {Label  } from '@/components/ui/label'
 import {RadioGroup, RadioGroupItem  } from '@/components/ui/radio-group'
 import {Checkbox  } from '@/components/ui/checkbox'
 import {useRouter, useSearchParams  } from 'next/navigation'
-import {Eye, EyeOff, User, Mail, Lock, ArrowLeft, Shield, GraduationCap  } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, Shield, GraduationCap } from 'lucide-react'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 
@@ -238,59 +238,42 @@ function RegisterContent() {
         }}
       />
 
-      {/* PowerCA Logo */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1 }}
-        className="absolute left-4 sm:left-6 top-4 sm:top-6 z-20"
-      >
-        <Link href="/" className="block">
-          <Image
-            src="/images/powerca-logo-main.png"
-            alt="PowerCA"
-            width={200}
-            height={58}
-            className="h-10 sm:h-12 w-auto filter brightness-0 invert"
-            priority
-          />
-        </Link>
-      </motion.div>
-
-      {/* Back to Home Button */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-20"
-      >
-        <Link
-          href="/"
-          className="group flex items-center gap-3 px-3 sm:px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </div>
-          <span className="hidden sm:inline text-white font-medium text-sm tracking-wide">
-            Back to Home
-          </span>
-        </Link>
-      </motion.div>
 
       {/* Register Form */}
       <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 pt-20 sm:pt-6 relative z-10">
+        <div className="w-full max-w-4xl">
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border-2 border-blue-100"
+          className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_32px_64px_-24px_rgba(16,24,40,0.35)] backdrop-blur-sm sm:p-8"
         >
+          {/* Brand */}
+          <div className="mb-6 flex justify-center">
+            <Image
+              src="/images/powerca-logo-main.png"
+              alt="PowerCA"
+              width={200}
+              height={58}
+              className="h-10 w-auto"
+              priority
+            />
+          </div>
+
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="mb-2 text-2xl font-semibold tracking-tight text-[#001525] font-inter">
               Welcome to Power CA
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm text-gray-500">
               Please enter your details to sign Up your new account
             </p>
           </div>
@@ -326,11 +309,10 @@ function RegisterContent() {
               <div className="space-y-6">
                 {/* Name Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-900 font-medium">
+                  <Label htmlFor="name" className="text-[13px] font-medium text-[#001525]">
                     Name <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="name"
                       type="text"
@@ -338,7 +320,7 @@ function RegisterContent() {
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       onBlur={() => handleBlur('name')}
                       placeholder="Enter Your Name"
-                      className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                      className={`h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 ${
                         fieldErrors.name ? 'border-red-500 focus:border-red-500' : ''
                       }`}
                       required
@@ -351,17 +333,17 @@ function RegisterContent() {
 
                 {/* Mobile Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="mobile" className="text-gray-900 font-medium">
+                  <Label htmlFor="mobile" className="text-[13px] font-medium text-[#001525]">
                     Mobile Number <span className="text-red-500">*</span>
                   </Label>
-                  <div className={fieldErrors.mobile ? 'border-red-500' : ''}>
+                  <div className={fieldErrors.mobile ? '[&_input]:!border-red-500 [&_.PhoneInputCountry]:!border-red-500' : ''}>
                     <PhoneInput
                       international
                       defaultCountry="IN"
                       value={formData.mobile}
                       onChange={(value) => handleInputChange('mobile', value || '')}
                       onBlur={() => handleBlur('mobile')}
-                      className="flex gap-0 [&>input]:h-12 [&>input]:md:h-11 [&>input]:bg-blue-50 [&>input]:border-2 [&>input]:border-blue-200 [&>input]:rounded-r-xl [&>input]:focus:border-blue-400 [&>input]:placeholder:text-gray-400 [&>input]:px-4 [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:md:h-11 [&>.PhoneInputCountry]:bg-transparent [&>.PhoneInputCountry]:border-2 [&>.PhoneInputCountry]:border-blue-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-5 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
+                      className="flex gap-0 [&>input]:h-12 [&>input]:md:h-12 [&>input]:bg-white [&>input]:border [&>input]:border-gray-200 [&>input]:rounded-r-xl [&>input]:px-4 [&>input]:text-sm [&>input]:text-[#001525] [&>input]:placeholder:text-gray-400 [&>input]:transition-all [&>input]:focus:border-[#001525] [&>input]:focus:outline-none [&>.PhoneInputCountry]:h-12 [&>.PhoneInputCountry]:md:h-12 [&>.PhoneInputCountry]:bg-white [&>.PhoneInputCountry]:border [&>.PhoneInputCountry]:border-gray-200 [&>.PhoneInputCountry]:border-r-0 [&>.PhoneInputCountry]:rounded-l-xl [&>.PhoneInputCountry]:px-3 [&>.PhoneInputCountry]:flex [&>.PhoneInputCountry]:items-center [&>.PhoneInputCountry]:gap-2 [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-5 [&_.PhoneInputCountryIcon]:shadow-none [&_.PhoneInputCountrySelectArrow]:opacity-50"
                       numberInputProps={{
                         className: "flex-1"
                       }}
@@ -379,11 +361,10 @@ function RegisterContent() {
               <div className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-900 font-medium">
+                  <Label htmlFor="email" className="text-[13px] font-medium text-[#001525]">
                     Email <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="email"
                       type="email"
@@ -391,7 +372,7 @@ function RegisterContent() {
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       onBlur={() => handleBlur('email')}
                       placeholder="Enter Your Email"
-                      className={`pl-10 pr-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                      className={`pr-11 h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 ${
                         fieldErrors.email ? 'border-red-500 focus:border-red-500' : ''
                       }`}
                       required
@@ -404,11 +385,10 @@ function RegisterContent() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-900 font-medium">
+                  <Label htmlFor="password" className="text-[13px] font-medium text-[#001525]">
                     Password <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -416,7 +396,7 @@ function RegisterContent() {
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       onBlur={() => handleBlur('password')}
                       placeholder="Enter Your Password"
-                      className={`pl-10 pr-10 h-12 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                      className={`pr-11 h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 ${
                         fieldErrors.password ? 'border-red-500 focus:border-red-500' : ''
                       }`}
                       required
@@ -424,7 +404,7 @@ function RegisterContent() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#001525]"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -449,7 +429,7 @@ function RegisterContent() {
             {userType === 'professional' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-3">
-                  <Label className="text-gray-900 font-medium">Professional Type <span className="text-red-500">*</span></Label>
+                  <Label className="text-[13px] font-medium text-[#001525]">Professional Type <span className="text-red-500">*</span></Label>
                   <RadioGroup
                     value={formData.professionalType}
                     onValueChange={(value) => handleInputChange('professionalType', value)}
@@ -475,11 +455,10 @@ function RegisterContent() {
                 </div>
                 {formData.professionalType !== 'Others' && (
                   <div className="space-y-2">
-                    <Label htmlFor="membershipNo" className="text-gray-900 font-medium">
+                    <Label htmlFor="membershipNo" className="text-[13px] font-medium text-[#001525]">
                       Membership No <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
-                      <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <Input
                         id="membershipNo"
                         type="text"
@@ -491,7 +470,7 @@ function RegisterContent() {
                         onBlur={() => handleBlur('membershipNumber')}
                         maxLength={6}
                         placeholder="Enter 6-digit number"
-                        className={`pl-10 h-12 md:h-11 bg-blue-50 border-blue-200 focus:border-blue-400 rounded-xl ${
+                        className={`h-12 md:h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#001525] placeholder:text-gray-400 transition-all focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10 ${
                           fieldErrors.membershipNumber ? 'border-red-500 focus:border-red-500' : ''
                         }`}
                       />
@@ -535,7 +514,7 @@ function RegisterContent() {
               <Button
                 type="submit"
                 disabled={isLoading || !agreeToTerms}
-                className="h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                className="h-12 md:h-12 rounded-full bg-[#001525] text-sm font-medium text-white transition-colors hover:bg-[#00223a] disabled:opacity-50"
                 style={{
                   width: '465px',
                   maxWidth: '100%'
@@ -559,6 +538,7 @@ function RegisterContent() {
             </div>
           </form>
         </motion.div>
+        </div>
       </div>
     </div>
   )
