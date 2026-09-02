@@ -14,8 +14,9 @@ export function ClientLogos() {
     <section className="py-4 sm:py-5 md:py-6 lg:py-8 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold mb-2" style={{ color: '#001525' }}>Trusted by</h2>
-          <p className="text-xl text-blue-600 font-semibold">Chartered Accountants</p>
+          <h2 className="text-2xl font-bold" style={{ color: '#001525' }}>
+            Trusted by <span className="text-blue-600">Chartered Accountants</span>
+          </h2>
         </div>
 
         {/* Static Logos Grid */}

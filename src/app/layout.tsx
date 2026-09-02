@@ -77,10 +77,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // Extensions inject attributes on <html> and <body> before React hydrates
+    // (data-qb-installed, and similar), so ignore attribute drift on the two
+    // elements we do not control.
+    <html lang="en" suppressHydrationWarning>
       <head />
       <body
         className={`${inter.variable} font-inter antialiased`}
+        suppressHydrationWarning
       >
         <GlobalErrorBoundary>
           <BrowserCheck />

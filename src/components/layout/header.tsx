@@ -1,6 +1,6 @@
 'use client'
 
-import {useState  } from 'react'
+import {useState, useEffect  } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {motion  } from 'framer-motion'
@@ -18,12 +18,24 @@ import {DropdownMenu,
  } from '@/components/ui/dropdown-menu'
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const { data: session, status } = useSession()
   const pathname = usePathname()
 
+  // Transparent over the hero, solid white once the page moves under it, so the
+  // nav stays readable against whatever scrolls past.
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <header
-      className="sticky top-0 w-full z-[60] bg-white shadow-sm"
+      className={`sticky top-0 w-full z-[60] transition-colors duration-200 ${
+        isScrolled ? 'bg-white' : 'bg-transparent'
+      }`}
     >
       <div className="w-full px-4 sm:px-6 lg:px-6 xl:px-12">
         <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20 relative">
@@ -59,7 +71,7 @@ export function Header() {
                       className="relative group"
                     >
                       <motion.div
-                        className="relative px-4 py-2 rounded-full text-[13px] font-semibold bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md hover:shadow-lg transition-all"
+                        className="relative px-4 py-2 rounded-full text-[13px] font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:shadow-lg transition-all"
                         whileHover={{ scale: 1.05 }}
                         transition={{ type: "spring", stiffness: 400 }}
                       >
@@ -69,10 +81,10 @@ export function Header() {
                   ) : (
                     <Link
                       href={item.href}
-                      className={`font-medium transition-colors px-2 ${
+                      className={`relative inline-block text-[15px] transition-colors px-2 pb-1 ${
                         isActive
-                          ? 'text-[#2563eb] font-semibold text-[17px]'
-                          : 'text-gray-600 hover:text-[#2563eb] text-[15px]'
+                          ? 'text-[#2563eb] font-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:w-1/2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-[#2563eb]'
+                          : 'text-gray-600 hover:text-[#2563eb] font-medium'
                       }`}
                     >
                       {item.title}
@@ -90,7 +102,7 @@ export function Header() {
             ) : session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 rounded-[50px] px-10 py-5 bg-[rgb(21,93,252)] text-white hover:text-white hover:bg-[rgb(21,93,252)]/90 transition-colors">
+                  <Button variant="ghost" size="sm" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#155dfc] hover:bg-[#155dfc] px-6 py-5 text-sm font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(21,93,252,0.55)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(21,93,252,0.65)] hover:text-white">
                     <User className="w-4 h-4" />
                     <span>{session?.user?.name || session?.user?.email || 'User'}</span>
                     <ChevronDown className="w-4 h-4 ml-1" />
@@ -162,7 +174,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-800 hover:text-blue-600 font-medium flex items-center space-x-1 border border-gray-200 hover:border-blue-300 rounded-full px-8 py-5 bg-white hover:bg-blue-50 transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white hover:bg-blue-50 px-6 py-5 text-sm font-medium text-gray-800 shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(16,24,40,0.45)] hover:text-blue-600"
                     >
                       <span>Sign In</span>
                       <ChevronDown className="w-4 h-4" />
@@ -194,8 +206,7 @@ export function Header() {
                 </DropdownMenu>
                 <Button
                   size="sm"
-                  className="text-white rounded-full hover:opacity-90 transition-opacity px-8 py-5 font-medium"
-                  style={{ backgroundColor: '#155dfc' }}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#155dfc] hover:bg-[#155dfc] px-6 py-5 text-sm font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(21,93,252,0.55)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(21,93,252,0.65)] hover:text-white"
                   asChild
                 >
                   <Link href="/book-demo">Book Demo</Link>
@@ -206,7 +217,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="lg:hidden p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -237,7 +248,7 @@ export function Header() {
                     href={item.href}
                     className={`font-medium transition-colors ${
                       isHighlighted
-                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg text-[15px] text-center inline-block shadow-md'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-full text-[15px] text-center inline-block shadow-md'
                         : isActive
                         ? 'text-[#2563eb] font-semibold text-[17px]'
                         : 'text-gray-700 hover:text-[#2563eb] text-[15px]'
