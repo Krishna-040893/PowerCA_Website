@@ -88,6 +88,30 @@ const featuredModules = [
   },
 ]
 
+// What the client-server model gives a practice, listed beside the diagram.
+const clientServerFeatures = [
+  {
+    title: 'Regulatory compliance',
+    icon: '/images/regulatory-compliance-icon.png',
+    alt: 'Regulatory Compliance Icon - Ensure tax and GST compliance for CA practices in India',
+  },
+  {
+    title: 'Real Time Analysis',
+    icon: '/images/real-time-analysis-icon.png',
+    alt: 'Real-Time Analysis Icon - Live data analytics and reporting for CA firms',
+  },
+  {
+    title: 'Data Security',
+    icon: '/images/data-security-icon.png',
+    alt: 'Data Security Icon - Secure client data protection with encryption for CA practices',
+  },
+  {
+    title: '24/7 Dedicated Support',
+    icon: '/images/247-dedicated-support-icon.png',
+    alt: '24/7 Dedicated Support Icon - Round-the-clock technical support for PowerCA users',
+  },
+]
+
 export default function Home() {
   // LocalBusiness Schema for SEO
   const localBusinessSchema = {
@@ -604,111 +628,60 @@ export default function Home() {
             />
 
             {/* Three Content Grid - Equal Spans */}
-            <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 mt-8 sm:mt-12 lg:mt-16">
+            <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 mt-8 sm:mt-12 lg:mt-16 items-center">
               {/* Left Content - Description */}
               <div className="lg:col-span-4">
-                <div className="space-y-4 sm:space-y-6">
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Our Power CA software product operates on a client-server model, wherein the system is divided into two main components: the client and the server.
-                  </p>
+                <p className="text-[15px] sm:text-[17px] leading-relaxed text-[#001525] font-inter">
+                  Our Power CA software product operates on a client-server model, wherein the system is divided into two main components: the client and the server.
+                </p>
 
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                <div className="mt-5 space-y-4 sm:space-y-5">
+                  <p className="text-[15px] leading-relaxed text-gray-500 font-inter">
                     The server hosts the core functionalities and data, managing requests from clients and executing operations. Clients, which can be desktop applications interact with the server to access these functionalities. Through communication over a network using protocols like HTTP or TCP/IP, SMTP, clients send requests to the server, which responds accordingly, managing data integrity, security, and concurrency.
                   </p>
 
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                  <p className="text-[15px] leading-relaxed text-gray-500 font-inter">
                     Our software ensures scalability and robust security measures, providing users with efficient access to centralized data and functionalities while maintaining a secure and reliable environment for collaborative use.
                   </p>
                 </div>
               </div>
 
               {/* Center Content - Features List */}
-              <div className="lg:col-span-4 py-2 sm:py-4">
-                <div className="space-y-4 sm:space-y-6">
-                  {/* Regulatory compliance */}
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
-                      <Image
-                        src="/images/regulatory-compliance-icon.png"
-                        alt="Regulatory Compliance Icon - Ensure tax and GST compliance for CA practices in India"
-                        width={40}
-                        height={40}
-                        className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                        loading="lazy"
-                        sizes="40px"
-                      />
+              <div className="lg:col-span-4">
+                <div className="space-y-3 sm:space-y-4">
+                  {clientServerFeatures.map((feature) => (
+                    <div
+                      key={feature.title}
+                      className="group flex items-center gap-4 rounded-2xl border border-gray-100 bg-white/90 px-4 py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
+                    >
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] bg-blue-50">
+                        <Image
+                          src={feature.icon}
+                          alt={feature.alt}
+                          width={40}
+                          height={40}
+                          className="h-6 w-6 object-contain"
+                          loading="lazy"
+                          sizes="40px"
+                        />
+                      </span>
+                      <h3 className="text-base sm:text-lg font-semibold leading-snug text-[#001525] font-inter">
+                        {feature.title}
+                      </h3>
                     </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Regulatory compliance</h3>
-                  </div>
-
-                  {/* Dashed Line */}
-                  <div className="border-t-2 border-dashed" style={{ borderColor: '#B6C9F3' }}></div>
-
-                  {/* Real Time Analysis */}
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
-                      <Image
-                        src="/images/real-time-analysis-icon.png"
-                        alt="Real-Time Analysis Icon - Live data analytics and reporting for CA firms"
-                        width={40}
-                        height={40}
-                        className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                        loading="lazy"
-                        sizes="40px"
-                      />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Real Time Analysis</h3>
-                  </div>
-
-                  {/* Dashed Line */}
-                  <div className="border-t-2 border-dashed" style={{ borderColor: '#B6C9F3' }}></div>
-
-                  {/* Data Security */}
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
-                      <Image
-                        src="/images/data-security-icon.png"
-                        alt="Data Security Icon - Secure client data protection with encryption for CA practices"
-                        width={40}
-                        height={40}
-                        className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                        loading="lazy"
-                        sizes="40px"
-                      />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Data Security</h3>
-                  </div>
-
-                  {/* Dashed Line */}
-                  <div className="border-t-2 border-dashed" style={{ borderColor: '#B6C9F3' }}></div>
-
-                  {/* 24/7 Dedicated Support */}
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
-                      <Image
-                        src="/images/247-dedicated-support-icon.png"
-                        alt="24/7 Dedicated Support Icon - Round-the-clock technical support for PowerCA users"
-                        width={40}
-                        height={40}
-                        className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                        loading="lazy"
-                        sizes="40px"
-                      />
-                    </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">24/7 Dedicated Support</h3>
-                  </div>
+                  ))}
                 </div>
               </div>
 
               {/* Right Content - Server Network Diagram */}
               <div className="lg:col-span-4 flex justify-center mt-6 lg:mt-0">
-                <div className="max-w-lg w-full">
+                <div className="max-w-lg w-full rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
                   <Image
                     src="/images/server-network-diagram.png"
                     alt="PowerCA Client-Server Network Architecture Diagram - Secure cloud-based practice management system for CA firms"
                     width={600}
                     height={600}
-                    className="w-full h-auto rounded-2xl"
+                    className="w-full h-auto"
                     loading="lazy"
                     quality={85}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
