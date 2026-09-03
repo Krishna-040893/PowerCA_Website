@@ -13,7 +13,7 @@ export function StartUsing() {
             Start Using Power CA Today
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-            Join thousands of CA professionals who have transformed their practice with PowerCA
+            Join thousands of CA professionals who have transformed their practice with Power CA
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">

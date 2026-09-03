@@ -29,7 +29,7 @@ export function ClientServerComparison() {
             </div>
 
             <p className="text-gray-600 mb-6">
-              Install PowerCA on your computer for offline access and maximum performance.
+              Install Power CA on your computer for offline access and maximum performance.
               Perfect for individual practitioners and small firms.
             </p>
 

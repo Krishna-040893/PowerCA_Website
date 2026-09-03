@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       payment_capture: 1, // Auto capture payment
       notes: {
         productId,
-        planType: planType || 'PowerCA Implementation',
+        planType: planType || 'Power CA Implementation',
         description: 'One-time implementation fee with first year free',
         customerName: customerDetails?.name || session.user.name || body.name,
         customerEmail: customerDetails?.email || session.user.email || body.email,

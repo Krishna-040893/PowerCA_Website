@@ -178,7 +178,7 @@ export default function AffiliateProfileCreatePage() {
 
   if (existingApplication && existingApplication.status === 'pending') {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="min-h-screen bg-white py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
@@ -214,13 +214,13 @@ export default function AffiliateProfileCreatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-white py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Complete Your Affiliate Profile</CardTitle>
             <CardDescription>
-              Tell us about your business and how you plan to promote PowerCA services.
+              Tell us about your business and how you plan to promote Power CA services.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -269,7 +269,7 @@ export default function AffiliateProfileCreatePage() {
                 </h3>
 
                 <div>
-                  <Label htmlFor="promotionMethod">How will you promote PowerCA? *</Label>
+                  <Label htmlFor="promotionMethod">How will you promote Power CA? *</Label>
                   <Select
                     value={formData.promotionMethod}
                     onValueChange={(value) => handleSelectChange('promotionMethod', value)}
@@ -316,13 +316,13 @@ export default function AffiliateProfileCreatePage() {
                 </h3>
 
                 <div>
-                  <Label htmlFor="reason">Why do you want to become a PowerCA affiliate? *</Label>
+                  <Label htmlFor="reason">Why do you want to become a Power CA affiliate? *</Label>
                   <Textarea
                     id="reason"
                     name="reason"
                     value={formData.reason}
                     onChange={handleInputChange}
-                    placeholder="Tell us about your interest in partnering with PowerCA..."
+                    placeholder="Tell us about your interest in partnering with Power CA..."
                     rows={4}
                     required
                   />

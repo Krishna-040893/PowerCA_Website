@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         slug,
         excerpt,
         content,
-        author: author || 'PowerCA Team',
+        author: author || 'Power CA Team',
         category,
         read_time: readTime || '5 min read',
         image_url: imageUrl || null,

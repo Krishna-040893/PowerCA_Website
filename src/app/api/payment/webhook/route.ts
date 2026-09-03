@@ -127,7 +127,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
       amount: totalAmount,
       currency: 'INR',
       status: 'captured', // Use actual Razorpay status
-      plan: 'PowerCA Implementation',
+      plan: 'Power CA Implementation',
       email: email || orderData?.customer_email || 'unknown@powerca.in',
       phone: contact || orderData?.customer_phone,
       name: orderData?.customer_name || 'Customer',
@@ -228,7 +228,7 @@ async function handlePaymentCaptured(payment: RazorpayPayment, supabase: Supabas
           <li>Amount: ₹22,000</li>
         </ul>
         <p>Your invoice is attached to this email.</p>
-        <p>Best regards,<br>PowerCA Team</p>
+        <p>Best regards,<br>Power CA Team</p>
       `,
       attachments: [{
         filename: `Invoice-${invoiceData.invoiceNumber}.html`,
@@ -267,7 +267,7 @@ async function handlePaymentFailed(payment: RazorpayPayment, supabase: SupabaseC
       amount: amount / 100,
       currency: 'INR',
       status: 'failed', // Use actual Razorpay status
-      plan: 'PowerCA Implementation',
+      plan: 'Power CA Implementation',
       email: email || 'unknown@powerca.in',
       phone: contact,
       name: 'Customer',

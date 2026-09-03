@@ -104,6 +104,7 @@ module.exports = {
         'shine': 'shine 1.5s ease-in-out',
         'swing': 'swing 1s ease-in-out infinite',
         'shimmer': 'shimmer 3s linear infinite',
+        'logo-marquee': 'logo-marquee 20s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -133,6 +134,10 @@ module.exports = {
         'swing': {
           '0%, 100%': { transform: 'rotate(-3deg)' },
           '50%': { transform: 'rotate(3deg)' },
+        },
+        'logo-marquee': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
         'shimmer': {
           '0%': { left: '-30%' },

@@ -15,21 +15,21 @@ export const dynamic = 'force-static'
 export const revalidate = 3600 // Revalidate every hour
 
 export const metadata: Metadata = {
-  title: 'PowerCA - Practice Management Software for CAs in India | Save 10+ Hours Weekly',
-  description: 'Transform your CA practice with PowerCA. Complete practice management software for Chartered Accountants. Job card management, billing, compliance tracking. Free demo available.',
-  keywords: 'CA practice management software, chartered accountant software India, CA office automation, tax practice management, CA firm management system, PowerCA, practice management for CAs',
+  title: 'Power CA - Practice Management Software for CAs in India | Save 10+ Hours Weekly',
+  description: 'Transform your CA practice with Power CA. Complete practice management software for Chartered Accountants. Job card management, billing, compliance tracking. Free demo available.',
+  keywords: 'CA practice management software, chartered accountant software India, CA office automation, tax practice management, CA firm management system, Power CA, practice management for CAs',
   openGraph: {
-    title: 'PowerCA - Practice Management Software for Chartered Accountants',
-    description: 'Streamline your CA practice with PowerCA. Save 10+ hours weekly, ensure 100% compliance, and grow effortlessly.',
+    title: 'Power CA - Practice Management Software for Chartered Accountants',
+    description: 'Streamline your CA practice with Power CA. Save 10+ hours weekly, ensure 100% compliance, and grow effortlessly.',
     images: ['/og-image.jpg'],
     url: 'https://powerca.in',
-    siteName: 'PowerCA',
+    siteName: 'Power CA',
     locale: 'en_IN',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PowerCA - Practice Management Software for CAs',
+    title: 'Power CA - Practice Management Software for CAs',
     description: 'Complete practice management solution for Chartered Accountants in India.',
     images: ['/og-image.jpg'],
   },
@@ -109,7 +109,7 @@ const clientServerFeatures = [
   {
     title: '24/7 Dedicated Support',
     icon: '/images/247-dedicated-support-icon.png',
-    alt: '24/7 Dedicated Support Icon - Round-the-clock technical support for PowerCA users',
+    alt: '24/7 Dedicated Support Icon - Round-the-clock technical support for Power CA users',
   },
 ]
 
@@ -118,7 +118,7 @@ export default function Home() {
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    'name': 'PowerCA',
+    'name': 'Power CA',
     'applicationCategory': 'BusinessApplication',
     'operatingSystem': 'Web',
     'description': 'Complete practice management software for Chartered Accountants in India',
@@ -131,7 +131,7 @@ export default function Home() {
       'availability': 'https://schema.org/InStock',
       'seller': {
         '@type': 'Organization',
-        'name': 'PowerCA',
+        'name': 'Power CA',
         'url': 'https://powerca.in'
       }
     },
@@ -144,7 +144,7 @@ export default function Home() {
     },
     'creator': {
       '@type': 'Organization',
-      'name': 'PowerCA',
+      'name': 'Power CA',
       'url': 'https://powerca.in',
       'address': {
         '@type': 'PostalAddress',
@@ -218,17 +218,17 @@ export default function Home() {
             <div className="mb-8 sm:mb-10 lg:mb-12 px-2">
               {/* Mobile Layout - Stacked */}
               <div className="md:hidden space-y-3 text-center">
-                <div className="flex items-center justify-center text-[#001525] text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-center text-[#001525] text-sm sm:text-base font-medium">
                   <div className="w-4 sm:w-6 h-px bg-gray-300 mr-2"></div>
                   <span>Save 10+ hours weekly</span>
                   <div className="w-4 sm:w-6 h-px bg-gray-300 ml-2"></div>
                 </div>
-                <div className="flex items-center justify-center text-[#001525] text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-center text-[#001525] text-sm sm:text-base font-medium">
                   <div className="w-4 sm:w-6 h-px bg-gray-300 mr-2"></div>
                   <span>Ensure 100% compliance</span>
                   <div className="w-4 sm:w-6 h-px bg-gray-300 ml-2"></div>
                 </div>
-                <div className="flex items-center justify-center text-[#001525] text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-center text-[#001525] text-sm sm:text-base font-medium">
                   <div className="w-4 sm:w-6 h-px bg-gray-300 mr-2"></div>
                   <span>Grow effortlessly</span>
                   <div className="w-4 sm:w-6 h-px bg-gray-300 ml-2"></div>
@@ -250,10 +250,10 @@ export default function Home() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center px-2">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
               <a
                 href="/book-demo"
-                className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-gradient-to-b from-white to-gray-100 px-6 py-3 text-sm sm:text-base font-medium text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(16,24,40,0.45)] w-full sm:w-auto sm:min-w-[200px] font-inter"
+                className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-gradient-to-b from-white to-gray-100 px-6 py-3 text-sm sm:text-base font-medium text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(16,24,40,0.45)] w-auto min-w-[220px] sm:min-w-[200px] font-inter"
               >
                 <span>Book Your Demo</span>
                 <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -263,7 +263,7 @@ export default function Home() {
               <a
                 href="/docs/PowercaPromoters.pdf"
                 download="PowercaPromoters.pdf"
-                className="group inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[#001525]/45 bg-white/60 backdrop-blur-sm px-6 py-3 text-sm sm:text-base font-medium text-[#001525] transition-all duration-200 hover:border-[#001525]/70 hover:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001525]/30 w-full sm:w-auto sm:min-w-[200px] font-inter"
+                className="group inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[#001525]/45 bg-white/60 backdrop-blur-sm px-6 py-3 text-sm sm:text-base font-medium text-[#001525] transition-all duration-200 hover:border-[#001525]/70 hover:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001525]/30 w-auto min-w-[220px] sm:min-w-[200px] font-inter"
               >
                 <span>Promoter&apos;s Perspective</span>
                 <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -304,7 +304,7 @@ export default function Home() {
             <div className="relative max-w-4xl w-full">
               <Image
                 src="/images/power-ca-modules-workflow.png"
-                alt="PowerCA Complete Module Workflow - Job Cards, Billing, Compliance Management for CA Firms"
+                alt="Power CA Complete Module Workflow - Job Cards, Billing, Compliance Management for CA Firms"
                 width={1200}
                 height={800}
                 className="w-full h-auto object-contain"
@@ -393,7 +393,7 @@ export default function Home() {
                   <div className="col-span-2 sm:col-span-1">
                     <Image
                       src="/images/step-1-icon.png"
-                      alt="Step 1 Icon - Book your PowerCA demo for CA practice management software"
+                      alt="Step 1 Icon - Book your Power CA demo for CA practice management software"
                       width={56}
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
@@ -424,7 +424,7 @@ export default function Home() {
                   <div className="col-span-2 sm:col-span-1">
                     <Image
                       src="/images/step-2-icon.png"
-                      alt="Step 2 Icon - Select PowerCA package based on your CA firm size and users"
+                      alt="Step 2 Icon - Select Power CA package based on your CA firm size and users"
                       width={56}
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
@@ -455,7 +455,7 @@ export default function Home() {
                   <div className="col-span-2 sm:col-span-1">
                     <Image
                       src="/images/step-3-icon.png"
-                      alt="Step 3 Icon - Install PowerCA and activate your license with support team assistance"
+                      alt="Step 3 Icon - Install Power CA and activate your license with support team assistance"
                       width={56}
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
@@ -486,7 +486,7 @@ export default function Home() {
                   <div className="col-span-2 sm:col-span-1">
                     <Image
                       src="/images/step-4-icon.png"
-                      alt="Step 4 Icon - Import your existing CA firm data into PowerCA system"
+                      alt="Step 4 Icon - Import your existing CA firm data into Power CA system"
                       width={56}
                       height={56}
                       className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
@@ -540,13 +540,13 @@ export default function Home() {
 
               {/* Right Content - Professional Image */}
               <Reveal delay={0.05} className="lg:col-span-1 flex justify-center lg:justify-end mt-8 lg:mt-0">
-                <div className="w-full max-w-lg">
+                <div className="w-full max-w-lg md:max-w-none lg:max-w-lg">
                   <Image
                     src="/images/start-using-power-ca-today.jpg"
-                    alt="Professional Chartered Accountant using PowerCA practice management software on laptop"
+                    alt="Professional Chartered Accountant using Power CA practice management software on laptop"
                     width={500}
                     height={600}
-                    className="w-full h-auto shadow-lg rounded-2xl"
+                    className="w-full h-auto aspect-square object-cover object-center md:aspect-auto md:h-[340px] lg:h-auto lg:aspect-auto shadow-lg rounded-2xl"
                     loading="lazy"
                     quality={85}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
@@ -563,8 +563,8 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <SectionHeader
             title="Benefits of"
-            emphasis="PowerCA"
-            description="Discover how PowerCA streamlines audit-firm operations, automates administrative tasks, and enhances service quality with built-in best practices, digital workflows, and powerful reporting tools."
+            emphasis="Power CA"
+            description="Discover how Power CA streamlines audit-firm operations, automates administrative tasks, and enhances service quality with built-in best practices, digital workflows, and powerful reporting tools."
           />
 
           {/* Benefits Accordion Component */}
@@ -574,7 +574,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PowerCA Overview Carousel Section */}
+      {/* Power CA Overview Carousel Section */}
       <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white">
         <div className="relative rounded-2xl overflow-hidden py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
           <Image
@@ -589,14 +589,14 @@ export default function Home() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
             <div className="mb-8 sm:mb-12">
               <SectionHeader
-                title="PowerCA at a"
+                title="Power CA at a"
                 emphasis="Glance"
-                description="Browse the posters covering each part of PowerCA and see how the modules fit into your day-to-day practice."
+                description="Browse the posters covering each part of Power CA and see how the modules fit into your day-to-day practice."
               />
             </div>
           </div>
 
-          <div className="px-3 sm:px-4 lg:px-5 relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
             <Reveal><OverviewCarousel /></Reveal>
           </div>
         </div>
@@ -630,9 +630,9 @@ export default function Home() {
             />
 
             {/* Three Content Grid - Equal Spans */}
-            <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 mt-8 sm:mt-12 lg:mt-16 items-center">
+            <div className="grid md:grid-cols-2 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 mt-8 sm:mt-12 lg:mt-16 items-center">
               {/* Left Content - Description */}
-              <Reveal className="lg:col-span-4">
+              <Reveal className="md:col-span-2 lg:col-span-4">
                 <p className="text-[15px] sm:text-[17px] leading-relaxed text-[#001525] font-inter">
                   Our Power CA software product operates on a client-server model, wherein the system is divided into two main components: the client and the server.
                 </p>
@@ -650,24 +650,24 @@ export default function Home() {
 
               {/* Center Content - Features List */}
               <Reveal delay={0.05} className="lg:col-span-4">
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-2.5 lg:space-y-4">
                   {clientServerFeatures.map((feature) => (
                     <div
                       key={feature.title}
-                      className="group flex items-center gap-4 rounded-2xl border border-gray-100 bg-white/90 px-4 py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
+                      className="group flex items-center gap-3 lg:gap-4 rounded-xl lg:rounded-2xl border border-gray-100 bg-white/90 px-3 py-2.5 lg:px-4 lg:py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
                     >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] bg-blue-50">
+                      <span className="flex h-8 w-8 lg:h-11 lg:w-11 shrink-0 items-center justify-center rounded-[6px] bg-blue-50">
                         <Image
                           src={feature.icon}
                           alt={feature.alt}
                           width={40}
                           height={40}
-                          className="h-6 w-6 object-contain"
+                          className="h-4 w-4 lg:h-6 lg:w-6 object-contain"
                           loading="lazy"
                           sizes="40px"
                         />
                       </span>
-                      <h3 className="text-base sm:text-lg font-semibold leading-snug text-[#001525] font-inter">
+                      <h3 className="text-sm lg:text-lg font-semibold leading-snug text-[#001525] font-inter">
                         {feature.title}
                       </h3>
                     </div>
@@ -676,14 +676,14 @@ export default function Home() {
               </Reveal>
 
               {/* Right Content - Server Network Diagram */}
-              <Reveal delay={0.1} className="lg:col-span-4 flex justify-center mt-6 lg:mt-0">
-                <div className="max-w-lg w-full rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
+              <Reveal delay={0.1} className="lg:col-span-4 flex justify-center">
+                <div className="max-w-lg w-full md:max-w-[300px] lg:max-w-lg rounded-2xl border border-gray-100 bg-white p-4 md:p-4 lg:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
                   <Image
                     src="/images/server-network-diagram.png"
-                    alt="PowerCA Client-Server Network Architecture Diagram - Secure cloud-based practice management system for CA firms"
+                    alt="Power CA Client-Server Network Architecture Diagram - Secure cloud-based practice management system for CA firms"
                     width={600}
                     height={600}
-                    className="w-full h-auto"
+                    className="w-full h-auto aspect-square object-contain lg:aspect-auto"
                     loading="lazy"
                     quality={85}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
@@ -699,8 +699,8 @@ export default function Home() {
       {/* FAQ Section */}
       <FAQWithSchema
         title="Frequently Asked Questions About"
-        titleEmphasis="PowerCA"
-        description="Get answers to common questions about PowerCA practice management software"
+        titleEmphasis="Power CA"
+        description="Get answers to common questions about Power CA practice management software"
         faqs={powerCAFAQs}
         className="bg-white"
       />

@@ -19,7 +19,7 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Annual Subscription Now Available - PowerCA</title>
+  <title>Annual Subscription Now Available - Power CA</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -49,11 +49,11 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
 
       <p>Dear ${name},</p>
 
-      <p>Congratulations! You've been using PowerCA for 11 months, and we're thrilled to have you as part of our growing family.</p>
+      <p>Congratulations! You've been using Power CA for 11 months, and we're thrilled to have you as part of our growing family.</p>
 
       <div class="highlight-box">
         <h3 style="margin-top: 0; color: #2E7D32;">✅ You're Now Eligible for Annual Subscription!</h3>
-        <p style="margin-bottom: 0;">Your first-year plan started on <strong>${new Date(subscriptionStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>, and you can now renew your subscription to continue enjoying PowerCA's comprehensive practice management features.</p>
+        <p style="margin-bottom: 0;">Your first-year plan started on <strong>${new Date(subscriptionStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>, and you can now renew your subscription to continue enjoying Power CA's comprehensive practice management features.</p>
       </div>
 
       <h3>Annual Subscription Pricing</h3>
@@ -104,11 +104,11 @@ export const SubscriptionRenewalAvailableEmail: React.FC<SubscriptionRenewalAvai
       <p>If you have any questions about your renewal or need assistance, our team is here to help!</p>
 
       <div class="footer">
-        <p><strong>PowerCA - Empowering CA Practices</strong></p>
+        <p><strong>Power CA - Empowering CA Practices</strong></p>
         <p>Need help? Contact us at <a href="mailto:contact@powerca.in" style="color: #4CAF50;">contact@powerca.in</a></p>
         <p style="font-size: 12px; color: #999; margin-top: 15px;">
           This email was sent to ${_email}<br>
-          © ${new Date().getFullYear()} PowerCA. All rights reserved.
+          © ${new Date().getFullYear()} Power CA. All rights reserved.
         </p>
       </div>
     </div>

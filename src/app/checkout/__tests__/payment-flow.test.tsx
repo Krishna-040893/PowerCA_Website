@@ -337,7 +337,7 @@ describe('Payment Flow', () => {
         key: 'rzp_test_key',
         amount: 500000, // 5000 INR in paise
         currency: 'INR',
-        name: 'PowerCA',
+        name: 'Power CA',
         order_id: 'order_123',
         handler: jest.fn(),
         prefill: {

@@ -211,7 +211,7 @@ function PricingContent() {
                 <p className="relative mt-1"><span className="text-base font-bold text-amber-700">MRP:</span> <span className="font-extrabold text-3xl text-amber-800 line-through">₹50,000</span></p>
               </div>
 
-              <div className="relative z-10 flex flex-col flex-1 justify-center items-center pt-0 px-6 pb-6 md:pt-0 md:px-8 md:pb-8">
+              <div className="relative z-10 flex flex-col flex-1 justify-center items-center pt-6 px-6 pb-6 md:pt-8 md:px-8 md:pb-8">
                 {/* Special Offer Text */}
                 <p className="text-base md:text-lg font-semibold text-[#001525] mb-5 text-center">
                   Special <span className="text-[#306bea] font-extrabold bg-blue-100 px-1.5 py-0.5 rounded">2026-2027</span> New Year Offer for <span className="text-[#306bea] font-extrabold bg-blue-100 px-1.5 py-0.5 rounded">CAs</span>

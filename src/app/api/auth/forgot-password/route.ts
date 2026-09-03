@@ -117,7 +117,7 @@ const handleForgotPassword = async (request: NextRequest) => {
             <div class="content">
               <p>Dear ${'full_name' in foundUser ? foundUser.full_name : foundUser.name},</p>
 
-              <p>We received a request to reset your password for your PowerCA ${userType === 'affiliate' ? 'Affiliate' : 'Client'} account.</p>
+              <p>We received a request to reset your password for your Power CA ${userType === 'affiliate' ? 'Affiliate' : 'Client'} account.</p>
 
               <p>Click the button below to reset your password:</p>
 
@@ -147,9 +147,9 @@ const handleForgotPassword = async (request: NextRequest) => {
 
     try {
       await resend.emails.send({
-        from: 'PowerCA <contact@powerca.in>',
+        from: 'Power CA <contact@powerca.in>',
         to: email,
-        subject: 'Reset Your PowerCA Password',
+        subject: 'Reset Your Power CA Password',
         html: emailHtml,
       })
       logger.info('Password reset email sent', { email })

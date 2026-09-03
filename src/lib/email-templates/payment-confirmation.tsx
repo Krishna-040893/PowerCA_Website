@@ -25,7 +25,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Confirmation - PowerCA</title>
+  <title>Payment Confirmation - Power CA</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -43,7 +43,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
   <div class="container">
     <div class="header">
       <h1>Payment Successful!</h1>
-      <p>Welcome to the PowerCA Family</p>
+      <p>Welcome to the Power CA Family</p>
     </div>
     
     <div class="content">
@@ -53,7 +53,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
         ✓ Payment Confirmed
       </div>
       
-      <p>Thank you for choosing PowerCA! Your payment has been successfully processed and your account setup will begin shortly.</p>
+      <p>Thank you for choosing Power CA! Your payment has been successfully processed and your account setup will begin shortly.</p>
       
       <div class="details-box">
         <h3>💳 PAYMENT SUMMARY</h3>
@@ -90,7 +90,7 @@ export const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> =
       
       <div class="footer">
         <p>This is an automated email. Please do not reply to this email.</p>
-        <p>© ${new Date().getFullYear()} PowerCA. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} Power CA. All rights reserved.</p>
         <p>
           <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/terms">Terms & Conditions</a> |
           <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/privacy">Privacy Policy</a>
@@ -111,7 +111,7 @@ export const PaymentConfirmationEmailText = ({
   invoiceNumber,
 }: PaymentConfirmationEmailProps) => {
   return `
-Payment Successful - PowerCA
+Payment Successful - Power CA
 
 Dear ${name},
 
@@ -122,7 +122,7 @@ Transaction Details:
 - Payment ID: ${paymentId}
 ${invoiceNumber ? `- Receipt Number: ${invoiceNumber}` : ''}
 - Amount Paid: ₹${amount.toLocaleString('en-IN')}
-- Plan: PowerCA Implementation
+- Plan: Power CA Implementation
 - First Year: FREE
 
 Access your dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in'}/dashboard
@@ -131,8 +131,8 @@ Need Help?
 Call: +91 98765 43210
 Email: contact@powerca.in
 
-Thank you for choosing PowerCA!
+Thank you for choosing Power CA!
 
-© ${new Date().getFullYear()} PowerCA. All rights reserved.
+© ${new Date().getFullYear()} Power CA. All rights reserved.
   `.trim()
 }

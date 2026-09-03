@@ -307,7 +307,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --background: #F8FBFC; /* site-wide half-white ground */
+  --background: #FFFFFF; /* site-wide white ground */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -381,7 +381,7 @@
   }
   body {
     @apply font-inter;
-    background-color: #F8FBFC;
+    background-color: #FFFFFF;
   }
   code, pre {
     @apply font-mono;

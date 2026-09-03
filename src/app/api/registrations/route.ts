@@ -473,7 +473,7 @@ async function sendConfirmationEmail(
             </div>
             <div class="content">
               <p>Dear ${htmlName},</p>
-              <p>Thank you for registering with PowerCA. Your account has been successfully created.</p>
+              <p>Thank you for registering with Power CA. Your account has been successfully created.</p>
 
               <h3>Your Registration Details:</h3>
               <div class="info-row">
@@ -513,8 +513,8 @@ async function sendConfirmationEmail(
               <p>If you have any questions, please contact our support team.</p>
 
               <div class="footer">
-                <p>Best Regards,<br>PowerCA Team</p>
-                <p>© 2024 PowerCA. All rights reserved.</p>
+                <p>Best Regards,<br>Power CA Team</p>
+                <p>© 2024 Power CA. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -524,9 +524,9 @@ async function sendConfirmationEmail(
 
     try {
       await resend.emails.send({
-        from: 'PowerCA <contact@powerca.in>',
+        from: 'Power CA <contact@powerca.in>',
         to: email,
-        subject: 'Welcome to PowerCA - Registration Successful',
+        subject: 'Welcome to Power CA - Registration Successful',
         html: userEmailHtml,
       })
       logger.info('Registration confirmation email sent', { email })
@@ -536,9 +536,9 @@ async function sendConfirmationEmail(
       if (emailErrorStatus === 403) {
         try {
           await resend.emails.send({
-            from: 'PowerCA <contact@powerca.in>',
+            from: 'Power CA <contact@powerca.in>',
             to: 'contact@powerca.in',
-            subject: `Welcome to PowerCA - Registration for ${email}`,
+            subject: `Welcome to Power CA - Registration for ${email}`,
             html: userEmailHtml.replace('Dear ' + htmlName, `Dear ${htmlName} (Email intended for: ${htmlEmail})`),
             replyTo: email,
           })

@@ -9,13 +9,13 @@ const stats = [
     value: 15000,
     suffix: '+',
     label: 'Active Users',
-    description: 'CA professionals trust PowerCA daily'
+    description: 'CA professionals trust Power CA daily'
   },
   {
     value: 500,
     suffix: '+',
     label: 'CA Firms',
-    description: 'Growing practices with PowerCA'
+    description: 'Growing practices with Power CA'
   },
   {
     value: 99.9,
@@ -49,7 +49,7 @@ export function StatsSection() {
             Trusted by Leading CA Firms
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Join thousands of professionals who have transformed their practice with PowerCA
+            Join thousands of professionals who have transformed their practice with Power CA
           </p>
         </motion.div>
 

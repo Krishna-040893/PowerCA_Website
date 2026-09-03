@@ -59,12 +59,12 @@ export default function TestimonialsSection() {
           title="What Practicing Chartered"
           emphasis="Accountants Say"
           trailing="!"
-          description="Don't just take our word for it. Here's what our clients have to say about PowerCA."
+          description="Don't just take our word for it. Here's what our clients have to say about Power CA."
         />
       </div>
 
-      {/* Desktop/Tablet Testimonial Cards - Hidden on Mobile */}
-      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+      {/* Desktop Testimonial Cards - Hidden on Mobile and Tablet */}
+      <div className="hidden lg:grid lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
         {testimonials.map((testimonial, index) => (
           <div key={index} className="h-full rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]">
             <div className="flex items-center mb-4 sm:mb-6">
@@ -83,26 +83,33 @@ export default function TestimonialsSection() {
         ))}
       </div>
 
-      {/* Mobile Single Testimonial Card - Only on Mobile */}
-      <div className="sm:hidden mb-6">
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 mr-3 flex items-center justify-center text-blue-600 font-semibold text-sm">
-              {testimonials[currentMobileIndex].initial}
+      {/* Testimonial Carousel - one card on mobile, two on tablet */}
+      <div className="lg:hidden mb-6 grid gap-4 md:grid-cols-2">
+        {[currentMobileIndex, (currentMobileIndex + 1) % testimonials.length].map((slot, position) => (
+          <div
+            key={testimonials[slot].name}
+            className={`rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] ${
+              position === 1 ? 'hidden md:block' : ''
+            }`}
+          >
+            <div className="flex items-center mb-4 sm:mb-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-50 mr-3 sm:mr-4 flex items-center justify-center text-blue-600 font-semibold text-sm sm:text-base">
+                {testimonials[slot].initial}
+              </div>
+              <div>
+                <h3 className="font-semibold text-base sm:text-lg text-[#001525] font-inter">{testimonials[slot].name}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{testimonials[slot].title}, {testimonials[slot].company}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-base text-[#001525] font-inter">{testimonials[currentMobileIndex].name}</h3>
-              <p className="text-gray-500 text-xs">{testimonials[currentMobileIndex].title}, {testimonials[currentMobileIndex].company}</p>
-            </div>
+            <p className="text-sm leading-relaxed text-gray-500 font-inter">
+              {testimonials[slot].content}
+            </p>
           </div>
-          <p className="text-sm leading-relaxed text-gray-500 font-inter">
-            {testimonials[currentMobileIndex].content}
-          </p>
-        </div>
+        ))}
       </div>
 
-      {/* Mobile Navigation - Pagination Left, Arrows Right */}
-      <div className="sm:hidden flex justify-between items-center">
+      {/* Carousel Navigation - Pagination Left, Arrows Right */}
+      <div className="lg:hidden flex justify-between items-center">
         {/* Pagination Dots - Left */}
         <div className="flex gap-1.5" role="tablist" aria-label="Testimonial navigation">
           {testimonials.map((_, index) => (

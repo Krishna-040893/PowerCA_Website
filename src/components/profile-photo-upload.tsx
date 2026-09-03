@@ -16,6 +16,8 @@ interface ProfilePhotoUploadProps {
   size?: 'sm' | 'md' | 'lg'
   editable?: boolean
   showActionButtons?: boolean
+  /** Compact chrome for headers: white ring, subtle controls, no helper text. */
+  compact?: boolean
 }
 
 export default function ProfilePhotoUpload({
@@ -25,6 +27,7 @@ export default function ProfilePhotoUpload({
   size = 'md',
   editable = true,
   showActionButtons = false,
+  compact = false,
 }: ProfilePhotoUploadProps) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(currentPhotoUrl || null)
   const [isUploading, setIsUploading] = useState(false)
@@ -139,11 +142,11 @@ export default function ProfilePhotoUpload({
   const displayUrl = previewUrl || photoUrl
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className={compact ? "relative inline-flex" : "flex flex-col items-center gap-4"}>
       {/* Photo Display */}
       <div className="relative">
         <div
-          className={`${currentSize.container} rounded-full border-4 border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative group`}
+          className={`${currentSize.container} rounded-full ${compact ? 'border-4 border-white shadow-sm' : 'border-4 border-gray-200 dark:border-gray-700'} overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative group`}
         >
           {displayUrl ? (
             <Image
@@ -178,7 +181,30 @@ export default function ProfilePhotoUpload({
         </div>
 
         {/* Edit/Remove Button Badge */}
-        {editable && !isUploading && !isDeleting && (
+        {editable && !isUploading && !isDeleting && compact && (
+          <div className="absolute -bottom-0.5 -right-0.5 flex gap-1">
+            <button
+              onClick={triggerFileInput}
+              className="w-7 h-7 rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 flex items-center justify-center"
+              aria-label="Change photo"
+              title="Change photo"
+            >
+              <Camera size={14} />
+            </button>
+            {photoUrl && (
+              <button
+                onClick={handleDelete}
+                className="w-7 h-7 rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center"
+                aria-label="Remove photo"
+                title="Remove photo"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {editable && !isUploading && !isDeleting && !compact && (
           <button
             onClick={photoUrl ? handleDelete : triggerFileInput}
             className={`absolute bottom-0 right-0 ${currentSize.button} ${
@@ -259,7 +285,7 @@ export default function ProfilePhotoUpload({
       )}
 
       {/* Helper Text */}
-      {editable && !error && (
+      {editable && !error && !compact && (
         <p className="text-gray-500 dark:text-gray-400 text-xs text-center whitespace-nowrap">
           Max size: 5MB. Formats: JPG, PNG, WebP, GIF
         </p>

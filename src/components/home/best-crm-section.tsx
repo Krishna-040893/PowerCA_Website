@@ -24,7 +24,7 @@ export function BestCRMSection() {
             </h2>
 
             <p className="text-lg text-gray-600 mb-8">
-              PowerCA is the most comprehensive practice management solution designed
+              Power CA is the most comprehensive practice management solution designed
               specifically for Chartered Accountants. Manage your entire practice from
               client onboarding to compliance delivery with our integrated platform.
             </p>

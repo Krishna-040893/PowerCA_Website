@@ -21,11 +21,11 @@ import {
 } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Free Tax & Financial Calculators for CAs - PowerCA Tools',
+  title: 'Free Tax & Financial Calculators for CAs - Power CA Tools',
   description: 'Free online calculators for Chartered Accountants. GST, Income Tax, TDS, HRA, Gratuity calculators. Accurate calculations with latest Indian tax rates.',
   keywords: 'tax calculators, GST calculator, income tax calculator, TDS calculator, HRA calculator, gratuity calculator, CA tools, financial calculators India',
   openGraph: {
-    title: 'Free Tax Calculators & CA Tools - PowerCA',
+    title: 'Free Tax Calculators & CA Tools - Power CA',
     description: 'Complete suite of tax and financial calculators for Indian CAs and businesses.',
     images: ['/og-image.jpg'],
   },
@@ -229,7 +229,7 @@ export default function ToolsPage() {
       <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="mb-12">
-            <SectionHeader title="Why Use PowerCA" emphasis="Calculators?" />
+            <SectionHeader title="Why Use Power CA" emphasis="Calculators?" />
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
@@ -282,7 +282,7 @@ export default function ToolsPage() {
             Need More Than Just Calculators?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            PowerCA offers complete practice management software with automated compliance, client management, and billing.
+            Power CA offers complete practice management software with automated compliance, client management, and billing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/book-demo">
@@ -305,7 +305,7 @@ export default function ToolsPage() {
           <div className="max-w-4xl mx-auto prose prose-gray">
             <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-normal tracking-tight leading-[1.15] text-[#001525] font-inter mb-4">About Our Tax Calculators</h2>
             <p className="text-gray-600 mb-4">
-              PowerCA's suite of tax and financial calculators are designed specifically for Chartered Accountants and tax professionals in India.
+              Power CA's suite of tax and financial calculators are designed specifically for Chartered Accountants and tax professionals in India.
               Each calculator is meticulously updated to reflect the latest changes in Indian tax laws, including GST rates, income tax slabs for FY 2024-25,
               and TDS provisions.
             </p>
@@ -315,8 +315,8 @@ export default function ToolsPage() {
               All calculations include detailed breakdowns, compliance notes, and can be downloaded for record-keeping.
             </p>
             <p className="text-gray-600">
-              These tools are part of PowerCA's commitment to simplifying tax compliance and financial planning for Indian professionals.
-              While our calculators are free to use, PowerCA also offers comprehensive practice management software that automates these calculations
+              These tools are part of Power CA's commitment to simplifying tax compliance and financial planning for Indian professionals.
+              While our calculators are free to use, Power CA also offers comprehensive practice management software that automates these calculations
               within your client workflows.
             </p>
           </div>

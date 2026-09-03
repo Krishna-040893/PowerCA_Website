@@ -7,11 +7,11 @@ import { MapPin, Users, Building2, Factory, Gem, Shirt, ShoppingBag, TrendingUp 
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Tamil Nadu - PowerCA for Chartered Accountants Across TN',
-  description: 'PowerCA - Leading practice management software for Chartered Accountants across Tamil Nadu. Serving Chennai, Coimbatore, Madurai, Trichy, Salem, and more. Tamil language support.',
+  title: 'CA Software in Tamil Nadu - Power CA for Chartered Accountants Across TN',
+  description: 'Power CA - Leading practice management software for Chartered Accountants across Tamil Nadu. Serving Chennai, Coimbatore, Madurai, Trichy, Salem, and more. Tamil language support.',
   keywords: 'CA software Tamil Nadu, chartered accountant software TN, CA practice management Tamil Nadu, GST software Tamil Nadu, tax software TN',
   openGraph: {
-    title: 'PowerCA - CA Practice Management Software for Tamil Nadu',
+    title: 'Power CA - CA Practice Management Software for Tamil Nadu',
     description: 'Complete practice management solution for Chartered Accountants across Tamil Nadu with Tamil language support.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
@@ -107,7 +107,7 @@ export default function TamilNaduPage() {
           title={<>CA Software for <span className="text-blue-600">Tamil Nadu</span></>}
           description={
             <>
-              PowerCA - Comprehensive practice management software for Chartered Accountants across Tamil Nadu
+              Power CA - Comprehensive practice management software for Chartered Accountants across Tamil Nadu
               <span className="mt-2 block">
                 தமிழ்நாட்டில் உள்ள சார்ட்டர்ட் அக்கவுண்டன்ட்களுக்கான முழுமையான மென்பொருள்
               </span>
@@ -200,7 +200,7 @@ export default function TamilNaduPage() {
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-4 leading-normal">
-              PowerCA Across Tamil Nadu Cities
+              Power CA Across Tamil Nadu Cities
             </h2>
             <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
               Select your city to explore location-specific features and local support options
@@ -282,10 +282,10 @@ export default function TamilNaduPage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Transform Your Tamil Nadu CA Practice with PowerCA
+              Transform Your Tamil Nadu CA Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join progressive CAs across Tamil Nadu using PowerCA for modern practice management
+              Join progressive CAs across Tamil Nadu using Power CA for modern practice management
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

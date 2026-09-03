@@ -106,7 +106,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <div className="flex items-center gap-2">
             <Shield className="w-8 h-8 text-primary-600" />
-            <span className="text-xl font-bold text-gray-900">PowerCA Admin</span>
+            <span className="text-xl font-bold text-gray-900">Power CA Admin</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}

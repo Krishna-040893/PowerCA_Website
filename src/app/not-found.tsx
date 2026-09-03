@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft, Home, MessageCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: '404 - Page Not Found | PowerCA',
+  title: '404 - Page Not Found | Power CA',
   description: 'The page you are looking for does not exist.',
 }
 
@@ -17,7 +17,7 @@ export default function NotFound() {
           className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to PowerCA
+          Back to Power CA
         </Link>
       </div>
 
