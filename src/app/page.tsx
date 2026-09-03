@@ -387,7 +387,7 @@ export default function Home() {
 
             <div className="grid lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-16 items-start">
               {/* Left Content - 5 Steps - Wider */}
-              <Reveal className="lg:col-span-2">
+              <Reveal className="lg:col-span-7">
                 {/* Step 1 */}
                 <div className="grid grid-cols-12 gap-2 sm:gap-3 md:gap-4 items-start pb-2 sm:pb-3">
                   <div className="col-span-2 sm:col-span-1">
@@ -629,45 +629,47 @@ export default function Home() {
               cta={{ href: '/book-demo', label: 'Book Demo' }}
             />
 
-            {/* Three Content Grid - Equal Spans */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 mt-8 sm:mt-12 lg:mt-16 items-center">
-              {/* Left Content - Description */}
-              <Reveal className="md:col-span-2 lg:col-span-4">
-                <p className="text-[15px] sm:text-[17px] leading-relaxed text-[#001525] font-inter">
-                  Our Power CA software product operates on a client-server model, wherein the system is divided into two main components: the client and the server.
+            {/* Copy and the four guarantees in one column, the diagram beside
+                them at a 2:1 split. */}
+            <div className="mt-8 sm:mt-12 lg:mt-16 grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+              {/* Explanation, with the guarantees beneath it */}
+              <Reveal className="lg:col-span-7">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500 font-inter">
+                  How it works
                 </p>
 
-                <div className="mt-5 space-y-4 sm:space-y-5">
+                <p className="mt-4 text-lg sm:text-xl leading-relaxed text-[#001525] font-inter">
+                  Power CA operates on a client-server model, dividing the system into two parts: the client and the server.
+                </p>
+
+                <div className="mt-5 space-y-4 border-l-2 border-gray-100 pl-5">
                   <p className="text-[15px] leading-relaxed text-gray-500 font-inter">
-                    The server hosts the core functionalities and data, managing requests from clients and executing operations. Clients, which can be desktop applications interact with the server to access these functionalities. Through communication over a network using protocols like HTTP or TCP/IP, SMTP, clients send requests to the server, which responds accordingly, managing data integrity, security, and concurrency.
+                    The server hosts the core functionality and data, managing requests from clients and executing operations. Clients — desktop applications — talk to it over the network using protocols such as HTTP, TCP/IP and SMTP, and the server responds while managing data integrity, security and concurrency.
                   </p>
 
                   <p className="text-[15px] leading-relaxed text-gray-500 font-inter">
-                    Our software ensures scalability and robust security measures, providing users with efficient access to centralized data and functionalities while maintaining a secure and reliable environment for collaborative use.
+                    The result is a scalable, secure environment: your team gets fast access to centralised data while the practice keeps a reliable base for collaborative work.
                   </p>
                 </div>
-              </Reveal>
 
-              {/* Center Content - Features List */}
-              <Reveal delay={0.05} className="lg:col-span-4">
-                <div className="space-y-2.5 lg:space-y-4">
+                <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {clientServerFeatures.map((feature) => (
                     <div
                       key={feature.title}
-                      className="group flex items-center gap-3 lg:gap-4 rounded-xl lg:rounded-2xl border border-gray-100 bg-white/90 px-3 py-2.5 lg:px-4 lg:py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
+                      className="group flex h-full items-center gap-3 rounded-2xl border border-gray-100 bg-white/90 px-3.5 py-2.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
                     >
-                      <span className="flex h-8 w-8 lg:h-11 lg:w-11 shrink-0 items-center justify-center rounded-[6px] bg-blue-50">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] bg-blue-50">
                         <Image
                           src={feature.icon}
                           alt={feature.alt}
                           width={40}
                           height={40}
-                          className="h-4 w-4 lg:h-6 lg:w-6 object-contain"
+                          className="h-5 w-5 object-contain"
                           loading="lazy"
                           sizes="40px"
                         />
                       </span>
-                      <h3 className="text-sm lg:text-lg font-semibold leading-snug text-[#001525] font-inter">
+                      <h3 className="text-sm sm:text-base font-semibold leading-snug text-[#001525] font-inter">
                         {feature.title}
                       </h3>
                     </div>
@@ -675,18 +677,18 @@ export default function Home() {
                 </div>
               </Reveal>
 
-              {/* Right Content - Server Network Diagram */}
-              <Reveal delay={0.1} className="lg:col-span-4 flex justify-center">
-                <div className="max-w-lg w-full md:max-w-[300px] lg:max-w-lg rounded-2xl border border-gray-100 bg-white p-4 md:p-4 lg:p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
+              {/* Diagram */}
+              <Reveal delay={0.05} className="lg:col-span-5">
+                <div className="mx-auto w-full max-w-md lg:max-w-none aspect-[4/3] overflow-hidden rounded-2xl border-4 border-white ring-1 ring-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-20px_rgba(16,24,40,0.20)]">
                   <Image
-                    src="/images/server-network-diagram.png"
+                    src="/images/client-server-diagram.png"
                     alt="Power CA Client-Server Network Architecture Diagram - Secure cloud-based practice management system for CA firms"
-                    width={600}
-                    height={600}
-                    className="w-full h-auto aspect-square object-contain lg:aspect-auto"
+                    width={800}
+                    height={780}
+                    className="h-full w-full object-cover"
                     loading="lazy"
                     quality={85}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                    sizes="(max-width: 1024px) 100vw, 400px"
                   />
                 </div>
               </Reveal>
