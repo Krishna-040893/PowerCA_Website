@@ -1,9 +1,10 @@
 'use client'
 
 import {useState, useEffect, useCallback  } from 'react'
+import Image from 'next/image'
 import {useRouter  } from 'next/navigation'
 import {useSession, signOut  } from 'next-auth/react'
-import {Building2, User, Save, AlertCircle, Clock, XCircle, LogOut, ChevronLeft, ChevronRight  } from 'lucide-react'
+import {Building2, User, Save, AlertCircle, Check, Clock, XCircle, LogOut, ChevronLeft, ChevronRight  } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
 import {toast  } from 'sonner'
 import {Button  } from '@/components/ui/button'
@@ -368,80 +369,123 @@ export default function AffiliateAccountPage() {
 
   if (approvalStatus === 'pending') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-100">
-        {/* Top Navigation Bar for Pending Status */}
-        <div className="bg-white border-b shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-end h-16">
-              {/* User Info */}
-              <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 rounded-full bg-yellow-600 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+      <div className="min-h-screen bg-amber-50/50">
+        {/* Profile hero - same card language as the client account page */}
+        <section className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            {/* Cover image */}
+            <div className="relative h-24 sm:h-32 w-full">
+              <Image
+                src="/images/hero-mosaic-bg.jpg"
+                alt=""
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 896px) 100vw, 896px"
+              />
+            </div>
+
+            <div className="px-5 sm:px-7 pb-5">
+              {/* Avatar overlapping the cover, name and email beside it */}
+              <div className="relative z-10 -mt-12 sm:-mt-14 flex items-end gap-4">
+                <div className="flex min-w-0 items-end gap-5 sm:gap-6">
+                  <div className="flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#306bea] to-[#1d4ed8] shadow-sm">
+                    <span className="text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-white">
+                      {(session?.user?.name || session?.user?.email || 'A').trim().charAt(0)}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 translate-y-5 sm:translate-y-7">
+                    <h1 className="flex items-center gap-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                      <span className="truncate">{session?.user?.name || 'Affiliate'}</span>
+                      <Clock className="h-5 w-5 shrink-0 text-amber-500" />
+                    </h1>
+                    <p className="mt-1 truncate text-sm text-gray-400">{session?.user?.email}</p>
+                  </div>
                 </div>
-                <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
-                  <p className="text-xs text-gray-500">{session?.user?.email}</p>
+              </div>
+
+              {/* Stat row - hairline separators, sign out at the end */}
+              <div className="mt-9 sm:mt-11 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-y-3">
+                  <div className="pr-4 sm:border-r sm:border-gray-200">
+                    <p className="text-xs text-gray-400">Application status</p>
+                    <p className="mt-1 text-lg font-medium text-amber-600">Under review</p>
+                  </div>
+                  <div className="pl-4 sm:pl-5 pr-4 sm:border-r sm:border-gray-200">
+                    <p className="text-xs text-gray-400">Affiliate ID</p>
+                    <p className="mt-1 truncate text-lg font-medium text-gray-900">{affiliateId}</p>
+                  </div>
+                  <div className="pr-4 sm:pl-5 sm:border-r sm:border-gray-200">
+                    <p className="text-xs text-gray-400">Referral code</p>
+                    <p className="mt-1 text-lg font-medium text-gray-900">Pending</p>
+                  </div>
                 </div>
+
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   onClick={() => signOut({ callbackUrl: '/affiliate-login' })}
-                  className="text-gray-600 hover:text-red-600"
+                  className="h-10 w-full shrink-0 gap-2 rounded-xl border-gray-200 sm:ml-5 text-sm font-medium text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600 sm:w-auto sm:self-end"
                 >
                   <LogOut className="h-4 w-4" />
+                  Sign out
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Main Content */}
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-          <div className="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
-            <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
-              <Clock className="h-8 w-8 text-yellow-600" />
+        {/* Detail card */}
+        <main className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div className="border-b border-gray-200 px-5 sm:px-7 py-4 sm:py-5">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Affiliate account pending approval</h2>
+              <p className="text-sm text-gray-500">Your affiliate application is currently under review by our admin team</p>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Affiliate Account Pending Approval</h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Your affiliate application is currently under review by our admin team.
-            </p>
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-yellow-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    <strong>What's next?</strong><br />
-                    Our team will review your application and you'll receive an email notification once approved.
+
+            <div className="px-5 sm:px-7 py-5 space-y-5">
+              {/* What's next */}
+              <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#001525]">What&apos;s next?</p>
+                  <p className="mt-0.5 text-sm text-gray-600">
+                    Our team will review your application and you&apos;ll receive an email notification once approved.
                   </p>
                 </div>
               </div>
+
+              {/* After approval */}
+              <div>
+                <p className="text-[13px] font-medium text-[#001525] mb-3">After approval</p>
+                <ul className="space-y-0">
+                  {[
+                    'You\u2019ll receive a unique referral code',
+                    'Access to your affiliate dashboard',
+                    'Start referring clients and earning',
+                  ].map((item, index) => (
+                    <li
+                      key={item}
+                      className={`flex items-center gap-3 py-3 ${index > 0 ? 'border-t border-gray-200' : ''}`}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
+                        <Check className="h-4 w-4" />
+                      </span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="bg-blue-50 p-4 rounded-lg text-left">
-              <h3 className="font-semibold text-blue-900 mb-2">After Approval:</h3>
-              <ul className="text-sm text-blue-800 space-y-2">
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
-                  You'll receive a unique referral code
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
-                  Access to your affiliate dashboard
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">✓</span>
-                  Start referring clients and earning
-                </li>
-              </ul>
-            </div>
-            <div className="mt-6 text-center text-sm text-gray-500">
-              <p>If you have any questions, contact us at <a href="mailto:contact@powerca.in" className="text-blue-600 hover:underline">contact@powerca.in</a></p>
-            </div>
+
+            <div className="border-t border-gray-200 px-5 sm:px-7 py-4 text-sm text-gray-500">
+              Questions? Contact us at{' '}
+              <a href="mailto:contact@powerca.in" className="font-medium text-[#001525] hover:underline">
+                contact@powerca.in
+              </a>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     )
   }
@@ -512,7 +556,7 @@ export default function AffiliateAccountPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  Explore other ways to partner with PowerCA
+                  Explore other ways to partner with Power CA
                 </li>
               </ul>
             </div>

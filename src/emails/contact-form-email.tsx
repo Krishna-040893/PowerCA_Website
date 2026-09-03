@@ -117,7 +117,7 @@ export const ContactFormEmail: React.FC<ContactFormEmailProps> = ({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              © {new Date().getFullYear()} PowerCA - Practice Management Software for CAs
+              © {new Date().getFullYear()} Power CA - Practice Management Software for CAs
             </Text>
             <Text style={footerAddress}>TBS Technologies, Udumalpet, Tamil Nadu, India</Text>
           </Section>

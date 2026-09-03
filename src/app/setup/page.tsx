@@ -293,7 +293,7 @@ export default function SetupPage() {
         </Card>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          PowerCA Admin Setup • Secure System Configuration
+          Power CA Admin Setup • Secure System Configuration
         </p>
       </div>
     </div>

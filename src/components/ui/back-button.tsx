@@ -15,10 +15,10 @@ export function BackButton() {
   return (
     <button
       onClick={handleBack}
-      className="group flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200"
+      className="group inline-flex h-12 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-8 text-sm font-medium text-[#001525] transition-colors hover:bg-gray-50 font-inter"
     >
-      <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" />
-      <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+      <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+      <span>
         Back
       </span>
     </button>

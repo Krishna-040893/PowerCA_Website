@@ -13,7 +13,7 @@ const testimonials = [
     firm: 'Kumar & Associates',
     location: 'Mumbai',
     rating: 5,
-    content: 'PowerCA has transformed how we manage our practice. The automation features alone save us 15+ hours every week. The compliance tracking is exceptional.',
+    content: 'Power CA has transformed how we manage our practice. The automation features alone save us 15+ hours every week. The compliance tracking is exceptional.',
     avatar: '/avatars/avatar-1.jpg',
     initials: 'RK'
   },
@@ -40,7 +40,7 @@ const testimonials = [
     firm: 'Reddy Financial Services',
     location: 'Bangalore',
     rating: 5,
-    content: "PowerCA's customer support is phenomenal. The onboarding was smooth, and the team helped us migrate all our data seamlessly. It's been a game-changer.",
+    content: "Power CA's customer support is phenomenal. The onboarding was smooth, and the team helped us migrate all our data seamlessly. It's been a game-changer.",
     avatar: '/avatars/avatar-4.jpg',
     initials: 'SR'
   }
@@ -73,7 +73,7 @@ export function TestimonialsSection() {
             What Practicing Chartered Accountants Say
           </h2>
           <p className="text-xl text-gray-600">
-            Don't just take our word for it. Here's what our clients have to say about PowerCA.
+            Don't just take our word for it. Here's what our clients have to say about Power CA.
           </p>
         </motion.div>
 

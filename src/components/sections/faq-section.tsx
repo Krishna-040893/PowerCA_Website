@@ -16,16 +16,16 @@ const faqs = [
     category: 'Getting Started',
     questions: [
       {
-        question: 'How long does it take to set up PowerCA?',
+        question: 'How long does it take to set up Power CA?',
         answer: 'Most firms are up and running within 24 hours. Our onboarding team helps you import your client data, configure your workflows, and train your team. We also provide video tutorials and documentation for self-service setup.'
       },
       {
         question: 'Can I import my existing client data?',
-        answer: 'Yes! PowerCA supports importing your jobs, bills, clients and all other data from Excel or CSV. Our migration team will help you transfer all your client information, documents, and historical data seamlessly.'
+        answer: 'Yes! Power CA supports importing your jobs, bills, clients and all other data from Excel or CSV. Our migration team will help you transfer all your client information, documents, and historical data seamlessly.'
       },
       {
-        question: 'Do I need technical knowledge to use PowerCA?',
-        answer: 'Not at all. PowerCA is designed for CA professionals, not IT experts. Our intuitive interface requires no technical knowledge. If you can use WhatsApp or email, you can use PowerCA.'
+        question: 'Do I need technical knowledge to use Power CA?',
+        answer: 'Not at all. Power CA is designed for CA professionals, not IT experts. Our intuitive interface requires no technical knowledge. If you can use WhatsApp or email, you can use Power CA.'
       }
     ]
   },
@@ -33,16 +33,16 @@ const faqs = [
     category: 'Features & Functionality',
     questions: [
       {
-        question: 'What makes PowerCA different from other practice management software?',
-        answer: 'PowerCA is built specifically for Indian CAs keeping data security and protection in mind. This is built on a client server model where you own the data and need not worry about data breaches.'
+        question: 'What makes Power CA different from other practice management software?',
+        answer: 'Power CA is built specifically for Indian CAs keeping data security and protection in mind. This is built on a client server model where you own the data and need not worry about data breaches.'
       },
       {
-        question: 'Can multiple team members use PowerCA simultaneously?',
-        answer: 'Yes! PowerCA supports unlimited team members, client creation, job creation, billing, etc. There are no limits on our application.'
+        question: 'Can multiple team members use Power CA simultaneously?',
+        answer: 'Yes! Power CA supports unlimited team members, client creation, job creation, billing, etc. There are no limits on our application.'
       },
       {
-        question: 'Does PowerCA integrate with other tools?',
-        answer: "PowerCA integrates with popular tools like Tally for Financial Statements Preparation. We're constantly adding new integrations based on user feedback."
+        question: 'Does Power CA integrate with other tools?',
+        answer: "Power CA integrates with popular tools like Tally for Financial Statements Preparation. We're constantly adding new integrations based on user feedback."
       }
     ]
   },
@@ -51,15 +51,15 @@ const faqs = [
     questions: [
       {
         question: 'How secure is my client data?',
-        answer: 'PowerCA uses a client-server architecture where all your data is stored locally on your own premises, not in the cloud. This means you have complete control and ownership of your data, eliminating the risk of cloud-based data breaches.'
+        answer: 'Power CA uses a client-server architecture where all your data is stored locally on your own premises, not in the cloud. This means you have complete control and ownership of your data, eliminating the risk of cloud-based data breaches.'
       },
       {
-        question: 'Is PowerCA compliant with data protection regulations?',
-        answer: 'Yes, PowerCA is fully compliant with Indian data protection laws and GDPR. We undergo regular security audits and maintain strict data privacy policies. Your data is never shared with third parties.'
+        question: 'Is Power CA compliant with data protection regulations?',
+        answer: 'Yes, Power CA is fully compliant with Indian data protection laws and GDPR. We undergo regular security audits and maintain strict data privacy policies. Your data is never shared with third parties.'
       },
       {
         question: 'What happens to my data if I cancel my subscription?',
-        answer: "Since PowerCA is a client-server application, your data always remains on your own servers. Even if you discontinue the subscription, you retain complete access to all your data as it's stored locally on your premises. You can export it in standard formats (Excel, PDF) at any time."
+        answer: "Since Power CA is a client-server application, your data always remains on your own servers. Even if you discontinue the subscription, you retain complete access to all your data as it's stored locally on your premises. You can export it in standard formats (Excel, PDF) at any time."
       }
     ]
   },
@@ -67,16 +67,16 @@ const faqs = [
     category: 'Pricing & Billing',
     questions: [
       {
-        question: 'What is the current pricing for PowerCA?',
-        answer: "As part of our special launch offer, PowerCA software is completely FREE until March 2026! You only pay ₹22,000 for implementation, installation, training and support. After March 2026, there's an annual subscription fee of 0.25% of your turnover."
+        question: 'What is the current pricing for Power CA?',
+        answer: "As part of our special launch offer, Power CA software is completely FREE until March 2026! You only pay ₹22,000 for implementation, installation, training and support. After March 2026, there's an annual subscription fee of 0.25% of your turnover."
       },
       {
         question: 'What does the ₹22,000 implementation fee include?',
-        answer: "The implementation fee covers server installation, client installation on all your systems, complete training for your team, and ongoing support until March 2026. This ensures you're fully set up and operational with PowerCA."
+        answer: "The implementation fee covers server installation, client installation on all your systems, complete training for your team, and ongoing support until March 2026. This ensures you're fully set up and operational with Power CA."
       },
       {
         question: 'How does the annual subscription work after March 2026?',
-        answer: 'After March 2026, PowerCA charges an annual subscription fee of just 0.25% of your turnover. The first year is free, and renewals happen every February. This ensures maximum support with minimum recurring cost for your practice administration.'
+        answer: 'After March 2026, Power CA charges an annual subscription fee of just 0.25% of your turnover. The first year is free, and renewals happen every February. This ensures maximum support with minimum recurring cost for your practice administration.'
       }
     ]
   }

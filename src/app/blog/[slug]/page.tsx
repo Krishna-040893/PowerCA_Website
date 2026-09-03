@@ -73,12 +73,12 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: 'Blog Post Not Found | PowerCA',
+      title: 'Blog Post Not Found | Power CA',
     }
   }
 
   return {
-    title: `${post.title} | PowerCA Blog`,
+    title: `${post.title} | Power CA Blog`,
     description: post.excerpt,
     openGraph: {
       title: post.title,

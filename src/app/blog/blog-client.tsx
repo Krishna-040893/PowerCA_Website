@@ -259,7 +259,7 @@ export default function BlogPageClient() {
         description="Your go-to space for best practices, productivity ideas, and the latest updates in audit and practice management."
       >
           {/* Search Bar */}
-          <div ref={filterRef} className="relative max-w-2xl mx-auto">
+          <div ref={filterRef} className="relative mx-auto w-full max-w-md sm:max-w-xl lg:max-w-2xl px-2 sm:px-0">
             <div className="flex items-center h-11 sm:h-12 rounded-full bg-white border border-gray-200 shadow-sm focus-within:border-gray-300 transition-colors">
               <Search className="ml-4 w-4 h-4 text-gray-400 shrink-0 pointer-events-none" />
               <Input
@@ -419,7 +419,7 @@ export default function BlogPageClient() {
               {currentPosts.map((post, index) => {
                 const postContent = (
                   <>
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100">
+                    <div className="relative aspect-[16/9] sm:aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100">
                       {post.image && (
                         <Image
                           src={post.image}

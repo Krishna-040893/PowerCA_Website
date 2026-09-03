@@ -5,8 +5,8 @@ export default function TermsPage() {
 }
 
 export const metadata = {
-  title: 'Terms and Conditions - PowerCA',
-  description: 'Review the terms and conditions for using the PowerCA software license.',
+  title: 'Terms and Conditions - Power CA',
+  description: 'Review the terms and conditions for using the Power CA software license.',
 }
 
 // Enable static generation for this page

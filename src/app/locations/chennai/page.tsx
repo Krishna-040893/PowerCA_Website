@@ -7,12 +7,12 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Chennai - PowerCA Practice Management for Tamil Nadu CAs',
-  description: 'PowerCA - Professional practice management software for Chartered Accountants in Chennai and Tamil Nadu. Complete GST, income tax, and compliance solution. Book your Chennai demo today.',
+  title: 'CA Software in Chennai - Power CA Practice Management for Tamil Nadu CAs',
+  description: 'Power CA - Professional practice management software for Chartered Accountants in Chennai and Tamil Nadu. Complete GST, income tax, and compliance solution. Book your Chennai demo today.',
   keywords: 'CA software Chennai, chartered accountant software Chennai, CA practice management Tamil Nadu, GST software Chennai, tax software Chennai',
   openGraph: {
-    title: 'PowerCA - Professional CA Practice Management Software in Chennai',
-    description: 'Streamline your Chennai CA practice with PowerCA. Designed for Tamil Nadu tax compliance and GST requirements.',
+    title: 'Power CA - Professional CA Practice Management Software in Chennai',
+    description: 'Streamline your Chennai CA practice with Power CA. Designed for Tamil Nadu tax compliance and GST requirements.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Chennai',
+  name: 'Power CA Chennai',
   description: 'Practice management software for Chartered Accountants in Chennai',
   url: 'https://powerca.in/locations/chennai',
   areaServed: {
@@ -219,7 +219,7 @@ export default function ChennaiPage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Transform Your Chennai Practice with PowerCA
+              Transform Your Chennai Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Start your free trial today and experience practice management designed for Tamil Nadu CAs

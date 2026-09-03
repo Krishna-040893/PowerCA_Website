@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (resend) {
       try {
         await resend.emails.send({
-          from: 'PowerCA <contact@powerca.in>',
+          from: 'Power CA <contact@powerca.in>',
           to: 'contact@powerca.in',
           subject: `New Enterprise Inquiry - ${firmName}`,
           html: `
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
                   </p>
                 </div>
                 <div class="footer">
-                  <p>This inquiry was submitted from the PowerCA Pricing page.</p>
+                  <p>This inquiry was submitted from the Power CA Pricing page.</p>
                 </div>
               </div>
             </body>
@@ -112,9 +112,9 @@ export async function POST(req: NextRequest) {
 
         // Send confirmation email to user
         await resend.emails.send({
-          from: 'PowerCA <contact@powerca.in>',
+          from: 'Power CA <contact@powerca.in>',
           to: email,
-          subject: 'Thank you for your Enterprise Inquiry - PowerCA',
+          subject: 'Thank you for your Enterprise Inquiry - Power CA',
           html: `
             <!DOCTYPE html>
             <html>
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
                 </div>
                 <div class="content">
                   <p>Dear <strong>${name}</strong>,</p>
-                  <p>Thank you for your interest in PowerCA's Enterprise/Large Practitioner plan!</p>
+                  <p>Thank you for your interest in Power CA's Enterprise/Large Practitioner plan!</p>
                   <p>We have received your inquiry for <strong>${userCount} users</strong> at <strong>${firmName}</strong>.</p>
                   <p>Our team will review your requirements and get back to you within <strong>24 hours</strong> with a custom pricing proposal tailored to your needs.</p>
                   <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
@@ -152,10 +152,10 @@ export async function POST(req: NextRequest) {
                     <strong>Email:</strong> <a href="mailto:contact@powerca.in">contact@powerca.in</a><br>
                     <strong>Phone:</strong> +91-XXXXXXXXXX
                   </p>
-                  <p>Best Regards,<br><strong>The PowerCA Team</strong></p>
+                  <p>Best Regards,<br><strong>The Power CA Team</strong></p>
                 </div>
                 <div class="footer">
-                  <p>&copy; 2024 PowerCA - Complete CA Practice Management Solution</p>
+                  <p>&copy; 2024 Power CA - Complete CA Practice Management Solution</p>
                 </div>
               </div>
             </body>

@@ -31,7 +31,7 @@ export function LargeTestimonial() {
                 {/* Testimonial Text */}
                 <blockquote className="mb-8">
                   <p className="text-2xl lg:text-3xl font-medium text-gray-900 leading-relaxed">
-                    "PowerCA has completely transformed how we manage our practice. The automation features alone have saved us
+                    "Power CA has completely transformed how we manage our practice. The automation features alone have saved us
                     <span className="text-primary-600 font-semibold"> over 15 hours per week</span>,
                     allowing us to focus on what matters most - serving our clients. The compliance tracking is flawless,
                     and the client portal has improved our professional image significantly."
@@ -58,7 +58,7 @@ export function LargeTestimonial() {
                   <div>
                     <div className="font-semibold text-gray-900 text-lg">CA Rajesh Sharma</div>
                     <div className="text-gray-600">Senior Partner, Sharma & Associates</div>
-                    <div className="text-sm text-gray-500 mt-1">Mumbai | 247 Clients | Using PowerCA since 2022</div>
+                    <div className="text-sm text-gray-500 mt-1">Mumbai | 247 Clients | Using Power CA since 2022</div>
                   </div>
                 </div>
 

@@ -354,7 +354,7 @@ export default function AffiliateRegisterPage() {
           {/* Header */}
           <div className="px-6 pb-6 pt-8 text-center sm:px-8">
             <h1 className="text-2xl font-semibold tracking-tight text-[#001525] font-inter">
-              Join PowerCA Affiliate Program
+              Join Power CA Affiliate Program
             </h1>
             <p className="mt-2 text-sm text-gray-500">
               Three short steps and your partner account is ready
@@ -587,7 +587,7 @@ export default function AffiliateRegisterPage() {
                         Business Information
                       </h2>
                       <p className="text-gray-600 text-sm sm:text-base">
-                        Tell us about your business and how you plan to promote PowerCA
+                        Tell us about your business and how you plan to promote Power CA
                       </p>
                     </div>
 

@@ -20,7 +20,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Demo Booking Confirmation - PowerCA</title>
+        <title>Demo Booking Confirmation - Power CA</title>
         <style>
           body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -39,12 +39,12 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
         <div class="container">
           <div class="header">
             <h1>Demo Booking Confirmed!</h1>
-            <p>Your PowerCA demo has been scheduled</p>
+            <p>Your Power CA demo has been scheduled</p>
           </div>
           
           <div class="content">
             <p>Dear ${name},</p>
-            <p>Thank you for booking a demo with PowerCA! We're excited to show you how our practice management software can transform your CA practice.</p>
+            <p>Thank you for booking a demo with Power CA! We're excited to show you how our practice management software can transform your CA practice.</p>
             
             <div class="booking-details">
               <h2 style="color: #1D91EB; margin-bottom: 20px;">Booking Details</h2>
@@ -93,7 +93,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
             <p>Our team will connect with you 15 minutes before the scheduled time to share the meeting link.</p>
             
             <div style="text-align: center;">
-              <a href="https://powerca.in" class="button">Visit PowerCA Website</a>
+              <a href="https://powerca.in" class="button">Visit Power CA Website</a>
             </div>
             
             <p>If you need to reschedule or have any questions, please feel free to contact us at:</p>
@@ -102,7 +102,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
           </div>
           
           <div class="footer">
-            <p>© ${new Date().getFullYear()} PowerCA - Practice Management Software for CAs</p>
+            <p>© ${new Date().getFullYear()} Power CA - Practice Management Software for CAs</p>
             <p>TBS Technologies, Udumalpet, Tamil Nadu</p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
   // Send confirmation email to the user
   try {
     await resend.emails.send({
-      from: `PowerCA <${fromEmail}>`,
+      from: `Power CA <${fromEmail}>`,
       to: email,
       subject: `Demo Booking Confirmed - ${date} at ${time}`,
       html: emailHtml,
@@ -138,7 +138,7 @@ export const sendBookingConfirmationEmail = async (data: BookingEmailData) => {
 
   try {
     await resend.emails.send({
-      from: `PowerCA Bookings <${fromEmail}>`,
+      from: `Power CA Bookings <${fromEmail}>`,
       to: ['contact@powerca.in', 'tbsindiaudt@gmail.com'],
       subject: `New Demo Booking - ${name} - ${date} at ${time}`,
       html: teamNotificationHtml,
@@ -174,7 +174,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>PowerCA Special Referral - Exclusive Access</title>
+        <title>Power CA Special Referral - Exclusive Access</title>
         <style>
           body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -193,7 +193,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
         <div class="container">
           <div class="header">
             <h1>🎁 Special Invitation from ${affiliateName}</h1>
-            <p style="font-size: 16px;">Exclusive Access to PowerCA Practice Management Software</p>
+            <p style="font-size: 16px;">Exclusive Access to Power CA Practice Management Software</p>
           </div>
 
           <div class="content">
@@ -201,13 +201,13 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
 
             <p>Dear ${customerName},</p>
 
-            <p>${affiliateName} has recommended PowerCA Practice Management Software for ${firmName || 'your firm'}. As a valued referral, you're invited to explore how PowerCA can transform your CA practice.</p>
+            <p>${affiliateName} has recommended Power CA Practice Management Software for ${firmName || 'your firm'}. As a valued referral, you're invited to explore how Power CA can transform your CA practice.</p>
 
             <div class="referral-link-box">
               <h3 style="margin: 0 0 15px 0; color: #1D91EB;">Your Exclusive Referral Link</h3>
               <p style="margin: 0; font-size: 12px; color: #666;">Click the button below to get started with special benefits</p>
               <div class="referral-link">${referralLink}</div>
-              <a href="${referralLink}" class="button">Get Started with PowerCA →</a>
+              <a href="${referralLink}" class="button">Get Started with Power CA →</a>
               <p style="margin: 15px 0 0 0; font-size: 11px; color: #888;">
                 Referral Code: <strong>${referralCode}</strong>
                 ${customerId ? ` | Customer ID: <strong>${customerId}</strong>` : ''}
@@ -215,7 +215,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
             </div>
 
             <div class="benefits-list">
-              <h3 style="color: #1D91EB; margin-top: 0;">Why PowerCA?</h3>
+              <h3 style="color: #1D91EB; margin-top: 0;">Why Power CA?</h3>
               <ul style="padding-left: 20px;">
                 <li><strong>Complete Practice Management</strong> - Client, tax, billing & more in one platform</li>
                 <li><strong>Automated Compliance</strong> - Never miss a deadline with smart reminders</li>
@@ -227,10 +227,10 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
 
             <div class="info-box">
               <h4 style="margin-top: 0;">📅 Book a Personalized Demo</h4>
-              <p style="margin-bottom: 0;">Our team will walk you through PowerCA's features tailored to your practice needs. Click the link above to schedule your demo and explore special referral benefits!</p>
+              <p style="margin-bottom: 0;">Our team will walk you through Power CA's features tailored to your practice needs. Click the link above to schedule your demo and explore special referral benefits!</p>
             </div>
 
-            <p style="margin-top: 30px;">Thank you for considering PowerCA. We're committed to helping CA practices like yours work smarter and grow faster.</p>
+            <p style="margin-top: 30px;">Thank you for considering Power CA. We're committed to helping CA practices like yours work smarter and grow faster.</p>
 
             <div style="background: #FEF3C7; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #F59E0B;">
               <p style="margin: 0; font-size: 14px;"><strong>💡 Important:</strong> Use the referral link above to ensure you receive all referral benefits and special pricing.</p>
@@ -246,7 +246,7 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
           </div>
 
           <div class="footer">
-            <p><strong>PowerCA - Practice Management Software for CAs</strong></p>
+            <p><strong>Power CA - Practice Management Software for CAs</strong></p>
             <p>© ${new Date().getFullYear()} TBS Technologies, Udumalpet, Tamil Nadu</p>
             <p style="font-size: 12px; color: #999; margin-top: 15px;">
               You received this referral from ${affiliateName}. This is a one-time invitation.<br>
@@ -262,9 +262,9 @@ export const sendReferralLinkEmail = async (data: ReferralLinkEmailData) => {
     const fromEmail = process.env.EMAIL_FROM || 'contact@powerca.in'
 
     const emailResult = await resend.emails.send({
-      from: `PowerCA Referrals <${fromEmail}>`,
+      from: `Power CA Referrals <${fromEmail}>`,
       to: customerEmail,
-      subject: `${affiliateName} recommends PowerCA for ${firmName || 'your practice'} - Exclusive Access`,
+      subject: `${affiliateName} recommends Power CA for ${firmName || 'your practice'} - Exclusive Access`,
       html: emailHtml,
     })
 
@@ -283,7 +283,7 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Affiliate Application Approved - PowerCA</title>
+        <title>Affiliate Application Approved - Power CA</title>
         <style>
           body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -313,7 +313,7 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
 
             <p>Dear ${name},</p>
 
-            <p>We're thrilled to welcome you to the <strong>PowerCA Affiliate Program</strong>! Your application has been carefully reviewed and approved by our team.</p>
+            <p>We're thrilled to welcome you to the <strong>Power CA Affiliate Program</strong>! Your application has been carefully reviewed and approved by our team.</p>
 
             <div class="referral-code">
               <p style="margin: 0; font-size: 14px; color: #666;">Your Unique Referral Code</p>
@@ -323,7 +323,7 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
 
             <div class="info-box">
               <h3 style="margin-top: 0; color: #1D91EB;">🚀 Start Referring Today!</h3>
-              <p style="margin-bottom: 0;">You can now start referring clients to PowerCA and earn attractive commissions on every successful subscription!</p>
+              <p style="margin-bottom: 0;">You can now start referring clients to Power CA and earn attractive commissions on every successful subscription!</p>
             </div>
 
             <div class="benefits-list">
@@ -361,11 +361,11 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
             <p style="margin-top: 30px;">We're excited to have you as part of our affiliate network. Together, let's help more Chartered Accountants streamline their practice management!</p>
 
             <p style="margin-top: 20px;">Best regards,<br>
-            <strong>The PowerCA Team</strong></p>
+            <strong>The Power CA Team</strong></p>
           </div>
 
           <div class="footer">
-            <p><strong>PowerCA - Practice Management Software for CAs</strong></p>
+            <p><strong>Power CA - Practice Management Software for CAs</strong></p>
             <p>© ${new Date().getFullYear()} TBS Technologies, Udumalpet, Tamil Nadu</p>
             <p style="font-size: 12px; color: #999; margin-top: 15px;">
               You received this email because your affiliate application was approved.<br>
@@ -381,9 +381,9 @@ export const sendAffiliateApprovalEmail = async (data: AffiliateApprovalEmailDat
     const fromEmail = process.env.EMAIL_FROM || 'contact@powerca.in'
 
     const emailResult = await resend.emails.send({
-      from: `PowerCA Affiliates <${fromEmail}>`,
+      from: `Power CA Affiliates <${fromEmail}>`,
       to: email,
-      subject: '🎉 Welcome to PowerCA Affiliate Program - Application Approved!',
+      subject: '🎉 Welcome to Power CA Affiliate Program - Application Approved!',
       html: emailHtml,
     })
 

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
                 <Building2 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold">PowerCA Dashboard</h1>
+                <h1 className="text-xl font-semibold">Power CA Dashboard</h1>
                 <p className="text-sm text-muted-foreground">Welcome back, {session.user?.name}</p>
               </div>
             </div>
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
         {/* Welcome Banner */}
         <Card className="mb-8 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0">
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome to PowerCA</CardTitle>
+            <CardTitle className="text-2xl">Welcome to Power CA</CardTitle>
             <CardDescription className="text-blue-100">
               Your complete practice management solution
             </CardDescription>

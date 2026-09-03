@@ -6,11 +6,11 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Bangalore - PowerCA Practice Management for Tech-Savvy CAs',
-  description: 'PowerCA - Modern practice management software for Chartered Accountants in Bangalore. Specialized for tech startups and IT companies. Complete GST and compliance solution. Book demo today.',
+  title: 'CA Software in Bangalore - Power CA Practice Management for Tech-Savvy CAs',
+  description: 'Power CA - Modern practice management software for Chartered Accountants in Bangalore. Specialized for tech startups and IT companies. Complete GST and compliance solution. Book demo today.',
   keywords: 'CA software Bangalore, chartered accountant software Bengaluru, CA practice management Bangalore, startup accounting software, IT company CA software Bangalore',
   openGraph: {
-    title: 'PowerCA - Modern CA Practice Management Software in Bangalore',
+    title: 'Power CA - Modern CA Practice Management Software in Bangalore',
     description: 'Specialized features for Bangalore CAs handling startup and IT company compliance.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Bangalore',
+  name: 'Power CA Bangalore',
   description: 'Practice management software for Chartered Accountants in Bangalore',
   url: 'https://powerca.in/locations/bangalore',
   areaServed: {
@@ -208,7 +208,7 @@ export default function BangalorePage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Power Your Bangalore Practice with PowerCA
+              Power Your Bangalore Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Start your free trial and experience modern practice management designed for tech-savvy CAs

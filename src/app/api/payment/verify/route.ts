@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         amount: totalAmount, // Store total amount (including GST) for payments table
         currency: 'INR',
         status: 'captured', // Use actual Razorpay payment status
-        plan: productDetails?.name || 'PowerCA Implementation',
+        plan: productDetails?.name || 'Power CA Implementation',
         email: customerEmail,
         phone: customerDetails?.phone || userInfo.phone,
         name: customerName,
@@ -327,8 +327,8 @@ export async function POST(req: NextRequest) {
       paymentDate: new Date(),
       items: [{
         description: isFinalSettlement
-          ? 'PowerCA Final Settlement - Complete your service payment'
-          : (productDetails?.name || 'PowerCA Implementation - Complete setup with first year subscription FREE'),
+          ? 'Power CA Final Settlement - Complete your service payment'
+          : (productDetails?.name || 'Power CA Implementation - Complete setup with first year subscription FREE'),
         quantity: invoiceUserCount,
         rate: invoiceUserCount > 1 ? Math.round(subtotal / invoiceUserCount) : subtotal,
         amount: subtotal,
@@ -403,7 +403,7 @@ export async function POST(req: NextRequest) {
           hasAttachment: !!invoicePDF
         })
         await resend.emails.send({
-          from: 'PowerCA <contact@powerca.in>',
+          from: 'Power CA <contact@powerca.in>',
           to: customerEmail,
           subject: `${isTestPayment ? '🧪 [TEST] ' : ''}🎉 Payment Confirmation - Receipt ${invoiceNumber}`,
           html: `
@@ -433,11 +433,11 @@ export async function POST(req: NextRequest) {
                 ` : ''}
                 <div class="header">
                   <h2>🎉 Payment Successful!</h2>
-                  <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for choosing PowerCA</p>
+                  <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for choosing Power CA</p>
                 </div>
                 <div class="content">
                   <p>Dear <strong>${customerName}</strong>,</p>
-                  <p>🎊 Congratulations! Your payment has been successfully processed and your PowerCA implementation is confirmed.</p>
+                  <p>🎊 Congratulations! Your payment has been successfully processed and your Power CA implementation is confirmed.</p>
 
                   <div class="payment-details">
                     <h3>💳 Payment Summary</h3>
@@ -465,10 +465,10 @@ export async function POST(req: NextRequest) {
                     </table>
                   </div>
 
-                  <p style="margin-top: 30px;">Best Regards,<br><strong>The PowerCA Team</strong></p>
+                  <p style="margin-top: 30px;">Best Regards,<br><strong>The Power CA Team</strong></p>
                 </div>
                 <div class="footer">
-                  <p>© ${new Date().getFullYear()} PowerCA - Complete CA Practice Management Solution<br>
+                  <p>© ${new Date().getFullYear()} Power CA - Complete CA Practice Management Solution<br>
                   This is an automated email. Please do not reply to this message.</p>
                 </div>
               </div>
@@ -721,7 +721,7 @@ export async function POST(req: NextRequest) {
 
                   // Product details
                   product_id: orderData.product_id || productDetails?.name,
-                  plan_type: productDetails?.name || 'PowerCA Implementation',
+                  plan_type: productDetails?.name || 'Power CA Implementation',
 
                   // Commission (10% of BASE amount)
                   commission_amount: commissionAmount,  // e.g., 0.10 (10% of 1.00)

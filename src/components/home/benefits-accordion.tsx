@@ -39,35 +39,45 @@ export function BenefitsAccordion() {
   }
 
   return (
-    <div className="space-y-3">
-      {benefits.map((benefit, index) => (
-        <div
-          key={index}
-          className={`rounded-2xl border border-gray-200 bg-white transition-shadow ${
-            openBenefit === index ? 'shadow-md' : 'shadow-sm hover:shadow-md'
-          }`}
-        >
-          <button
-            onClick={() => toggleBenefit(index)}
-            className="w-full rounded-2xl px-6 py-4 text-left flex items-center justify-between"
+    <div className="space-y-2.5 sm:space-y-3">
+      {benefits.map((benefit, index) => {
+        const isOpen = openBenefit === index
+        return (
+          <div
+            key={index}
+            className={`rounded-2xl border border-gray-200 bg-white transition-shadow ${
+              isOpen ? 'shadow-md' : 'shadow-sm hover:shadow-md'
+            }`}
           >
-            <div className="flex items-start gap-4">
-              <span className="text-2xl font-bold text-[#155dfc]">{benefit.number}</span>
-              <h3 className="text-lg font-semibold text-gray-900">{benefit.title}</h3>
-            </div>
-            <ChevronDown
-              className={`w-5 h-5 text-gray-500 transition-transform ${
-                openBenefit === index ? 'rotate-180' : ''
+            <button
+              onClick={() => toggleBenefit(index)}
+              className="w-full rounded-2xl px-4 sm:px-5 lg:px-6 py-3 sm:py-4 text-left flex items-center justify-between"
+              aria-expanded={isOpen}
+              aria-controls={`benefit-panel-${index}`}
+            >
+              <div className="flex items-start gap-2.5 sm:gap-3 lg:gap-4">
+                <span className="text-base sm:text-lg lg:text-2xl font-bold text-[#155dfc] leading-snug">{benefit.number}</span>
+                <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 pr-3 sm:pr-4">{benefit.title}</h3>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 flex-shrink-0 transition-transform ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+            <div
+              id={`benefit-panel-${index}`}
+              className={`px-4 sm:px-5 lg:px-6 overflow-hidden transition-all duration-300 ease-in-out ${
+                isOpen ? 'pb-4 sm:pb-5 max-h-[1000px] opacity-100' : 'max-h-0 py-0 opacity-0'
               }`}
-            />
-          </button>
-          {openBenefit === index && (
-            <div className="px-6 pb-5">
-              <p className="text-gray-500 leading-relaxed ml-12">{benefit.description}</p>
+            >
+              <p className="text-gray-500 leading-relaxed text-sm sm:text-base ml-7 sm:ml-9 lg:ml-12">
+                {benefit.description}
+              </p>
             </div>
-          )}
-        </div>
-      ))}
+          </div>
+        )
+      })}
     </div>
   )
 }

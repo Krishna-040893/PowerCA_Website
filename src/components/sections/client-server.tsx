@@ -29,7 +29,7 @@ export function ClientServerModel() {
             </div>
 
             <p className="text-gray-600 mb-6">
-              Install PowerCA directly on your computer for offline access and maximum performance
+              Install Power CA directly on your computer for offline access and maximum performance
             </p>
 
             <div className="space-y-3">

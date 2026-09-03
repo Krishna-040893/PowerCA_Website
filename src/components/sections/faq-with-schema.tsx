@@ -125,38 +125,38 @@ export function FAQWithSchema({
   )
 }
 
-// Pre-configured FAQ for PowerCA
+// Pre-configured FAQ for Power CA
 export const powerCAFAQs: FAQItem[] = [
   {
-    question: 'What is PowerCA and who is it designed for?',
-    answer: 'PowerCA is a comprehensive practice management software designed specifically for Chartered Accountants in India. It helps CAs manage their entire practice including job cards, billing, compliance tracking, client management, and document handling - all in one integrated platform.'
+    question: 'What is Power CA and who is it designed for?',
+    answer: 'Power CA is a comprehensive practice management software designed specifically for Chartered Accountants in India. It helps CAs manage their entire practice including job cards, billing, compliance tracking, client management, and document handling - all in one integrated platform.'
   },
   {
-    question: 'How does PowerCA help save time for CA firms?',
-    answer: 'PowerCA automates repetitive tasks like invoice generation, compliance deadline tracking, and client communications. Our users report saving 10+ hours weekly. The centralized dashboard gives you instant access to all client information, eliminating time wasted searching for documents.'
+    question: 'How does Power CA help save time for CA firms?',
+    answer: 'Power CA automates repetitive tasks like invoice generation, compliance deadline tracking, and client communications. Our users report saving 10+ hours weekly. The centralized dashboard gives you instant access to all client information, eliminating time wasted searching for documents.'
   },
   {
-    question: 'What kind of support does PowerCA provide?',
-    answer: 'PowerCA offers multiple levels of support including 24/7 email support, business hours phone support, live chat assistance, video training sessions, and on-site training for enterprise clients. We are planning to provide extensive documentation, video tutorials, help tooltips inside the app, and regular webinars to help you maximize the software\'s potential.'
+    question: 'What kind of support does Power CA provide?',
+    answer: 'Power CA offers multiple levels of support including 24/7 email support, business hours phone support, live chat assistance, video training sessions, and on-site training for enterprise clients. We are planning to provide extensive documentation, video tutorials, help tooltips inside the app, and regular webinars to help you maximize the software\'s potential.'
   },
   {
-    question: 'Is PowerCA available on mobile devices?',
-    answer: 'PowerCA is currently a client-server application designed for desktop use. We are planning to launch a mobile app for onsite or out of office users to add quick task updates, making it easier to stay connected with your practice while on the go.'
+    question: 'Is Power CA available on mobile devices?',
+    answer: 'Power CA is currently a client-server application designed for desktop use. We are planning to launch a mobile app for onsite or out of office users to add quick task updates, making it easier to stay connected with your practice while on the go.'
   },
   {
-    question: 'How secure is my client data on PowerCA?',
-    answer: 'PowerCA is a client-server application where your data is stored on your own server or local infrastructure - giving you complete control and ownership of all client information. We do not store any of your client data on external servers or the cloud, ensuring maximum security and privacy. Your sensitive financial information stays within your organization\'s secure environment, protected by your own security measures and access controls.'
+    question: 'How secure is my client data on Power CA?',
+    answer: 'Power CA is a client-server application where your data is stored on your own server or local infrastructure - giving you complete control and ownership of all client information. We do not store any of your client data on external servers or the cloud, ensuring maximum security and privacy. Your sensitive financial information stays within your organization\'s secure environment, protected by your own security measures and access controls.'
   },
   {
-    question: 'What is the pricing structure for PowerCA?',
-    answer: 'PowerCA offers flexible pricing plans to suit your needs: 1) Annual License at ₹1,500/user/year, 2) 2 Year Pack at ₹3,000/user (one-time payment), and 3) Enterprise/Large Practitioner with custom pricing for 20+ users. All plans include installation, demo, and ongoing support. Contact us to learn more about how PowerCA can fit your practice needs.'
+    question: 'What is the pricing structure for Power CA?',
+    answer: 'Power CA offers flexible pricing plans to suit your needs: 1) Annual License at ₹1,500/user/year, 2) 2 Year Pack at ₹3,000/user (one-time payment), and 3) Enterprise/Large Practitioner with custom pricing for 20+ users. All plans include installation, demo, and ongoing support. Contact us to learn more about how Power CA can fit your practice needs.'
   },
   {
-    question: 'Can PowerCA handle multiple branches or locations?',
-    answer: 'Yes, PowerCA is designed to handle multiple branches, locations, and even multiple firms within the same organization. We use localized servers for each branch or location, ensuring that each operates independently with its own data and users. This setup provides maximum security and performance for each location while maintaining the flexibility to manage diverse operations across your organization.'
+    question: 'Can Power CA handle multiple branches or locations?',
+    answer: 'Yes, Power CA is designed to handle multiple branches, locations, and even multiple firms within the same organization. We use localized servers for each branch or location, ensuring that each operates independently with its own data and users. This setup provides maximum security and performance for each location while maintaining the flexibility to manage diverse operations across your organization.'
   },
   {
-    question: 'How long does it take to implement PowerCA in my practice?',
-    answer: 'Most CA firms are fully operational on PowerCA within 3-5 days. This includes initial setup, data migration, and basic training. Our implementation team provides step-by-step guidance, and you can start using basic features immediately while gradually adopting advanced functionalities.'
+    question: 'How long does it take to implement Power CA in my practice?',
+    answer: 'Most CA firms are fully operational on Power CA within 3-5 days. This includes initial setup, data migration, and basic training. Our implementation team provides step-by-step guidance, and you can start using basic features immediately while gradually adopting advanced functionalities.'
   }
 ]

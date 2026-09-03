@@ -7,12 +7,12 @@ import { CheckCircle2, Factory, Gem, Building, TrendingUp } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Trichy (Tiruchirappalli) - PowerCA for Tamil Nadu CAs',
-  description: 'PowerCA - Practice management software for Chartered Accountants in Trichy. Specialized for BHEL, manufacturing, and diamond trade. Tamil language support. Book demo today.',
+  title: 'CA Software in Trichy (Tiruchirappalli) - Power CA for Tamil Nadu CAs',
+  description: 'Power CA - Practice management software for Chartered Accountants in Trichy. Specialized for BHEL, manufacturing, and diamond trade. Tamil language support. Book demo today.',
   keywords: 'CA software Trichy, CA software Tiruchirappalli, chartered accountant software Trichy, GST software Trichy, BHEL accounting, diamond trade accounting',
   openGraph: {
-    title: 'PowerCA - CA Practice Management Software in Trichy',
-    description: 'Transform your Trichy CA practice with PowerCA. Built for heavy industries and manufacturing sector.',
+    title: 'Power CA - CA Practice Management Software in Trichy',
+    description: 'Transform your Trichy CA practice with Power CA. Built for heavy industries and manufacturing sector.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Trichy',
+  name: 'Power CA Trichy',
   description: 'Practice management software for Chartered Accountants in Tiruchirappalli',
   url: 'https://powerca.in/locations/trichy',
   areaServed: {
@@ -62,7 +62,7 @@ export default function TrichyPage() {
         {/* Hero Section */}
         <PageHero
           title={<>CA Software for <span className="text-blue-600">Trichy's</span> Industrial Hub</>}
-          description={<>PowerCA - Designed for Chartered Accountants in Tiruchirappalli serving BHEL, heavy industries, and diamond traders. Complete Tamil support included.</>}
+          description={<>Power CA - Designed for Chartered Accountants in Tiruchirappalli serving BHEL, heavy industries, and diamond traders. Complete Tamil support included.</>}
         >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/book-demo">
@@ -254,7 +254,7 @@ export default function TrichyPage() {
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
-              Why Trichy CAs Choose PowerCA
+              Why Trichy CAs Choose Power CA
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card className="p-6">
@@ -303,10 +303,10 @@ export default function TrichyPage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Elevate Your Trichy CA Practice with PowerCA
+              Elevate Your Trichy CA Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join Trichy's progressive CAs using PowerCA for modern practice management
+              Join Trichy's progressive CAs using Power CA for modern practice management
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

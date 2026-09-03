@@ -310,7 +310,7 @@ export default function ContactPage() {
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="PowerCA office location - Muneer Complex, Udumalpet"
+              title="Power CA office location - Muneer Complex, Udumalpet"
             />
             <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/70 bg-white/90 px-4 py-1.5 text-xs font-medium text-[#001525] shadow-sm backdrop-blur-sm">
               Find us here

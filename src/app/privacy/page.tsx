@@ -5,8 +5,8 @@ export default function PrivacyPage() {
 }
 
 export const metadata = {
-  title: 'Privacy Policy - PowerCA',
-  description: 'Understand how PowerCA collects, uses, and shares information when you visit powerca.in.',
+  title: 'Privacy Policy - Power CA',
+  description: 'Understand how Power CA collects, uses, and shares information when you visit powerca.in.',
 }
 
 // Enable static generation for this page

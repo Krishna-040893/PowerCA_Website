@@ -20,7 +20,7 @@ export function TestimonialsSection() {
           {/* Center Content - Description */}
           <div className="lg:col-span-5">
             <p className="text-lg text-gray-600 leading-relaxed">
-              Don't just take our word for it. Here's what our clients have to say about PowerCA.
+              Don't just take our word for it. Here's what our clients have to say about Power CA.
             </p>
           </div>
 

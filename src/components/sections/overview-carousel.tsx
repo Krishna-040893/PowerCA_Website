@@ -21,7 +21,7 @@ const fallbackPosters: Poster[] = [
   {
     src: '/images/posters/01-cover.png',
     title: 'Run your practice from one screen',
-    alt: 'PowerCA practice management software - run your entire CA practice from one screen. Six modules that replace the spreadsheets, shared folders and follow-up calls.',
+    alt: 'Power CA practice management software - run your entire CA practice from one screen. Six modules that replace the spreadsheets, shared folders and follow-up calls.',
   },
   {
     src: '/images/posters/02-job-card-management.png',
@@ -56,7 +56,7 @@ const fallbackPosters: Poster[] = [
   {
     src: '/images/posters/08-call-to-action.png',
     title: 'Book a demo',
-    alt: 'Ready to power your practice? Book a live demo and see all six PowerCA modules working end to end at powerca.in.',
+    alt: 'Ready to power your practice? Book a live demo and see all six Power CA modules working end to end at powerca.in.',
   },
 ]
 
@@ -325,8 +325,8 @@ export function OverviewCarousel() {
 
   // The next few posters, shown as thumbnails beside the featured one. Never
   // wrap into the selected poster (or a duplicate) when a category has fewer
-  // than seven posters.
-  const upcoming = Array.from({ length: Math.min(6, Math.max(0, posters.length - 1)) }, (_, offset) => {
+  // than six posters.
+  const upcoming = Array.from({ length: Math.min(5, Math.max(0, posters.length - 1)) }, (_, offset) => {
     const index = (activeIndex + offset + 1) % posters.length
     return { poster: posters[index], index }
   })
@@ -336,7 +336,7 @@ export function OverviewCarousel() {
       className="relative"
       role="group"
       aria-roledescription="carousel"
-      aria-label="PowerCA posters"
+      aria-label="Power CA posters"
     >
       {/* Category filter. Only shown once posters carry categories. */}
       {loaded && categories.length > 0 && (

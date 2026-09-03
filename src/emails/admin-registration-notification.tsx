@@ -61,7 +61,7 @@ export const AdminRegistrationNotification: React.FC<AdminRegistrationNotificati
               src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
-              alt="PowerCA"
+              alt="Power CA"
               style={logo}
             />
           </Section>
@@ -70,7 +70,7 @@ export const AdminRegistrationNotification: React.FC<AdminRegistrationNotificati
           <Section style={alertSection}>
             <Text style={alertHeading}>🎉 New Client Registration</Text>
             <Text style={alertSubtext}>
-              A new client has registered on PowerCA
+              A new client has registered on Power CA
             </Text>
           </Section>
 
@@ -155,10 +155,10 @@ export const AdminRegistrationNotification: React.FC<AdminRegistrationNotificati
           {/* Footer */}
           <Section style={footerSection}>
             <Text style={footerText}>
-              This is an automated notification from PowerCA Registration System
+              This is an automated notification from Power CA Registration System
             </Text>
             <Text style={footerAddress}>
-              © {new Date().getFullYear()} PowerCA. All rights reserved.
+              © {new Date().getFullYear()} Power CA. All rights reserved.
             </Text>
           </Section>
         </Container>

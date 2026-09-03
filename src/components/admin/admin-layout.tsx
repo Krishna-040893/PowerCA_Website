@@ -172,7 +172,7 @@ function AdminLoginComponent() {
         </Card>
 
         <div className="mt-4 text-center text-xs text-gray-400">
-          © 2024 PowerCA Admin. All rights reserved.
+          © 2024 Power CA Admin. All rights reserved.
         </div>
       </div>
     </div>
@@ -348,7 +348,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
             </div>
             <div>
-              <span className="text-xl font-bold text-white">PowerCA</span>
+              <span className="text-xl font-bold text-white">Power CA</span>
               <div className="text-xs text-emerald-400 font-medium tracking-wider">ADMIN CONTROL</div>
             </div>
           </div>

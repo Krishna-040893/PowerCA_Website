@@ -261,7 +261,7 @@ export function DemoBooking() {
             <aside className="border-b border-gray-100 p-6 text-center sm:p-8 lg:border-b-0 lg:border-r lg:p-10 lg:text-left">
               <Image
                 src="/images/powerca-logo-horizontal.png"
-                alt="PowerCA"
+                alt="Power CA"
                 width={200}
                 height={60}
                 className="mx-auto h-10 w-auto lg:mx-0"
@@ -277,7 +277,7 @@ export function DemoBooking() {
               </h1>
 
               <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-gray-500 font-inter lg:mx-0">
-                Schedule a personalized demo and discover how PowerCA can transform your practice
+                Schedule a personalized demo and discover how Power CA can transform your practice
               </p>
 
               <div className="mt-7 flex flex-wrap justify-center gap-3 lg:flex-col lg:items-start lg:justify-start lg:gap-3.5">

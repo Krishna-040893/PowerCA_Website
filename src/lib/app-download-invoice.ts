@@ -264,7 +264,7 @@ function generateAppDownloadInvoiceHTML(data: AppDownloadInvoiceData, headerLogo
     <!-- Header -->
     <div class="header">
       <div class="company-logo">
-        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="PowerCA Logo" style="height: 60px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
+        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="Power CA Logo" style="height: 60px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
       </div>
       <div class="company-address">
         No. 130, II Floor, Muneer Complex, Palani Road,<br>
@@ -315,7 +315,7 @@ function generateAppDownloadInvoiceHTML(data: AppDownloadInvoiceData, headerLogo
         <tr>
           <td>01</td>
           <td>
-            ${productLogoBase64 ? `<img src="${productLogoBase64}" alt="PowerCA Logo" style="width: 60px; height: 60px; object-fit: contain; display: block;">` : `
+            ${productLogoBase64 ? `<img src="${productLogoBase64}" alt="Power CA Logo" style="width: 60px; height: 60px; object-fit: contain; display: block;">` : `
             <div class="image-placeholder">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect width="40" height="40" rx="8" fill="#1D91EB"/>
@@ -325,7 +325,7 @@ function generateAppDownloadInvoiceHTML(data: AppDownloadInvoiceData, headerLogo
             `}
           </td>
           <td>
-            <strong>${data.productName || 'PowerCA Desktop'}</strong><br>
+            <strong>${data.productName || 'Power CA Desktop'}</strong><br>
             <span style="font-size: 11px; color: #666; font-style: italic;">Demo Version - 1 Month Access</span><br>
           </td>
           <td class="text-right">1</td>

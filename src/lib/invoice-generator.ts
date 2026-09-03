@@ -357,7 +357,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
     <div class="header">
       <div class="header-content">
         <div class="company-details">
-          <h1>PowerCA</h1>
+          <h1>Power CA</h1>
           <div class="company-tagline">Complete CA Practice Management Solution</div>
           <div class="company-info">
             <div>📧 contact@powerca.in | 📞 +91 98765 43210</div>
@@ -477,7 +477,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
           <h4>🏦 Bank Details</h4>
           <p>
             <strong>Bank:</strong> HDFC Bank<br>
-            <strong>Account:</strong> PowerCA Solutions Pvt Ltd<br>
+            <strong>Account:</strong> Power CA Solutions Pvt Ltd<br>
             <strong>A/C No:</strong> 1234567890<br>
             <strong>IFSC:</strong> HDFC0001234
           </p>
@@ -486,7 +486,7 @@ export function generateInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }
 
       <div class="thank-you">
         <h3>🙏 Thank You for Your Business!</h3>
-        <p>We appreciate your trust in PowerCA and look forward to serving you with excellence.</p>
+        <p>We appreciate your trust in Power CA and look forward to serving you with excellence.</p>
       </div>
     </div>
   </div>
@@ -579,7 +579,7 @@ export function createInvoiceData(payment: PaymentData): InvoiceData {
     paymentDate: new Date(),
 
     items: [{
-      description: 'PowerCA Implementation - Complete setup with first year subscription FREE',
+      description: 'Power CA Implementation - Complete setup with first year subscription FREE',
       quantity: 1,
       rate: subtotal,
       amount: subtotal,

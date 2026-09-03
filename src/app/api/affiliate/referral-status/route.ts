@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest) {
       },
       message: hasReferred
         ? `You have ${referralCount} total referrals (${pendingCount} pending, ${completedCount} completed)`
-        : 'You can refer multiple customers to PowerCA'
+        : 'You can refer multiple customers to Power CA'
     }
 
     return NextResponse.json(response)

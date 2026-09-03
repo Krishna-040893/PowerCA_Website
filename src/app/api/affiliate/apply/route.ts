@@ -213,9 +213,9 @@ export async function POST(request: NextRequest) {
     if (resend) {
       try {
         const adminEmailResult = await resend.emails.send({
-          from: 'PowerCA <contact@powerca.in>',
+          from: 'Power CA <contact@powerca.in>',
           to: 'contact@powerca.in',
-          subject: 'New Affiliate Registration - PowerCA',
+          subject: 'New Affiliate Registration - Power CA',
           html: adminEmailHtml,
         })
         logger.info('Admin email sent successfully', {
@@ -246,12 +246,12 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">Welcome to PowerCA Affiliate Program!</h1>
+              <h1 style="margin: 0;">Welcome to Power CA Affiliate Program!</h1>
             </div>
             <div class="content">
               <p>Dear ${fullName},</p>
 
-              <p>Thank you for applying to the PowerCA Affiliate Program! We're excited to have you on board.</p>
+              <p>Thank you for applying to the Power CA Affiliate Program! We're excited to have you on board.</p>
 
               <h3 style="color: #1e40af;">Your Registration Details:</h3>
               <ul style="background: white; padding: 20px; border-radius: 4px;">
@@ -285,9 +285,9 @@ export async function POST(request: NextRequest) {
     if (resend) {
       try {
         const affiliateEmailResult = await resend.emails.send({
-          from: 'PowerCA <contact@powerca.in>',
+          from: 'Power CA <contact@powerca.in>',
           to: email,
-          subject: 'Welcome to PowerCA Affiliate Program - Application Received',
+          subject: 'Welcome to Power CA Affiliate Program - Application Received',
           html: affiliateEmailHtml,
         })
         logger.info('Affiliate confirmation email sent successfully', {

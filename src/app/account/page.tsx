@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense, useRef } from 'react'
+import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,7 +23,6 @@ import {
   Save,
   Plus,
   Pencil,
-  FileText,
   Upload,
   CheckCircle2,
   CreditCard,
@@ -31,7 +31,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-  Star
+  Star,
+  Lock
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -1146,72 +1147,104 @@ function AccountPageContent() {
   if (!session) {
     return null
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100 shadow-md">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-            <div className="flex flex-col sm:flex-row items-center sm:space-x-3 w-full sm:w-auto">
-              {/* Profile Photo Display with Edit Button */}
-              <div className="flex-shrink-0">
-                <ProfilePhotoUpload
-                  currentPhotoUrl={currentProfilePhotoUrl}
-                  onPhotoUpdate={handleProfilePhotoUpdate}
-                  onPhotoDelete={handleProfilePhotoDelete}
-                  size="sm"
-                  editable={true}
-                />
-              </div>
+    <div className="min-h-screen bg-white">
+      {/* Profile hero - contained card with rounded cover */}
+      <section className={`container mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 ${showAddressForm ? 'max-w-6xl' : 'max-w-4xl'}`}>
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {/* Cover image */}
+          <div className="relative h-24 sm:h-32 w-full">
+            <Image
+              src="/images/hero-mosaic-bg.jpg"
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 896px) 100vw, 896px"
+            />
+          </div>
 
-              <div className="flex flex-col justify-center text-center sm:text-left mt-1.5 sm:mt-0">
-                <h1 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">
-                  {session.user?.name || 'Welcome'}
+          <div className="px-5 sm:px-7 pb-5">
+          {/* Avatar overlapping the cover, name and email beside it */}
+          <div className="-mt-12 sm:-mt-14 flex items-end gap-4">
+            <div className="flex min-w-0 items-end gap-5 sm:gap-6">
+              <ProfilePhotoUpload
+                currentPhotoUrl={currentProfilePhotoUrl}
+                onPhotoUpdate={handleProfilePhotoUpdate}
+                onPhotoDelete={handleProfilePhotoDelete}
+                size="md"
+                editable={true}
+                compact
+              />
+
+              {/* Name and email */}
+              <div className="min-w-0 translate-y-5 sm:translate-y-7">
+                <h1 className="flex items-center gap-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                  <span className="truncate">{session.user?.name || 'Welcome'}</span>
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-blue-500" />
                 </h1>
-                <p className="text-xs text-gray-600 flex items-center justify-center sm:justify-start gap-1.5">
-                  <Mail className="h-3 w-3 text-gray-400" />
-                  <span className="truncate max-w-[200px] sm:max-w-none">{session.user?.email}</span>
-                </p>
+                <p className="mt-1 truncate text-sm text-gray-400">{session.user?.email}</p>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-8 ${showAddressForm ? 'max-w-6xl' : 'max-w-5xl'}`}>
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-2">
-          {/* Individual Spaced Tabs */}
-          <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
+          {/* Stat row - hairline separators, no boxes */}
+          <div className="mt-9 sm:mt-11 grid grid-cols-2 sm:grid-cols-4 gap-y-3">
+            <div className="pr-4 sm:border-r sm:border-gray-200">
+              <p className="text-xs text-gray-400">Account status</p>
+              <p className="mt-1 text-lg font-medium text-gray-900">Active</p>
+            </div>
+            <div className="pl-4 sm:pl-5 pr-4 sm:border-r sm:border-gray-200">
+              <p className="text-xs text-gray-400">Role</p>
+              <p className="mt-1 truncate text-lg font-medium text-gray-900">
+                {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
+              </p>
+            </div>
+            <div className="pr-4 sm:pl-5 sm:border-r sm:border-gray-200">
+              <p className="text-xs text-gray-400">Total orders</p>
+              <p className="mt-1 text-lg font-medium text-gray-900">{userData?.totalOrders ?? 0}</p>
+            </div>
+            <div className="pl-4 sm:pl-5">
+              <p className="text-xs text-gray-400">Phone</p>
+              <p className="mt-1 truncate text-lg font-medium text-gray-900">
+                {session.user?.phone || userData?.billingAddress?.phone || '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <main className={`container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 ${showAddressForm ? 'max-w-6xl' : 'max-w-4xl'}`}>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-5">
+          {/* Section tabs - below the profile details */}
+          <TabsList className="flex w-full gap-1 h-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm justify-start">
             <TabsTrigger
               value="profile"
-              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
-              <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Profile</span>
-              <span className="sm:hidden">Profile</span>
+              <User className="h-4 w-4 shrink-0" />
+              My details
             </TabsTrigger>
             <TabsTrigger
               value="billing"
-              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
-              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Billing Address</span>
-              <span className="sm:hidden">Billing</span>
+              <MapPin className="h-4 w-4 shrink-0" />
+              Billing
             </TabsTrigger>
             <TabsTrigger
               value="orders"
-              className="flex-1 min-w-[140px] sm:flex-none lg:flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-sm sm:text-base"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
-              <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Order History</span>
-              <span className="sm:hidden">Orders</span>
+              <ShoppingBag className="h-4 w-4 shrink-0" />
+              Orders
             </TabsTrigger>
           </TabsList>
 
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-4">
+          <div className="w-full min-w-0">
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="mt-0 space-y-4">
             {/* Affiliate Referral Info - Only show if pending */}
             {referralInfo && referralInfo.status === 'pending' && (
               <div className="py-2">
@@ -1241,309 +1274,235 @@ function AccountPageContent() {
               </div>
             )}
 
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                      <User className="h-4 w-4 text-blue-600" />
-                      Account Information
-                    </CardTitle>
-                    <CardDescription className="text-xs">Your personal details and account information</CardDescription>
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs w-fit">
-                    {session.user?.role ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1) : 'User'}
-                  </Badge>
-                </div>
+            <Card className="border border-gray-200 bg-white shadow-sm rounded-2xl overflow-hidden p-0 py-0 gap-0">
+              <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
+                <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">Account information</CardTitle>
+                <CardDescription className="text-sm text-gray-500">Your personal details and account information</CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                {/* Account Status - At the top */}
-                <div className="mb-3 pb-3 border-b border-gray-100">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-gray-700">Account Status</p>
-                      <p className="text-xs sm:text-sm text-gray-500">Your account is active and in good standing</p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">Active</Badge>
-                  </div>
-                </div>
-
-                {/* Full Name, Email, Phone - Same row with equal width */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              <CardContent className="pt-0 px-5 sm:px-7">
+                {/* Account fields - login card form style */}
+                <div className="grid gap-5 sm:grid-cols-2 pt-5 sm:pt-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-xs sm:text-sm font-medium text-gray-700">Full Name</Label>
+                    <Label htmlFor="name" className="text-[13px] font-medium text-[#001525]">
+                      Full name
+                    </Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
                         id="name"
                         value={session.user?.name || 'Not provided'}
-                        disabled
-                        className="pl-8 sm:pl-10 bg-gray-50 border-gray-200 text-sm"
+                        readOnly
+                        className="h-12 md:h-12 pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 placeholder:text-gray-400 focus-visible:ring-0 cursor-not-allowed select-none"
+                        tabIndex={-1}
+                        aria-readonly="true"
                       />
+                      <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
+                    <p className="text-xs text-gray-400">This is displayed on your profile</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs sm:text-sm font-medium text-gray-700">Email Address</Label>
+                    <Label htmlFor="email" className="text-[13px] font-medium text-[#001525]">
+                      Email address
+                    </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
                         id="email"
                         value={session.user?.email || 'Not provided'}
-                        disabled
-                        className="pl-8 sm:pl-10 bg-gray-50 border-gray-200 text-sm"
+                        readOnly
+                        className="h-12 md:h-12 pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 placeholder:text-gray-400 focus-visible:ring-0 cursor-not-allowed select-none"
+                        tabIndex={-1}
+                        aria-readonly="true"
                       />
+                      <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
+                    <p className="text-xs text-gray-400">Used to sign in and receive invoices</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-xs sm:text-sm font-medium text-gray-700">Phone Number</Label>
+                    <Label htmlFor="phone" className="text-[13px] font-medium text-[#001525]">
+                      Phone number
+                    </Label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
                         id="phone"
                         value={session.user?.phone || userData?.billingAddress?.phone || 'Not provided'}
-                        disabled
-                        className="pl-8 sm:pl-10 bg-gray-50 border-gray-200 text-sm"
+                        readOnly
+                        className="h-12 md:h-12 pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 placeholder:text-gray-400 focus-visible:ring-0 cursor-not-allowed select-none"
+                        tabIndex={-1}
+                        aria-readonly="true"
                       />
+                      <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
+                    <p className="text-xs text-gray-400">For account and support contact</p>
                   </div>
                 </div>
 
-                {/* Service Agreement Section - Inside same card */}
-                <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Pricing Agreement</h3>
+                {/* Pricing Agreement Section - affiliate register form style */}
+                <div className="-mx-5 sm:-mx-7 mt-6 sm:mt-8 border-t border-gray-200">
+                  <div className="px-6 pb-6 pt-8 text-center sm:px-8">
+                    <h3 className="text-2xl font-semibold tracking-tight text-[#001525] font-inter">
+                      Pricing Agreement
+                    </h3>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Download, sign and upload your pricing agreement document
+                    </p>
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-500 mb-6">
-                    Download, Sign and Upload your Pricing Agreement Document
-                  </p>
 
                   {isLoadingAgreement ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-purple-600 mr-2" />
-                      <span className="text-gray-600">Loading agreement status...</span>
+                      <Loader2 className="w-6 h-6 animate-spin text-[#001525] mr-2" />
+                      <span className="text-sm text-gray-600">Loading agreement status...</span>
                     </div>
                   ) : (
                     <div>
-                      {/* Horizontal Progress Steps - 5 Steps */}
-                      <div className="flex items-center justify-center mb-8">
-                        {/* Step 1: Download */}
-                        <div className="flex flex-col items-center">
-                          <div
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
-                            style={{
-                              backgroundColor: agreementStatus?.hasDownloaded ? '#22c55e' : 'rgb(219, 230, 252)',
-                              borderColor: agreementStatus?.hasDownloaded ? '#22c55e' : '#3b82f6',
-                              color: agreementStatus?.hasDownloaded ? 'white' : '#3b82f6'
-                            }}
-                          >
-                            {agreementStatus?.hasDownloaded ? (
-                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                            ) : (
-                              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                            )}
-                          </div>
-                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
-                            agreementStatus?.hasDownloaded ? 'text-green-600' : 'text-gray-900'
-                          }`}>
-                            Download
-                          </p>
-                        </div>
+                      {/* Progress Steps */}
+                      <div className="border-y border-gray-100 bg-gray-50/60 px-6 py-5 sm:px-8">
+                        <div className="mx-auto flex max-w-2xl items-start justify-between">
+                          {[
+                            { title: 'Download', icon: Download, done: !!agreementStatus?.hasDownloaded },
+                            { title: 'Upload', icon: Upload, done: !!agreementStatus?.hasUploaded },
+                            {
+                              title: agreementStatus?.hasCompanySigned ? 'Approved' : 'Approval',
+                              icon: Building2,
+                              done: !!agreementStatus?.hasCompanySigned,
+                            },
+                            { title: 'Completed', icon: CheckCircle2, done: !!agreementStatus?.hasCompanySigned },
+                          ].map((step, index, steps) => {
+                            const isCurrent = !step.done && steps.slice(0, index).every((s) => s.done)
+                            return (
+                              <div key={step.title} className="flex flex-1 items-start last:flex-none">
+                                <div className="flex flex-col items-center">
+                                  <div
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${
+                                      step.done
+                                        ? 'bg-emerald-500 text-white'
+                                        : isCurrent
+                                        ? 'bg-[#001525] text-white'
+                                        : 'border border-gray-200 bg-white text-gray-300'
+                                    }`}
+                                  >
+                                    {step.done ? <CheckCircle2 className="h-4 w-4" /> : <step.icon className="h-4 w-4" />}
+                                  </div>
+                                  <div className="mt-2.5 text-center">
+                                    <p
+                                      className={`whitespace-nowrap text-[11px] sm:text-xs font-medium leading-tight ${
+                                        step.done || isCurrent ? 'text-[#001525]' : 'text-gray-400'
+                                      }`}
+                                    >
+                                      {step.title}
+                                    </p>
+                                  </div>
+                                </div>
 
-                        {/* Line 1 */}
-                        <div
-                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
-                            agreementStatus?.hasDownloaded ? 'bg-green-500' : 'bg-gray-300'
-                          }`}
-                          style={{ marginBottom: '20px' }}
-                        />
-
-                        {/* Step 2: Upload */}
-                        <div className="flex flex-col items-center">
-                          <div
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
-                            style={{
-                              backgroundColor: agreementStatus?.hasUploaded
-                                ? '#22c55e'
-                                : agreementStatus?.hasDownloaded
-                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
-                              borderColor: agreementStatus?.hasUploaded
-                                ? '#22c55e'
-                                : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6' : '#d1d5db',
-                              color: agreementStatus?.hasUploaded
-                                ? 'white'
-                                : agreementStatus?.hasDownloaded
-                                  ? '#3b82f6' : '#9ca3af'
-                            }}
-                          >
-                            {agreementStatus?.hasUploaded ? (
-                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                            ) : (
-                              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-                            )}
-                          </div>
-                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
-                            agreementStatus?.hasUploaded
-                              ? 'text-green-600'
-                              : agreementStatus?.hasDownloaded
-                                ? 'text-gray-900' : 'text-gray-400'
-                          }`}>
-                            Upload
-                          </p>
-                        </div>
-
-                        {/* Line 2 */}
-                        <div
-                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
-                            agreementStatus?.hasUploaded ? 'bg-green-500' : 'bg-gray-300'
-                          }`}
-                          style={{ marginBottom: '20px' }}
-                        />
-
-                        {/* Step 3: Company Sign */}
-                        <div className="flex flex-col items-center">
-                          <div
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
-                            style={{
-                              backgroundColor: agreementStatus?.hasCompanySigned
-                                ? '#22c55e'
-                                : agreementStatus?.hasUploaded
-                                  ? 'rgb(219, 230, 252)' : '#f3f4f6',
-                              borderColor: agreementStatus?.hasCompanySigned
-                                ? '#22c55e'
-                                : agreementStatus?.hasUploaded
-                                  ? '#3b82f6' : '#d1d5db',
-                              color: agreementStatus?.hasCompanySigned
-                                ? 'white'
-                                : agreementStatus?.hasUploaded
-                                  ? '#3b82f6' : '#9ca3af'
-                            }}
-                          >
-                            {agreementStatus?.hasCompanySigned ? (
-                              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                            ) : (
-                              <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                            )}
-                          </div>
-                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium text-center ${
-                            agreementStatus?.hasCompanySigned
-                              ? 'text-green-600'
-                              : agreementStatus?.hasUploaded
-                                ? 'text-gray-900' : 'text-gray-400'
-                          }`} style={{ maxWidth: '60px' }}>
-                            {agreementStatus?.hasCompanySigned ? 'Approved' : 'Approval'}
-                          </p>
-                        </div>
-
-                        {/* Line 3 */}
-                        <div
-                          className={`h-0.5 w-6 sm:w-10 md:w-16 mx-1 sm:mx-2 transition-all duration-300 ${
-                            agreementStatus?.hasCompanySigned ? 'bg-green-500' : 'bg-gray-300'
-                          }`}
-                          style={{ marginBottom: '20px' }}
-                        />
-
-                        {/* Step 4: Completed */}
-                        <div className="flex flex-col items-center">
-                          <div
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
-                            style={{
-                              backgroundColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#f3f4f6',
-                              borderColor: agreementStatus?.hasCompanySigned ? '#22c55e' : '#d1d5db',
-                              color: agreementStatus?.hasCompanySigned ? 'white' : '#9ca3af'
-                            }}
-                          >
-                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </div>
-                          <p className={`mt-1.5 text-[10px] sm:text-xs font-medium ${
-                            agreementStatus?.hasCompanySigned ? 'text-green-600' : 'text-gray-400'
-                          }`}>
-                            Completed
-                          </p>
+                                {index < steps.length - 1 && (
+                                  <div
+                                    className={`mx-2 mt-5 h-px flex-1 transition-colors duration-300 sm:mx-4 ${
+                                      step.done ? 'bg-emerald-500' : 'bg-gray-200'
+                                    }`}
+                                  />
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
+
+                      <div className="px-5 pt-6 pb-2 sm:px-7">
 
                       {/* Step Content */}
                       {!agreementStatus?.hasDownloaded ? (
                         /* Step 1 Content: Choose & Download */
-                        <div className="text-center">
-                          <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                            Agreement Type: <span className="font-semibold text-gray-900">{agreementPlanLabel}</span>
-                          </p>
-                          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-4">
-                            {/* Option 1: Digital Signature */}
-                            <div
-                              onClick={() => setSigningMethod('digital')}
-                              className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
-                              style={{
-                                backgroundColor: signingMethod === 'digital' ? 'rgb(219, 230, 252)' : '#f9fafb',
-                                borderColor: signingMethod === 'digital' ? '#3b82f6' : '#e5e7eb'
-                              }}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <div
-                                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                                  style={{
-                                    borderColor: signingMethod === 'digital' ? '#3b82f6' : '#9ca3af',
-                                    backgroundColor: signingMethod === 'digital' ? '#3b82f6' : 'transparent'
-                                  }}
-                                >
-                                  {signingMethod === 'digital' && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                  )}
-                                </div>
-                                <span className={`text-sm font-medium ${signingMethod === 'digital' ? 'text-blue-700' : 'text-gray-700'}`}>
-                                  Digital Signature
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-500 text-left ml-6">Use DSC token to sign digitally</p>
-                            </div>
-
-                            {/* Option 2: Manual Signature */}
-                            <div
-                              onClick={() => setSigningMethod('manual')}
-                              className="flex-1 rounded-lg p-3 border-2 cursor-pointer transition-all"
-                              style={{
-                                backgroundColor: signingMethod === 'manual' ? 'rgb(219, 230, 252)' : '#f9fafb',
-                                borderColor: signingMethod === 'manual' ? '#3b82f6' : '#e5e7eb'
-                              }}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <div
-                                  className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                                  style={{
-                                    borderColor: signingMethod === 'manual' ? '#3b82f6' : '#9ca3af',
-                                    backgroundColor: signingMethod === 'manual' ? '#3b82f6' : 'transparent'
-                                  }}
-                                >
-                                  {signingMethod === 'manual' && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                  )}
-                                </div>
-                                <span className={`text-sm font-medium ${signingMethod === 'manual' ? 'text-blue-700' : 'text-gray-700'}`}>
-                                  Manual Signature
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-500 text-left ml-6">Print, sign & scan as PDF</p>
-                            </div>
+                        <div className="mx-auto max-w-xl">
+                          <div className="mb-5 flex items-center justify-center gap-2">
+                            <span className="text-sm text-gray-500">Agreement type</span>
+                            <span className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-[#001525]">
+                              {agreementPlanLabel}
+                            </span>
                           </div>
 
+                          <fieldset>
+                            <legend className="sr-only">Choose how you want to sign</legend>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {[
+                                {
+                                  value: 'digital' as const,
+                                  title: 'Digital Signature',
+                                  description: 'Use DSC token to sign digitally',
+                                  icon: Pencil,
+                                },
+                                {
+                                  value: 'manual' as const,
+                                  title: 'Manual Signature',
+                                  description: 'Print, sign & scan as PDF',
+                                  icon: Upload,
+                                },
+                              ].map((option) => {
+                                const isSelected = signingMethod === option.value
+                                return (
+                                  <label
+                                    key={option.value}
+                                    className={`relative flex cursor-pointer gap-3 rounded-xl border p-4 text-left transition-all ${
+                                      isSelected
+                                        ? 'border-[#001525] bg-white ring-2 ring-[#001525]/10'
+                                        : 'border-gray-200 bg-white hover:border-gray-300'
+                                    }`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name="signing-method"
+                                      value={option.value}
+                                      checked={isSelected}
+                                      onChange={() => setSigningMethod(option.value)}
+                                      className="sr-only"
+                                    />
+                                    <span
+                                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                        isSelected ? 'bg-[#001525] text-white' : 'bg-gray-100 text-gray-500'
+                                      }`}
+                                    >
+                                      <option.icon className="h-4 w-4" />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="block text-sm font-medium text-[#001525]">{option.title}</span>
+                                      <span className="mt-0.5 block text-xs text-gray-500">{option.description}</span>
+                                    </span>
+                                    {/* Radio dot, so the choice reads as a radio group */}
+                                    <span
+                                      aria-hidden="true"
+                                      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                                        isSelected ? 'border-[#001525]' : 'border-gray-300'
+                                      }`}
+                                    >
+                                      {isSelected && <span className="h-2 w-2 rounded-full bg-[#001525]" />}
+                                    </span>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          </fieldset>
+
                           {/* Download Button */}
-                          <Button
-                            onClick={handleAgreementDownload}
-                            disabled={!signingMethod}
-                            className={`px-8 ${
-                              signingMethod
-                                ? 'bg-blue-600 hover:bg-blue-700'
-                                : 'bg-gray-400'
-                            } text-white`}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download Agreement
-                          </Button>
+                          <div className="mt-6 flex justify-center">
+                            <Button
+                              onClick={handleAgreementDownload}
+                              disabled={!signingMethod}
+                              className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Agreement
+                            </Button>
+                          </div>
+
+                          {!signingMethod && (
+                            <p className="mt-3 text-center text-xs text-gray-400">
+                              Select a signing method to continue
+                            </p>
+                          )}
+
+                          <div className="h-6 sm:h-8" />
                         </div>
                       ) : !agreementStatus?.hasUploaded ? (
                         /* Step 2 Content: Upload signed document */
@@ -1625,6 +1584,7 @@ function AccountPageContent() {
                           </div>
                         </div>
                       )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1637,26 +1597,8 @@ function AccountPageContent() {
             <style jsx global>{`
               .billing-form input::placeholder,
               .billing-form textarea::placeholder {
-                color: #9CA3AF !important;
+                color: #9ca3af;
                 opacity: 1;
-                font-size: 0.9rem !important;
-              }
-              .billing-form input {
-                background-color: #F9FAFB !important;
-                border-color: #D1D5DB !important;
-                padding: 20px !important;
-              }
-              .billing-form select {
-                background-color: #F9FAFB !important;
-                border-color: #D1D5DB !important;
-              }
-              .billing-form input:focus,
-              .billing-form select:focus {
-                background-color: #FFFFFF !important;
-                border-color: #3B82F6 !important;
-              }
-              .billing-form select {
-                font-size: 0.875rem !important;
               }
             `}</style>
 
@@ -1685,15 +1627,15 @@ function AccountPageContent() {
             <div className={`grid gap-6 ${savedAddresses.length === 0 ? 'grid-cols-1' : showAddressForm ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left Column - Saved Addresses (only show if user has addresses) */}
               {savedAddresses.length > 0 && (
-              <Card className="shadow-lg border-0 h-fit">
-                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+              <Card className="rounded-2xl border border-gray-200 bg-white shadow-sm h-fit">
+                <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
                         <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                         Saved Billing Addresses
                       </CardTitle>
-                      <CardDescription className="text-xs sm:text-sm">Your saved billing addresses for purchases</CardDescription>
+                      <CardDescription className="text-sm text-gray-500">Your saved billing addresses for purchases</CardDescription>
                     </div>
                     <Button
                       onClick={() => {
@@ -1947,11 +1889,11 @@ function AccountPageContent() {
 
               {/* Right Column - Add/Edit Form */}
               {(showAddressForm || savedAddresses.length === 0) && (
-              <Card className="shadow-lg border-0 billing-form h-fit">
-                <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+              <Card className="rounded-2xl border border-gray-200 bg-white shadow-sm billing-form h-fit">
+                <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
                       {editingAddressId ? (
                         <Pencil className="h-4 w-4 text-blue-600" />
                       ) : (
@@ -1959,7 +1901,7 @@ function AccountPageContent() {
                       )}
                       {editingAddressId ? 'Edit Address' : 'New Address'}
                     </CardTitle>
-                    <CardDescription className="text-xs">
+                    <CardDescription className="text-sm text-gray-500">
                       {editingAddressId
                         ? 'Update address details'
                         : 'Enter billing information'
@@ -2000,48 +1942,48 @@ function AccountPageContent() {
                   <div className="space-y-3 sm:space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {/* Firm Name / Full Name (for students) */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           {isStudent ? 'Full Name' : 'Firm Name'} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             value={billingForm.firmName}
                             onChange={(e) => handleBillingFormChange('firmName', e.target.value)}
                             placeholder={isStudent ? 'Enter your full name' : 'Enter your firm'}
-                            className="text-sm sm:text-base"
+                            className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                           />
                       </div>
 
                       {/* GST No */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           GST No <span className="text-red-400 text-xs">*</span>
                         </Label>
                         <Input
                             value={billingForm.gstNo}
                             onChange={(e) => handleBillingFormChange('gstNo', e.target.value)}
                             placeholder="GST No"
-                            className="text-sm sm:text-base"
+                            className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                             maxLength={20}
                           />
                       </div>
 
                       {/* Street Address */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           Street Address <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             value={billingForm.address}
                             onChange={(e) => handleBillingFormChange('address', e.target.value)}
                             placeholder="Enter your street address"
-                            className="text-sm sm:text-base"
+                            className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                           />
                       </div>
 
                       {/* City/Location */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           City/Location <span className="text-red-500">*</span>
                           <span className="text-gray-400 text-xs ml-1">(Branch location)</span>
                         </Label>
@@ -2050,33 +1992,33 @@ function AccountPageContent() {
                           onChange={(e) => handleBillingFormChange('city', e.target.value)}
                           onBlur={handleLocationBlur}
                           placeholder="Enter city/location"
-                          className="text-sm sm:text-base"
+                          className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         />
                       </div>
 
                       {/* Postcode/Zip */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           Postcode/Zip <span className="text-red-500">*</span>
                         </Label>
                         <Input
                           value={billingForm.postcode}
                           onChange={(e) => handleBillingFormChange('postcode', e.target.value.replace(/\D/g, '').slice(0, 6))}
                           placeholder="Enter postcode"
-                          className="text-sm sm:text-base"
+                          className="h-12 md:h-12 rounded-xl border-gray-200 bg-white text-sm text-[#001525] placeholder:text-gray-400 focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                           maxLength={6}
                         />
                       </div>
 
                       {/* Country */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           Country <span className="text-red-500">*</span>
                         </Label>
                         <select
                           value={billingForm.country}
                           onChange={(e) => handleBillingFormChange('country', e.target.value)}
-                          className="w-full h-10 px-3 py-2 border rounded-md text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                          className="w-full h-12 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         >
                           <option value="India">India</option>
                           <option value="United States">United States</option>
@@ -2096,14 +2038,14 @@ function AccountPageContent() {
                       </div>
 
                       {/* State */}
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700">
+                      <div className="space-y-2">
+                        <Label className="text-[13px] font-medium text-[#001525]">
                           State/Province <span className="text-red-500">*</span>
                         </Label>
                         <select
                           value={billingForm.state}
                           onChange={(e) => handleBillingFormChange('state', e.target.value)}
-                          className="w-full h-10 px-3 py-2 border rounded-md text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                          className="w-full h-12 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10"
                         >
                           <option value="">Select State</option>
                           {(statesByCountry[billingForm.country] || []).map((state) => (
@@ -2134,7 +2076,7 @@ function AccountPageContent() {
                               postcode: ''
                             })
                           }}
-                          className="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800 px-6"
+                          className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Clear
@@ -2143,7 +2085,7 @@ function AccountPageContent() {
                       <Button
                         onClick={handleSaveBillingAddress}
                         disabled={isSavingBilling}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                        className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400"
                       >
                         {isSavingBilling ? (
                           <>
@@ -2168,15 +2110,15 @@ function AccountPageContent() {
 
           {/* Order History Tab */}
           <TabsContent value="orders" className="space-y-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-blue-600/15 border-b py-2 sm:py-3">
+            <Card className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
                       <ShoppingBag className="h-4 w-4 text-green-600" />
                       Order History
                     </CardTitle>
-                    <CardDescription className="text-xs">View and download your invoices</CardDescription>
+                    <CardDescription className="text-sm text-gray-500">View and download your invoices</CardDescription>
                   </div>
                   {userData && userData.totalOrders > 0 && (
                     <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
@@ -2352,6 +2294,7 @@ function AccountPageContent() {
             </Card>
           </TabsContent>
 
+          </div>
         </Tabs>
       </main>
     </div>

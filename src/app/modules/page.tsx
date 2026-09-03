@@ -77,12 +77,12 @@ const modules = [
   {
     iconSrc: '/icons/modules/digital-signature.svg',
     title: 'Digital Signature',
-    description: 'PowerCA DSC Module helps to track the receipt, holding and use of digital signature of the client in execution of audit jobs.Setting reminders for renewals due helps to keep them ready in times of need.'
+    description: 'Power CA DSC Module helps to track the receipt, holding and use of digital signature of the client in execution of audit jobs.Setting reminders for renewals due helps to keep them ready in times of need.'
   },
   {
     iconSrc: '/icons/modules/staff-profile.svg',
     title: 'Staff Profile',
-    description: 'PowerCA Employee Module helps to create and manage employee profiles and evaluate them through annual, periodic or task based grading. This module captures all relevant information about employees.'
+    description: 'Power CA Employee Module helps to create and manage employee profiles and evaluate them through annual, periodic or task based grading. This module captures all relevant information about employees.'
   },
   {
     iconSrc: '/icons/modules/file-management.svg',
@@ -97,12 +97,12 @@ const modules = [
   {
     iconSrc: '/icons/modules/jobcard.svg',
     title: 'Jobcard',
-    description: 'PowerCA Jobcard module is the cornerstone feature in Power CA. Designed in a highly structured and well-organized manner, the process starts with service request, allows to build job plan and job card, facilitates weekly review'
+    description: 'Power CA Jobcard module is the cornerstone feature in Power CA. Designed in a highly structured and well-organized manner, the process starts with service request, allows to build job plan and job card, facilitates weekly review'
   },
   {
     iconSrc: '/icons/modules/library.svg',
     title: 'Library',
-    description: 'PowerCA Library Module helps to record, classify and retrieve content, pdf books, weblinks, files internally for ready reference. This module can be used to store and retrieve the valuable professional notes authored by the office staff.'
+    description: 'Power CA Library Module helps to record, classify and retrieve content, pdf books, weblinks, files internally for ready reference. This module can be used to store and retrieve the valuable professional notes authored by the office staff.'
   },
   {
     iconSrc: '/icons/modules/payroll.svg',

@@ -71,7 +71,7 @@ function PaymentSuccessContent() {
         currency: 'INR',
         items: [{
           item_id: 'powerca-implementation',
-          item_name: 'PowerCA Implementation',
+          item_name: 'Power CA Implementation',
           price: amount,
           quantity: 1
         }]
@@ -342,7 +342,7 @@ function PaymentSuccessContent() {
                           case 'monthly': return 'Monthly Subscription'
                           case 'annual': return 'Annual Subscription'
                           case 'onetime': return '2 Year Pack'
-                          default: return 'PowerCA Implementation'
+                          default: return 'Power CA Implementation'
                         }
                       }
                       return (
