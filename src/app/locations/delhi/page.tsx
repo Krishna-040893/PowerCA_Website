@@ -6,12 +6,12 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Delhi NCR - PowerCA Practice Management for Chartered Accountants',
-  description: 'PowerCA - Professional practice management software for Chartered Accountants in Delhi NCR. Complete solution with compliance tracking and automated billing. Book your Delhi demo today.',
+  title: 'CA Software in Delhi NCR - Power CA Practice Management for Chartered Accountants',
+  description: 'Power CA - Professional practice management software for Chartered Accountants in Delhi NCR. Complete solution with compliance tracking and automated billing. Book your Delhi demo today.',
   keywords: 'CA software Delhi, chartered accountant software Delhi, CA practice management Delhi NCR, tax software Delhi, GST software Delhi, accounting software Delhi',
   openGraph: {
-    title: 'PowerCA - Professional CA Practice Management Software in Delhi NCR',
-    description: 'Streamline your Delhi NCR CA practice with PowerCA. Automated compliance and billing designed for chartered accountants.',
+    title: 'Power CA - Professional CA Practice Management Software in Delhi NCR',
+    description: 'Streamline your Delhi NCR CA practice with Power CA. Automated compliance and billing designed for chartered accountants.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Delhi',
+  name: 'Power CA Delhi',
   description: 'Practice management software for Chartered Accountants in Delhi NCR',
   url: 'https://powerca.in/locations/delhi',
   areaServed: {
@@ -167,7 +167,7 @@ export default function DelhiPage() {
                   <div className="text-yellow-400 text-xl">★★★★★</div>
                 </div>
                 <p className="text-gray-700 mb-4 italic">
-                  "PowerCA can help you manage multi-location practices across Delhi and Gurgaon efficiently."
+                  "Power CA can help you manage multi-location practices across Delhi and Gurgaon efficiently."
                 </p>
                 <div>
                   <p className="font-semibold">Key Benefit</p>
@@ -211,7 +211,7 @@ export default function DelhiPage() {
               Transform Your Delhi NCR Practice Today
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Modernize your practice with PowerCA - Start your free trial today
+              Modernize your practice with Power CA - Start your free trial today
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

@@ -7,12 +7,12 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Mumbai - PowerCA Practice Management for Chartered Accountants',
-  description: 'PowerCA - Modern practice management software designed for Chartered Accountants in Mumbai. Complete solution with job cards, billing, and compliance tracking. Book your Mumbai demo today.',
+  title: 'CA Software in Mumbai - Power CA Practice Management for Chartered Accountants',
+  description: 'Power CA - Modern practice management software designed for Chartered Accountants in Mumbai. Complete solution with job cards, billing, and compliance tracking. Book your Mumbai demo today.',
   keywords: 'CA software Mumbai, chartered accountant software Mumbai, CA practice management Mumbai, tax software Mumbai, GST software Mumbai, accounting software Mumbai',
   openGraph: {
-    title: 'PowerCA - Modern CA Practice Management Software in Mumbai',
-    description: 'Streamline your Mumbai CA practice with PowerCA. Job cards, automated billing, and compliance tracking designed for chartered accountants.',
+    title: 'Power CA - Modern CA Practice Management Software in Mumbai',
+    description: 'Streamline your Mumbai CA practice with Power CA. Job cards, automated billing, and compliance tracking designed for chartered accountants.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Mumbai',
+  name: 'Power CA Mumbai',
   description: 'Practice management software for Chartered Accountants in Mumbai',
   url: 'https://powerca.in/locations/mumbai',
   areaServed: {
@@ -61,7 +61,7 @@ export default function MumbaiPage() {
         {/* Hero Section */}
         <PageHero
           title={<>Modern CA Practice Management Software for <span className="text-blue-600">Mumbai</span></>}
-          description={<>Designed specifically for Chartered Accountants in Mumbai. Save 10+ hours weekly with PowerCA's comprehensive practice management solution</>}
+          description={<>Designed specifically for Chartered Accountants in Mumbai. Save 10+ hours weekly with Power CA's comprehensive practice management solution</>}
         >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/book-demo">
@@ -178,7 +178,7 @@ export default function MumbaiPage() {
                   <div className="text-yellow-400 text-xl">★★★★★</div>
                 </div>
                 <p className="text-gray-700 mb-4 italic">
-                  "PowerCA can help transform your practice to handle 3x more clients with the same team."
+                  "Power CA can help transform your practice to handle 3x more clients with the same team."
                 </p>
                 <div>
                   <p className="font-semibold">Expected Benefits</p>
@@ -219,7 +219,7 @@ export default function MumbaiPage() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
-              PowerCA Capabilities for Mumbai
+              Power CA Capabilities for Mumbai
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
@@ -246,7 +246,7 @@ export default function MumbaiPage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Start Your PowerCA Journey in Mumbai Today
+              Start Your Power CA Journey in Mumbai Today
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Get started with a free trial and personalized demo for your Mumbai practice
@@ -280,9 +280,9 @@ export default function MumbaiPage() {
                 </p>
               </Card>
               <Card className="p-6">
-                <h3 className="font-semibold mb-2">Is PowerCA compliant with Maharashtra GST requirements?</h3>
+                <h3 className="font-semibold mb-2">Is Power CA compliant with Maharashtra GST requirements?</h3>
                 <p className="text-gray-600">
-                  Absolutely! PowerCA is fully compliant with Maharashtra state GST requirements and automatically updates for any regulatory changes.
+                  Absolutely! Power CA is fully compliant with Maharashtra state GST requirements and automatically updates for any regulatory changes.
                 </p>
               </Card>
               <Card className="p-6">

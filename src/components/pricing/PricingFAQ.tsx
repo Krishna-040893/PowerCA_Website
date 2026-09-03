@@ -9,8 +9,8 @@ import {
 
 const faqs = [
   {
-    question: "What's included in the PowerCA subscription?",
-    answer: "PowerCA subscription includes unlimited client management, document storage, automated compliance tracking, GST filing tools, invoice generation, payment processing, team collaboration features, and priority customer support."
+    question: "What's included in the Power CA subscription?",
+    answer: "Power CA subscription includes unlimited client management, document storage, automated compliance tracking, GST filing tools, invoice generation, payment processing, team collaboration features, and priority customer support."
   },
   {
     question: "Can I cancel my subscription anytime?",
@@ -25,7 +25,7 @@ const faqs = [
     answer: "Yes, we offer volume discounts for firms with more than 5 users. Contact our sales team for custom pricing based on your team size."
   },
   {
-    question: "How secure is my data with PowerCA?",
+    question: "How secure is my data with Power CA?",
     answer: "We use bank-grade 256-bit SSL encryption for all data transfers. Your data is stored in secure, ISO 27001 certified data centers with regular backups and 99.9% uptime guarantee."
   },
   {
@@ -48,7 +48,7 @@ export const PricingFAQ: React.FC = () => {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray-600">
-            Everything you need to know about PowerCA
+            Everything you need to know about Power CA
           </p>
         </motion.div>
 

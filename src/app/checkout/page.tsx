@@ -253,14 +253,14 @@ function CheckoutContent() {
     switch (planType) {
       case 'annual': return 'Annual Subscription'
       case 'onetime': return '2 Year Pack'
-      default: return 'PowerCA Subscription'
+      default: return 'Power CA Subscription'
     }
   }
 
   // Product name based on payment type and plan
-  const productName = isFinalSettlement ? 'PowerCA Final Settlement' : getPlanDisplayName()
+  const productName = isFinalSettlement ? 'Power CA Final Settlement' : getPlanDisplayName()
   const productDescription = isFinalSettlement
-    ? 'Final settlement payment for PowerCA service'
+    ? 'Final settlement payment for Power CA service'
     : planType === 'annual' ? 'Annual subscription with ongoing support'
     : planType === 'onetime' ? '2 Year Pack - Per user pricing'
     : 'Installation and Ongoing Support & Update'
@@ -759,7 +759,7 @@ function CheckoutContent() {
         amount: orderData.amount,
         currency: orderData.currency,
         order_id: orderData.orderId || orderData.id,
-        name: 'PowerCA',
+        name: 'Power CA',
         description: productName,
         image: '/logo.png',
         prefill: {
@@ -1215,7 +1215,7 @@ function CheckoutContent() {
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 to-blue-600 shadow-md flex-shrink-0">
                     <Image
                       src="/images/power-ca-logo-footer.png"
-                      alt="PowerCA"
+                      alt="Power CA"
                       width={80}
                       height={80}
                       className="object-contain filter brightness-0 invert p-2"
@@ -1224,7 +1224,7 @@ function CheckoutContent() {
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-sm sm:text-base text-gray-900">
-                      {isFinalSettlement ? 'PowerCA Final Settlement' : 'Power CA Software'}
+                      {isFinalSettlement ? 'Power CA Final Settlement' : 'Power CA Software'}
                     </h4>
                     <p className="text-xs sm:text-sm text-gray-600">{productDescription}</p>
                   </div>

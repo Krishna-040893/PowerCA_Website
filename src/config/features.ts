@@ -33,7 +33,7 @@ export const featuresConfig = {
   ],
   pricingPlans: [
     {
-      name: 'PowerCA Launch Offer',
+      name: 'Power CA Launch Offer',
       price: '₹25,000',
       originalPrice: '₹1,00,000',
       period: 'first-year',

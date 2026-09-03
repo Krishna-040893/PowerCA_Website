@@ -174,7 +174,7 @@ export function EnhancedCTASection() {
             className="mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
           >
             <p className="text-white italic mb-3">
-              "PowerCA reduced our admin work by 70%. We now focus on what matters - growing our practice and serving clients better."
+              "Power CA reduced our admin work by 70%. We now focus on what matters - growing our practice and serving clients better."
             </p>
             <div className="flex items-center justify-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-gray-900 font-bold">

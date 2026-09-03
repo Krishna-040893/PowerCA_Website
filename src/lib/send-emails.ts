@@ -21,7 +21,7 @@ export async function sendContactFormEmail(data: ContactFormData) {
     const { ContactFormEmail } = await import('@/emails/contact-form-email')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      from: process.env.EMAIL_FROM || 'Power CA <contact@powerca.in>',
       to: ['contact@powerca.in', 'tbsindiaudt@gmail.com'],
       subject: `New Contact Form Submission from ${data.name}`,
       react: ContactFormEmail({
@@ -47,9 +47,9 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
     const { WelcomeEmail } = await import('@/emails/welcome-email')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      from: process.env.EMAIL_FROM || 'Power CA <contact@powerca.in>',
       to: data.email,
-      subject: `Welcome to PowerCA, ${data.name}!`,
+      subject: `Welcome to Power CA, ${data.name}!`,
       react: WelcomeEmail({
         name: data.name,
         email: data.email,
@@ -82,7 +82,7 @@ export async function sendAdminRegistrationNotification(data: AdminRegistrationN
 
     // Use noreply@ address to avoid FROM and TO being the same
     // This prevents email delivery issues with Resend and other email services
-    const fromAddress = process.env.EMAIL_FROM || 'PowerCA Notifications <noreply@powerca.in>'
+    const fromAddress = process.env.EMAIL_FROM || 'Power CA Notifications <noreply@powerca.in>'
     const toAddresses = ['contact@powerca.in']
 
     logger.info('Sending admin notification email', { from: fromAddress, to: toAddresses })
@@ -127,7 +127,7 @@ export async function sendCustomEmail({
     const { EmailTemplate } = await import('@/emails/email-template')
 
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      from: process.env.EMAIL_FROM || 'Power CA <contact@powerca.in>',
       to,
       subject,
       react: EmailTemplate({
@@ -162,7 +162,7 @@ export async function sendEmail({
 }) {
   try {
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>',
+      from: process.env.EMAIL_FROM || 'Power CA <contact@powerca.in>',
       to,
       subject,
       html,

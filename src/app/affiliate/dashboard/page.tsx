@@ -132,7 +132,7 @@ export default function AffiliateDashboard() {
   const referralLink = `https://powerca.in?ref=${affiliateData?.affiliateDetails?.referral_code || affiliateData?.affiliateId}`
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -316,7 +316,7 @@ export default function AffiliateDashboard() {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Marketing Resources</CardTitle>
-            <CardDescription>Download materials to help promote PowerCA</CardDescription>
+            <CardDescription>Download materials to help promote Power CA</CardDescription>
           </CardHeader>
           <CardContent>
             <Alert>

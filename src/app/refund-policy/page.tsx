@@ -5,8 +5,8 @@ export default function RefundPolicyPage() {
 }
 
 export const metadata = {
-  title: 'Refund Policy - PowerCA',
-  description: 'PowerCA has a strict no returns or refunds policy. Review the terms before downloading or activating the software.',
+  title: 'Refund Policy - Power CA',
+  description: 'Power CA has a strict no returns or refunds policy. Review the terms before downloading or activating the software.',
 }
 
 // Enable static generation for this page

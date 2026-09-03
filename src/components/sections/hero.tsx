@@ -140,7 +140,7 @@ export function HeroSection() {
               </h1>
             </SlideIn>
 
-            {/* PowerCA Description */}
+            {/* Power CA Description */}
             <SlideIn direction="up" delay={0.3}>
               <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-6 max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
                 Power CA is a robust administrative tool designed to take control and bring efficiency to your practice.

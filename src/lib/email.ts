@@ -9,7 +9,7 @@ export async function sendEmail({
   react: React.ReactElement
 }) {
   try {
-    const emailFrom = process.env.EMAIL_FROM || 'PowerCA <contact@powerca.in>'
+    const emailFrom = process.env.EMAIL_FROM || 'Power CA <contact@powerca.in>'
     const data = await resend.emails.send({
       from: emailFrom,
       to,

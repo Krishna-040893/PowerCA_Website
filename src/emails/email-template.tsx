@@ -23,9 +23,9 @@ interface EmailTemplateProps {
 }
 
 export const EmailTemplate: React.FC<EmailTemplateProps> = ({
-  subject: _subject = 'PowerCA - Empowering Your Business',
-  preview = 'Important update from PowerCA',
-  heading = 'Welcome to PowerCA',
+  subject: _subject = 'Power CA - Empowering Your Business',
+  preview = 'Important update from Power CA',
+  heading = 'Welcome to Power CA',
   body = 'Thank you for your interest in our services.',
   ctaText,
   ctaLink,
@@ -54,7 +54,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
               src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
-              alt="PowerCA"
+              alt="Power CA"
               style={logo}
             />
           </Section>
@@ -91,7 +91,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
             ) : (
               <>
                 <Text style={footerText}>
-                  © {new Date().getFullYear()} PowerCA. All rights reserved.
+                  © {new Date().getFullYear()} Power CA. All rights reserved.
                 </Text>
                 <Text style={footerLinks}>
                   <Link href="https://powerca.in" style={link}>
@@ -107,7 +107,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
                   </Link>
                 </Text>
                 <Text style={footerAddress}>
-                  PowerCA Inc. | Your trusted technology partner
+                  Power CA Inc. | Your trusted technology partner
                 </Text>
               </>
             )}

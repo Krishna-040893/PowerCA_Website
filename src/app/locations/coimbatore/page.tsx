@@ -7,12 +7,12 @@ import { CheckCircle2, TrendingUp, Shield, Factory, Shirt, Home } from 'lucide-r
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Coimbatore - PowerCA for Tamil Nadu Chartered Accountants',
-  description: 'PowerCA - Professional practice management software for Chartered Accountants in Coimbatore. Specialized for textile, manufacturing, and engineering industries. Tamil language support. Book demo today.',
+  title: 'CA Software in Coimbatore - Power CA for Tamil Nadu Chartered Accountants',
+  description: 'Power CA - Professional practice management software for Chartered Accountants in Coimbatore. Specialized for textile, manufacturing, and engineering industries. Tamil language support. Book demo today.',
   keywords: 'CA software Coimbatore, chartered accountant software Coimbatore, CA practice management Coimbatore, GST software Coimbatore, tax software Coimbatore, textile industry accounting',
   openGraph: {
-    title: 'PowerCA - CA Practice Management Software in Coimbatore',
-    description: 'Transform your Coimbatore CA practice with PowerCA. Built for textile and manufacturing sector compliance.',
+    title: 'Power CA - CA Practice Management Software in Coimbatore',
+    description: 'Transform your Coimbatore CA practice with Power CA. Built for textile and manufacturing sector compliance.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Coimbatore',
+  name: 'Power CA Coimbatore',
   description: 'Practice management software for Chartered Accountants in Coimbatore',
   url: 'https://powerca.in/locations/coimbatore',
   areaServed: {
@@ -62,7 +62,7 @@ export default function CoimbatorePage() {
         {/* Hero Section */}
         <PageHero
           title={<>CA Software for <span className="text-blue-600">Coimbatore's</span> Manchester of South India</>}
-          description={<>PowerCA - Designed for Chartered Accountants serving Coimbatore's textile, manufacturing, and engineering industries. Complete Tamil language support included.</>}
+          description={<>Power CA - Designed for Chartered Accountants serving Coimbatore's textile, manufacturing, and engineering industries. Complete Tamil language support included.</>}
         >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/book-demo">
@@ -225,7 +225,7 @@ export default function CoimbatorePage() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
-              Why Coimbatore CAs Choose PowerCA
+              Why Coimbatore CAs Choose Power CA
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card className="p-6">
@@ -306,7 +306,7 @@ export default function CoimbatorePage() {
               Transform Your Coimbatore CA Practice Today
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join progressive CAs in Coimbatore using PowerCA for modern practice management
+              Join progressive CAs in Coimbatore using Power CA for modern practice management
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

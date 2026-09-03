@@ -46,7 +46,7 @@ export function PowerCATools() {
             Professional Tools
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            PowerCA Tools for CA
+            Power CA Tools for CA
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Comprehensive tools designed specifically for Chartered Accountants to manage their practice efficiently

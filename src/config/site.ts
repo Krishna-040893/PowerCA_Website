@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: 'PowerCA',
+  name: 'Power CA',
   description: 'Practice Management Software for Chartered Accountants',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://powerca.in',
   ogImage: '/og-image.jpg',

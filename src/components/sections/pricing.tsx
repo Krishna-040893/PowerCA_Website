@@ -27,7 +27,7 @@ export function PricingSection() {
             One-Time Implementation Fee
           </h2>
           <p className="text-xl text-gray-600">
-            Get PowerCA fully implemented with your first year absolutely FREE. Complete setup, training, and support included.
+            Get Power CA fully implemented with your first year absolutely FREE. Complete setup, training, and support included.
           </p>
         </motion.div>
 

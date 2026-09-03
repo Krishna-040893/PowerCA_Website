@@ -23,7 +23,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   name,
   email: _email,
 }) => {
-  const preview = `Welcome to PowerCA, ${name}! Let's get started.`
+  const preview = `Welcome to Power CA, ${name}! Let's get started.`
 
   return (
     <Html>
@@ -48,7 +48,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               src="https://powerca.in/images/powerca-logo-horizontal.png"
               width="180"
               height="50"
-              alt="PowerCA"
+              alt="Power CA"
               style={logo}
             />
           </Section>
@@ -56,7 +56,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           {/* Hero Section */}
           <Section style={heroSection}>
             <div style={heroPattern}>
-              <Text style={heroHeading}>Welcome to PowerCA! 🎉</Text>
+              <Text style={heroHeading}>Welcome to Power CA! 🎉</Text>
               <Text style={heroSubtext}>
                 Hi {name}, we're thrilled to have you with us.
               </Text>
@@ -66,7 +66,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           {/* Main Content */}
           <Section style={content}>
             <Text style={paragraph}>
-              Thank you for choosing PowerCA as your technology partner. We're committed to helping you achieve your business goals through innovative solutions and exceptional service.
+              Thank you for choosing Power CA as your technology partner. We're committed to helping you achieve your business goals through innovative solutions and exceptional service.
             </Text>
 
             <Text style={sectionTitle}>What's Next?</Text>
@@ -110,7 +110,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
             {/* CTA Section */}
             <Section style={ctaSection}>
               <Text style={ctaText}>
-                Ready to transform your business with PowerCA?
+                Ready to transform your business with Power CA?
               </Text>
               <Button href="https://powerca.in/login" style={primaryButton}>
                 Go to Login
@@ -142,10 +142,10 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
               </Column>
             </Row>
             <Text style={footerText}>
-              © {new Date().getFullYear()} PowerCA. All rights reserved.
+              © {new Date().getFullYear()} Power CA. All rights reserved.
             </Text>
             <Text style={footerAddress}>
-              PowerCA Inc. | Empowering businesses through technology
+              Power CA Inc. | Empowering businesses through technology
             </Text>
           </Section>
         </Container>

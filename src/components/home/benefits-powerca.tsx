@@ -47,7 +47,7 @@ export function BenefitsOfPowerCA() {
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Benefits of PowerCA
+            Benefits of Power CA
           </h2>
           <p className="text-lg text-gray-600">
             Measurable improvements for your CA practice

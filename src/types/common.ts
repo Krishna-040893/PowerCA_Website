@@ -1,4 +1,4 @@
-// Common type definitions for the PowerCA application
+// Common type definitions for the Power CA application
 
 // User related types
 export interface User {

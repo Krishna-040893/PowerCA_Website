@@ -33,7 +33,7 @@ export function CTASection() {
 
           {/* Subheading */}
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-            Join 500+ CA firms who have already revolutionized their practice management with PowerCA.
+            Join 500+ CA firms who have already revolutionized their practice management with Power CA.
           </p>
 
           {/* Benefits */}
