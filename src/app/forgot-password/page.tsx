@@ -61,35 +61,15 @@ export default function ForgotPasswordPage() {
       />
 
 
-      {/* Back to Login Button */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-        className="absolute right-6 top-6 z-20"
-      >
-        <Link
-          href="/login"
-          className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-white font-medium text-sm tracking-wide">
-            Back to Login
-          </span>
-        </Link>
-      </motion.div>
-
       {/* Forgot Password Form */}
       <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
         <div className="w-full max-w-md">
           <Link
-            href="/"
+            href="/login"
             className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            Back to Login
           </Link>
 
         <motion.div

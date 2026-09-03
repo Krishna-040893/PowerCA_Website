@@ -387,7 +387,7 @@ export default function Home() {
 
             <div className="grid lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-16 items-start">
               {/* Left Content - 5 Steps - Wider */}
-              <Reveal className="lg:col-span-7">
+              <Reveal className="lg:col-span-2">
                 {/* Step 1 */}
                 <div className="grid grid-cols-12 gap-2 sm:gap-3 md:gap-4 items-start pb-2 sm:pb-3">
                   <div className="col-span-2 sm:col-span-1">
