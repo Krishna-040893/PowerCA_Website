@@ -231,7 +231,7 @@ export function AdminDashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <BarChart3 className="w-8 h-8 text-primary-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">PowerCA Admin</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Power CA Admin</h1>
             </div>
 
             <div className="flex items-center space-x-4">

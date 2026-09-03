@@ -5,6 +5,6 @@ export default function BookDemoPage() {
 }
 
 export const metadata = {
-  title: 'Book a Demo - PowerCA',
-  description: 'Schedule a personalized demo of PowerCA practice management software for Chartered Accountants.',
+  title: 'Book a Demo - Power CA',
+  description: 'Schedule a personalized demo of Power CA practice management software for Chartered Accountants.',
 }

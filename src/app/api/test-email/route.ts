@@ -8,9 +8,9 @@ export async function GET() {
     const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev'
 
     const result = await resend.emails.send({
-      from: `PowerCA Test <${fromEmail}>`,
+      from: `Power CA Test <${fromEmail}>`,
       to: 'nikilarajan0616@gmail.com',
-      subject: 'Test Email from PowerCA',
+      subject: 'Test Email from Power CA',
       html: `
         <h1>Test Email</h1>
         <p>This is a test email to verify Resend configuration.</p>

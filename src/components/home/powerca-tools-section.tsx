@@ -10,7 +10,7 @@ export function PowerCAToolsSection() {
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            PowerCA Tools CA
+            Power CA Tools CA
           </h2>
           <p className="text-lg text-gray-600 mb-8">
             Comprehensive tools designed for Chartered Accountants

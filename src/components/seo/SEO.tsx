@@ -20,7 +20,7 @@ interface SEOProps {
 }
 
 const DEFAULT_SEO = {
-  title: 'PowerCA - Practice Management Software for Chartered Accountants',
+  title: 'Power CA - Practice Management Software for Chartered Accountants',
   description: 'Simplify your practice, amplify your growth. The all-in-one practice management software designed for Chartered Accountants. Save 10+ hours weekly, ensure 100% compliance.',
   image: '/images/og-image.jpg',
   type: 'website' as const
@@ -42,7 +42,7 @@ export default function SEO({
   const router = useRouter()
 
   const seo = {
-    title: title ? `${title} | PowerCA` : DEFAULT_SEO.title,
+    title: title ? `${title} | Power CA` : DEFAULT_SEO.title,
     description: description || DEFAULT_SEO.description,
     image: image || DEFAULT_SEO.image,
     url: `https://powerca.in${router.asPath}`,
@@ -59,7 +59,7 @@ export default function SEO({
           '@type': 'Organization',
           '@id': 'https://powerca.in/#organization',
           'name': 'TBS Technologies [P] Limited',
-          'alternateName': 'PowerCA',
+          'alternateName': 'Power CA',
           'url': 'https://powerca.in',
           'logo': {
             '@type': 'ImageObject',
@@ -99,7 +99,7 @@ export default function SEO({
           '@type': 'WebSite',
           '@id': 'https://powerca.in/#website',
           'url': 'https://powerca.in',
-          'name': 'PowerCA - Practice Management Software',
+          'name': 'Power CA - Practice Management Software',
           'description': DEFAULT_SEO.description,
           'publisher': {
             '@id': 'https://powerca.in/#organization'
@@ -119,7 +119,7 @@ export default function SEO({
         {
           '@type': 'SoftwareApplication',
           '@id': 'https://powerca.in/#software',
-          'name': 'PowerCA',
+          'name': 'Power CA',
           'description': 'Complete practice management solution for Chartered Accountants, Company Secretaries, and Cost Accountants',
           'url': 'https://powerca.in',
           'applicationCategory': 'BusinessApplication',
@@ -128,7 +128,7 @@ export default function SEO({
             '@type': 'Offer',
             'price': '22000',
             'priceCurrency': 'INR',
-            'description': 'PowerCA Implementation with first year subscription FREE'
+            'description': 'Power CA Implementation with first year subscription FREE'
           },
           'author': {
             '@id': 'https://powerca.in/#organization'
@@ -170,7 +170,7 @@ export default function SEO({
         'dateModified': modifiedAt || publishedAt,
         'author': {
           '@type': 'Person',
-          'name': author || 'PowerCA Team'
+          'name': author || 'Power CA Team'
         },
         'publisher': {
           '@type': 'Organization',
@@ -203,7 +203,7 @@ export default function SEO({
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={seo.title} />
       <meta property="og:url" content={seo.url} />
-      <meta property="og:site_name" content="PowerCA" />
+      <meta property="og:site_name" content="Power CA" />
       <meta property="og:locale" content="en_IN" />
 
       {/* Twitter Card Tags */}

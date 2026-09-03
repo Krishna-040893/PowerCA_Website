@@ -90,7 +90,7 @@ export default function AboutPage() {
     }
   ]
   return (
-    <div className="min-h-screen bg-[#F8FBFC]">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <PageHero
         backgroundImage="/images/about-hero-bg.jpg"
@@ -100,14 +100,14 @@ export default function AboutPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           ),
-          label: 'Efficiency. Accuracy. PowerCA.',
+          label: 'Efficiency. Accuracy. Power CA.',
         }}
         title="Explore Power CA –"
         accent="Built by a Team of Passionate Experts"
         description="Power CA is created by experienced professionals to simplify practice management and deliver reliable, efficient tools for your day-to-day work."
       >
         <div className="flex justify-center px-2">
-          <Link href="/" className={`${heroButtonClass} w-full sm:w-auto`}>
+          <Link href="/" className={`${heroButtonClass} w-auto min-w-[220px] sm:min-w-[200px]`}>
             <span>Visit Our Main Site</span>
             <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -116,12 +116,12 @@ export default function AboutPage() {
         </div>
       </PageHero>
 
-      {/* Elevate your practice to the next level with PowerCA */}
+      {/* Elevate your practice to the next level with Power CA */}
       <section className="pt-7 sm:pt-10 md:pt-12 lg:pt-[60px] pb-0 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <SectionHeader
             title="Elevate your practice to the"
-            emphasis="next level with PowerCA"
+            emphasis="next level with Power CA"
             description="Power CA was developed by CA Arul Maniam as a passion project to streamline the administrative tasks for his CA firm."
             cta={{ href: '/modules', label: 'All Modules' }}
           />
@@ -136,7 +136,7 @@ export default function AboutPage() {
             <Reveal className="lg:col-span-2">
               <Image
                 src="/images/about-mask-group.png"
-                alt="PowerCA Team"
+                alt="Power CA Team"
                 width={500}
                 height={300}
                 className="w-full h-auto rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-16px_rgba(16,24,40,0.18)]"
@@ -209,7 +209,7 @@ export default function AboutPage() {
           ></div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-6 relative z-10">
+        <div className="container mx-auto px-6 sm:px-10 md:px-12 lg:px-6 relative z-10">
           <div className="mb-10 sm:mb-12 lg:mb-14">
             <SectionHeader
               title="Our Team"

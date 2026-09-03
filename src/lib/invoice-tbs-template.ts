@@ -27,7 +27,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       case 'annual': return 'Annual Subscription'
       case 'onetime': return '2 Year Pack'
       case 'final_settlement': return 'Final Settlement'
-      default: return 'PowerCA Implementation'
+      default: return 'Power CA Implementation'
     }
   }
 
@@ -36,7 +36,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       case 'monthly': return 'Monthly subscription with ongoing support'
       case 'annual': return 'Annual subscription with ongoing support'
       case 'onetime': return '2 Year Pack - Per user pricing'
-      case 'final_settlement': return 'Final settlement payment for PowerCA service'
+      case 'final_settlement': return 'Final settlement payment for Power CA service'
       default: return 'Installation and Ongoing Support & Update'
     }
   }
@@ -302,7 +302,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     <!-- Header -->
     <div class="header">
       <div class="company-logo">
-        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="PowerCA Logo" style="height: 90px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
+        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="Power CA Logo" style="height: 90px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
       </div>
       <div class="company-address">
         No. 130, II Floor, Muneer Complex, Palani Road,<br>
@@ -361,7 +361,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
         <tr>
           <td>01</td>
           <td>
-            <strong>${getPlanDisplayName()} for PowerCA</strong><br>
+            <strong>${getPlanDisplayName()} for Power CA</strong><br>
             <span style="font-size: 13px; color: #666;">${getProductDescription()}</span>
           </td>
           <td class="text-right"><strong>${userCount}</strong></td>

@@ -127,8 +127,8 @@ export const usePricing = () => {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'PowerCA',
-        description: 'PowerCA Annual Subscription',
+        name: 'Power CA',
+        description: 'Power CA Annual Subscription',
         order_id: orderData.id,
         handler: async function (response: RazorpayPaymentResponse) {
           try {

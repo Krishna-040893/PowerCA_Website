@@ -91,7 +91,7 @@ export default function AffiliateApplicationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -100,9 +100,9 @@ export default function AffiliateApplicationPage() {
               <Star className="h-8 w-8 text-purple-600" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Become a PowerCA Affiliate</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Become a Power CA Affiliate</h1>
           <p className="mt-2 text-lg text-gray-600">
-            Join our affiliate program and earn commissions by promoting PowerCA services
+            Join our affiliate program and earn commissions by promoting Power CA services
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export default function AffiliateApplicationPage() {
                     className="mt-1"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Email associated with your PowerCA account
+                    Email associated with your Power CA account
                   </p>
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function AffiliateApplicationPage() {
                   required
                   rows={4}
                   className="mt-1"
-                  placeholder="Please describe how you plan to promote PowerCA services. Include details about your audience, marketing channels, and promotional strategies..."
+                  placeholder="Please describe how you plan to promote Power CA services. Include details about your audience, marketing channels, and promotional strategies..."
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Minimum 50 characters required

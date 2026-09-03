@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
           <div className="mb-6 flex justify-center">
             <Image
               src="/images/powerca-logo-main.png"
-              alt="PowerCA"
+              alt="Power CA"
               width={200}
               height={58}
               className="h-10 w-auto"

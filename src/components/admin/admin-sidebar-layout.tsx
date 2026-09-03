@@ -287,14 +287,14 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center">
                 <Image
                   src="/images/powerca-logo.png"
-                  alt="PowerCA Logo"
+                  alt="Power CA Logo"
                   width={36}
                   height={36}
                   className="object-contain"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-base sm:text-lg text-white">PowerCA</span>
+                <span className="font-bold text-base sm:text-lg text-white">Power CA</span>
                 <span className="text-xs text-slate-400 -mt-1">Admin Panel</span>
               </div>
             </div>
@@ -303,7 +303,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto">
               <Image
                 src="/images/powerca-logo.png"
-                alt="PowerCA Logo"
+                alt="Power CA Logo"
                 width={32}
                 height={32}
                 className="object-contain"

@@ -7,12 +7,12 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Pune - PowerCA Practice Management for Maharashtra CAs',
-  description: 'PowerCA - Modern practice management software for Chartered Accountants in Pune. IT hub and manufacturing sector expertise. Complete GST and compliance solution. Book demo today.',
+  title: 'CA Software in Pune - Power CA Practice Management for Maharashtra CAs',
+  description: 'Power CA - Modern practice management software for Chartered Accountants in Pune. IT hub and manufacturing sector expertise. Complete GST and compliance solution. Book demo today.',
   keywords: 'CA software Pune, chartered accountant software Pune, CA practice management Pune, GST software Pune, tax software Maharashtra',
   openGraph: {
-    title: 'PowerCA - Professional CA Practice Management Software in Pune',
-    description: 'Optimize your Pune CA practice with PowerCA. Built for IT companies and manufacturing sector compliance.',
+    title: 'Power CA - Professional CA Practice Management Software in Pune',
+    description: 'Optimize your Pune CA practice with Power CA. Built for IT companies and manufacturing sector compliance.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Pune',
+  name: 'Power CA Pune',
   description: 'Practice management software for Chartered Accountants in Pune',
   url: 'https://powerca.in/locations/pune',
   areaServed: {
@@ -170,7 +170,7 @@ export default function PunePage() {
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
-              Why Pune CAs Choose PowerCA
+              Why Pune CAs Choose Power CA
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card className="p-6">
@@ -219,7 +219,7 @@ export default function PunePage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Elevate Your Pune Practice with PowerCA
+              Elevate Your Pune Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Experience practice management designed for Pune's dynamic business environment

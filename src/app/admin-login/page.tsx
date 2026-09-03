@@ -118,23 +118,11 @@ export default function AdminLoginPage() {
           transition={{ duration: 0.5 }}
           className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_32px_64px_-24px_rgba(16,24,40,0.35)] backdrop-blur-sm sm:p-8"
         >
-          {/* Admin Badge */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3, type: 'spring' }}
-            className="flex justify-center mb-6"
-          >
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-xl">
-              <Shield className="w-10 h-10 text-white" />
-            </div>
-          </motion.div>
-
           {/* Brand */}
           <div className="mb-6 flex justify-center">
             <Image
               src="/images/powerca-logo-main.png"
-              alt="PowerCA"
+              alt="Power CA"
               width={200}
               height={58}
               className="h-10 w-auto"
@@ -242,7 +230,7 @@ export default function AdminLoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+              className="h-12 md:h-12 w-full rounded-full bg-[#001525] text-sm font-medium text-white transition-colors hover:bg-[#00223a] disabled:opacity-70"
             >
               {isLoading ? (
                 <>
@@ -250,10 +238,7 @@ export default function AdminLoginPage() {
                   Authenticating...
                 </>
               ) : (
-                <>
-                  <Shield className="mr-2 h-4 w-4" />
-                  Admin Sign In
-                </>
+                <>Admin Sign In</>
               )}
             </Button>
 

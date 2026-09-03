@@ -17,7 +17,7 @@ export default function EmailPreviewPage() {
             email="john.doe@example.com"
             phone="+1 (555) 123-4567"
             company="Acme Corporation"
-            message="I'm interested in learning more about PowerCA's services. We're looking for a comprehensive solution to modernize our infrastructure and would love to discuss how PowerCA can help us achieve our goals."
+            message="I'm interested in learning more about Power CA's services. We're looking for a comprehensive solution to modernize our infrastructure and would love to discuss how Power CA can help us achieve our goals."
           />
         )
       case 'welcome':
@@ -30,7 +30,7 @@ export default function EmailPreviewPage() {
       case 'custom':
         return (
           <EmailTemplate
-            subject="Important Update from PowerCA"
+            subject="Important Update from Power CA"
             heading="System Maintenance Notice"
             body="We'll be performing scheduled maintenance on our systems this weekend to improve performance and add new features. The maintenance window is scheduled for Saturday, 2:00 AM - 6:00 AM EST."
             ctaText="View Details"
@@ -74,11 +74,11 @@ export default function EmailPreviewPage() {
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h2 className="text-lg font-semibold text-blue-900 mb-2">Template Features</h2>
           <ul className="space-y-2 text-sm text-blue-800">
-            <li>✓ PowerCA blue color scheme (#1D91EB)</li>
+            <li>✓ Power CA blue color scheme (#1D91EB)</li>
             <li>✓ Geist font family</li>
             <li>✓ Subtle background patterns</li>
             <li>✓ Consistent button styles matching the website</li>
-            <li>✓ PowerCA logo in header</li>
+            <li>✓ Power CA logo in header</li>
             <li>✓ Responsive design for all devices</li>
             <li>✓ Professional and clean layout</li>
           </ul>

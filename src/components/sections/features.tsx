@@ -99,7 +99,7 @@ export function FeaturesSection() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Why CA Firms Choose PowerCA
+                Why CA Firms Choose Power CA
               </h3>
               <p className="text-primary-100 mb-6">
                 Join thousands of progressive CA firms who have transformed their practice with our comprehensive solution.

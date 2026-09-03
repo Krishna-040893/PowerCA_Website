@@ -85,7 +85,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
             <div className="mx-auto w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-8 h-8" />
             </div>
-            <CardTitle className="text-2xl font-bold">PowerCA Admin</CardTitle>
+            <CardTitle className="text-2xl font-bold">Power CA Admin</CardTitle>
             <CardDescription className="text-primary-100">
               Enter your credentials to access the admin panel
             </CardDescription>

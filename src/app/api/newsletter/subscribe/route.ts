@@ -18,7 +18,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 async function sendAdminNotification(subscriberEmail: string, resend: Resend) {
   try {
     await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PowerCA <noreply@powerca.in>',
+      from: process.env.EMAIL_FROM || 'Power CA <noreply@powerca.in>',
       to: 'contact@powerca.in',
       subject: 'New Newsletter Subscriber',
       html: `
@@ -35,7 +35,7 @@ async function sendAdminNotification(subscriberEmail: string, resend: Resend) {
 
             <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;">
               <p style="font-size: 16px; margin-bottom: 20px;">
-                A new user has subscribed to the PowerCA newsletter!
+                A new user has subscribed to the Power CA newsletter!
               </p>
 
               <div style="background-color: white; padding: 20px; border-radius: 8px; border-left: 4px solid #144fed;">
@@ -57,7 +57,7 @@ async function sendAdminNotification(subscriberEmail: string, resend: Resend) {
             </div>
 
             <div style="text-align: center; margin-top: 20px; padding: 20px; font-size: 12px; color: #999;">
-              <p>PowerCA - Complete CA Practice Management Solution</p>
+              <p>Power CA - Complete CA Practice Management Solution</p>
               <p>© ${new Date().getFullYear()} TBS Technologies [P] Limited. All rights reserved.</p>
             </div>
           </body>

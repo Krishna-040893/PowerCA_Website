@@ -7,12 +7,12 @@ import { CheckCircle2, Users, TrendingUp, Shield } from 'lucide-react'
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Kolkata - PowerCA Practice Management for West Bengal CAs',
-  description: 'PowerCA - Comprehensive practice management software for Chartered Accountants in Kolkata. Specialized for trading, manufacturing, and service sectors. Book your Kolkata demo today.',
+  title: 'CA Software in Kolkata - Power CA Practice Management for West Bengal CAs',
+  description: 'Power CA - Comprehensive practice management software for Chartered Accountants in Kolkata. Specialized for trading, manufacturing, and service sectors. Book your Kolkata demo today.',
   keywords: 'CA software Kolkata, chartered accountant software Kolkata, CA practice management West Bengal, GST software Kolkata, tax software Kolkata',
   openGraph: {
-    title: 'PowerCA - Professional CA Practice Management Software in Kolkata',
-    description: 'Transform your Kolkata CA practice with PowerCA. Built for West Bengal tax compliance and GST requirements.',
+    title: 'Power CA - Professional CA Practice Management Software in Kolkata',
+    description: 'Transform your Kolkata CA practice with Power CA. Built for West Bengal tax compliance and GST requirements.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Kolkata',
+  name: 'Power CA Kolkata',
   description: 'Practice management software for Chartered Accountants in Kolkata',
   url: 'https://powerca.in/locations/kolkata',
   areaServed: {
@@ -61,7 +61,7 @@ export default function KolkataPage() {
         {/* Hero Section */}
         <PageHero
           title={<>Traditional Excellence Meets Modern Technology for <span className="text-blue-600">Kolkata</span> CAs</>}
-          description={<>PowerCA brings digital transformation to Chartered Accountants in Kolkata and West Bengal. Complete practice management with local expertise</>}
+          description={<>Power CA brings digital transformation to Chartered Accountants in Kolkata and West Bengal. Complete practice management with local expertise</>}
         >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/book-demo">
@@ -219,7 +219,7 @@ export default function KolkataPage() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
-              PowerCA for Eastern India
+              Power CA for Eastern India
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
@@ -249,7 +249,7 @@ export default function KolkataPage() {
               Begin Your Digital Transformation Journey in Kolkata
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join progressive Kolkata CAs embracing modern practice management with PowerCA
+              Join progressive Kolkata CAs embracing modern practice management with Power CA
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

@@ -9,7 +9,7 @@ const testimonials = [
     initial: 'K',
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-700',
-    content: 'Power CA helps monitor all my jobs, helps plan for due dates, keeps track of my billables and receivables. Using PowerCA has made me more efficient and helped my practice grow.'
+    content: 'Power CA helps monitor all my jobs, helps plan for due dates, keeps track of my billables and receivables. Using Power CA has made me more efficient and helped my practice grow.'
   },
   {
     name: 'Chitra',
@@ -33,7 +33,7 @@ const testimonials = [
     initial: 'R',
     bgColor: 'bg-blue-100',
     textColor: 'text-blue-700',
-    content: 'PowerCA has transformed our practice management. The job card system and billing integration have increased our efficiency by 40%. Highly recommended for CA firms.'
+    content: 'Power CA has transformed our practice management. The job card system and billing integration have increased our efficiency by 40%. Highly recommended for CA firms.'
   },
   {
     name: 'Priya',
@@ -49,7 +49,7 @@ const testimonials = [
     initial: 'S',
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-700',
-    content: 'PowerCA\'s document management and staff collaboration features have streamlined our entire workflow. Our team productivity has increased significantly.'
+    content: 'Power CA\'s document management and staff collaboration features have streamlined our entire workflow. Our team productivity has increased significantly.'
   }
 ]
 

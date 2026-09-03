@@ -151,7 +151,7 @@ export async function GET(
       paymentId: payment.payment_id,
       paymentDate: new Date(payment.created_at),
       items: [{
-        description: 'PowerCA Implementation - Complete setup with first year subscription FREE',
+        description: 'Power CA Implementation - Complete setup with first year subscription FREE',
         quantity: 1,
         rate: baseAmount,
         amount: baseAmount,

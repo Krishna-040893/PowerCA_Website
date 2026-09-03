@@ -691,7 +691,7 @@ export default function AdminPostersPage() {
   return (
     <AdminPageWrapper
       title="Homepage Posters"
-      description="Posters shown in the PowerCA at a Glance carousel on the homepage"
+      description="Posters shown in the Power CA at a Glance carousel on the homepage"
       stats={[
         { label: 'Total', value: posters.length, color: 'bg-blue-100 text-blue-800' },
         { label: 'Published', value: posters.filter(p => p.is_published).length, color: 'bg-green-100 text-green-800' },
@@ -906,7 +906,7 @@ export default function AdminPostersPage() {
             <Upload className="mx-auto h-10 w-10 text-gray-400 mb-4" />
             <p className="text-gray-600 mb-1">No posters yet</p>
             <p className="text-sm text-gray-500 mb-6">
-              Until you add one, the homepage shows the built-in PowerCA overview slides.
+              Until you add one, the homepage shows the built-in Power CA overview slides.
             </p>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />

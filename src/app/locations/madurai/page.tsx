@@ -7,12 +7,12 @@ import { CheckCircle2, TrendingUp, ShoppingBag, Flower2, Building2 } from 'lucid
 import { PageHero } from '@/components/layout/page-hero'
 
 export const metadata: Metadata = {
-  title: 'CA Software in Madurai - PowerCA for Temple City Chartered Accountants',
-  description: 'PowerCA - Practice management software for Chartered Accountants in Madurai. Specialized for trading, textiles, and temple trusts. Tamil language support. Book your Madurai demo today.',
+  title: 'CA Software in Madurai - Power CA for Temple City Chartered Accountants',
+  description: 'Power CA - Practice management software for Chartered Accountants in Madurai. Specialized for trading, textiles, and temple trusts. Tamil language support. Book your Madurai demo today.',
   keywords: 'CA software Madurai, chartered accountant software Madurai, CA practice management Madurai, GST software Madurai, tax software Madurai, temple trust accounting',
   openGraph: {
-    title: 'PowerCA - CA Practice Management Software in Madurai',
-    description: 'Streamline your Madurai CA practice with PowerCA. Built for trading businesses and temple trust compliance.',
+    title: 'Power CA - CA Practice Management Software in Madurai',
+    description: 'Streamline your Madurai CA practice with Power CA. Built for trading businesses and temple trust compliance.',
     images: ['/og-image.jpg'],
     locale: 'en_IN',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'PowerCA Madurai',
+  name: 'Power CA Madurai',
   description: 'Practice management software for Chartered Accountants in Madurai',
   url: 'https://powerca.in/locations/madurai',
   areaServed: {
@@ -62,7 +62,7 @@ export default function MaduraiPage() {
         {/* Hero Section */}
         <PageHero
           title={<>CA Software for <span className="text-blue-600">Madurai</span> - The Temple City</>}
-          description={<>PowerCA - Designed for Chartered Accountants in Madurai serving temples, trusts, trading businesses, and textile merchants. Complete Tamil support.</>}
+          description={<>Power CA - Designed for Chartered Accountants in Madurai serving temples, trusts, trading businesses, and textile merchants. Complete Tamil support.</>}
         >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/book-demo">
@@ -254,10 +254,10 @@ export default function MaduraiPage() {
         <section className="py-16 bg-blue-600">
           <div className="container mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-semibold text-white mb-4 leading-normal">
-              Modernize Your Madurai CA Practice with PowerCA
+              Modernize Your Madurai CA Practice with Power CA
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join Madurai's progressive CAs using PowerCA for efficient practice management
+              Join Madurai's progressive CAs using Power CA for efficient practice management
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/book-demo">

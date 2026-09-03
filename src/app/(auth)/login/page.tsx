@@ -174,7 +174,7 @@ function LoginContent() {
           <div className="mb-6 flex justify-center">
             <Image
               src="/images/powerca-logo-main.png"
-              alt="PowerCA"
+              alt="Power CA"
               width={200}
               height={58}
               className="h-10 w-auto"
@@ -185,7 +185,7 @@ function LoginContent() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="mb-2 text-2xl font-semibold tracking-tight text-[#001525] font-inter">
-              Welcome, PowerCA
+              Welcome, Power CA
             </h1>
             <p className="text-gray-600">
               Please enter your details to sign in your account

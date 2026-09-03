@@ -3,6 +3,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -339,9 +340,9 @@ export default function AffiliateProfilePage() {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <Loader2 className="animate-spin h-12 w-12 text-green-600 mx-auto mb-4" />
+          <Loader2 className="animate-spin h-12 w-12 text-[#001525] mx-auto mb-4" />
           <p className="text-gray-600">Loading your affiliate account...</p>
         </div>
       </div>
@@ -370,50 +371,76 @@ export default function AffiliateProfilePage() {
   }
 
   return (
-    <div className="bg-white">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-              {/* Profile Photo Upload Component */}
-              <div className="flex-shrink-0">
+    <div className="min-h-screen bg-white">
+      {/* Profile hero - contained card with rounded cover, as on the client profile */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 max-w-6xl">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {/* Cover image */}
+          <div className="relative h-24 sm:h-32 w-full">
+            <Image
+              src="/images/hero-mosaic-bg.jpg"
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1152px) 100vw, 1152px"
+            />
+          </div>
+
+          <div className="px-5 sm:px-7 pb-5">
+            {/* Avatar overlapping the cover, name and email beside it */}
+            <div className="-mt-12 sm:-mt-14 flex items-end gap-4">
+              <div className="flex min-w-0 items-end gap-5 sm:gap-6">
                 <ProfilePhotoUpload
                   currentPhotoUrl={currentProfilePhotoUrl}
                   onPhotoUpdate={handleProfilePhotoUpdate}
                   onPhotoDelete={handleProfilePhotoDelete}
-                  size="sm"
+                  size="md"
                   editable={true}
+                  compact
                 />
-              </div>
 
-              <div className="flex flex-col justify-center items-center sm:items-start text-center sm:text-left w-full sm:w-auto mt-1.5 sm:mt-0">
-                <h1 className="text-base sm:text-lg font-bold text-gray-900">
-                  {affiliateData.full_name}
-                </h1>
-                <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-none">{affiliateData.email}</p>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-0.5">
-                  {getStatusBadge(affiliateData.status)}
-                  {affiliateData.referral_code && (
-                    <span className="text-xs text-green-600 font-mono font-semibold">
-                      Code: {affiliateData.referral_code}
-                    </span>
-                  )}
+                <div className="min-w-0 translate-y-5 sm:translate-y-7">
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 truncate">
+                    {affiliateData.full_name}
+                  </h1>
+                  <p className="mt-1 truncate text-sm text-gray-400">{affiliateData.email}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Stat row - hairline separators, no boxes */}
+            <div className="mt-9 sm:mt-11 grid grid-cols-2 sm:grid-cols-4 gap-y-3">
+              <div className="pr-4 sm:border-r sm:border-gray-200">
+                <p className="text-xs text-gray-400">Status</p>
+                <div className="mt-1">{getStatusBadge(affiliateData.status)}</div>
+              </div>
+              <div className="pl-4 sm:pl-5 pr-4 sm:border-r sm:border-gray-200">
+                <p className="text-xs text-gray-400">Referral code</p>
+                <p className="mt-1 truncate font-mono text-lg font-medium text-gray-900">
+                  {affiliateData.referral_code || '—'}
+                </p>
+              </div>
+              <div className="pr-4 sm:pl-5 sm:border-r sm:border-gray-200">
+                <p className="text-xs text-gray-400">City</p>
+                <p className="mt-1 truncate text-lg font-medium text-gray-900">{affiliateData.city || '—'}</p>
+              </div>
+              <div className="pl-4 sm:pl-5">
+                <p className="text-xs text-gray-400">Phone</p>
+                <p className="mt-1 truncate text-lg font-medium text-gray-900">{affiliateData.phone || '—'}</p>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
+      </section>
       {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-8 pt-4 sm:pt-8 pb-2 sm:pb-4 max-w-6xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 max-w-6xl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
           {/* Individual Spaced Tabs - responsive */}
-          <TabsList className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start bg-transparent h-auto p-0 w-full">
+          <TabsList className="flex w-full gap-1 h-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm justify-start">
             <TabsTrigger
               value="profile"
-              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Profile</span>
@@ -421,7 +448,7 @@ export default function AffiliateProfilePage() {
             </TabsTrigger>
             <TabsTrigger
               value="agreement"
-              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Agreement</span>
@@ -429,7 +456,7 @@ export default function AffiliateProfilePage() {
             </TabsTrigger>
             <TabsTrigger
               value="clients"
-              className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-green-500 hover:bg-green-50 data-[state=active]:border-green-600 data-[state=active]:bg-green-600 data-[state=active]:text-white shadow-sm transition-all duration-200 text-xs sm:text-sm"
+              className="flex-1 sm:flex-none shrink-0 justify-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Clients</span>
@@ -439,31 +466,31 @@ export default function AffiliateProfilePage() {
 
           {/* Profile Information Tab */}
           <TabsContent value="profile">
-            <Card className="border-0 rounded-xl shadow-none">
+            <Card className="border-0 rounded-2xl shadow-none bg-transparent">
               <CardContent className="p-0">
                 <Accordion type="single" collapsible defaultValue="profile-info" className="w-full space-y-5">
 
                   {/* Profile Information Accordion */}
-                  <AccordionItem value="profile-info" className="border rounded-xl overflow-hidden">
-                    <div className="bg-green-600/15 px-4 sm:px-6">
+                  <AccordionItem value="profile-info" className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    <div className="border-b border-gray-200 bg-white px-5 sm:px-7">
                       <AccordionTrigger className="hover:no-underline py-3 sm:py-4">
                         <div>
-                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
-                            <User className="h-4 w-4 text-green-600" />
+                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
+                            <User className="h-4 w-4 text-gray-400" />
                             Profile Information
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">Your personal and business details</p>
+                          <p className="text-sm text-gray-500 mt-0.5">Your personal and business details</p>
                         </div>
                       </AccordionTrigger>
                     </div>
-                    <AccordionContent className="px-4 sm:px-6 pt-4">
+                    <AccordionContent className="px-5 sm:px-7 pt-5">
                       {!isEditingProfile && (
                         <div className="flex justify-end mb-3">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={handleEditProfile}
-                            className="border-green-300 text-green-700 hover:bg-green-50"
+                            className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]"
                           >
                             <Edit2 className="h-4 w-4 mr-2" />
                             Edit
@@ -472,62 +499,62 @@ export default function AffiliateProfilePage() {
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Full Name</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Full Name</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.full_name || '' : affiliateData.full_name}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, full_name: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Email Address</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Email Address</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input value={affiliateData.email} disabled className="pl-10 bg-gray-50 border-gray-200" />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Phone Number</Label>
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.phone || '' : affiliateData.phone}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, phone: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">City</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">City</Label>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.city || '' : affiliateData.city}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, city: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">State</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">State</Label>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.state || '' : affiliateData.state}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, state: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Business Type</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Business Type</Label>
                           <div className="relative">
                             <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
@@ -538,38 +565,38 @@ export default function AffiliateProfilePage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Company Name</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Company Name</Label>
                           <div className="relative">
                             <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.company_name || '' : affiliateData.company_name || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, company_name: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Designation</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Designation</Label>
                           <div className="relative">
                             <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.designation || '' : affiliateData.designation || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, designation: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700">Experience</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Experience</Label>
                           <div className="relative">
                             <TrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingProfile ? editedData?.experience || '' : affiliateData.experience || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, experience: e.target.value } : null)}
                               disabled={!isEditingProfile}
-                              className={`pl-10 ${isEditingProfile ? 'bg-white border-green-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`${isEditingProfile ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                             />
                           </div>
                         </div>
@@ -577,10 +604,10 @@ export default function AffiliateProfilePage() {
 
                       {isEditingProfile && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="w-full sm:w-auto">
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]">
                             <X className="h-4 w-4 mr-2" /> Cancel
                           </Button>
-                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
+                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400">
                             {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : <><Save className="h-4 w-4 mr-2" /> Save Changes</>}
                           </Button>
                         </div>
@@ -589,82 +616,83 @@ export default function AffiliateProfilePage() {
                   </AccordionItem>
 
                   {/* Affiliate Details Accordion */}
-                  <AccordionItem value="affiliate-details" className="border rounded-xl overflow-hidden">
-                    <div className="bg-blue-600/10 px-4 sm:px-6">
+                  <AccordionItem value="affiliate-details" className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    <div className="border-b border-gray-200 bg-white px-5 sm:px-7">
                       <AccordionTrigger className="hover:no-underline py-3 sm:py-4">
                         <div>
-                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
-                            <Shield className="h-4 w-4 text-blue-600" />
+                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
+                            <Shield className="h-4 w-4 text-gray-400" />
                             Affiliate Details
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">Your affiliate marketing strategy and goals</p>
+                          <p className="text-sm text-gray-500 mt-0.5">Your affiliate marketing strategy and goals</p>
                         </div>
                       </AccordionTrigger>
                     </div>
-                    <AccordionContent className="px-4 sm:px-6 pt-4">
-                      {!isEditingAffiliate && (
-                        <div className="flex justify-end mb-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleEditAffiliate}
-                            className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                          >
-                            <Edit2 className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                        </div>
-                      )}
+                    <AccordionContent className="px-5 sm:px-7 pt-5">
                       <div className="space-y-4 sm:space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-4 sm:pb-6 border-b">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">Affiliate Status</Label>
-                            <div>{getStatusBadge(affiliateData.status)}</div>
-                          </div>
-                          {affiliateData.referral_code && (
+                        {/* Status and code share the row with the Edit button */}
+                        <div className="flex flex-wrap items-start justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b">
+                          <div className="grid flex-1 grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-2">
-                              <Label className="text-sm font-medium text-gray-700">Referral Code</Label>
-                              <div className="text-lg text-green-600 font-mono font-bold">{affiliateData.referral_code}</div>
+                              <Label className="text-[13px] font-medium text-[#001525]">Affiliate Status</Label>
+                              <div>{getStatusBadge(affiliateData.status)}</div>
                             </div>
+                            {affiliateData.referral_code && (
+                              <div className="space-y-2">
+                                <Label className="text-[13px] font-medium text-[#001525]">Referral Code</Label>
+                                <div className="text-lg text-[#001525] font-mono font-bold">{affiliateData.referral_code}</div>
+                              </div>
+                            )}
+                          </div>
+                          {!isEditingAffiliate && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleEditAffiliate}
+                              className="h-12 md:h-12 w-auto shrink-0 rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]"
+                            >
+                              <Edit2 className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
                           )}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">Promotion Method</Label>
+                            <Label className="text-[13px] font-medium text-[#001525]">Promotion Method</Label>
                             <div className="relative">
-                              <Target className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                              <Target className="absolute left-3.5 top-3.5 text-gray-400 w-4 h-4" />
                               <textarea
                                 value={isEditingAffiliate ? editedData?.promotion_method || '' : affiliateData.promotion_method}
                                 onChange={(e) => setEditedData(prev => prev ? { ...prev, promotion_method: e.target.value } : null)}
                                 disabled={!isEditingAffiliate}
                                 rows={4}
-                                className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'}`}
+                                className={`${isEditingAffiliate ? 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10' : 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-500'}`}
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">Target Audience</Label>
+                            <Label className="text-[13px] font-medium text-[#001525]">Target Audience</Label>
                             <div className="relative">
-                              <User className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                              <User className="absolute left-3.5 top-3.5 text-gray-400 w-4 h-4" />
                               <textarea
                                 value={isEditingAffiliate ? editedData?.target_audience || '' : affiliateData.target_audience}
                                 onChange={(e) => setEditedData(prev => prev ? { ...prev, target_audience: e.target.value } : null)}
                                 disabled={!isEditingAffiliate}
                                 rows={4}
-                                className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'}`}
+                                className={`${isEditingAffiliate ? 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10' : 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-500'}`}
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">Expected Monthly Referrals</Label>
+                            <Label className="text-[13px] font-medium text-[#001525]">Expected Monthly Referrals</Label>
                             <div className="relative">
-                              <TrendingUp className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                              <TrendingUp className="absolute left-3.5 top-3.5 text-gray-400 w-4 h-4" />
                               <textarea
                                 value={isEditingAffiliate ? editedData?.monthly_leads || '' : affiliateData.monthly_leads || 'N/A'}
                                 onChange={(e) => setEditedData(prev => prev ? { ...prev, monthly_leads: e.target.value } : null)}
                                 disabled={!isEditingAffiliate}
                                 rows={4}
-                                className={`w-full pl-10 pr-3 py-2 border rounded-md text-sm ${isEditingAffiliate ? 'bg-white border-blue-300' : 'bg-gray-50 border-gray-200'}`}
+                                className={`${isEditingAffiliate ? 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus:ring-2 focus:ring-[#001525]/10' : 'w-full resize-none pl-10 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-500'}`}
                               />
                             </div>
                           </div>
@@ -673,10 +701,10 @@ export default function AffiliateProfilePage() {
 
                       {isEditingAffiliate && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="w-full sm:w-auto">
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]">
                             <X className="h-4 w-4 mr-2" /> Cancel
                           </Button>
-                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
+                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400">
                             {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : <><Save className="h-4 w-4 mr-2" /> Save Changes</>}
                           </Button>
                         </div>
@@ -685,26 +713,26 @@ export default function AffiliateProfilePage() {
                   </AccordionItem>
 
                   {/* Payment Information Accordion */}
-                  <AccordionItem value="payment-info" className="border rounded-xl overflow-hidden">
-                    <div className="bg-purple-600/10 px-4 sm:px-6">
+                  <AccordionItem value="payment-info" className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    <div className="border-b border-gray-200 bg-white px-5 sm:px-7">
                       <AccordionTrigger className="hover:no-underline py-3 sm:py-4">
                         <div>
-                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
-                            <CreditCard className="h-4 w-4 text-purple-600" />
+                          <div className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900">
+                            <CreditCard className="h-4 w-4 text-gray-400" />
                             Payment Information
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">Your bank and tax details for commission payments</p>
+                          <p className="text-sm text-gray-500 mt-0.5">Your bank and tax details for commission payments</p>
                         </div>
                       </AccordionTrigger>
                     </div>
-                    <AccordionContent className="px-4 sm:px-6 pt-4">
+                    <AccordionContent className="px-5 sm:px-7 pt-5">
                       {!isEditingPayment && (
                         <div className="flex justify-end mb-3">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={handleEditPayment}
-                            className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                            className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]"
                           >
                             <Edit2 className="h-4 w-4 mr-2" />
                             Edit
@@ -713,53 +741,53 @@ export default function AffiliateProfilePage() {
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">Bank Account Number</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">Bank Account Number</Label>
                           <div className="relative">
                             <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingPayment ? editedData?.account_number || '' : affiliateData.account_number || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, account_number: e.target.value } : null)}
                               disabled={!isEditingPayment}
-                              className={`pl-10 font-mono text-sm ${isEditingPayment ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`font-mono ${isEditingPayment ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                               placeholder="Enter account number"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">IFSC Code</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">IFSC Code</Label>
                           <div className="relative">
                             <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingPayment ? editedData?.ifsc_code || '' : affiliateData.ifsc_code || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, ifsc_code: e.target.value.toUpperCase() } : null)}
                               disabled={!isEditingPayment}
-                              className={`pl-10 font-mono text-sm ${isEditingPayment ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`font-mono ${isEditingPayment ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                               placeholder="Enter IFSC code"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">PAN Number</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">PAN Number</Label>
                           <div className="relative">
                             <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingPayment ? editedData?.pan_number || '' : affiliateData.pan_number || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, pan_number: e.target.value.toUpperCase() } : null)}
                               disabled={!isEditingPayment}
-                              className={`pl-10 font-mono text-sm ${isEditingPayment ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`font-mono ${isEditingPayment ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                               placeholder="Enter PAN number"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">GST Number (Optional)</Label>
+                          <Label className="text-[13px] font-medium text-[#001525]">GST Number (Optional)</Label>
                           <div className="relative">
                             <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                               value={isEditingPayment ? editedData?.gst_number || '' : affiliateData.gst_number || 'N/A'}
                               onChange={(e) => setEditedData(prev => prev ? { ...prev, gst_number: e.target.value.toUpperCase() } : null)}
                               disabled={!isEditingPayment}
-                              className={`pl-10 font-mono text-sm ${isEditingPayment ? 'bg-white border-purple-300' : 'bg-gray-50 border-gray-200'}`}
+                              className={`font-mono ${isEditingPayment ? 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-white text-sm text-[#001525] outline-none transition-colors focus:border-[#001525] focus-visible:ring-2 focus-visible:ring-[#001525]/10' : 'h-12 md:h-12 pl-10 rounded-xl border-gray-200 bg-gray-50 text-sm text-gray-500 focus-visible:ring-0'}`}
                               placeholder="Enter GST number"
                             />
                           </div>
@@ -767,8 +795,8 @@ export default function AffiliateProfilePage() {
                       </div>
 
                       <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-100">
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
-                          <p className="text-xs sm:text-sm text-purple-800">
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             <strong>Note:</strong> Your bank account details will be used for monthly commission payouts. Please ensure all information is accurate.
                           </p>
                         </div>
@@ -776,10 +804,10 @@ export default function AffiliateProfilePage() {
 
                       {isEditingPayment && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-4 sm:mt-6">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="w-full sm:w-auto">
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors border border-gray-300 bg-white text-[#001525] hover:bg-gray-50 hover:text-[#001525]">
                             <X className="h-4 w-4 mr-2" /> Cancel
                           </Button>
-                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto">
+                          <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400">
                             {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : <><Save className="h-4 w-4 mr-2" /> Save Changes</>}
                           </Button>
                         </div>
@@ -794,20 +822,20 @@ export default function AffiliateProfilePage() {
 
           {/* Clients Tab */}
           <TabsContent value="clients" className="space-y-4 sm:space-y-6">
-            <Card className="shadow-lg border-0 rounded-xl">
-              <CardHeader className="bg-green-600/15 border-b py-3 sm:py-4 px-4 sm:px-6">
+            <Card className="border border-gray-200 bg-white shadow-sm rounded-2xl overflow-hidden p-0 py-0 gap-0">
+              <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Users className="h-4 w-4 text-blue-600" />
                     Referred Clients
                   </CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Clients referred through your referral code</CardDescription>
+                  <CardDescription className="text-sm text-gray-500 mt-0.5">Clients referred through your referral code</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
                 {isLoadingClients ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin text-green-600 mr-2" />
+                    <Loader2 className="w-6 h-6 animate-spin text-[#001525] mr-2" />
                     <span className="text-gray-600">Loading clients...</span>
                   </div>
                 ) : clients.length === 0 ? (
@@ -953,14 +981,14 @@ export default function AffiliateProfilePage() {
 
           {/* Agreement Tab */}
           <TabsContent value="agreement" className="space-y-4 sm:space-y-6">
-            <Card className="shadow-lg border-0 rounded-xl">
-              <CardHeader className="bg-green-600/15 border-b py-3 sm:py-4 px-4 sm:px-6">
+            <Card className="border border-gray-200 bg-white shadow-sm rounded-2xl overflow-hidden p-0 py-0 gap-0">
+              <CardHeader className="border-b border-gray-200 bg-white px-5 sm:px-7 py-4 sm:py-5">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <FileText className="h-4 w-4 text-blue-600" />
                     Affiliate Agreement
                   </CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Download, Sign and Upload your Affiliate Agreement Document</CardDescription>
+                  <CardDescription className="text-sm text-gray-500 mt-0.5">Download, Sign and Upload your Affiliate Agreement Document</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
@@ -972,9 +1000,9 @@ export default function AffiliateProfilePage() {
 
                   // Helper for step circle styles
                   const stepStyle = (done: boolean, active: boolean) => ({
-                    backgroundColor: done ? '#22c55e' : active ? 'rgb(219, 230, 252)' : '#f3f4f6',
-                    borderColor: done ? '#22c55e' : active ? '#3b82f6' : '#d1d5db',
-                    color: done ? 'white' : active ? '#3b82f6' : '#9ca3af',
+                    backgroundColor: done ? '#10b981' : active ? '#001525' : '#ffffff',
+                    borderColor: done ? '#10b981' : active ? '#001525' : '#e5e7eb',
+                    color: done ? '#ffffff' : active ? '#ffffff' : '#d1d5db',
                   })
 
                   return (
@@ -993,13 +1021,13 @@ export default function AffiliateProfilePage() {
                               <Download className="w-5 h-5 sm:w-6 sm:h-6" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${downloaded ? 'text-green-600' : 'text-gray-900'}`}>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${downloaded ? 'text-[#001525]' : 'text-[#001525]'}`}>
                             Download
                           </p>
                         </div>
 
                         {/* Line 1 */}
-                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${downloaded ? 'bg-green-500' : 'bg-gray-300'}`} style={{ marginBottom: '24px' }} />
+                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${downloaded ? 'bg-emerald-500' : 'bg-gray-200'}`} style={{ marginBottom: '24px' }} />
 
                         {/* Step 2: Upload */}
                         <div className="flex flex-col items-center">
@@ -1013,13 +1041,13 @@ export default function AffiliateProfilePage() {
                               <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${uploaded ? 'text-green-600' : downloaded ? 'text-gray-900' : 'text-gray-400'}`}>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${uploaded ? 'text-[#001525]' : downloaded ? 'text-[#001525]' : 'text-gray-400'}`}>
                             Upload
                           </p>
                         </div>
 
                         {/* Line 2 */}
-                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${uploaded ? 'bg-green-500' : 'bg-gray-300'}`} style={{ marginBottom: '24px' }} />
+                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${uploaded ? 'bg-emerald-500' : 'bg-gray-200'}`} style={{ marginBottom: '24px' }} />
 
                         {/* Step 3: Approval */}
                         <div className="flex flex-col items-center">
@@ -1033,13 +1061,13 @@ export default function AffiliateProfilePage() {
                               <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
                             )}
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${approved ? 'text-green-600' : uploaded ? 'text-gray-900' : 'text-gray-400'}`}>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${approved ? 'text-[#001525]' : uploaded ? 'text-[#001525]' : 'text-gray-400'}`}>
                             {approved ? 'Approved' : 'Approval'}
                           </p>
                         </div>
 
                         {/* Line 3 */}
-                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${completed ? 'bg-green-500' : 'bg-gray-300'}`} style={{ marginBottom: '24px' }} />
+                        <div className={`h-0.5 w-8 sm:w-14 md:w-20 mx-1.5 sm:mx-2 transition-all duration-300 ${completed ? 'bg-emerald-500' : 'bg-gray-200'}`} style={{ marginBottom: '24px' }} />
 
                         {/* Step 4: Completed */}
                         <div className="flex flex-col items-center">
@@ -1049,7 +1077,7 @@ export default function AffiliateProfilePage() {
                           >
                             <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
                           </div>
-                          <p className={`mt-2 text-xs sm:text-sm font-medium ${completed ? 'text-green-600' : 'text-gray-400'}`}>
+                          <p className={`mt-2 text-xs sm:text-sm font-medium ${completed ? 'text-[#001525]' : 'text-gray-400'}`}>
                             Completed
                           </p>
                         </div>
@@ -1058,12 +1086,12 @@ export default function AffiliateProfilePage() {
                       {/* Step Content */}
                       {!downloaded ? (
                         /* Step 1: Download */
-                        <div className="text-center">
+                        <div className="text-center pb-6 sm:pb-8">
                           <p className="text-sm text-gray-600 mb-4">Click the link to download the agreement</p>
                           <Button
                             onClick={handleAgreementDownload}
                             disabled={isDownloading}
-                            className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+                            className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400"
                           >
                             {isDownloading ? (
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1101,7 +1129,7 @@ export default function AffiliateProfilePage() {
                             <Button
                               onClick={() => agreementFileInputRef.current?.click()}
                               disabled={isUploading}
-                              className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white"
+                              className="h-12 md:h-12 rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400 w-full mt-3"
                             >
                               {isUploading ? (
                                 <>
@@ -1129,8 +1157,8 @@ export default function AffiliateProfilePage() {
                       ) : (
                         /* Step 4: Completed — download the final document (both signatures) */
                         <div className="text-center">
-                          <div className="inline-flex items-center gap-3 p-4 rounded-lg bg-green-100 border border-green-300 mb-4">
-                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                          <div className="inline-flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 mb-4">
+                            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                             <div className="text-left">
                               <p className="font-semibold text-green-800">Agreement Completed</p>
                               <p className="text-sm text-green-700">
@@ -1160,7 +1188,7 @@ export default function AffiliateProfilePage() {
                                   alert('Failed to download agreement. Please try again.')
                                 }
                               }}
-                              className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
+                              className="h-12 md:h-12 w-auto rounded-full px-8 has-[>svg]:px-8 text-sm font-medium transition-colors bg-[#001525] text-white hover:bg-[#00223a] disabled:bg-gray-200 disabled:text-gray-400"
                             >
                               <Download className="w-4 h-4 mr-2" />
                               Download Agreement

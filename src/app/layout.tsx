@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://powerca.in'),
-  title: 'PowerCA - Practice Management Software for Chartered Accountants',
+  title: 'Power CA - Practice Management Software for Chartered Accountants',
   description: 'Simplify your practice, amplify your growth. The all-in-one practice management software designed for Chartered Accountants. Save 10+ hours weekly, ensure 100% compliance.',
   keywords: 'CA practice management, chartered accountant software, tax compliance software, accounting software India, CA firm management',
   verification: {
@@ -49,24 +49,24 @@ export const metadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   openGraph: {
-    title: 'PowerCA - Practice Management Software for CAs',
-    description: 'Transform your CA practice with PowerCA. Save time, ensure compliance, and grow your firm.',
+    title: 'Power CA - Practice Management Software for CAs',
+    description: 'Transform your CA practice with Power CA. Save time, ensure compliance, and grow your firm.',
     url: 'https://powerca.in',
-    siteName: 'PowerCA',
+    siteName: 'Power CA',
     type: 'website',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'PowerCA - Practice Management Software for Chartered Accountants',
+        alt: 'Power CA - Practice Management Software for Chartered Accountants',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PowerCA - Practice Management Software for CAs',
-    description: 'Transform your CA practice with PowerCA. Save time, ensure compliance, and grow your firm.',
+    title: 'Power CA - Practice Management Software for CAs',
+    description: 'Transform your CA practice with Power CA. Save time, ensure compliance, and grow your firm.',
     images: ['/og-image.jpg'],
   },
 }

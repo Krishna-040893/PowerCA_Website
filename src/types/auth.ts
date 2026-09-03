@@ -1,4 +1,4 @@
-// Core authentication types for PowerCA
+// Core authentication types for Power CA
 
 export type UserRole = 'admin' | 'subscriber' | 'affiliate' | 'Admin' | 'Affiliate'
 
