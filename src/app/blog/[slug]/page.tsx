@@ -120,7 +120,7 @@ export default async function BlogPostPage({
   }
 
   return (
-    <article className="min-h-screen bg-white">
+    <article className="min-h-screen bg-white bg-dot-pattern">
       <ArticleHeader
         category={formatCategory(post.category)}
         date={formatDate(post.published_at || post.created_at)}

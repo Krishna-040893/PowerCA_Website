@@ -243,7 +243,7 @@ export function DemoBooking() {
         <div className="mb-4 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#001525] transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="font-medium">Back to Home</span>
