@@ -145,7 +145,7 @@ export default function TamilNaduPage() {
         </PageHero>
 
         {/* Features for Tamil Nadu */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Designed for Tamil Nadu's Business Environment
@@ -250,7 +250,7 @@ export default function TamilNaduPage() {
         </section>
 
         {/* Industry Coverage */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Industries We Serve Across Tamil Nadu

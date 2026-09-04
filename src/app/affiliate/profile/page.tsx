@@ -371,7 +371,7 @@ export default function AffiliateProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       {/* Profile hero - contained card with rounded cover, as on the client profile */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 max-w-6xl">
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">

@@ -6,7 +6,7 @@ import { FileText, Shield, Lock } from 'lucide-react'
 
 export function TermsConditionsContent() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       <div className="relative z-10 w-full px-4 sm:px-8 lg:px-[120px] py-16 sm:py-20">
         <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 md:p-12 space-y-8">
           {/* Header */}

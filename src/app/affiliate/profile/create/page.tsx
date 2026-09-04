@@ -178,7 +178,7 @@ export default function AffiliateProfileCreatePage() {
 
   if (existingApplication && existingApplication.status === 'pending') {
     return (
-      <div className="min-h-screen bg-white py-12 px-4">
+      <div className="min-h-screen bg-white bg-dot-pattern py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
@@ -214,7 +214,7 @@ export default function AffiliateProfileCreatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4">
+    <div className="min-h-screen bg-white bg-dot-pattern py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
