@@ -132,7 +132,7 @@ export default function AffiliateDashboard() {
   const referralLink = `https://powerca.in?ref=${affiliateData?.affiliateDetails?.referral_code || affiliateData?.affiliateId}`
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

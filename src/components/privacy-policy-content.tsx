@@ -4,7 +4,7 @@ import { BackButton } from '@/components/ui/back-button'
 
 export function PrivacyPolicyContent() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-7 sm:py-10 md:py-12 lg:py-[60px]">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 md:p-10 space-y-8 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
           <header className="text-center space-y-3">

@@ -1148,7 +1148,7 @@ function AccountPageContent() {
     return null
   }
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       {/* Profile hero - contained card with rounded cover */}
       <section className={`container mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 ${showAddressForm ? 'max-w-6xl' : 'max-w-4xl'}`}>
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">

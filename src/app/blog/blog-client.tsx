@@ -237,7 +237,7 @@ export default function BlogPageClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FBFC]">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       {/* Hero Section */}
       <PageHero
         // The filter panel drops out of the hero, so it must not be clipped.

@@ -95,7 +95,7 @@ export default function TrichyPage() {
         </PageHero>
 
         {/* Local Features Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Built for Trichy's Industrial Economy
@@ -222,7 +222,7 @@ export default function TrichyPage() {
         </section>
 
         {/* Local Areas Coverage */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Serving All Areas of Trichy

@@ -517,7 +517,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
         </header>
 
         {/* Page Content - Mobile optimized */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-2 sm:p-3">
+        <main className="flex-1 overflow-y-auto bg-white bg-dot-pattern p-2 sm:p-3">
           {children}
         </main>
       </div>

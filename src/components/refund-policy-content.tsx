@@ -2,7 +2,7 @@
 
 export function RefundPolicyContent() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-7 sm:py-10 md:py-12 lg:py-[60px]">
         <div className="w-full bg-white rounded-2xl p-8 md:p-12 space-y-10">
           <header className="text-center space-y-3">

@@ -169,7 +169,7 @@ export default function Home() {
       />
       <div className="min-h-screen bg-[#F8FBFC]">
       {/* Hero Section */}
-      <section className="relative py-7 sm:py-10 md:py-12 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative py-7 sm:py-10 md:py-12 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white bg-dot-pattern">
         {/* Mosaic background, inset with rounded corners like the other sections. */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
@@ -280,7 +280,7 @@ export default function Home() {
 
 
       {/* Streamline Your Practice - Text Only Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white bg-dot-pattern">
         <div className="relative rounded-2xl overflow-hidden bg-white">
           <Image
             src="/images/streamline-bg.jpg"
@@ -319,7 +319,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="mb-8 sm:mb-12 lg:mb-16">
             <SectionHeader
@@ -362,7 +362,7 @@ export default function Home() {
       </section>
 
       {/* Start Using Power CA Today Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white bg-dot-pattern">
         <div className="relative rounded-2xl overflow-hidden py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
           <Image
             src="/images/start-using-bg.jpg"
@@ -559,7 +559,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <SectionHeader
             title="Benefits of"
@@ -575,7 +575,7 @@ export default function Home() {
       </section>
 
       {/* Power CA Overview Carousel Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white bg-dot-pattern">
         <div className="relative rounded-2xl overflow-hidden py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
           <Image
             src="/images/glance-bg.jpg"
@@ -603,14 +603,14 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <Reveal><TestimonialsSection /></Reveal>
         </div>
       </section>
 
       {/* Client-Server Background Section */}
-      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white">
+      <section className="px-3 sm:px-4 md:px-6 lg:px-6 relative overflow-hidden bg-white bg-dot-pattern">
         <div className="relative rounded-2xl overflow-hidden py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
           <Image
             src="/images/client-server-bg.jpg"
@@ -704,7 +704,7 @@ export default function Home() {
         titleEmphasis="Power CA"
         description="Get answers to common questions about Power CA practice management software"
         faqs={powerCAFAQs}
-        className="bg-white"
+        className="bg-white bg-dot-pattern"
       />
     </div>
     </>
