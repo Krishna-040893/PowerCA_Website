@@ -137,8 +137,8 @@ export default function ModulesPage() {
       />
 
       {/* Modules Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
+      <section className="relative py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
+        <div className="relative container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16">
             <SectionHeader
               title="Explore Power CA"

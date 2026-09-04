@@ -131,7 +131,7 @@ function PricingContent() {
   }, [session])
 
   return (
-    <div className="min-h-screen bg-[#F8FBFC]">
+    <div className="min-h-screen bg-white bg-dot-pattern">
       {/* Hero Section */}
       <PageHero
         backgroundImage="/images/pricing-hero-bg.jpg"

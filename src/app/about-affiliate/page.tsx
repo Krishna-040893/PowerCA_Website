@@ -315,7 +315,7 @@ export default function AboutAffiliatePage() {
       </section>
 
       {/* Who Can Join Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <motion.div {...fadeInUp} className="mb-8 sm:mb-10">
             <SectionHeader
@@ -410,7 +410,7 @@ export default function AboutAffiliatePage() {
       </section>
 
       {/* Why CA Firms Choose Power CA */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <motion.div {...fadeInUp} className="text-center mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-normal tracking-tight leading-[1.15] text-[#001525] font-inter mb-4">

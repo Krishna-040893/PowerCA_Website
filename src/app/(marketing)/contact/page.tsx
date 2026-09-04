@@ -280,7 +280,7 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <div className="bg-white relative w-full min-h-screen">
+    <div className="bg-white bg-dot-pattern relative w-full min-h-screen">
       {/* Hero Section */}
       <HeroSection />
 
