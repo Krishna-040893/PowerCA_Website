@@ -95,7 +95,7 @@ export default function MaduraiPage() {
         </PageHero>
 
         {/* Local Features Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Tailored for Madurai's Unique Business Environment
@@ -222,7 +222,7 @@ export default function MaduraiPage() {
         </section>
 
         {/* Local Areas Coverage */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Serving All Areas of Madurai

@@ -226,7 +226,7 @@ export default function ToolsPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader title="Why Use Power CA" emphasis="Calculators?" />

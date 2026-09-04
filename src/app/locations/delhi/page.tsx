@@ -83,7 +83,7 @@ export default function DelhiPage() {
         </PageHero>
 
         {/* Local Features Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white bg-dot-pattern">
           <div className="container mx-auto px-6 lg:px-8">
             <h2 className="text-3xl font-semibold text-center mb-12 leading-normal">
               Designed for Delhi NCR's CA Community

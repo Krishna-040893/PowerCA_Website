@@ -117,19 +117,20 @@ export default function AboutPage() {
       </PageHero>
 
       {/* Elevate your practice to the next level with Power CA */}
-      <section className="pt-7 sm:pt-10 md:pt-12 lg:pt-[60px] pb-0 bg-white">
+      <section className="pt-7 sm:pt-10 md:pt-12 lg:pt-[60px] pb-0 bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <SectionHeader
             title="Elevate your practice to the"
             emphasis="next level with Power CA"
             description="Power CA was developed by CA Arul Maniam as a passion project to streamline the administrative tasks for his CA firm."
             cta={{ href: '/modules', label: 'All Modules' }}
+            ctaSpacing="none"
           />
         </div>
       </section>
 
       {/* Image Section */}
-      <section className="pt-4 sm:pt-5 lg:pt-6 pb-7 sm:pb-10 md:pb-12 lg:pb-[60px] bg-white">
+      <section className="pt-4 sm:pt-5 lg:pt-6 pb-7 sm:pb-10 md:pb-12 lg:pb-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-4 sm:px-6 lg:px-6">
           <div className="grid lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-10 xl:gap-12 items-start">
             {/* Left - Image */}
@@ -195,7 +196,7 @@ export default function AboutPage() {
       </section>
 
       {/* Our Team Members */}
-      <section className="relative py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white overflow-hidden">
+      <section className="relative py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern overflow-hidden">
         {/* Background image with responsive padding */}
         <div className="absolute inset-0 px-3 sm:px-4 md:px-6 lg:px-6">
           <div
@@ -267,7 +268,7 @@ export default function AboutPage() {
       </section>
 
       {/* Our Mission, Vision & Values Section */}
-      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white">
+      <section className="py-7 sm:py-10 md:py-12 lg:py-[60px] bg-white bg-dot-pattern">
         <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-6">
           <SectionHeader
             title="Our Mission, Vision &"

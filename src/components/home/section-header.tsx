@@ -11,6 +11,11 @@ interface SectionHeaderProps {
   trailing?: string
   description?: ReactNode
   cta?: { href: string; label: string }
+  /**
+   * Space below the CTA. Defaults to the shared gap; pass 'none' where the
+   * following section already supplies its own top padding.
+   */
+  ctaSpacing?: 'default' | 'none'
 }
 
 /**
@@ -24,6 +29,7 @@ export function SectionHeader({
   trailing,
   description,
   cta,
+  ctaSpacing = 'default',
 }: SectionHeaderProps) {
   return (
     <Reveal className="mx-auto max-w-6xl text-center">
@@ -40,7 +46,9 @@ export function SectionHeader({
       )}
 
       {cta && (
-        <div className="mt-6 sm:mt-8 mb-6 sm:mb-8 flex justify-center">
+        <div
+          className={`mt-6 sm:mt-8 ${ctaSpacing === 'none' ? '' : 'mb-6 sm:mb-8'} flex justify-center`}
+        >
           <Link
             href={cta.href}
             className="group inline-flex items-center gap-2 rounded-full border border-white/80 bg-gradient-to-b from-white to-gray-100 px-6 py-3 text-sm sm:text-base font-medium text-[#001525] shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.08),0_16px_32px_-10px_rgba(16,24,40,0.45)] font-inter"

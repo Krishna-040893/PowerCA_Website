@@ -43,7 +43,7 @@ export function PageHero({
   return (
     <section
       className={cn(
-        'relative py-7 sm:py-10 md:py-12 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white',
+        'relative py-7 sm:py-10 md:py-12 lg:py-[60px] flex items-center justify-center overflow-hidden bg-white bg-dot-pattern',
         className
       )}
     >

@@ -938,7 +938,7 @@ function CheckoutContent() {
         strategy="lazyOnload"
       />
 
-      <div className="min-h-screen bg-[#F8FBFC] py-4 sm:py-8 lg:py-12 checkout-page">
+      <div className="min-h-screen bg-white bg-dot-pattern py-4 sm:py-8 lg:py-12 checkout-page">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-[1400px]">
           {/* Affiliate Referral Banner */}
           {referralInfo?.ref && (
