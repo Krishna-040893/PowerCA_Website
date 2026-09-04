@@ -38,13 +38,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
 
-    // Features and services - Medium priority
-    {
-      url: `${baseUrl}/features`,
-      lastModified,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
     {
       url: `${baseUrl}/checkout`,
       lastModified,
@@ -132,24 +125,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }))
 
-  // Add feature-specific landing pages
-  const features = [
-    'job-card-management',
-    'client-management',
-    'billing-invoicing',
-    'tax-compliance',
-    'document-management',
-    'staff-management',
-    'financial-reporting',
-    'crm-integration'
-  ]
-
-  const featureRoutes = features.map(feature => ({
-    url: `${baseUrl}/features/${feature}`,
-    lastModified,
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }))
 
   // Add comparison pages
   const competitors = [
@@ -205,7 +180,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...routes,
     ...cityRoutes,
-    ...featureRoutes,
     ...comparisonRoutes,
     ...useCaseRoutes,
     ...toolRoutes
