@@ -5,12 +5,13 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/comp
 import {Button  } from '@/components/ui/button'
 import {BarChart3, Users,
   FileText,
-  Calendar, TrendingUp, Clock, CheckCircle,
+  Calendar, Clock, CheckCircle,
   AlertCircle,
   Building2,
   LogOut
  } from 'lucide-react'
 import Link from 'next/link'
+import { StatCards } from '@/components/ui/stat-cards'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -69,76 +70,15 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Clients
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">0</div>
-                <Users className="h-5 w-5 text-blue-600" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                <TrendingUp className="h-3 w-3 inline mr-1 text-green-600" />
-                Start adding clients
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Documents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">0</div>
-                <FileText className="h-5 w-5 text-blue-600" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Upload your first document
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Upcoming Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">0</div>
-                <Calendar className="h-5 w-5 text-blue-600" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                No tasks scheduled
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Compliance Score
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">100%</div>
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                All up to date
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <StatCards
+          className="mb-8"
+          stats={[
+            { label: 'Active Clients', value: 0, tone: 'indigo', hint: 'Start adding clients' },
+            { label: 'Documents', value: 0, tone: 'violet', hint: 'Upload your first document' },
+            { label: 'Upcoming Tasks', value: 0, tone: 'amber', hint: 'No tasks scheduled' },
+            { label: 'Compliance Score', value: '100%', tone: 'emerald', hint: 'All up to date' },
+          ]}
+        />
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

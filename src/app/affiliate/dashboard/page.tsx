@@ -7,11 +7,9 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/comp
 import {Button  } from '@/components/ui/button'
 import {Badge  } from '@/components/ui/badge'
 import {AffiliateReferral  } from '@/types/common'
-import { Users, IndianRupee, TrendingUp,
-  Copy, CheckCircle, Clock,
-  Building2
- } from 'lucide-react'
+import { Users, IndianRupee, Copy, CheckCircle, Building2 } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
+import { StatCards } from '@/components/ui/stat-cards'
 
 export default function AffiliateDashboard() {
   const router = useRouter()
@@ -192,89 +190,24 @@ export default function AffiliateDashboard() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalReferrals}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.pendingReferrals} pending
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Successful Conversions</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.successfulReferrals}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalReferrals > 0
-                  ? `${Math.round((stats.successfulReferrals / stats.totalReferrals) * 100)}% conversion rate`
-                  : 'No referrals yet'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-              <IndianRupee className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">₹{stats.totalCommission.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                ₹{stats.pendingCommission.toFixed(2)} pending
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid Commission</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">₹{stats.paidCommission.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                Successfully withdrawn
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Commission</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">₹{stats.pendingCommission.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                Awaiting clearance
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Commission Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {affiliateData?.affiliateDetails?.commission_rate || 10}%
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Per successful referral
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <StatCards
+          className="mb-8"
+          stats={[
+            { label: 'Total Referrals', value: stats.totalReferrals, tone: 'indigo', hint: `${stats.pendingReferrals} pending` },
+            {
+              label: 'Successful Conversions',
+              value: stats.successfulReferrals,
+              tone: 'emerald',
+              hint: stats.totalReferrals > 0
+                ? `${Math.round((stats.successfulReferrals / stats.totalReferrals) * 100)}% conversion rate`
+                : 'No referrals yet',
+            },
+            { label: 'Total Earnings', value: `₹${stats.totalCommission.toFixed(2)}`, tone: 'violet', hint: `₹${stats.pendingCommission.toFixed(2)} pending` },
+            { label: 'Paid Commission', value: `₹${stats.paidCommission.toFixed(2)}`, tone: 'emerald', hint: 'Successfully withdrawn' },
+            { label: 'Pending Commission', value: `₹${stats.pendingCommission.toFixed(2)}`, tone: 'amber', hint: 'Awaiting clearance' },
+            { label: 'Commission Rate', value: `${affiliateData?.affiliateDetails?.commission_rate || 10}%`, tone: 'indigo', hint: 'Per successful referral' },
+          ]}
+        />
 
         {/* Quick Actions */}
         <Card>

@@ -24,12 +24,19 @@ module.exports = {
         mono: ['Geist Mono', ...defaultTheme.fontFamily.mono],
       },
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        'input-background': 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        // globals.css defines the neutral surface tokens as oklch()/hex, not
+        // bare HSL channels, so wrapping them in hsl() produced invalid CSS and
+        // the browser dropped the declaration - outline buttons, borders and
+        // popovers rendered with no surface. These pass the variable through.
+        // primary/secondary/accent/destructive still use hsl() on purpose: this
+        // project gives accent and secondary brand colours (amber, green), which
+        // would repaint every hover and badge the UI kit keys off them.
+        border: 'var(--border)',
+        input: 'var(--input)',
+        'input-background': 'var(--input)',
+        ring: 'var(--ring)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -49,8 +56,8 @@ module.exports = {
           foreground: 'hsl(var(--secondary-foreground))',
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
@@ -61,12 +68,12 @@ module.exports = {
           foreground: 'hsl(var(--destructive-foreground))',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
         },
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
         },
         chart: {
           1: 'hsl(var(--chart-1))',

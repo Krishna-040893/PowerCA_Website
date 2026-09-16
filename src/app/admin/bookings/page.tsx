@@ -6,11 +6,18 @@ import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
 import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
-import {Button  } from '@/components/ui/button'
-import {Input  } from '@/components/ui/input'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
-import { Loader2, Calendar, Search, Eye, RefreshCw, Phone, Mail, User, Clock, Trash2 } from 'lucide-react'
+import { Loader2, Calendar, Eye, RefreshCw, Phone, Mail, User, Clock, Trash2 } from 'lucide-react'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import {
+  dataTableCheckboxClass,
+  dataTableClass,
+  DataTablePanel,
+  DataTableToolbar,
+  RowIconButton,
+  ToolbarButton,
+  adminButtonClass,
+} from '@/components/admin/data-table'
 import { format } from 'date-fns'
 import { formatPhone } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -48,7 +55,7 @@ export default function AdminBookingsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -147,7 +154,7 @@ export default function AdminBookingsPage() {
   }, [])
 
   const currentPageItems = filteredBookings
-    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const allCurrentPageSelected = currentPageItems.length > 0 &&
     currentPageItems.every(item => selectedIds.has(item.id))
@@ -217,85 +224,50 @@ export default function AdminBookingsPage() {
     <AdminPageWrapper
       title="Bookings"
       description="Manage and track demo bookings"
-      stats={[
-        { label: 'Total', value: bookings.length, color: 'bg-blue-100 text-blue-800' }
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Bookings</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} booking(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-          <Button onClick={fetchBookings} variant="outline" size="sm">
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      }
     >
-        {/* Bookings Table - Enhanced */}
-        <Card className="shadow-sm border border-gray-100">
-          {/* <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">All Bookings</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">View and manage demo bookings</CardDescription>
-              </div>
-            </div>
-          </CardHeader> */}
-          <CardContent>
-            {/* Search Filter - Enhanced Mobile */}
-            <div className="flex gap-2 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search bookings..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <Button
-                onClick={fetchBookings}
-                variant="outline"
-                size="sm"
-                className="px-3 border-gray-200 hover:bg-gray-50"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+        <DataTablePanel>
+            <DataTableToolbar
+              searchValue={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search bookings"
+              className="mb-5"
+              actions={
+                <>
+                  {selectedIds.size > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <ToolbarButton variant="danger" disabled={isDeleting}>
+                          {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                          Delete ({selectedIds.size})
+                        </ToolbarButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Bookings</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} booking(s)?
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteSelected}
+                            className={adminButtonClass('danger')}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <ToolbarButton onClick={fetchBookings}>
+                    <RefreshCw className={loading ? 'animate-spin' : ''} />
+                    Refresh
+                  </ToolbarButton>
+                </>
+              }
+            />
 
             {/* Table / Cards */}
             {loading ? (
@@ -313,7 +285,7 @@ export default function AdminBookingsPage() {
               <>
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
-                  <Table>
+                  <Table className={dataTableClass}>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[50px]">
@@ -321,28 +293,26 @@ export default function AdminBookingsPage() {
                             checked={allCurrentPageSelected}
                             onCheckedChange={handleSelectAll}
                             aria-label="Select all"
-                            className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                            className={dataTableCheckboxClass}
                           />
                         </TableHead>
-                        <TableHead className="text-base font-bold">Name</TableHead>
-                        <TableHead className="text-base font-bold">Contact</TableHead>
-                        <TableHead className="text-base font-bold">Booking Date & Time</TableHead>
-                        <TableHead className="text-base font-bold">Type</TableHead>
-                        <TableHead className="text-base font-bold">Created</TableHead>
-                        <TableHead className="text-base font-bold">Actions</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Booking Date & Time</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredBookings
-                        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                        .map((booking) => (
+                      {currentPageItems.map((booking) => (
                         <TableRow key={booking.id}>
                           <TableCell>
                             <Checkbox
                               checked={selectedIds.has(booking.id)}
                               onCheckedChange={(checked) => handleSelectOne(booking.id, checked)}
                               aria-label={`Select ${booking.name}`}
-                              className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              className={dataTableCheckboxClass}
                             />
                           </TableCell>
                           <TableCell>
@@ -372,7 +342,7 @@ export default function AdminBookingsPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{booking.type}</Badge>
+                            {booking.type}
                           </TableCell>
                           <TableCell>
                             <div>
@@ -383,14 +353,9 @@ export default function AdminBookingsPage() {
                           <TableCell>
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  onClick={() => setSelectedBooking(booking)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
+                                <RowIconButton label="View booking" onClick={() => setSelectedBooking(booking)}>
+                                  <Eye />
+                                </RowIconButton>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-md">
                                 <DialogHeader>
@@ -450,13 +415,11 @@ export default function AdminBookingsPage() {
                       checked={allCurrentPageSelected}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
-                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                      className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                     />
                     <span className="text-sm text-gray-600">Select all on this page</span>
                   </div>
-                  {filteredBookings
-                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .map((booking) => (
+                  {currentPageItems.map((booking) => (
                     <Card key={booking.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(booking.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -467,7 +430,7 @@ export default function AdminBookingsPage() {
                                 checked={selectedIds.has(booking.id)}
                                 onCheckedChange={(checked) => handleSelectOne(booking.id, checked)}
                                 aria-label={`Select ${booking.name}`}
-                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                               />
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -511,14 +474,10 @@ export default function AdminBookingsPage() {
                           {/* Action Button - Enhanced */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                onClick={() => setSelectedBooking(booking)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
+                              <ToolbarButton onClick={() => setSelectedBooking(booking)} className="w-full">
+                                <Eye />
                                 View
-                              </Button>
+                              </ToolbarButton>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-md rounded-xl">
                               <DialogHeader className="border-b pb-3">
@@ -603,14 +562,14 @@ export default function AdminBookingsPage() {
                 <AdminPagination
                   currentPage={currentPage}
                   totalItems={filteredBookings.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
+                  itemsPerPage={itemsPerPage}
                   onPageChange={setCurrentPage}
+                  onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
                   itemName="bookings"
                 />
               </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
         {selectedIds.size > 0 && !isHeaderVisible && (
@@ -620,29 +579,16 @@ export default function AdminBookingsPage() {
                 <span className="text-sm font-medium text-gray-700">
                   {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedIds(new Set())}
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <ToolbarButton onClick={() => setSelectedIds(new Set())} className="h-9 px-4">
                   Clear
-                </Button>
+                </ToolbarButton>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="mr-2 h-4 w-4" />
-                    )}
+                  <ToolbarButton variant="danger" disabled={isDeleting} className="h-9 px-4">
+                    {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
                     Delete ({selectedIds.size})
-                  </Button>
+                  </ToolbarButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white">
                   <AlertDialogHeader>
@@ -653,10 +599,10 @@ export default function AdminBookingsPage() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteSelected}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className={adminButtonClass('danger')}
                     >
                       Delete
                     </AlertDialogAction>
