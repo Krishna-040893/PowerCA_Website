@@ -7,13 +7,9 @@ import {Card,
   CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {Button  } from '@/components/ui/button'
 import {AffiliateReferral, AffiliateApplication  } from '@/types/common'
-import { Users, CheckCircle, Clock,
-  AlertCircle,
-  Copy,
-  ExternalLink, TrendingUp,
-  User,
-  Calendar, Mail } from 'lucide-react'
+import { CheckCircle, AlertCircle, Copy, ExternalLink, User, Calendar, Mail } from 'lucide-react'
 import {Alert, AlertDescription  } from '@/components/ui/alert'
+import { StatCards } from '@/components/ui/stat-cards'
 
 export default function AffiliateReferralDashboard() {
   const router = useRouter()
@@ -112,62 +108,24 @@ export default function AffiliateReferralDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Referral Status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {hasReferred ? (
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-6 h-6" />
-                    Completed
-                  </span>
-                ) : (
-                  <span className="text-yellow-600 flex items-center gap-2">
-                    <Clock className="w-6 h-6" />
-                    Available
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-600 mt-1">
-                {hasReferred ? 'You have made your referral' : 'You can make 1 referral'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Total Referrals
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{referralData?.referralCount || 0}/1</div>
-              <p className="text-sm text-gray-600 mt-1">Maximum allowed: 1</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Profile Status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold capitalize text-green-600">
-                {affiliateProfile?.status || 'Active'}
-              </div>
-              <p className="text-sm text-gray-600 mt-1">Your account is active</p>
-            </CardContent>
-          </Card>
-        </div>
+        <StatCards
+          className="mb-8"
+          stats={[
+            {
+              label: 'Referral Status',
+              value: hasReferred ? 'Completed' : 'Available',
+              tone: hasReferred ? 'emerald' : 'amber',
+              hint: hasReferred ? 'You have made your referral' : 'You can make 1 referral',
+            },
+            { label: 'Total Referrals', value: `${referralData?.referralCount || 0}/1`, tone: 'indigo', hint: 'Maximum allowed: 1' },
+            {
+              label: 'Profile Status',
+              value: <span className="capitalize">{affiliateProfile?.status || 'Active'}</span>,
+              tone: 'emerald',
+              hint: 'Your account is active',
+            },
+          ]}
+        />
 
         {/* Referral Link Section */}
         {!hasReferred && affiliateProfile?.referral_code && (

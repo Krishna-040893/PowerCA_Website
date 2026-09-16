@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { ToolbarButton, RowIconButton, SearchField, adminButtonClass } from '@/components/admin/data-table'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -606,54 +606,44 @@ export default function AdminPostersPage() {
       >
         <GripVertical className="h-4 w-4" />
       </span>
-      <Button
-        size="sm"
-        variant="outline"
+      <RowIconButton
+        label="Move earlier"
         disabled={realIndex === 0 || busyId === poster.id}
         onClick={() => movePoster(realIndex, -1)}
-        aria-label="Move earlier"
       >
-        <ArrowUp className="h-4 w-4" />
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
+        <ArrowUp />
+      </RowIconButton>
+      <RowIconButton
+        label="Move later"
         disabled={realIndex === posters.length - 1 || busyId === poster.id}
         onClick={() => movePoster(realIndex, 1)}
-        aria-label="Move later"
       >
-        <ArrowDown className="h-4 w-4" />
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
+        <ArrowDown />
+      </RowIconButton>
+      <RowIconButton
+        label={poster.is_published ? 'Hide from homepage' : 'Show on homepage'}
         disabled={busyId === poster.id}
         onClick={() => updatePoster(poster.id, { isPublished: !poster.is_published })}
-        aria-label={poster.is_published ? 'Hide from homepage' : 'Show on homepage'}
       >
-        {poster.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
+        {poster.is_published ? <EyeOff /> : <Eye />}
+      </RowIconButton>
+      <RowIconButton
+        label="Edit title and description"
         disabled={busyId === poster.id}
         onClick={() => openEdit(poster)}
-        aria-label="Edit title and description"
       >
-        <Pencil className="h-4 w-4" />
-      </Button>
+        <Pencil />
+      </RowIconButton>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button
-            size="sm"
-            variant="outline"
+          <RowIconButton
+            label="Delete poster"
             disabled={busyId === poster.id}
             className="text-red-600 hover:text-red-700 ml-auto"
-            aria-label="Delete poster"
           >
-            {busyId === poster.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-          </Button>
+            {busyId === poster.id ? <Loader2 className="animate-spin" /> : <Trash2 />}
+          </RowIconButton>
         </AlertDialogTrigger>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
@@ -663,9 +653,9 @@ export default function AdminPostersPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className={adminButtonClass('danger')}
               onClick={() => handleDelete(poster.id)}
             >
               Delete
@@ -692,25 +682,16 @@ export default function AdminPostersPage() {
     <AdminPageWrapper
       title="Homepage Posters"
       description="Posters shown in the Power CA at a Glance carousel on the homepage"
-      stats={[
-        { label: 'Total', value: posters.length, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Published', value: posters.filter(p => p.is_published).length, color: 'bg-green-100 text-green-800' },
-        { label: 'Hidden', value: posters.filter(p => !p.is_published).length, color: 'bg-gray-100 text-gray-800' },
-      ]}
       actions={
         <div className="flex gap-2 flex-wrap items-center">
-          <Button size="sm" variant="outline" onClick={fetchPosters} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <ToolbarButton onClick={fetchPosters} disabled={isLoading}>
+            <RefreshCw className={isLoading ? 'animate-spin' : ''} />
             Refresh
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setIsDialogOpen(true)}
-            className="bg-blue-600 text-white hover:bg-blue-700"
-          >
-            <Plus className="mr-2 h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton variant="primary" onClick={() => setIsDialogOpen(true)}>
+            <Plus />
             Add Poster
-          </Button>
+          </ToolbarButton>
         </div>
       }
     >
@@ -739,17 +720,12 @@ export default function AdminPostersPage() {
                         autoFocus
                         className="h-9 w-44"
                       />
-                      <Button
-                        size="sm"
-                        onClick={renameCategory}
-                        disabled={renaming}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        {renaming ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setRenamingFrom(null)} disabled={renaming}>
+                      <ToolbarButton variant="primary" onClick={renameCategory} disabled={renaming}>
+                        {renaming ? <Loader2 className="animate-spin" /> : 'Save'}
+                      </ToolbarButton>
+                      <ToolbarButton onClick={() => setRenamingFrom(null)} disabled={renaming}>
                         Cancel
-                      </Button>
+                      </ToolbarButton>
                     </div>
                   )
                 }
@@ -794,9 +770,9 @@ export default function AdminPostersPage() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className={adminButtonClass('danger')}
                             onClick={() => deleteCategory(name)}
                           >
                             Remove
@@ -813,26 +789,13 @@ export default function AdminPostersPage() {
       )}
 
       {/* Search, status filter and view switcher */}
-      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
-        <div className="relative w-full lg:flex-1 lg:min-w-[220px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search posters"
-            className="pl-9 pr-9"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              aria-label="Clear search"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5 rounded-xl border border-gray-200 bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="Search posters"
+          className="lg:max-w-md lg:flex-1 lg:min-w-[220px]"
+        />
 
         <div className="flex items-center gap-2 flex-wrap lg:ml-auto">
           <div className="flex items-center rounded-lg border p-0.5 bg-white">
@@ -846,7 +809,7 @@ export default function AdminPostersPage() {
                 type="button"
                 onClick={() => setStatusFilter(value)}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
-                  statusFilter === value ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  statusFilter === value ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 {label}
@@ -881,7 +844,7 @@ export default function AdminPostersPage() {
                 aria-pressed={view === value}
                 title={label}
                 className={`p-2 rounded-md transition-colors cursor-pointer ${
-                  view === value ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  view === value ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -889,10 +852,10 @@ export default function AdminPostersPage() {
             ))}
           </div>
 
-          <Button variant="outline" onClick={openReorder} disabled={posters.length < 2} className="h-9 rounded-lg border bg-white px-3 text-sm font-normal text-gray-700 cursor-pointer">
-            <GripVertical className="h-4 w-4 mr-2" />
+          <ToolbarButton onClick={openReorder} disabled={posters.length < 2}>
+            <GripVertical />
             Reorder Posters
-          </Button>
+          </ToolbarButton>
         </div>
       </div>
 
@@ -908,10 +871,10 @@ export default function AdminPostersPage() {
             <p className="text-sm text-gray-500 mb-6">
               Until you add one, the homepage shows the built-in Power CA overview slides.
             </p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+            <ToolbarButton variant="primary" onClick={() => setIsDialogOpen(true)}>
+              <Plus />
               Add your first poster
-            </Button>
+            </ToolbarButton>
           </CardContent>
         </Card>
       ) : visiblePosters.length === 0 ? (
@@ -920,23 +883,19 @@ export default function AdminPostersPage() {
             <Search className="mx-auto h-10 w-10 text-gray-400 mb-4" />
             <p className="text-gray-600 mb-1">No posters match your filters</p>
             <p className="text-sm text-gray-500 mb-6">Try a different search term or status.</p>
-            <Button
-              variant="outline"
-              onClick={() => { setQuery(''); setStatusFilter('all') }}
-            >
+            <ToolbarButton onClick={() => { setQuery(''); setStatusFilter('all') }}>
               Clear filters
-            </Button>
+            </ToolbarButton>
           </CardContent>
         </Card>
       ) : (
         <>
-          <p className="mb-3 text-sm text-gray-500">Drag a poster card and drop it on another card to set its position in the homepage carousel.</p>
           <div className={gridClass}>
           {visiblePosters.map((poster) => {
             const realIndex = posters.findIndex((p) => p.id === poster.id)
             const isDragged = draggedId === poster.id
             const isDropTarget = dragOverId === poster.id
-            const dragClass = `${isDragged ? 'opacity-40' : ''} ${isDropTarget ? 'ring-2 ring-blue-600 ring-offset-2' : ''}`
+            const dragClass = `${isDragged ? 'opacity-40' : ''} ${isDropTarget ? 'ring-2 ring-indigo-600 ring-offset-2' : ''}`
             const dragEvents = {
               draggable: !busyId,
               onDragStart: (event: DragEvent<HTMLDivElement>) => handleDragStart(event, poster.id),
@@ -1091,26 +1050,22 @@ export default function AdminPostersPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
+              <ToolbarButton onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
                 Cancel
-              </Button>
-              <Button
-                onClick={handleUpload}
-                disabled={isSaving}
-                className="bg-blue-600 text-white hover:bg-blue-700"
-              >
+              </ToolbarButton>
+              <ToolbarButton variant="primary" onClick={handleUpload} disabled={isSaving}>
                 {isSaving ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="animate-spin" />
                     Uploading
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Upload />
                     Add Poster
                   </>
                 )}
-              </Button>
+              </ToolbarButton>
             </div>
           </div>
         </DialogContent>
@@ -1159,23 +1114,19 @@ export default function AdminPostersPage() {
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setEditing(null)} disabled={isSavingEdit}>
+                <ToolbarButton onClick={() => setEditing(null)} disabled={isSavingEdit}>
                   Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveEdit}
-                  disabled={isSavingEdit}
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                >
+                </ToolbarButton>
+                <ToolbarButton variant="primary" onClick={handleSaveEdit} disabled={isSavingEdit}>
                   {isSavingEdit ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="animate-spin" />
                       Saving
                     </>
                   ) : (
                     'Save Changes'
                   )}
-                </Button>
+                </ToolbarButton>
               </div>
             </div>
           )}
@@ -1253,23 +1204,19 @@ export default function AdminPostersPage() {
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <Button
-              onClick={saveReorder}
-              disabled={isSavingOrder}
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
+            <ToolbarButton variant="primary" onClick={saveReorder} disabled={isSavingOrder}>
               {isSavingOrder ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="animate-spin" />
                   Saving
                 </>
               ) : (
                 'Save New Order'
               )}
-            </Button>
-            <Button variant="ghost" onClick={() => setIsReorderOpen(false)} disabled={isSavingOrder}>
+            </ToolbarButton>
+            <ToolbarButton onClick={() => setIsReorderOpen(false)} disabled={isSavingOrder}>
               Cancel
-            </Button>
+            </ToolbarButton>
           </div>
         </DialogContent>
       </Dialog>

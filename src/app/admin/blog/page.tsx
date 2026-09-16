@@ -7,11 +7,10 @@ import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Loader2, RefreshCw, Plus, Edit, Trash2, FileText, Upload, X } from 'lucide-react'
+import { Loader2, RefreshCw, Plus, Edit, Pencil, Trash2, FileText, Upload, X } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   AlertDialog,
@@ -29,6 +28,17 @@ import { toast } from 'sonner'
 import { createClient } from '@supabase/supabase-js'
 import { RichTextEditor } from '@/components/admin/rich-text-editor'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import {
+  DataTablePanel,
+  DataTableToolbar,
+  RowActions,
+  RowIconButton,
+  RowMenu,
+  ToolbarButton,
+  adminButtonClass,
+  dataTableCheckboxClass,
+  dataTableClass,
+} from '@/components/admin/data-table'
 
 interface BlogPost {
   id: string
@@ -57,7 +67,8 @@ export default function AdminBlogPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -436,9 +447,16 @@ export default function AdminBlogPage() {
   }
 
   // Selection handlers for bulk delete
-  const currentPageItems = posts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+  const search = searchTerm.trim().toLowerCase()
+  const filteredPosts = search
+    ? posts.filter(post =>
+        [post.title, post.slug, post.category, post.author].some(field => field?.toLowerCase().includes(search))
+      )
+    : posts
+
+  const currentPageItems = filteredPosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   )
 
   const allCurrentPageSelected = currentPageItems.length > 0 &&
@@ -532,73 +550,62 @@ export default function AdminBlogPage() {
     <AdminPageWrapper
       title="Blog Posts"
       description="Create and manage blog posts"
-      stats={[
-        { label: 'Total', value: posts.length, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Published', value: posts.filter(p => p.is_published).length, color: 'bg-green-100 text-green-800' },
-        { label: 'Drafts', value: posts.filter(p => !p.is_published).length, color: 'bg-gray-100 text-gray-800' }
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Blog Posts</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} blog post(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchPosts}
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => handleOpenDialog()}
-            style={{ backgroundColor: '#2563eb' }}
-            className="hover:opacity-90 text-white"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Blog Post
-          </Button>
-        </div>
-      }
     >
-      {/* Blog Posts Table - Enhanced */}
-      <Card className="shadow-sm border border-gray-100">
-        <CardContent className="pt-6">
+      <DataTablePanel>
+        <DataTableToolbar
+          searchValue={searchTerm}
+          onSearchChange={(value) => {
+            setSearchTerm(value)
+            setCurrentPage(1)
+          }}
+          searchPlaceholder="Search blog posts..."
+          actions={
+            <>
+              {selectedIds.size > 0 ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <ToolbarButton variant="danger" disabled={isDeleting}>
+                      {isDeleting ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <Trash2 />
+                      )}
+                      Delete ({selectedIds.size})
+                    </ToolbarButton>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-white">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Blog Posts</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {selectedIds.size} blog post(s)?
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteSelected}
+                        className={adminButtonClass('danger')}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
+              <ToolbarButton onClick={fetchPosts} disabled={loading}>
+                <RefreshCw className={loading ? 'animate-spin' : ''} />
+                Refresh
+              </ToolbarButton>
+              <ToolbarButton variant="primary" onClick={() => handleOpenDialog()}>
+                <Plus />
+                New Blog Post
+              </ToolbarButton>
+            </>
+          }
+          className="mb-4"
+        />
+
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
               {error}
@@ -610,17 +617,21 @@ export default function AdminBlogPage() {
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
               <p className="mt-2 text-gray-600">Loading blog posts...</p>
             </div>
-          ) : posts.length === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <div className="text-center py-16">
               <FileText className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Blog Posts Yet</h3>
-              <p className="text-gray-500">Create your first blog post to get started</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                {posts.length === 0 ? 'No Blog Posts Yet' : 'No matching blog posts'}
+              </h3>
+              <p className="text-gray-500">
+                {posts.length === 0 ? 'Create your first blog post to get started' : 'Try a different search'}
+              </p>
             </div>
           ) : (
             <>
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
-                <Table>
+                <Table className={dataTableClass}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[50px]">
@@ -628,49 +639,35 @@ export default function AdminBlogPage() {
                         checked={allCurrentPageSelected}
                         onCheckedChange={handleSelectAll}
                         aria-label="Select all"
-                        className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                        className={dataTableCheckboxClass}
                       />
                     </TableHead>
-                    <TableHead className="text-base font-bold">Title</TableHead>
-                    <TableHead className="text-base font-bold">Category</TableHead>
-                    <TableHead className="text-base font-bold">Status</TableHead>
-                    <TableHead className="text-base font-bold">Published</TableHead>
-                    <TableHead className="text-base font-bold">Actions</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Published</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {posts
-                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .map((post) => (
+                  {currentPageItems.map((post) => (
                     <TableRow key={post.id}>
                       <TableCell>
                         <Checkbox
                           checked={selectedIds.has(post.id)}
                           onCheckedChange={(checked) => handleSelectOne(post.id, checked)}
                           aria-label={`Select ${post.title}`}
-                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                          className={dataTableCheckboxClass}
                         />
                       </TableCell>
-                      <TableCell className="font-medium max-w-md">
-                        <div>
-                          <p className="font-semibold">{post.title}</p>
-                          <p className="text-xs text-gray-500">{post.slug}</p>
-                        </div>
+                      <TableCell className="max-w-md">
+                        <p className="font-medium">{post.title}</p>
+                        <p className="text-xs text-gray-500">{post.slug}</p>
                       </TableCell>
+                      <TableCell>{formatCategory(post.category)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{formatCategory(post.category)}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {post.is_published ? (
-                            <Badge className="bg-green-500 text-white">Published</Badge>
-                          ) : (
-                            <Badge variant="secondary">Draft</Badge>
-                          )}
-                          {post.is_breaking && (
-                            <Badge className="bg-red-500 text-white">Breaking</Badge>
-                          )}
-                        </div>
+                        {post.is_published ? 'Published' : 'Draft'}
+                        {post.is_breaking && ' · Breaking'}
                       </TableCell>
                       <TableCell>
                         {post.published_at
@@ -678,22 +675,21 @@ export default function AdminBlogPage() {
                           : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenDialog(post)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDelete(post.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
-                        </div>
+                        <RowActions>
+                          <RowIconButton label="Edit post" onClick={() => handleOpenDialog(post)}>
+                            <Pencil />
+                          </RowIconButton>
+                          <RowMenu
+                            items={[
+                              {
+                                label: 'Delete',
+                                icon: <Trash2 className="h-4 w-4" />,
+                                onSelect: () => handleDelete(post.id),
+                                destructive: true,
+                              },
+                            ]}
+                          />
+                        </RowActions>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -709,13 +705,11 @@ export default function AdminBlogPage() {
                     checked={allCurrentPageSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
-                    className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                    className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                   />
                   <span className="text-sm text-gray-600">Select all on this page</span>
                 </div>
-                {posts
-                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                  .map((post) => (
+                {currentPageItems.map((post) => (
                   <Card key={post.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(post.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                     <CardContent className="p-4">
                       <div className="space-y-3">
@@ -726,7 +720,7 @@ export default function AdminBlogPage() {
                               checked={selectedIds.has(post.id)}
                               onCheckedChange={(checked) => handleSelectOne(post.id, checked)}
                               aria-label={`Select ${post.title}`}
-                              className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                             />
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -770,23 +764,17 @@ export default function AdminBlogPage() {
 
                         {/* Action Buttons */}
                         <div className="flex gap-2 pt-2 border-t border-gray-100">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenDialog(post)}
-                            className="flex-1 bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 border-blue-200 text-blue-700 font-medium"
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
+                          <ToolbarButton onClick={() => handleOpenDialog(post)} className="flex-1">
+                            <Edit />
                             Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          </ToolbarButton>
+                          <RowIconButton
+                            label="Delete post"
                             onClick={() => handleDelete(post.id)}
-                            className="px-3 border-red-200 text-red-600 hover:bg-red-50"
+                            className="h-10 w-10 text-red-600 hover:bg-red-50"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            <Trash2 />
+                          </RowIconButton>
                         </div>
                       </div>
                     </CardContent>
@@ -797,15 +785,15 @@ export default function AdminBlogPage() {
             {/* Pagination */}
             <AdminPagination
               currentPage={currentPage}
-              totalItems={posts.length}
-              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={filteredPosts.length}
+              itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
+              onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
               itemName="posts"
             />
           </>
           )}
-        </CardContent>
-      </Card>
+      </DataTablePanel>
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -953,14 +941,13 @@ export default function AdminBlogPage() {
                       }}
                       className="flex-1"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
+                    <RowIconButton
+                      label="Remove document"
                       onClick={() => setDocuments(documents.filter((_, i) => i !== index))}
+                      className="h-10 w-10 text-red-600 hover:bg-red-50"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      <Trash2 />
+                    </RowIconButton>
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="flex-1">
@@ -1006,16 +993,13 @@ export default function AdminBlogPage() {
                   <p className="text-xs text-gray-500">PDF, DOC, DOCX, XLS, XLSX, TXT (MAX. 20MB)</p>
                 </div>
               ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
+              <ToolbarButton
                 onClick={() => setDocuments([...documents, {title: '', url: ''}])}
                 className="mt-2"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus />
                 Add Document
-              </Button>
+              </ToolbarButton>
             </div>
 
             <div className="flex gap-4 border-t pt-4">
@@ -1041,28 +1025,19 @@ export default function AdminBlogPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-                disabled={saving}
-                className="border-gray-300 hover:bg-gray-100 hover:text-gray-900"
-              >
+              <ToolbarButton onClick={() => setIsDialogOpen(false)} disabled={saving}>
                 Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+              </ToolbarButton>
+              <ToolbarButton variant="primary" onClick={handleSave} disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="animate-spin" />
                     Saving...
                   </>
                 ) : (
                   editingPost ? 'Update Post' : 'Create Post'
                 )}
-              </Button>
+              </ToolbarButton>
             </div>
           </div>
         </DialogContent>
@@ -1076,29 +1051,20 @@ export default function AdminBlogPage() {
                 <span className="text-sm font-medium text-gray-700">
                   {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedIds(new Set())}
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <ToolbarButton onClick={() => setSelectedIds(new Set())}>
                   Clear
-                </Button>
+                </ToolbarButton>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
+                  <ToolbarButton variant="danger" disabled={isDeleting}>
                     {isDeleting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="animate-spin" />
                     ) : (
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 />
                     )}
                     Delete ({selectedIds.size})
-                  </Button>
+                  </ToolbarButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white">
                   <AlertDialogHeader>
@@ -1109,10 +1075,10 @@ export default function AdminBlogPage() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteSelected}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className={adminButtonClass('danger')}
                     >
                       Delete
                     </AlertDialogAction>

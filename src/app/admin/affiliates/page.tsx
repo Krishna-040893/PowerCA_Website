@@ -5,8 +5,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
-import {Button  } from '@/components/ui/button'
-import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Search, Trash2  } from 'lucide-react'
+import {RefreshCw, Star, CheckCircle, XCircle, Clock, Eye, Loader2, Calendar, Trash2  } from 'lucide-react'
 import { format } from 'date-fns'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
 import {toast  } from 'sonner'
@@ -25,6 +24,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  DataTablePanel,
+  DataTableToolbar,
+  RowActions,
+  RowIconButton,
+  ToolbarButton,
+  adminButtonClass,
+  dataTableCheckboxClass,
+  dataTableClass,
+} from '@/components/admin/data-table'
 
 interface AffiliateApplication {
   id: string
@@ -96,7 +105,7 @@ export default function AdminAffiliatesPage() {
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -222,13 +231,6 @@ export default function AdminAffiliatesPage() {
     }
   }
 
-  const stats = {
-    total: applications.length,
-    pending: applications.filter(app => app.status === 'pending').length,
-    approved: applications.filter(app => app.status === 'approved').length,
-    rejected: applications.filter(app => app.status === 'rejected').length
-  }
-
   // Filter applications based on search term
   const filteredApplications = applications.filter(app =>
     app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -261,7 +263,7 @@ export default function AdminAffiliatesPage() {
   }, [])
 
   const currentPageItems = filteredApplications
-    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const allCurrentPageSelected = currentPageItems.length > 0 &&
     currentPageItems.every(item => selectedIds.has(item.id))
@@ -331,81 +333,53 @@ export default function AdminAffiliatesPage() {
     <AdminPageWrapper
       title="Affiliate Management"
       description="Review and manage affiliate applications"
-      stats={[
-        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Pending', value: stats.pending, color: 'bg-yellow-100 text-yellow-800' },
-        { label: 'Approved', value: stats.approved, color: 'bg-green-100 text-green-800' },
-        { label: 'Rejected', value: stats.rejected, color: 'bg-red-100 text-red-800' }
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Affiliate Applications</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} affiliate application(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-          <Button
-            onClick={fetchApplications}
-            variant="outline"
-            size="sm"
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      }
     >
-        {/* Main Content Card */}
-        <Card className="shadow-sm border border-gray-100">
-          <CardContent>
-            {/* Search Filter */}
-            <div className="flex gap-2 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Search by name, email, phone..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    setCurrentPage(1) // Reset to first page on search
-                  }}
-                  className="w-full pl-10 pr-4 py-2 text-sm h-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+        <DataTablePanel>
+          <DataTableToolbar
+            className="pb-4"
+            searchValue={searchTerm}
+            onSearchChange={(value) => {
+              setSearchTerm(value)
+              setCurrentPage(1)
+            }}
+            searchPlaceholder="Search by name, email, phone..."
+            actions={
+              <>
+                {selectedIds.size > 0 ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <ToolbarButton variant="danger" disabled={isDeleting}>
+                        {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                        Delete ({selectedIds.size})
+                      </ToolbarButton>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-white">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Affiliate Applications</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedIds.size} affiliate application(s)?
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteSelected}
+                          className={adminButtonClass('danger')}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
+                <ToolbarButton onClick={fetchApplications} disabled={loading}>
+                  <RefreshCw className={loading ? 'animate-spin' : ''} />
+                  Refresh
+                </ToolbarButton>
+              </>
+            }
+          />
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -426,7 +400,7 @@ export default function AdminAffiliatesPage() {
               <>
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
-                  <Table>
+                  <Table className={dataTableClass}>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -434,67 +408,50 @@ export default function AdminAffiliatesPage() {
                           checked={allCurrentPageSelected}
                           onCheckedChange={handleSelectAll}
                           aria-label="Select all"
-                          className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                          className={dataTableCheckboxClass}
                         />
                       </TableHead>
-                      <TableHead className="text-base font-bold">Applicant</TableHead>
-                      <TableHead className="text-base font-bold">Email</TableHead>
-                      <TableHead className="text-base font-bold">Phone</TableHead>
-                      <TableHead className="text-base font-bold">Status</TableHead>
-                      <TableHead className="text-base font-bold">Referral Code</TableHead>
-                      <TableHead className="text-base font-bold">Applied Date</TableHead>
-                      <TableHead className="text-base font-bold">Actions</TableHead>
+                      <TableHead>Applicant</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Referral Code</TableHead>
+                      <TableHead>Applied Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredApplications
-                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                      .map((application) => (
+                    {currentPageItems.map((application) => (
                       <TableRow key={application.id}>
                         <TableCell>
                           <Checkbox
                             checked={selectedIds.has(application.id)}
                             onCheckedChange={(checked) => handleSelectOne(application.id, checked)}
                             aria-label={`Select ${application.name}`}
-                            className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                            className={dataTableCheckboxClass}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">
-                          {application.name}
-                        </TableCell>
+                        <TableCell>{application.name}</TableCell>
                         <TableCell>{application.email}</TableCell>
                         <TableCell>{formatPhone(application.phone)}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusBadgeColor(application.status)}>
-                            <div className="flex items-center gap-1">
-                              {getStatusIcon(application.status)}
-                              {application.status}
-                            </div>
-                          </Badge>
-                        </TableCell>
+                        <TableCell className="capitalize">{application.status}</TableCell>
                         <TableCell>
                           {application.referral_code ? (
-                            <code className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-mono">
-                              {application.referral_code}
-                            </code>
+                            <span className="font-mono">{application.referral_code}</span>
                           ) : (
-                            <span className="text-gray-400 text-sm">Not generated</span>
+                            <span className="text-gray-400">Not generated</span>
                           )}
                         </TableCell>
                         <TableCell>
                           {format(new Date(application.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
+                          <RowActions>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                onClick={() => setSelectedApp(application)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                View
-                              </Button>
+                              <RowIconButton label="View application" onClick={() => setSelectedApp(application)}>
+                                <Eye />
+                              </RowIconButton>
                             </DialogTrigger>
                             <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">
                               <DialogHeader className="border-b pb-3">
@@ -627,29 +584,29 @@ export default function AdminAffiliatesPage() {
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (
                                     <div className="flex justify-end gap-2 pt-4 border-t">
-                                      <Button
-                                        variant="outline"
+                                      <ToolbarButton
+                                        variant="danger"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
                                         disabled={processingId === selectedApp.id}
-                                        className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
                                       >
-                                        <XCircle className="h-4 w-4 mr-1" />
+                                        <XCircle />
                                         Reject
-                                      </Button>
-                                      <Button
+                                      </ToolbarButton>
+                                      <ToolbarButton
+                                        variant="primary"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
                                         disabled={processingId === selectedApp.id}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
                                       >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        <CheckCircle />
                                         Approve
-                                      </Button>
+                                      </ToolbarButton>
                                     </div>
                                   )}
                                 </div>
                               )}
                             </DialogContent>
                           </Dialog>
+                          </RowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -665,13 +622,11 @@ export default function AdminAffiliatesPage() {
                       checked={allCurrentPageSelected}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
-                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                      className={dataTableCheckboxClass}
                     />
                     <span className="text-sm text-gray-600">Select all on this page</span>
                   </div>
-                  {filteredApplications
-                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .map((application) => (
+                  {currentPageItems.map((application) => (
                     <Card key={application.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(application.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -682,7 +637,7 @@ export default function AdminAffiliatesPage() {
                                 checked={selectedIds.has(application.id)}
                                 onCheckedChange={(checked) => handleSelectOne(application.id, checked)}
                                 aria-label={`Select ${application.name}`}
-                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                className={dataTableCheckboxClass}
                               />
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -733,14 +688,13 @@ export default function AdminAffiliatesPage() {
                           {/* Action Button - Enhanced */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button
-                                size="sm"
+                              <ToolbarButton
                                 onClick={() => setSelectedApp(application)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                                className="w-full"
                               >
-                                <Eye className="h-4 w-4 mr-1" />
+                                <Eye />
                                 View
-                              </Button>
+                              </ToolbarButton>
                             </DialogTrigger>
                             <DialogContent className="max-w-[90vw] sm:max-w-2xl bg-white rounded-xl">
                               <DialogHeader className="border-b pb-3">
@@ -873,23 +827,22 @@ export default function AdminAffiliatesPage() {
                                   {/* Action Buttons */}
                                   {selectedApp.status === 'pending' && (
                                     <div className="flex justify-end gap-2 pt-4 border-t">
-                                      <Button
-                                        variant="outline"
+                                      <ToolbarButton
+                                        variant="danger"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'rejected')}
                                         disabled={processingId === selectedApp.id}
-                                        className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
                                       >
-                                        <XCircle className="h-4 w-4 mr-1" />
+                                        <XCircle />
                                         Reject
-                                      </Button>
-                                      <Button
+                                      </ToolbarButton>
+                                      <ToolbarButton
+                                        variant="primary"
                                         onClick={() => handleApplicationAction(selectedApp.id, 'approved')}
                                         disabled={processingId === selectedApp.id}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
                                       >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        <CheckCircle />
                                         Approve
-                                      </Button>
+                                      </ToolbarButton>
                                     </div>
                                   )}
                                 </div>
@@ -906,14 +859,17 @@ export default function AdminAffiliatesPage() {
               <AdminPagination
                 currentPage={currentPage}
                 totalItems={filteredApplications.length}
-                itemsPerPage={ITEMS_PER_PAGE}
+                itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n)
+                  setCurrentPage(1)
+                }}
                 itemName="applications"
               />
             </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
         {selectedIds.size > 0 && !isHeaderVisible && (
@@ -923,29 +879,16 @@ export default function AdminAffiliatesPage() {
                 <span className="text-sm font-medium text-gray-700">
                   {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedIds(new Set())}
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <ToolbarButton onClick={() => setSelectedIds(new Set())} className="h-9">
                   Clear
-                </Button>
+                </ToolbarButton>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="mr-2 h-4 w-4" />
-                    )}
+                  <ToolbarButton variant="danger" disabled={isDeleting} className="h-9">
+                    {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
                     Delete ({selectedIds.size})
-                  </Button>
+                  </ToolbarButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white">
                   <AlertDialogHeader>
@@ -956,10 +899,10 @@ export default function AdminAffiliatesPage() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteSelected}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className={adminButtonClass('danger')}
                     >
                       Delete
                     </AlertDialogAction>

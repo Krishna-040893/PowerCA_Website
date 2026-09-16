@@ -5,52 +5,11 @@ import Link from 'next/link'
 import { SectionHeader } from '@/components/home/section-header'
 import { PageHero, heroButtonClass } from '@/components/layout/page-hero'
 import { Reveal } from '@/components/ui/reveal'
+import { Crown, CodeXml, PenTool, Settings } from 'lucide-react'
 
-// Illustrated avatar, shared by every member card.
-function MemberAvatar({ gender }: { gender: string }) {
-  return gender === 'female' ? (
-    <svg className="w-full h-full" viewBox="0 0 64 64" fill="none">
-      {/* Background */}
-      <circle cx="32" cy="32" r="32" fill="#FDF2F8"/>
-      {/* Hair */}
-      <path d="M16 28C16 18 22 10 32 10C42 10 48 18 48 28C48 30 47.5 32 47 34C46 36 44 38 44 42V46C44 48 43 50 41 50H23C21 50 20 48 20 46V42C20 38 18 36 17 34C16.5 32 16 30 16 28Z" fill="#5C3D2E"/>
-      {/* Face */}
-      <ellipse cx="32" cy="32" rx="12" ry="14" fill="#FDBCB4"/>
-      {/* Hair bangs */}
-      <path d="M20 24C20 20 24 14 32 14C40 14 44 20 44 24C44 26 42 28 40 28C38 28 36 24 32 24C28 24 26 28 24 28C22 28 20 26 20 24Z" fill="#5C3D2E"/>
-      {/* Eyes */}
-      <ellipse cx="27" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
-      <ellipse cx="37" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
-      {/* Smile */}
-      <path d="M28 38C28 38 30 41 32 41C34 41 36 38 36 38" stroke="#E57373" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* Blush */}
-      <ellipse cx="24" cy="35" rx="2.5" ry="1.5" fill="#FFCDD2" opacity="0.6"/>
-      <ellipse cx="40" cy="35" rx="2.5" ry="1.5" fill="#FFCDD2" opacity="0.6"/>
-      {/* Body/Shoulders */}
-      <path d="M18 58C18 50 24 46 32 46C40 46 46 50 46 58V64H18V58Z" fill="#EC4899"/>
-    </svg>
-  ) : (
-    <svg className="w-full h-full" viewBox="0 0 64 64" fill="none">
-      {/* Background */}
-      <circle cx="32" cy="32" r="32" fill="#EFF6FF"/>
-      {/* Hair */}
-      <path d="M18 26C18 18 24 12 32 12C40 12 46 18 46 26C46 28 45 30 44 30C43 30 42 28 42 26C42 20 38 16 32 16C26 16 22 20 22 26C22 28 21 30 20 30C19 30 18 28 18 26Z" fill="#4A3728"/>
-      {/* Face */}
-      <ellipse cx="32" cy="32" rx="12" ry="13" fill="#FDBCB4"/>
-      {/* Short hair top */}
-      <path d="M20 24C20 18 25 14 32 14C39 14 44 18 44 24C44 26 42 26 40 24C38 22 35 20 32 20C29 20 26 22 24 24C22 26 20 26 20 24Z" fill="#4A3728"/>
-      {/* Eyes */}
-      <ellipse cx="27" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
-      <ellipse cx="37" cy="30" rx="2" ry="2.5" fill="#3D3D3D"/>
-      {/* Eyebrows */}
-      <path d="M24 26L29 25" stroke="#4A3728" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M35 25L40 26" stroke="#4A3728" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* Smile */}
-      <path d="M28 38C28 38 30 40 32 40C34 40 36 38 36 38" stroke="#D4A59A" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* Body/Shoulders */}
-      <path d="M18 58C18 50 24 46 32 46C40 46 46 50 46 58V64H18V58Z" fill="#3B82F6"/>
-    </svg>
-  )
+// "Arul Maniam TS" -> "AM": first letters of the first two words.
+function initials(name: string) {
+  return name.split(' ').slice(0, 2).map((word) => word[0]).join('').toUpperCase()
 }
 
 export default function AboutPage() {
@@ -58,37 +17,45 @@ export default function AboutPage() {
   const teamDepartments = [
     {
       title: 'Leadership',
+      icon: Crown,
       members: [
-        { name: 'Arul Maniam TS', role: 'Founder & CEO', gender: 'male' },
-        { name: 'Karthikeyan R', role: 'Manager', gender: 'male' },
-        { name: 'Thirunavukkarasu M', role: 'Manager', gender: 'male' }
+        { name: 'Arul Maniam TS', role: 'Founder & CEO', lead: true },
+        { name: 'Rajendran T', role: 'Partner' },
+        { name: 'Karthikeyan R', role: 'Manager' },
+        { name: 'Thirunavukkarasu M', role: 'Asst. Manager & Developer' }
       ]
     },
     {
       title: 'Development',
+      icon: CodeXml,
       members: [
-        { name: 'Mansur Ali B', role: 'Developer', gender: 'male' },
-        { name: 'Maheshwari R', role: 'Developer', gender: 'female' },
-        { name: 'Vanithamani D', role: 'Developer', gender: 'female' }
+        { name: 'Mansur Ali B', role: 'Developer' },
+        { name: 'Maheshwari R', role: 'Developer' },
+        { name: 'Vanithamani D', role: 'Developer' },
+        { name: 'Satheeshkumar K', role: 'Database Developer' }
       ]
     },
     {
-      title: 'Design & Support',
+      title: 'Design',
+      icon: PenTool,
       members: [
-        { name: 'Karthikeyan G', role: 'Web Designer', gender: 'male' },
-        { name: 'Nikila R', role: 'Web Designer', gender: 'female' },
-        { name: 'Ramajayanthi G', role: 'Customer Support', gender: 'female' }
+        { name: 'Karthikeyan G', role: 'Web Designer' },
+        { name: 'Nikila R', role: 'Web Designer' },
+        { name: 'Dhanveer Banu A', role: 'Web Designer' }
       ]
     },
     {
-      title: 'Operations',
+      title: 'Operations, Support & Marketing',
+      icon: Settings,
       members: [
-        { name: 'Jagadeeswari M', role: 'Admin', gender: 'female' },
-        { name: 'Kaleeswari K', role: 'QA Testing', gender: 'female' },
-        { name: 'Satheeshkumar K', role: 'Database Admin', gender: 'male' }
+        { name: 'Jagadeeswari M', role: 'Admin' },
+        { name: 'Ramajayanthi G', role: 'Customer Support' },
+        { name: 'Kaleeswari K', role: 'QA Testing' },
+        { name: 'Nalini Sofiya G', role: 'Social Media Marketing' }
       ]
     }
   ]
+  const teamSize = teamDepartments.reduce((total, department) => total + department.members.length, 0)
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -226,22 +193,40 @@ export default function AboutPage() {
               <div
                 className="group h-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] transition-shadow duration-200 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_16px_32px_-12px_rgba(16,24,40,0.16)]"
               >
-                {/* Tinted title band, so each card reads as its own group. */}
-                <div className="border-b border-gray-100 bg-gradient-to-b from-blue-50/80 to-blue-50/30 px-5 py-4">
-                  <h3 className="text-base sm:text-lg font-semibold leading-snug text-[#001525] font-inter">
-                    {department.title}
-                  </h3>
+                <div className="flex items-center gap-3.5 border-b border-gray-100 px-5 py-5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1D6FB8]">
+                    <department.icon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-medium leading-snug text-[#001525] font-inter">
+                      {department.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-500">{department.members.length} members</p>
+                  </div>
                 </div>
 
                 <ul className="divide-y divide-gray-100 px-5">
                   {department.members.map((member) => (
-                    <li key={member.name} className="flex items-center gap-3 py-3">
-                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-gray-100">
-                        <MemberAvatar gender={member.gender} />
-                      </div>
+                    <li key={member.name} className="flex items-center gap-3 py-3.5">
+                      <span
+                        className={
+                          member.lead
+                            ? 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D91EB] text-xs font-semibold text-white'
+                            : 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-[#1D6FB8]'
+                        }
+                      >
+                        {initials(member.name)}
+                      </span>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-[#001525]">{member.name}</p>
-                        <p className="truncate text-xs text-gray-500">{member.role}</p>
+                        <p className="truncate text-sm sm:text-[15px] font-medium text-[#001525]">{member.name}</p>
+                        <p className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500">
+                          <span className="truncate">{member.role}</span>
+                          {member.lead && (
+                            <span className="shrink-0 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#1D6FB8]">
+                              Lead
+                            </span>
+                          )}
+                        </p>
                       </div>
                     </li>
                   ))}
@@ -253,7 +238,7 @@ export default function AboutPage() {
           {/* Team Stats - one strip, divided, rather than four separate boxes */}
           <Reveal className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 divide-y divide-x divide-gray-100 sm:divide-y-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]">
             {[
-              { value: '12+', label: 'Team Members' },
+              { value: String(teamSize), label: 'Team Members' },
               { value: '20+', label: 'Years Experience' },
               { value: '4', label: 'Departments' },
               { value: '24/7', label: 'Support' },

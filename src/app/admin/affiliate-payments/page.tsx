@@ -1,9 +1,15 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
@@ -13,13 +19,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import {
   IndianRupee,
-  Clock,
   CheckCircle,
-  Search,
   RefreshCw,
   Trash2,
   Loader2,
@@ -31,6 +34,16 @@ import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DataTableFilters,
+  DataTablePanel,
+  DataTableToolbar,
+  FilterMenu,
+  ToolbarButton,
+  adminButtonClass,
+  dataTableCheckboxClass,
+  dataTableClass,
+} from '@/components/admin/data-table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,14 +94,6 @@ interface AffiliatePayment {
   }
 }
 
-interface PaymentSummary {
-  totalPayments: number
-  totalAmount: number
-  totalCommission: number
-  pendingCommission: number
-  paidCommission: number
-}
-
 interface AffiliateGroup {
   affiliate_id: string
   affiliate_name: string
@@ -102,18 +107,11 @@ interface AffiliateGroup {
 
 export default function AffiliatePaymentsPage() {
   const [payments, setPayments] = useState<AffiliatePayment[]>([])
-  const [summary, setSummary] = useState<PaymentSummary>({
-    totalPayments: 0,
-    totalAmount: 0,
-    totalCommission: 0,
-    pendingCommission: 0,
-    paidCommission: 0
-  })
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Expanded groups
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
@@ -144,7 +142,6 @@ export default function AffiliatePaymentsPage() {
 
       if (data.success) {
         setPayments(data.payments)
-        setSummary(data.summary)
       }
     } catch (error) {
       console.error('Failed to fetch payments:', error)
@@ -217,8 +214,8 @@ export default function AffiliatePaymentsPage() {
   // Pagination on groups
   const totalGroups = affiliateGroups.length
   const currentPageGroups = affiliateGroups.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   )
 
   const toggleGroup = (affiliateId: string) => {
@@ -433,94 +430,66 @@ export default function AffiliatePaymentsPage() {
     <AdminPageWrapper
       title="Affiliate Payments"
       description="Track and manage affiliate commissions and payments"
-      stats={[
-        { label: 'Affiliates', value: affiliateGroups.length, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Pending', value: formatCurrency(summary.pendingCommission), color: 'bg-orange-100 text-orange-800' },
-        { label: 'Paid', value: formatCurrency(summary.paidCommission), color: 'bg-green-100 text-green-800' },
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Affiliate Payments</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} payment(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-          <Button
-            onClick={fetchPayments}
-            variant="outline"
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      }
     >
       <div>
-        <Card className="shadow-sm border border-gray-100">
-          <CardContent>
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search by affiliate, customer, email..."
-                  value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+        <DataTablePanel>
+            <DataTableToolbar
+              searchValue={searchTerm}
+              onSearchChange={(value) => { setSearchTerm(value); setCurrentPage(1) }}
+              searchPlaceholder="Search by affiliate, customer, email..."
+              actions={
+                <>
+                  {selectedIds.size > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <ToolbarButton variant="danger" disabled={isDeleting}>
+                          {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                          Delete ({selectedIds.size})
+                        </ToolbarButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Affiliate Payments</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} payment(s)?
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteSelected}
+                            className={adminButtonClass('danger')}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <ToolbarButton variant="outline" onClick={fetchPayments} disabled={loading}>
+                    <RefreshCw className={loading ? 'animate-spin' : ''} />
+                    Refresh
+                  </ToolbarButton>
+                </>
+              }
+            />
 
-              <Select value={statusFilter} onValueChange={(value) => {
-                setStatusFilter(value)
-                setCurrentPage(1)
-              }}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200 bg-white">
-                  <SelectValue placeholder="Filter by status">
-                    {statusFilter === 'all' && 'All Statuses'}
-                    {statusFilter === 'completed' && 'Paid'}
-                    {statusFilter === 'pending' && 'Pending'}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-white z-50">
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="completed">Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <DataTableFilters>
+              <FilterMenu
+                label="Status"
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value)
+                  setCurrentPage(1)
+                }}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 'completed', label: 'Paid' },
+                  { value: 'pending', label: 'Pending' },
+                ]}
+              />
+            </DataTableFilters>
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -534,12 +503,12 @@ export default function AffiliatePaymentsPage() {
             ) : (
               <>
                 {/* Select All */}
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg mb-3">
+                <div className="flex items-center gap-3 border-y border-gray-200 px-4 py-3 mb-3">
                   <Checkbox
                     checked={allCurrentPageSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
-                    className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                    className={dataTableCheckboxClass}
                   />
                   <span className="text-sm text-gray-600">Select all on this page</span>
                 </div>
@@ -555,7 +524,7 @@ export default function AffiliatePaymentsPage() {
                       <Card
                         key={group.affiliate_id}
                         className={`border shadow-sm transition-shadow ${
-                          groupSelected ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'
+                          groupSelected ? 'border-gray-900 bg-gray-50' : 'border-gray-200'
                         }`}
                       >
                         <CardContent className="p-0">
@@ -569,7 +538,7 @@ export default function AffiliatePaymentsPage() {
                                 checked={groupSelected}
                                 onCheckedChange={(checked) => handleSelectGroup(group, checked)}
                                 aria-label={`Select ${group.affiliate_name}`}
-                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                className={dataTableCheckboxClass}
                               />
                             </div>
 
@@ -629,13 +598,9 @@ export default function AffiliatePaymentsPage() {
                               {/* Pay Button */}
                               {group.totalCommissionDue > 0 && (
                                 <div onClick={(e) => e.stopPropagation()}>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handlePayGroupClick(group)}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                  >
+                                  <ToolbarButton variant="primary" onClick={() => handlePayGroupClick(group)}>
                                     Pay {formatCurrency(group.totalCommissionDue)}
-                                  </Button>
+                                  </ToolbarButton>
                                 </div>
                               )}
                             </div>
@@ -646,96 +611,61 @@ export default function AffiliatePaymentsPage() {
                             <div className="border-t border-gray-200">
                               {/* Desktop Table */}
                               <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full text-sm">
-                                  <thead className="bg-gray-50">
-                                    <tr>
-                                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 w-12">S.No</th>
-                                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Customer</th>
-                                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Firm</th>
-                                      <th className="px-4 py-2 text-center text-xs font-semibold text-gray-600">Orders</th>
-                                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-600">Paid</th>
-                                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-600">Due</th>
-                                      <th className="px-4 py-2 text-center text-xs font-semibold text-gray-600">Status</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-gray-100">
+                                <Table className={dataTableClass}>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-12">S.No</TableHead>
+                                      <TableHead>Customer</TableHead>
+                                      <TableHead>Firm</TableHead>
+                                      <TableHead className="text-center">Orders</TableHead>
+                                      <TableHead className="text-right">Paid</TableHead>
+                                      <TableHead className="text-right">Due</TableHead>
+                                      <TableHead>Status</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
                                     {group.customers.map((customer, idx) => {
                                       const due = getCustomerDue(customer)
                                       const paidCount = customer.paid_order_count || 0
                                       const processingCount = customer.processing_order_count || 0
                                       const waitingCount = customer.pending_order_count || 0
                                       const allOrdersPaid = waitingCount === 0 && processingCount === 0 && due === 0 && customer.commission_amount > 0
+                                      const orderSummary = [
+                                        paidCount > 0 && `${paidCount} paid`,
+                                        processingCount > 0 && `${processingCount} processing`,
+                                        waitingCount > 0 && `${waitingCount} waiting`,
+                                      ].filter(Boolean).join(', ')
                                       return (
-                                        <tr key={customer.id} className="hover:bg-gray-50/50">
-                                          <td className="px-4 py-2.5 text-gray-500">{idx + 1}</td>
-                                          <td className="px-4 py-2.5">
-                                            <div>
-                                              <p className="font-medium text-gray-900">{customer.customer_name}</p>
-                                              <p className="text-xs text-gray-500">{customer.customer_email}</p>
-                                            </div>
-                                          </td>
-                                          <td className="px-4 py-2.5 text-gray-700">
-                                            {customer.customer_firm_name || '-'}
-                                          </td>
-                                          <td className="px-4 py-2.5 text-center">
-                                            <div className="flex flex-col items-center gap-0.5">
-                                              {paidCount > 0 && (
-                                                <span className="text-xs text-green-600 font-medium">{paidCount} paid</span>
-                                              )}
-                                              {processingCount > 0 && (
-                                                <span className="text-xs text-blue-600 font-medium">{processingCount} processing</span>
-                                              )}
-                                              {waitingCount > 0 && (
-                                                <span className="text-xs text-orange-600 font-medium">{waitingCount} waiting</span>
-                                              )}
-                                              {paidCount === 0 && processingCount === 0 && waitingCount === 0 && (
-                                                <span className="text-gray-400">-</span>
-                                              )}
-                                            </div>
-                                          </td>
-                                          <td className="px-4 py-2.5 text-right">
-                                            {(customer.paid_commission && customer.paid_commission > 0) ? (
-                                              <span className="font-semibold text-green-600">
-                                                {formatCurrency(customer.paid_commission)}
-                                              </span>
-                                            ) : (
-                                              <span className="text-gray-400">-</span>
-                                            )}
-                                          </td>
-                                          <td className="px-4 py-2.5 text-right">
-                                            {due > 0 ? (
-                                              <span className="font-semibold text-orange-600">
-                                                {formatCurrency(due)}
-                                              </span>
-                                            ) : (
-                                              <span className="text-gray-400">-</span>
-                                            )}
-                                          </td>
-                                          <td className="px-4 py-2.5 text-center">
-                                            {allOrdersPaid ? (
-                                              <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100">
-                                                <CheckCircle className="w-3 h-3 mr-1" />
-                                                Paid
-                                              </Badge>
-                                            ) : due > 0 ? (
-                                              <Badge className="bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-100">
-                                                <Clock className="w-3 h-3 mr-1" />
-                                                Pending
-                                              </Badge>
-                                            ) : waitingCount > 0 ? (
-                                              <Badge className="bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-100">
-                                                <Clock className="w-3 h-3 mr-1" />
-                                                {waitingCount} Waiting
-                                              </Badge>
-                                            ) : (
-                                              <span className="text-gray-400 text-xs">-</span>
-                                            )}
-                                          </td>
-                                        </tr>
+                                        <TableRow key={customer.id}>
+                                          <TableCell>{idx + 1}</TableCell>
+                                          <TableCell>
+                                            <p>{customer.customer_name}</p>
+                                            <p className="text-xs text-gray-500">{customer.customer_email}</p>
+                                          </TableCell>
+                                          <TableCell>{customer.customer_firm_name || '-'}</TableCell>
+                                          <TableCell className="text-center">{orderSummary || '-'}</TableCell>
+                                          <TableCell className="text-right">
+                                            {(customer.paid_commission && customer.paid_commission > 0)
+                                              ? formatCurrency(customer.paid_commission)
+                                              : '-'}
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                            {due > 0 ? formatCurrency(due) : '-'}
+                                          </TableCell>
+                                          <TableCell>
+                                            {allOrdersPaid
+                                              ? 'Paid'
+                                              : due > 0
+                                                ? 'Pending'
+                                                : waitingCount > 0
+                                                  ? `${waitingCount} Waiting`
+                                                  : '-'}
+                                          </TableCell>
+                                        </TableRow>
                                       )
                                     })}
-                                  </tbody>
-                                </table>
+                                  </TableBody>
+                                </Table>
                               </div>
 
                               {/* Mobile Cards */}
@@ -814,14 +744,14 @@ export default function AffiliatePaymentsPage() {
                 <AdminPagination
                   currentPage={currentPage}
                   totalItems={totalGroups}
-                  itemsPerPage={ITEMS_PER_PAGE}
+                  itemsPerPage={itemsPerPage}
                   onPageChange={setCurrentPage}
+                  onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
                   itemName="affiliates"
                 />
               </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* Pay Group Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -888,7 +818,7 @@ export default function AffiliatePaymentsPage() {
                       id="payment-mode"
                       value={paymentMode}
                       onChange={(e) => setPaymentMode(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-sm"
                     >
                       <option value="">Select payment mode</option>
                       <option value="UPI">UPI</option>
@@ -911,7 +841,7 @@ export default function AffiliatePaymentsPage() {
                       value={referenceNo}
                       onChange={(e) => setReferenceNo(e.target.value)}
                       placeholder="Transaction/UTR No."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-sm"
                     />
                   </div>
                 </div>
@@ -926,40 +856,38 @@ export default function AffiliatePaymentsPage() {
                     type="datetime-local"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm cursor-pointer"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-sm cursor-pointer"
                   />
                 </div>
               </div>
             )}
 
             <DialogFooter className="border-t pt-3">
-              <Button
+              <ToolbarButton
                 type="button"
-                variant="outline"
                 onClick={() => setDialogOpen(false)}
                 disabled={submitting}
-                className="border-gray-300 hover:bg-gray-50"
               >
                 Cancel
-              </Button>
-              <Button
+              </ToolbarButton>
+              <ToolbarButton
                 type="button"
+                variant="primary"
                 onClick={handleSubmitGroupPayment}
                 disabled={submitting || !paymentMode || !referenceNo || !paymentDate}
-                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 {submitting ? (
                   <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    <RefreshCw className="animate-spin" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <CheckCircle />
                     Pay {selectedGroup ? formatCurrency(selectedGroup.totalCommissionDue) : ''}
                   </>
                 )}
-              </Button>
+              </ToolbarButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

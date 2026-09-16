@@ -6,12 +6,18 @@ import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
 import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
-import {Button  } from '@/components/ui/button'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
-import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock, Search  } from 'lucide-react'
+import {Loader2, RefreshCw, CheckCircle, XCircle, Eye, Clock  } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
-import { Input } from '@/components/ui/input'
+import {
+  DataTablePanel,
+  DataTableToolbar,
+  RowActions,
+  RowIconButton,
+  ToolbarButton,
+  dataTableClass,
+} from '@/components/admin/data-table'
 
 interface AffiliateApplication {
   id: string
@@ -47,7 +53,7 @@ export default function AdminAffiliateApprovalPage() {
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -118,6 +124,9 @@ export default function AdminAffiliateApprovalPage() {
     )
   }
 
+  const currentPageItems = filteredApplications
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -134,31 +143,21 @@ export default function AdminAffiliateApprovalPage() {
     <AdminPageWrapper
       title="Approved Affiliates"
       description="View and manage approved affiliate partners"
-      stats={[
-        { label: 'Total', value: filteredApplications.length, color: 'bg-green-100 text-green-800' }
-      ]}
-      actions={
-        <Button onClick={fetchApplications} variant="outline" size="sm">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      }
     >
-        {/* Applications Table */}
-        <Card className="shadow-sm border border-gray-100">
-          <CardContent>
-            {/* Search Filter */}
-            <div className="flex gap-2 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by name, email, phone, company, city, state, or referral code..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-            </div>
+        <DataTablePanel>
+          <DataTableToolbar
+            className="pb-4"
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search by name, email, phone, company, city, state, or referral code..."
+            actions={
+              <ToolbarButton onClick={fetchApplications}>
+                <RefreshCw className={loading ? 'animate-spin' : ''} />
+                Refresh
+              </ToolbarButton>
+            }
+          />
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
@@ -178,53 +177,51 @@ export default function AdminAffiliateApprovalPage() {
               <>
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
-                  <Table>
+                  <Table className={dataTableClass}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-base font-bold">Applicant</TableHead>
-                      <TableHead className="text-base font-bold">Company</TableHead>
-                      <TableHead className="text-base font-bold">Location & Phone</TableHead>
-                      <TableHead className="text-base font-bold">Expected Leads</TableHead>
-                      <TableHead className="text-base font-bold">Status</TableHead>
-                      <TableHead className="text-base font-bold">Applied Date</TableHead>
-                      <TableHead className="text-base font-bold">Actions</TableHead>
+                      <TableHead>Applicant</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Location & Phone</TableHead>
+                      <TableHead>Expected Leads</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Applied Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredApplications
-                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                      .map((application) => (
+                    {currentPageItems.map((application) => (
                       <TableRow key={application.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{application.name || 'Unknown'}</p>
-                            <p className="text-sm text-gray-500">{application.email}</p>
+                            <p>{application.name || 'Unknown'}</p>
+                            <p className="text-gray-500">{application.email}</p>
                           </div>
                         </TableCell>
                         <TableCell>{application.company_name || '-'}</TableCell>
                         <TableCell>
                           <div>
-                            <p className="text-sm">{application.phone || '-'}</p>
-                            <p className="text-xs text-gray-500">{application.city}, {application.state}</p>
+                            <p>{application.phone || '-'}</p>
+                            <p className="text-gray-500">{application.city}, {application.state}</p>
                           </div>
                         </TableCell>
                         <TableCell>{application.monthly_leads || '-'}</TableCell>
-                        <TableCell>{getStatusBadge(application.status)}</TableCell>
+                        <TableCell className="capitalize">{application.status}</TableCell>
                         <TableCell>
                           {format(new Date(application.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedApplication(application)
-                              setShowReviewDialog(true)
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
+                          <RowActions>
+                            <RowIconButton
+                              label="View affiliate"
+                              onClick={() => {
+                                setSelectedApplication(application)
+                                setShowReviewDialog(true)
+                              }}
+                            >
+                              <Eye />
+                            </RowIconButton>
+                          </RowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -234,9 +231,7 @@ export default function AdminAffiliateApprovalPage() {
 
               {/* Mobile Card View - Professional Design */}
               <div className="md:hidden space-y-3">
-                  {filteredApplications
-                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .map((application) => (
+                  {currentPageItems.map((application) => (
                     <Card key={application.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -285,18 +280,16 @@ export default function AdminAffiliateApprovalPage() {
                           </div>
 
                           {/* Action Button - Enhanced */}
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <ToolbarButton
                             onClick={() => {
                               setSelectedApplication(application)
                               setShowReviewDialog(true)
                             }}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                            className="w-full"
                           >
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye />
                             View
-                          </Button>
+                          </ToolbarButton>
                         </div>
                       </CardContent>
                     </Card>
@@ -307,14 +300,17 @@ export default function AdminAffiliateApprovalPage() {
               <AdminPagination
                 currentPage={currentPage}
                 totalItems={filteredApplications.length}
-                itemsPerPage={ITEMS_PER_PAGE}
+                itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n)
+                  setCurrentPage(1)
+                }}
                 itemName="affiliates"
               />
             </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* Review Dialog - Enhanced */}
         <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
@@ -387,12 +383,9 @@ export default function AdminAffiliateApprovalPage() {
             )}
 
             <DialogFooter className="border-t pt-3">
-              <Button
-                onClick={() => setShowReviewDialog(false)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+              <ToolbarButton onClick={() => setShowReviewDialog(false)}>
                 Close
-              </Button>
+              </ToolbarButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
