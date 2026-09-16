@@ -6,8 +6,7 @@ import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import Link from 'next/link'
 import Image from 'next/image'
 import {cn  } from '@/lib/utils'
-import { Users, LogOut, Menu, X, ChevronLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2, Images } from 'lucide-react'
-import {Button  } from '@/components/ui/button'
+import { Users, LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronDown, LayoutDashboard, Calendar, FileText, UserCheck, UsersRound, CreditCard, ShoppingCart, Globe, Mail, Wallet, Handshake, FileSignature, Building2, Images } from 'lucide-react'
 import {Avatar, AvatarFallback  } from '@/components/ui/avatar'
 import {DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,6 @@ import {DropdownMenu,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu'
-import {Badge  } from '@/components/ui/badge'
 import {Loader2  } from 'lucide-react'
 
 interface AdminSidebarLayoutProps {
@@ -112,6 +110,23 @@ const getBaseNavigation = (): NavSection[] => [
   },
 ]
 
+/** Title for the breadcrumb: the nav label for this route, else the tidied path segment. */
+function pageTitleFor(pathname: string): string {
+  for (const section of getBaseNavigation()) {
+    for (const item of section.items) {
+      const sub = item.subItems?.find(s => s.href === pathname)
+      if (sub) {
+        return sub.title
+      }
+      if (item.href === pathname) {
+        return item.title
+      }
+    }
+  }
+  const segment = pathname.split('/').filter(Boolean).pop() || 'dashboard'
+  return segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
 export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
   const { isAuthenticated, isLoading, adminUser, handleLogout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -148,7 +163,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
     }
   })
   const pathname = usePathname()
-  const _router = useRouter()
+  const router = useRouter()
 
   // Fetch counts from API
   useEffect(() => {
@@ -261,89 +276,92 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
     return null
   }
 
+  // Labels show when the sidebar is expanded, or always inside the mobile drawer
+  const showLabels = !collapsed || sidebarOpen
+  const initial = adminUser.username?.[0]?.toUpperCase() || 'A'
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-white font-inter">
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-gray-900/40 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar - Full width on mobile */}
       <aside
         className={cn(
-          'fixed lg:relative inset-y-0 left-0 z-50 flex flex-col bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 transition-all duration-300 h-screen shadow-2xl',
-          'w-72 lg:w-64', // Full width on mobile, standard on desktop
-          collapsed && 'lg:w-20', // Only collapse on desktop
+          'fixed lg:relative inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-[#FAFAFB] transition-all duration-300',
+          'w-72 lg:w-64',
+          collapsed && 'lg:w-[72px]',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Logo Section - Mobile optimized */}
-        <div className="flex items-center justify-between h-[60px] sm:h-[65px] px-4 bg-slate-900/50 border-b border-slate-700/50 backdrop-blur-sm">
-          {(!collapsed || sidebarOpen) && (
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center">
-                <Image
-                  src="/images/powerca-logo.png"
-                  alt="Power CA Logo"
-                  width={36}
-                  height={36}
-                  className="object-contain"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-base sm:text-lg text-white">Power CA</span>
-                <span className="text-xs text-slate-400 -mt-1">Admin Panel</span>
-              </div>
+        {/* Brand */}
+        <div className={cn('flex h-14 items-center gap-2 px-4', !showLabels && 'lg:justify-center lg:px-0')}>
+          <Image
+            src="/images/powerca-logo.png"
+            alt="Power CA Logo"
+            width={28}
+            height={28}
+            className="h-7 w-7 shrink-0 object-contain"
+          />
+          {showLabels && (
+            <div className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="text-[15px] font-semibold text-gray-900">Power CA</span>
+              <span className="text-[11px] text-gray-500">Admin Panel</span>
             </div>
           )}
-          {collapsed && !sidebarOpen && (
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto">
-              <Image
-                src="/images/powerca-logo.png"
-                alt="Power CA Logo"
-                width={32}
-                height={32}
-                className="object-contain"
-              />
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             onClick={toggleCollapsed}
-            className="hidden lg:flex hover:bg-slate-800/60 text-slate-300 hover:text-white rounded-lg transition-all duration-300"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className={cn(
+              'hidden h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-200/70 hover:text-gray-700 lg:flex',
+              !showLabels && 'lg:absolute lg:-right-3.5 lg:top-4 lg:h-7 lg:w-7 lg:rounded-full lg:border lg:border-gray-200 lg:bg-white lg:shadow-sm'
+            )}
           >
-            <ChevronLeft className={cn('h-4 w-4 transition-transform duration-300', collapsed && 'rotate-180')} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+            <ChevronsLeft className={cn('h-4 w-4 transition-transform duration-300', collapsed && 'rotate-180')} />
+          </button>
+          <button
+            type="button"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden hover:bg-slate-800/60 text-slate-300 hover:text-white rounded-lg transition-all duration-300"
+            aria-label="Close menu"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-200/70 lg:hidden"
           >
             <X className="h-5 w-5" />
-          </Button>
+          </button>
         </div>
 
-        {/* Removed User Info Section - Going directly to navigation */}
-
-        {/* Navigation - Mobile optimized */}
-        <nav className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 sm:space-y-6 custom-scrollbar">
+        {/* Navigation */}
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-3 custom-scrollbar">
           {navigation.map((section, sectionIdx) => (
             <div key={sectionIdx}>
-              {(!collapsed || sidebarOpen) && (
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">
+              {showLabels ? (
+                <h3 className="mb-1.5 px-2.5 text-[11px] font-medium text-gray-400">
                   {section.title}
                 </h3>
+              ) : (
+                sectionIdx > 0 && <div className="mx-auto mb-2 h-px w-6 bg-gray-200" />
               )}
-              <div className="space-y-1.5">
+              <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href || (item.subItems && item.subItems.some(sub => pathname === sub.href))
                   const isExpanded = expandedMenus.includes(item.title)
                   const hasSubItems = item.subItems && item.subItems.length > 0
+
+                  const rowClass = cn(
+                    'group relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors',
+                    !showLabels && 'lg:justify-center lg:px-0',
+                    isActive
+                      ? 'bg-white font-semibold text-gray-900 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-gray-200'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  )
+                  const iconClass = cn(
+                    'h-4 w-4 flex-shrink-0',
+                    isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-700'
+                  )
 
                   // If item has sub-items, render as expandable menu
                   if (hasSubItems) {
@@ -357,30 +375,22 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                                 : [...prev, item.title]
                             )
                           }}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-3 py-2.5 sm:py-2.5 rounded-xl transition-all duration-300 group relative',
-                            isActive
-                              ? 'bg-slate-800/80 text-white'
-                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                          )}
+                          title={showLabels ? undefined : item.title}
+                          className={rowClass}
                         >
-                          <item.icon className={cn(
-                            'h-5 w-5 flex-shrink-0 transition-transform duration-300',
-                            isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
-                          )} />
-                          {(!collapsed || sidebarOpen) && (
+                          <item.icon className={iconClass} />
+                          {showLabels && (
                             <>
-                              <span className="flex-1 text-sm font-medium text-left">{item.title}</span>
+                              <span className="flex-1 text-left">{item.title}</span>
                               <ChevronDown className={cn(
-                                'h-4 w-4 transition-transform duration-300',
+                                'h-3.5 w-3.5 text-gray-400 transition-transform duration-200',
                                 isExpanded && 'rotate-180'
                               )} />
                             </>
                           )}
                         </button>
-                        {/* Sub-items */}
-                        {isExpanded && (!collapsed || sidebarOpen) && item.subItems && (
-                          <div className="ml-4 mt-1 space-y-1 border-l border-slate-700 pl-3">
+                        {isExpanded && showLabels && item.subItems && (
+                          <div className="ml-[18px] mt-0.5 space-y-0.5 border-l border-gray-200 pl-3">
                             {item.subItems.map((subItem) => {
                               const isSubActive = pathname === subItem.href
                               return (
@@ -389,13 +399,12 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                                   href={subItem.href}
                                   onClick={() => setSidebarOpen(false)}
                                   className={cn(
-                                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200',
+                                    'block rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                                     isSubActive
-                                      ? 'bg-blue-600 text-white'
-                                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+                                      ? 'bg-indigo-50 font-medium text-indigo-700'
+                                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                                   )}
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
                                   {subItem.title}
                                 </Link>
                               )
@@ -406,41 +415,27 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
                     )
                   }
 
-                  // Regular menu item without sub-items
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setSidebarOpen(false)} // Close mobile menu on click
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2.5 sm:py-2.5 rounded-xl transition-all duration-300 group relative',
-                        isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
-                          : 'text-slate-300 hover:bg-slate-800/60 hover:text-white hover:scale-[1.01] active:scale-[0.98]'
-                      )}
+                      onClick={() => setSidebarOpen(false)}
+                      title={showLabels ? undefined : item.title}
+                      className={rowClass}
                     >
-                      <item.icon className={cn(
-                        'h-5 w-5 flex-shrink-0 transition-transform duration-300',
-                        isActive ? 'text-white scale-110' : 'text-slate-400 group-hover:text-white group-hover:scale-105'
-                      )} />
-                      {(!collapsed || sidebarOpen) && (
+                      <item.icon className={iconClass} />
+                      {showLabels && (
                         <>
-                          <span className="flex-1 text-sm font-medium">{item.title}</span>
+                          <span className="flex-1 truncate">{item.title}</span>
                           {item.badge !== undefined && (
-                            <Badge
-                              variant={item.badgeVariant || 'default'}
-                              className={cn(
-                                "ml-auto text-xs px-2 py-0.5 font-semibold",
-                                isActive ? 'bg-white/20 text-white border-white/30' : 'bg-slate-700 text-slate-200 border-slate-600'
-                              )}
-                            >
+                            <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-md border border-gray-200 bg-white px-1.5 text-[11px] font-medium text-gray-600">
                               {item.badge}
-                            </Badge>
+                            </span>
                           )}
                         </>
                       )}
-                      {collapsed && !sidebarOpen && item.badge !== undefined && (
-                        <div className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full shadow-sm animate-pulse" />
+                      {!showLabels && item.badge !== undefined && (
+                        <span className="absolute right-3 top-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
                       )}
                     </Link>
                   )
@@ -450,74 +445,92 @@ export function AdminSidebarLayout({ children }: AdminSidebarLayoutProps) {
           ))}
         </nav>
 
-        {/* Logout Button - Mobile optimized */}
-        <div className="p-3 sm:p-4 border-t border-slate-700/50 bg-slate-900/50">
-          <Button
-            variant="ghost"
-            className={cn(
-              'w-full justify-start text-red-400 hover:text-white hover:bg-red-600/90 py-2.5 sm:py-2.5 font-medium rounded-xl transition-all duration-300 hover:scale-[1.02]',
-              collapsed && !sidebarOpen && 'justify-center'
+        {/* Account */}
+        <div className="border-t border-gray-200 p-3">
+          <div className={cn('flex items-center gap-2.5 rounded-lg px-1.5 py-1.5', !showLabels && 'lg:justify-center lg:px-0')}>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600">
+              {initial}
+            </span>
+            {showLabels && (
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-medium text-gray-900">{adminUser.username || 'Admin'}</div>
+                {adminUser.email && <div className="truncate text-[11px] text-gray-500">{adminUser.email}</div>}
+              </div>
             )}
-            onClick={handleLogoutWithCleanup}
-          >
-            <LogOut className="h-5 w-5" />
-            {(!collapsed || sidebarOpen) && <span className="ml-3">Logout</span>}
-          </Button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header - Mobile optimized */}
-        <header className="bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 h-[60px] sm:h-[65px] flex items-center shadow-md">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden hover:bg-gray-100 -ml-2"
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex h-14 items-center justify-between gap-3 border-b border-gray-200 bg-white px-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              className="-ml-1 flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="hidden items-center gap-1 sm:flex">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Go back"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
               >
-                <Menu className="h-5 w-5" />
-              </Button>
-
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => router.forward()}
+                aria-label="Go forward"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
-
-            {/* Right Section - Mobile optimized */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-1 sm:space-x-2 hover:bg-gray-100 -mr-2 sm:mr-0">
-                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                      <AvatarFallback className="bg-primary-100 text-primary-700 text-xs sm:text-sm font-medium">
-                        {adminUser.username?.[0]?.toUpperCase() || 'A'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:block text-sm font-medium">{adminUser.username || 'Admin'}</span>
-                    <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 sm:w-56 bg-white shadow-lg">
-                  <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Users className="mr-2 h-4 w-4" />
-                    <span className="text-sm">Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogoutWithCleanup} className="text-red-600 cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span className="text-sm">Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <nav aria-label="Breadcrumb" className="ml-1 flex min-w-0 items-center gap-1.5 text-sm">
+              <Link href="/admin" className="text-gray-400 transition-colors hover:text-gray-700">Admin</Link>
+              <span className="text-gray-300">/</span>
+              <span className="truncate font-medium text-gray-900">{pageTitleFor(pathname)}</span>
+            </nav>
           </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-gray-100"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-indigo-50 text-xs font-semibold text-indigo-600">
+                    {initial}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden text-sm font-medium text-gray-900 md:block">{adminUser.username || 'Admin'}</span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 sm:w-56 bg-white shadow-lg">
+              <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer">
+                <Users className="mr-2 h-4 w-4" />
+                <span className="text-sm">Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogoutWithCleanup} className="text-red-600 cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span className="text-sm">Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
-        {/* Page Content - Mobile optimized */}
-        <main className="flex-1 overflow-y-auto bg-white bg-dot-pattern p-2 sm:p-3">
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-[#F7F7F8] p-2 sm:p-3">
           {children}
         </main>
       </div>

@@ -6,20 +6,20 @@ import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Loader2, Search, Eye, RefreshCw, CheckCircle, XCircle, Clock, RotateCw, Tag, Percent } from 'lucide-react'
+import { Loader2, Eye, RefreshCw, CheckCircle, XCircle, Clock, RotateCw, Tag, Percent } from 'lucide-react'
 import { toast } from 'sonner'
+import { AdminPagination } from '@/components/admin/admin-pagination'
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+  DataTablePanel,
+  DataTableToolbar,
+  RowActions,
+  RowIconButton,
+  RowMenu,
+  SearchField,
+  ToolbarButton,
+  dataTableClass,
+} from '@/components/admin/data-table'
 
 interface IndividualPayment {
   id: string
@@ -92,7 +92,7 @@ export default function AdminPaymentsPage() {
   const [dialogSearchTerm, setDialogSearchTerm] = useState('')
   const [syncingPayment, setSyncingPayment] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const fetchPayments = useCallback(async () => {
     if (!isAuthenticated) {
@@ -187,14 +187,8 @@ export default function AdminPaymentsPage() {
   }, [payments, searchTerm])
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentPayments = filteredPayments.slice(startIndex, endIndex)
-
-  const goToPage = (page: number) => {
-    setCurrentPage(page)
-  }
+  const currentPayments = filteredPayments.slice(startIndex, startIndex + itemsPerPage)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -233,7 +227,28 @@ export default function AdminPaymentsPage() {
     }
   }
 
-  const getPlanTypeBadge = (planType: string | null | undefined) => {
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'captured':
+        return 'Captured'
+      case 'authorized':
+        return 'Authorized'
+      case 'paid':
+      case 'success':
+        return 'Paid'
+      case 'failed':
+        return 'Failed'
+      case 'refunded':
+        return 'Refunded'
+      case 'created':
+      case 'pending':
+        return 'Created'
+      default:
+        return status
+    }
+  }
+
+  const getPlanTypeBadge =(planType: string | null | undefined) => {
     if (!planType) return <Badge variant="outline" className="text-gray-500">N/A</Badge>
 
     switch (planType) {
@@ -332,23 +347,6 @@ export default function AdminPaymentsPage() {
     setDialogSearchTerm('')  // Reset search when opening dialog
   }
 
-  const getStats = () => {
-    // Count total individual payments
-    const allPayments = payments.flatMap(p => p.all_payments || [])
-    const total = allPayments.length
-    // Include both Razorpay statuses (captured, authorized) and legacy statuses (paid, success)
-    const paid = allPayments.filter(p => ['paid', 'captured', 'authorized', 'success'].includes(p.status.toLowerCase())).length
-    const failed = allPayments.filter(p => p.status.toLowerCase() === 'failed').length
-    const pending = allPayments.filter(p => ['created', 'pending'].includes(p.status.toLowerCase())).length
-    const totalAmount = allPayments
-      .filter(p => ['paid', 'captured', 'authorized', 'success'].includes(p.status.toLowerCase()))
-      .reduce((sum, p) => sum + p.amount, 0)
-
-    return { total, paid, failed, pending, totalAmount, totalCustomers: payments.length }
-  }
-
-  const stats = getStats()
-
   const syncPaymentStatus = async (payment: Payment) => {
     if (!payment.payment_id && !payment.order_id) {
       toast.error('No payment ID or order ID found')
@@ -402,34 +400,20 @@ export default function AdminPaymentsPage() {
     <AdminPageWrapper
       title="Payments"
       description="View and manage all payment transactions"
-      stats={[
-        { label: 'Customers', value: stats.totalCustomers, color: 'bg-purple-100 text-purple-800' },
-        { label: 'Orders', value: stats.total, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Successful', value: stats.paid, color: 'bg-green-100 text-green-800' },
-        { label: 'Revenue', value: `₹${stats.totalAmount.toFixed(0)}`, color: 'bg-indigo-100 text-indigo-800' }
-      ]}
-      actions={
-        <Button onClick={fetchPayments} variant="outline" size="sm">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      }
     >
-      {/* Payments Table - Enhanced */}
-      <Card className="shadow-sm border border-gray-100">
-        <CardContent>
-          {/* Search Filter - Enhanced Mobile */}
-          <div className="flex gap-2 mb-5">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search by name, email, order ID, firm, location..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+      <DataTablePanel>
+        <DataTableToolbar
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search by name, email, order ID, firm, location..."
+          actions={
+            <ToolbarButton onClick={fetchPayments}>
+              <RefreshCw className={loading ? 'animate-spin' : ''} />
+              Refresh
+            </ToolbarButton>
+          }
+          className="mb-4"
+        />
 
           {/* Table / Cards */}
           {loading ? (
@@ -445,76 +429,44 @@ export default function AdminPaymentsPage() {
             <>
               {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
-                <Table>
+                <Table className={dataTableClass}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-base font-bold">Customer</TableHead>
-                      <TableHead className="text-base font-bold text-center">Orders</TableHead>
-                      <TableHead className="text-base font-bold">Locations</TableHead>
-                      <TableHead className="text-base font-bold">Total Amount</TableHead>
-                      <TableHead className="text-base font-bold">Status</TableHead>
-                      <TableHead className="text-base font-bold">Last Payment</TableHead>
-                      <TableHead className="text-base font-bold">Actions</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead className="text-center">Orders</TableHead>
+                      <TableHead>Locations</TableHead>
+                      <TableHead>Total Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Payment</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {currentPayments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{payment.name}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-[180px]">{payment.email}</p>
-                          </div>
+                          <p className="font-medium">{payment.name}</p>
+                          <p className="text-xs text-gray-500 truncate max-w-[180px]">{payment.email}</p>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 border border-blue-300">
-                            {payment.total_orders}
-                          </span>
+                        <TableCell className="text-center">{payment.total_orders}</TableCell>
+                        <TableCell className="max-w-[200px]">
+                          {payment.locations && payment.locations.length > 0 ? payment.locations.join(', ') : '-'}
+                        </TableCell>
+                        <TableCell>₹{payment.total_amount.toFixed(0)}</TableCell>
+                        <TableCell>
+                          {payment.statuses?.length ? payment.statuses.map(getStatusLabel).join(', ') : '-'}
                         </TableCell>
                         <TableCell>
-                          <p className="text-sm text-blue-600 font-medium max-w-[200px]">
-                            {payment.locations && payment.locations.length > 0
-                              ? payment.locations.join(', ')
-                              : <span className="text-gray-400">-</span>
-                            }
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <p className="font-bold text-green-600">₹{payment.total_amount.toFixed(0)}</p>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {payment.statuses && payment.statuses.map((status, idx) => (
-                              <span key={idx}>{getStatusBadge(status)}</span>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                          <p>{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
                           <p className="text-xs text-gray-500">{new Date(payment.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => syncPaymentStatus(payment)}
-                              disabled={syncingPayment === payment.id}
-                              className="bg-white hover:bg-gray-50"
-                              title="Sync status from Razorpay"
-                            >
-                              <RotateCw className={`h-4 w-4 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />
-                            </Button>
+                          <RowActions>
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleOpenPaymentDialog(payment)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
+                                <RowIconButton label="View details" onClick={() => handleOpenPaymentDialog(payment)}>
+                                  <Eye />
+                                </RowIconButton>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-[90vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
@@ -560,15 +512,12 @@ export default function AdminPaymentsPage() {
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                           <h4 className="font-medium">Locations ({getPaymentsGroupedByLocation(selectedPayment.all_payments || []).length})</h4>
                                           {/* Search inside dialog */}
-                                          <div className="relative">
-                                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
-                                            <Input
-                                              placeholder="Search locations..."
-                                              value={dialogSearchTerm}
-                                              onChange={(e) => setDialogSearchTerm(e.target.value)}
-                                              className="pl-8 h-8 text-xs w-full sm:w-[200px] border-gray-200"
-                                            />
-                                          </div>
+                                          <SearchField
+                                            value={dialogSearchTerm}
+                                            onChange={setDialogSearchTerm}
+                                            placeholder="Search locations..."
+                                            className="sm:w-[260px]"
+                                          />
                                         </div>
                                       </div>
                                       <div className="divide-y max-h-[300px] overflow-y-auto">
@@ -634,7 +583,17 @@ export default function AdminPaymentsPage() {
                                 )}
                               </DialogContent>
                             </Dialog>
-                          </div>
+                            <RowMenu
+                              items={[
+                                {
+                                  label: syncingPayment === payment.id ? 'Syncing...' : 'Sync status from Razorpay',
+                                  icon: <RotateCw className={`h-4 w-4 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />,
+                                  onSelect: () => syncPaymentStatus(payment),
+                                  disabled: syncingPayment === payment.id,
+                                },
+                              ]}
+                            />
+                          </RowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -685,27 +644,22 @@ export default function AdminPaymentsPage() {
 
                         {/* Actions */}
                         <div className="flex gap-2 pt-2 border-t">
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <ToolbarButton
+                            variant="primary"
                             onClick={() => syncPaymentStatus(payment)}
                             disabled={syncingPayment === payment.id}
-                            className="flex-1 bg-white hover:bg-gray-50"
+                            className="flex-1"
                             title="Sync status from Razorpay"
                           >
-                            <RotateCw className={`h-4 w-4 mr-2 ${syncingPayment === payment.id ? 'animate-spin' : ''}`} />
+                            <RotateCw className={syncingPayment === payment.id ? 'animate-spin' : ''} />
                             Sync
-                          </Button>
+                          </ToolbarButton>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenPaymentDialog(payment)}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
+                              <ToolbarButton onClick={() => handleOpenPaymentDialog(payment)} className="flex-1">
+                                <Eye />
                                 View All
-                              </Button>
+                              </ToolbarButton>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
@@ -745,15 +699,11 @@ export default function AdminPaymentsPage() {
                                       <div className="flex flex-col gap-2">
                                         <h4 className="font-medium">Locations ({getPaymentsGroupedByLocation(selectedPayment.all_payments || []).length})</h4>
                                         {/* Search inside dialog */}
-                                        <div className="relative">
-                                          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
-                                          <Input
-                                            placeholder="Search locations..."
-                                            value={dialogSearchTerm}
-                                            onChange={(e) => setDialogSearchTerm(e.target.value)}
-                                            className="pl-8 h-8 text-xs w-full border-gray-200"
-                                          />
-                                        </div>
+                                        <SearchField
+                                          value={dialogSearchTerm}
+                                          onChange={setDialogSearchTerm}
+                                          placeholder="Search locations..."
+                                        />
                                       </div>
                                     </div>
                                     <div className="divide-y max-h-[250px] overflow-y-auto">
@@ -822,61 +772,16 @@ export default function AdminPaymentsPage() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t pt-4">
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredPayments.length)} of {filteredPayments.length} results
-                  </div>
-                  <Pagination>
-                    <PaginationContent className="flex-wrap justify-center">
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => currentPage > 1 && goToPage(currentPage - 1)}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-
-                      {[...Array(totalPages)].map((_, index) => {
-                        const page = index + 1
-                        if (
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        ) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                onClick={() => goToPage(page)}
-                                isActive={currentPage === page}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          )
-                        } else if (page === currentPage - 2 || page === currentPage + 2) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          )
-                        }
-                        return null
-                      })}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => currentPage < totalPages && goToPage(currentPage + 1)}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredPayments.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
+              />
             </>
           )}
-        </CardContent>
-      </Card>
+      </DataTablePanel>
     </AdminPageWrapper>
   )
 }

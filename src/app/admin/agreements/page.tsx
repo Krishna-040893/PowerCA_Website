@@ -6,12 +6,20 @@ import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, RefreshCw, Download, Search, FileText, User, Mail, Phone, FileCheck, Clock, AlertCircle, Upload, CheckCircle2 } from 'lucide-react'
+import { Loader2, RefreshCw, Download, FileText, User, Mail, Phone, FileCheck, Clock, AlertCircle, Upload, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { AdminPagination } from '@/components/admin/admin-pagination'
+import {
+  dataTableClass,
+  DataTableFilters,
+  DataTablePanel,
+  DataTableToolbar,
+  FilterMenu,
+  RowActions,
+  RowIconButton,
+  RowMenu,
+  ToolbarButton,
+} from '@/components/admin/data-table'
 import { formatPhone } from '@/lib/utils'
 
 interface Agreement {
@@ -39,17 +47,10 @@ export default function AdminAgreementsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('signed')
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [uploadingCompanySignId, setUploadingCompanySignId] = useState<string | null>(null)
   const companySignFileInputRef = useRef<HTMLInputElement>(null)
   const [selectedAgreementId, setSelectedAgreementId] = useState<string | null>(null)
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    draft: 0,
-    signed: 0
-  })
-
   const fetchAgreements = useCallback(async () => {
     if (!isAuthenticated) {
       setLoading(false)
@@ -78,7 +79,6 @@ export default function AdminAgreementsPage() {
 
       if (data.success) {
         setAgreements(data.agreements)
-        setStats(data.stats)
       } else {
         throw new Error(data.error || 'Failed to fetch agreements')
       }
@@ -106,6 +106,12 @@ export default function AdminAgreementsPage() {
       default:
         return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Not Started</Badge>
     }
+  }
+
+  const statusLabels: Record<string, string> = {
+    signed: 'Signed',
+    draft: 'Draft',
+    pending: 'Not Started',
   }
 
   const getStatusIcon = (status: string) => {
@@ -232,6 +238,9 @@ export default function AdminAgreementsPage() {
     return matchesSearch && matchesStatus
   })
 
+  const currentPageItems = filteredAgreements
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -248,59 +257,38 @@ export default function AdminAgreementsPage() {
     <AdminPageWrapper
       title="Client Agreements"
       description="Manage client service agreement documents"
-      stats={[
-        { label: 'Total', value: stats.draft + stats.signed, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Draft', value: stats.draft, color: 'bg-yellow-100 text-yellow-800' },
-        { label: 'Signed', value: stats.signed, color: 'bg-green-100 text-green-800' }
-      ]}
-      actions={
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchAgreements}
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportToCSV}
-            disabled={loading || agreements.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
-      }
     >
-      <Card className="shadow-sm border border-gray-100">
-        <CardContent className="pt-0">
-          {/* Search and Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search by name, email, or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="signed">Signed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <DataTablePanel>
+          <DataTableToolbar
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search by name, email, or phone"
+            actions={
+              <>
+                <ToolbarButton onClick={fetchAgreements} disabled={loading}>
+                  <RefreshCw className={loading ? 'animate-spin' : ''} />
+                  Refresh
+                </ToolbarButton>
+                <ToolbarButton onClick={exportToCSV} disabled={loading || agreements.length === 0}>
+                  <Download />
+                  Export CSV
+                </ToolbarButton>
+              </>
+            }
+          />
+
+          <DataTableFilters>
+            <FilterMenu
+              label="Status"
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'All Status' },
+                { value: 'draft', label: 'Draft' },
+                { value: 'signed', label: 'Signed' },
+              ]}
+            />
+          </DataTableFilters>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -327,33 +315,24 @@ export default function AdminAgreementsPage() {
             <>
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
-                <Table>
+                <Table className={dataTableClass}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-base font-bold">User</TableHead>
-                      <TableHead className="text-base font-bold">Contact</TableHead>
-                      <TableHead className="text-base font-bold">Status</TableHead>
-                      <TableHead className="text-base font-bold">Signing Method</TableHead>
-                      <TableHead className="text-base font-bold">Downloaded</TableHead>
-                      <TableHead className="text-base font-bold">Uploaded</TableHead>
-                      <TableHead className="text-base font-bold">Actions</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Signing Method</TableHead>
+                      <TableHead>Downloaded</TableHead>
+                      <TableHead>Uploaded</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAgreements
-                      .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                      .map((agreement) => (
+                    {currentPageItems.map((agreement) => (
                       <TableRow key={agreement.id}>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <User className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm">{agreement.name || '-'}</p>
-                              <p className="text-xs text-gray-500">{agreement.role}</p>
-                            </div>
-                          </div>
+                          <p>{agreement.name || '-'}</p>
+                          <p className="text-xs text-gray-500">{agreement.role}</p>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
@@ -369,76 +348,51 @@ export default function AdminAgreementsPage() {
                             )}
                           </div>
                         </TableCell>
+                        <TableCell>{statusLabels[agreement.status] ?? statusLabels.pending}</TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(agreement.status)}
-                            {getStatusBadge(agreement.status)}
-                          </div>
+                          {agreement.signingMethod ? (agreement.signingMethod === 'digital' ? 'DSC' : 'Manual') : '-'}
                         </TableCell>
                         <TableCell>
-                          {agreement.signingMethod ? (
-                            <Badge className={agreement.signingMethod === 'digital' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-blue-100 text-blue-800 border-blue-200'}>
-                              {agreement.signingMethod === 'digital' ? 'DSC' : 'Manual'}
-                            </Badge>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          {agreement.downloadedAt ? format(new Date(agreement.downloadedAt), 'dd MMM yyyy') : '-'}
                         </TableCell>
                         <TableCell>
-                          {agreement.downloadedAt ? (
-                            <span className="text-sm text-gray-600">
-                              {format(new Date(agreement.downloadedAt), 'dd MMM yyyy')}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          {agreement.uploadedAt ? format(new Date(agreement.uploadedAt), 'dd MMM yyyy') : '-'}
                         </TableCell>
                         <TableCell>
-                          {agreement.uploadedAt ? (
-                            <span className="text-sm text-gray-600">
-                              {format(new Date(agreement.uploadedAt), 'dd MMM yyyy')}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
+                          <RowActions>
                             {/* Download: company-signed file if available, otherwise client's signed file */}
                             {(agreement.companyFilePath || agreement.filePath) && (
-                              <Button
-                                size="sm"
+                              <RowIconButton
+                                label="Download"
                                 onClick={() => handleViewDocument((agreement.companyFilePath || agreement.filePath)!)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
-                                <Download className="h-4 w-4 mr-1" />
-                                Download
-                              </Button>
+                                <Download />
+                              </RowIconButton>
                             )}
-                            {agreement.status === 'signed' && !agreement.companySignedAt ? (
-                              <Button
-                                size="sm"
-                                onClick={() => triggerCompanySignUpload(agreement.id)}
-                                disabled={uploadingCompanySignId === agreement.id}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                {uploadingCompanySignId === agreement.id ? (
-                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                ) : (
-                                  <Upload className="h-4 w-4 mr-1" />
-                                )}
-                                Company Sign
-                              </Button>
+                            {uploadingCompanySignId === agreement.id ? (
+                              <RowIconButton label="Uploading company signed agreement" disabled>
+                                <Loader2 className="animate-spin" />
+                              </RowIconButton>
+                            ) : agreement.status === 'signed' && !agreement.companySignedAt ? (
+                              <RowMenu
+                                items={[
+                                  {
+                                    label: 'Upload company signed',
+                                    icon: <Upload className="h-4 w-4" />,
+                                    onSelect: () => triggerCompanySignUpload(agreement.id),
+                                  },
+                                ]}
+                              />
                             ) : agreement.companySignedAt ? (
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                              <span className="ml-1 inline-flex items-center gap-1 whitespace-nowrap">
+                                <CheckCircle2 className="h-4 w-4" />
                                 Company Signed
-                              </Badge>
+                              </span>
                             ) : null}
                             {!agreement.filePath && !agreement.companySignedAt && (
-                              <span className="text-sm text-gray-400">-</span>
+                              <span className="text-gray-400">-</span>
                             )}
-                          </div>
+                          </RowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -448,9 +402,7 @@ export default function AdminAgreementsPage() {
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-3">
-                {filteredAgreements
-                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                  .map((agreement) => (
+                {currentPageItems.map((agreement) => (
                   <Card key={agreement.id} className="border border-gray-200 shadow-sm">
                     <CardContent className="p-4">
                       <div className="space-y-3">
@@ -514,29 +466,24 @@ export default function AdminAgreementsPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-2">
                           {(agreement.companyFilePath || agreement.filePath) && (
-                            <Button
-                              size="sm"
+                            <ToolbarButton
                               onClick={() => handleViewDocument((agreement.companyFilePath || agreement.filePath)!)}
-                              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                              className="w-full"
                             >
-                              <Download className="h-4 w-4 mr-1" />
+                              <Download />
                               Download Document
-                            </Button>
+                            </ToolbarButton>
                           )}
                           {agreement.status === 'signed' && !agreement.companySignedAt ? (
-                            <Button
-                              size="sm"
+                            <ToolbarButton
+                              variant="primary"
                               onClick={() => triggerCompanySignUpload(agreement.id)}
                               disabled={uploadingCompanySignId === agreement.id}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                              className="w-full"
                             >
-                              {uploadingCompanySignId === agreement.id ? (
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-1" />
-                              )}
+                              {uploadingCompanySignId === agreement.id ? <Loader2 className="animate-spin" /> : <Upload />}
                               Upload Company Signed
-                            </Button>
+                            </ToolbarButton>
                           ) : agreement.companySignedAt ? (
                             <Badge className="bg-green-100 text-green-800 border-green-200 justify-center py-1">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -550,20 +497,17 @@ export default function AdminAgreementsPage() {
                 ))}
               </div>
 
-              {/* Pagination - only show when more than 10 entries */}
-              {filteredAgreements.length > ITEMS_PER_PAGE && (
-                <AdminPagination
-                  currentPage={currentPage}
-                  totalItems={filteredAgreements.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={setCurrentPage}
-                  itemName="agreements"
-                />
-              )}
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredAgreements.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
+                itemName="agreements"
+              />
             </>
           )}
-        </CardContent>
-      </Card>
+      </DataTablePanel>
 
       {/* Hidden file input for company-signed upload */}
       <input

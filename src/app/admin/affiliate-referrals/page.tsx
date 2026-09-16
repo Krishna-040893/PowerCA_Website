@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -12,11 +10,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  Card,
-  CardContent,
-} from '@/components/ui/card'
-import {
-  Search,
   RefreshCw,
   ChevronDown,
   ChevronRight,
@@ -36,6 +29,16 @@ import { AdminPageWrapper } from '@/components/admin/admin-page-wrapper'
 import { toast } from 'sonner'
 import { AdminPagination } from '@/components/admin/admin-pagination'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DataTablePanel,
+  DataTableToolbar,
+  RowActions,
+  RowIconButton,
+  ToolbarButton,
+  adminButtonClass,
+  dataTableCheckboxClass,
+  dataTableClass,
+} from '@/components/admin/data-table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -217,11 +220,11 @@ function OrderDetailDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs font-bold w-[40px] px-2">S.No</TableHead>
-                    <TableHead className="text-xs font-bold px-2">Location</TableHead>
-                    <TableHead className="text-xs font-bold px-2">Date</TableHead>
-                    <TableHead className="text-xs font-bold text-right px-2">Amount</TableHead>
-                    <TableHead className="text-xs font-bold text-center px-2">Status</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-500 w-[40px] px-2">S.No</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-500 px-2">Location</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-500 px-2">Date</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-500 text-right px-2">Amount</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-500 text-center px-2">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -269,25 +272,21 @@ function OrderDetailDialog({
                     {(dialogPage - 1) * DIALOG_ITEMS_PER_PAGE + 1}–{Math.min(dialogPage * DIALOG_ITEMS_PER_PAGE, orders.length)} of {orders.length}
                   </span>
                   <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    <ToolbarButton
                       onClick={() => setDialogPage(p => Math.max(1, p - 1))}
                       disabled={dialogPage === 1}
-                      className="h-7 px-2 text-xs"
+                      className="h-7 px-2"
                     >
                       Prev
-                    </Button>
+                    </ToolbarButton>
                     <span className="text-xs text-gray-600 px-2">{dialogPage}/{totalPages}</span>
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    <ToolbarButton
                       onClick={() => setDialogPage(p => Math.min(totalPages, p + 1))}
                       disabled={dialogPage === totalPages}
-                      className="h-7 px-2 text-xs"
+                      className="h-7 px-2"
                     >
                       Next
-                    </Button>
+                    </ToolbarButton>
                   </div>
                 </div>
               )}
@@ -314,20 +313,20 @@ function OrderDetailDialog({
                       onKeyDown={handleKeyDown}
                       disabled={submitting}
                       placeholder="Enter commission for new orders"
-                      className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
-                  <Button
+                  <ToolbarButton
+                    variant="primary"
                     onClick={handleSubmit}
                     disabled={submitting || !commission.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 px-4"
                   >
                     {submitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="animate-spin" />
                     ) : (
                       'Submit'
                     )}
-                  </Button>
+                  </ToolbarButton>
                 </div>
               </div>
             ) : !hasPaidCommission ? (
@@ -344,20 +343,20 @@ function OrderDetailDialog({
                     onKeyDown={handleKeyDown}
                     disabled={submitting}
                     placeholder="Enter total commission"
-                    className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
-                <Button
+                <ToolbarButton
+                  variant="primary"
                   onClick={handleSubmit}
                   disabled={submitting || !commission.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 px-4"
                 >
                   {submitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="animate-spin" />
                   ) : (
                     'Submit'
                   )}
-                </Button>
+                </ToolbarButton>
               </div>
             ) : null}
           </>
@@ -373,7 +372,7 @@ export default function AffiliateReferralsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedAffiliate, setExpandedAffiliate] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
   const [viewReferral, setViewReferral] = useState<Referral | null>(null)
@@ -429,30 +428,14 @@ export default function AffiliateReferralsPage() {
     }).format(amount)
   }
 
-  const getCommissionStatusBadge = (referral: Referral) => {
+  const getCommissionStatusText = (referral: Referral) => {
     const orders = referral.payments || []
 
     // No orders — use simple status
     if (orders.length === 0) {
-      if (referral.commission_status === 'paid') {
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100">
-            Paid
-          </Badge>
-        )
-      }
-      if (referral.commission_status === 'processing') {
-        return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100">
-            Processing
-          </Badge>
-        )
-      }
-      return (
-        <Badge variant="outline" className="text-gray-500 border-gray-300">
-          Pending
-        </Badge>
-      )
+      if (referral.commission_status === 'paid') return 'Paid'
+      if (referral.commission_status === 'processing') return 'Processing'
+      return 'Pending'
     }
 
     // Calculate per-order statuses
@@ -471,48 +454,19 @@ export default function AffiliateReferralsPage() {
       else waitingCount++
     })
 
-    // All paid — single green badge
-    if (paidCount === orders.length) {
-      return (
-        <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100">
-          Paid
-        </Badge>
-      )
-    }
+    if (paidCount === orders.length) return 'Paid'
 
     // Show breakdown
-    return (
-      <div className="flex flex-wrap gap-1">
-        {paidCount > 0 && (
-          <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100 text-[10px] px-1.5 py-0.5">
-            {paidCount} Paid
-          </Badge>
-        )}
-        {processingCount > 0 && (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100 text-[10px] px-1.5 py-0.5">
-            {processingCount} Processing
-          </Badge>
-        )}
-        {waitingCount > 0 && (
-          <Badge className="bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-100 text-[10px] px-1.5 py-0.5">
-            {waitingCount} Pending
-          </Badge>
-        )}
-      </div>
-    )
+    return [
+      paidCount > 0 && `${paidCount} Paid`,
+      processingCount > 0 && `${processingCount} Processing`,
+      waitingCount > 0 && `${waitingCount} Pending`,
+    ]
+      .filter(Boolean)
+      .join(' · ')
   }
 
   // Calculate totals
-  const totalStats = data.reduce(
-    (acc, group) => ({
-      total: acc.total + group.stats.total,
-      pending: acc.pending + group.stats.pending,
-      completed: acc.completed + group.stats.completed,
-      converted: acc.converted + group.stats.converted,
-    }),
-    { total: 0, pending: 0, completed: 0, converted: 0 }
-  )
-
   // Get all referrals from the current expanded affiliate for selection purposes
   const getCurrentExpandedReferrals = () => {
     if (!expandedAffiliate) return []
@@ -577,78 +531,51 @@ export default function AffiliateReferralsPage() {
     <AdminPageWrapper
       title="Affiliate Referrals"
       description="View all referral customers grouped by affiliate"
-      stats={[
-        { label: 'Total', value: totalStats.total, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Pending', value: totalStats.pending, color: 'bg-orange-100 text-orange-800' },
-        { label: 'Completed', value: totalStats.completed, color: 'bg-green-100 text-green-800' },
-        { label: 'Affiliates', value: data.length, color: 'bg-purple-100 text-purple-800' }
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Referrals</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} referral(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-          <Button
-            onClick={fetchReferrals}
-            variant="outline"
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      }
     >
       <div>
-        {/* Main Content */}
-        <Card className="shadow-sm border border-gray-100">
-          <CardContent>
-            {/* Search Filter */}
-            <div className="flex gap-2 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search affiliates, customers, codes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-            </div>
+        <DataTablePanel>
+            <DataTableToolbar
+              searchValue={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search affiliates, customers, codes..."
+              className="mb-5"
+              actions={
+                <>
+                  {selectedIds.size > 0 ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <ToolbarButton variant="danger" disabled={isDeleting}>
+                          {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                          Delete ({selectedIds.size})
+                        </ToolbarButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Referrals</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} referral(s)?
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteSelected}
+                            className={adminButtonClass('danger')}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : null}
+                  <ToolbarButton variant="outline" onClick={fetchReferrals} disabled={loading}>
+                    <RefreshCw className={loading ? 'animate-spin' : ''} />
+                    Refresh
+                  </ToolbarButton>
+                </>
+              }
+            />
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -663,7 +590,7 @@ export default function AffiliateReferralsPage() {
               <>
               <div className="space-y-4">
                 {filteredData
-                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                   .map((group) => (
                   <div key={group.affiliate_id} className="border rounded-lg overflow-hidden">
                     {/* Affiliate Header */}
@@ -727,7 +654,7 @@ export default function AffiliateReferralsPage() {
                     {/* Referrals Table */}
                     {expandedAffiliate === group.affiliate_id && (
                       <div className="bg-white overflow-x-auto">
-                        <Table>
+                        <Table className={dataTableClass}>
                           <TableHeader>
                             <TableRow>
                               <TableHead className="w-[50px]">
@@ -735,86 +662,56 @@ export default function AffiliateReferralsPage() {
                                   checked={allCurrentReferralsSelected}
                                   onCheckedChange={handleSelectAll}
                                   aria-label="Select all"
-                                  className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                  className={dataTableCheckboxClass}
                                 />
                               </TableHead>
-                              <TableHead className="text-base font-bold w-[60px]">S.No</TableHead>
-                              <TableHead className="text-base font-bold">Customer ID</TableHead>
-                              <TableHead className="text-base font-bold">Customer Name</TableHead>
-                              <TableHead className="text-base font-bold">Email</TableHead>
-                              <TableHead className="text-base font-bold">Phone</TableHead>
-                              <TableHead className="text-base font-bold text-center">Orders</TableHead>
-                              <TableHead className="text-base font-bold text-right">Collection</TableHead>
-                              <TableHead className="text-base font-bold">Commission Status</TableHead>
-                              <TableHead className="text-base font-bold text-center">Actions</TableHead>
+                              <TableHead className="w-[60px]">S.No</TableHead>
+                              <TableHead>Customer ID</TableHead>
+                              <TableHead>Customer Name</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Phone</TableHead>
+                              <TableHead className="text-center">Orders</TableHead>
+                              <TableHead className="text-right">Collection</TableHead>
+                              <TableHead>Commission Status</TableHead>
+                              <TableHead>Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {group.referrals.map((referral, index) => (
-                              <TableRow key={referral.id} className={selectedIds.has(referral.id) ? 'bg-blue-50/50' : ''}>
+                              <TableRow key={referral.id} className={selectedIds.has(referral.id) ? 'bg-gray-50' : ''}>
                                 <TableCell>
                                   <Checkbox
                                     checked={selectedIds.has(referral.id)}
                                     onCheckedChange={(checked) => handleSelectOne(referral.id, checked)}
                                     aria-label={`Select ${referral.referred_name || referral.referred_email}`}
-                                    className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                    className={dataTableCheckboxClass}
                                   />
                                 </TableCell>
-                                <TableCell className="font-medium text-gray-500">
-                                  {index + 1}
-                                </TableCell>
-                                <TableCell>
-                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                    {referral.customer_id}
-                                  </code>
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {referral.referred_name || 'N/A'}
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm text-gray-600">
-                                    {referral.referred_email}
-                                  </span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm text-gray-600">
-                                    {referral.referred_phone || 'N/A'}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  {referral.payment_count > 0 ? (
-                                    <span className="font-semibold text-gray-900">
-                                      {referral.payment_count}
-                                    </span>
-                                  ) : (
-                                    <span className="text-gray-400">0</span>
-                                  )}
-                                </TableCell>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>{referral.customer_id}</TableCell>
+                                <TableCell>{referral.referred_name || 'N/A'}</TableCell>
+                                <TableCell>{referral.referred_email}</TableCell>
+                                <TableCell>{referral.referred_phone || 'N/A'}</TableCell>
+                                <TableCell className="text-center">{referral.payment_count || 0}</TableCell>
                                 <TableCell className="text-right">
-                                  {referral.total_payment_amount ? (
-                                    <span className="font-semibold text-green-700">
-                                      {formatCurrency(Math.round(referral.total_payment_amount / 1.18))}
-                                    </span>
-                                  ) : (
-                                    <span className="text-gray-400">-</span>
-                                  )}
+                                  {referral.total_payment_amount
+                                    ? formatCurrency(Math.round(referral.total_payment_amount / 1.18))
+                                    : '-'}
                                 </TableCell>
+                                <TableCell>{getCommissionStatusText(referral)}</TableCell>
                                 <TableCell>
-                                  {getCommissionStatusBadge(referral)}
-                                </TableCell>
-                                <TableCell className="text-center">
                                   {referral.payment_count > 0 ? (
-                                    <Button
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setViewReferral(referral)
-                                      }}
-                                      className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
-                                    >
-                                      <Eye className="w-4 h-4 mr-1.5" />
-                                      View
-                                    </Button>
+                                    <RowActions>
+                                      <RowIconButton
+                                        label="View orders"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setViewReferral(referral)
+                                        }}
+                                      >
+                                        <Eye />
+                                      </RowIconButton>
+                                    </RowActions>
                                   ) : (
                                     <span className="text-gray-400">-</span>
                                   )}
@@ -833,14 +730,14 @@ export default function AffiliateReferralsPage() {
               <AdminPagination
                 currentPage={currentPage}
                 totalItems={filteredData.length}
-                itemsPerPage={ITEMS_PER_PAGE}
+                itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
                 itemName="affiliates"
               />
               </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
       </div>
 
       {/* Order Detail Dialog */}

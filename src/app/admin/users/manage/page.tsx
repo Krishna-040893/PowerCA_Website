@@ -4,15 +4,23 @@ import {useState, useEffect, useCallback  } from 'react'
 import {useAdminAuth  } from '@/hooks/useAdminAuth'
 import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
 import { AdminPagination } from '@/components/admin/admin-pagination'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DataTableFilters,
+  DataTablePanel,
+  DataTableToolbar,
+  FilterMenu,
+  RowActions,
+  RowIconButton,
+  RowMenu,
+  ToolbarButton,
+  dataTableClass,
+} from '@/components/admin/data-table'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
-import {Button  } from '@/components/ui/button'
-import {Input  } from '@/components/ui/input'
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle  } from '@/components/ui/dialog'
 import {Label  } from '@/components/ui/label'
-import {Loader2, RefreshCw, Users, UserCheck, Search, Shield, UserPlus, AlertCircle, Eye, Edit } from 'lucide-react'
+import {Loader2, RefreshCw, AlertCircle, Eye, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import {toast  } from 'sonner'
 
@@ -42,7 +50,7 @@ export default function AdminUserManagementPage() {
   const [newRole, setNewRole] = useState('')
   const [updating, setUpdating] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -141,20 +149,13 @@ export default function AdminUserManagementPage() {
   })
 
   // Pagination
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage)
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, roleFilter])
-
-  const stats = {
-    total: users.length,
-    professionals: users.filter(u => u.role === 'Professional').length,
-    students: users.filter(u => u.role === 'Student').length,
-    affiliates: users.filter(u => u.is_affiliate).length
-  }
 
   if (authLoading) {
     return (
@@ -172,100 +173,34 @@ export default function AdminUserManagementPage() {
     <AdminPageWrapper
       title="User Management"
       description="Manage user accounts and permissions"
-      actions={
-        <Button onClick={fetchUsers} variant="outline" size="sm">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      }
     >
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Professionals</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.professionals}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Students</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.students}</p>
-                </div>
-                <UserPlus className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Affiliates</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.affiliates}</p>
-                </div>
-                <Shield className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Users Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>All Users</CardTitle>
-                <CardDescription>Manage user accounts and permissions</CardDescription>
-              </div>
-              <Button onClick={fetchUsers} variant="outline" size="sm">
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+        <DataTablePanel>
+          <DataTableToolbar
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search by name, email, or username..."
+            actions={
+              <ToolbarButton onClick={fetchUsers}>
+                <RefreshCw className={loading ? 'animate-spin' : ''} />
                 Refresh
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Search and Filter */}
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search by name, email, or username..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="Professional">Professional</SelectItem>
-                  <SelectItem value="Student">Student</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              </ToolbarButton>
+            }
+          />
+
+          <DataTableFilters>
+            <FilterMenu
+              label="Role"
+              value={roleFilter}
+              onValueChange={setRoleFilter}
+              allValue="all"
+              options={[
+                { value: 'all', label: 'All Roles' },
+                { value: 'Professional', label: 'Professional' },
+                { value: 'Student', label: 'Student' },
+                { value: 'Admin', label: 'Admin' },
+              ]}
+            />
+          </DataTableFilters>
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -284,65 +219,58 @@ export default function AdminUserManagementPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className={dataTableClass}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-base font-bold">Name</TableHead>
-                      <TableHead className="text-base font-bold">Email</TableHead>
-                      <TableHead className="text-base font-bold">Username</TableHead>
-                      <TableHead className="text-base font-bold">Role</TableHead>
-                      <TableHead className="text-base font-bold">Type</TableHead>
-                      <TableHead className="text-base font-bold">Status</TableHead>
-                      <TableHead className="text-base font-bold">Joined</TableHead>
-                      <TableHead className="text-base font-bold">Actions</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedUsers.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell>{user.name}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.username}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.role === 'Admin' ? 'destructive' : 'default'}>
-                            {user.role}
-                          </Badge>
-                        </TableCell>
+                        <TableCell>{user.role}</TableCell>
                         <TableCell>
                           {user.professional_type || '-'}
                         </TableCell>
-                        <TableCell>
-                          {user.is_affiliate && (
-                            <Badge variant="secondary">Affiliate</Badge>
-                          )}
-                        </TableCell>
+                        <TableCell>{user.is_affiliate && 'Affiliate'}</TableCell>
                         <TableCell>
                           {format(new Date(user.created_at), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedUser(user)
-                                setShowDetailsDialog(true)
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                          <RowActions>
+                            <RowIconButton
+                              label="Edit role"
                               onClick={() => {
                                 setSelectedUser(user)
                                 setNewRole(user.role)
                                 setShowRoleDialog(true)
                               }}
                             >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
+                              <Pencil />
+                            </RowIconButton>
+                            <RowMenu
+                              items={[
+                                {
+                                  label: 'View details',
+                                  icon: <Eye className="h-4 w-4" />,
+                                  onSelect: () => {
+                                    setSelectedUser(user)
+                                    setShowDetailsDialog(true)
+                                  },
+                                },
+                              ]}
+                            />
+                          </RowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -351,20 +279,20 @@ export default function AdminUserManagementPage() {
               </div>
             )}
 
-            {/* Pagination */}
-            {filteredUsers.length > ITEMS_PER_PAGE && (
-              <div className="mt-4">
-                <AdminPagination
-                  currentPage={currentPage}
-                  totalItems={filteredUsers.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={setCurrentPage}
-                  itemName="users"
-                />
-              </div>
+            {!loading && (
+              <AdminPagination
+                currentPage={currentPage}
+                totalItems={filteredUsers.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n)
+                  setCurrentPage(1)
+                }}
+                itemName="users"
+              />
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* User Details Dialog */}
         <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
@@ -457,20 +385,17 @@ export default function AdminUserManagementPage() {
             )}
 
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowRoleDialog(false)}
-                disabled={updating}
-              >
+              <ToolbarButton onClick={() => setShowRoleDialog(false)} disabled={updating}>
                 Cancel
-              </Button>
-              <Button
+              </ToolbarButton>
+              <ToolbarButton
+                variant="primary"
                 onClick={() => selectedUser && updateUserRole(selectedUser.id, newRole)}
                 disabled={updating || !newRole || !selectedUser}
               >
-                {updating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {updating && <Loader2 className="animate-spin" />}
                 Update Role
-              </Button>
+              </ToolbarButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
