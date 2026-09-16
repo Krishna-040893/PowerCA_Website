@@ -6,11 +6,19 @@ import {AdminPageWrapper  } from '@/components/admin/admin-page-wrapper'
 import {Card, CardContent } from '@/components/ui/card'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table'
 import {Badge  } from '@/components/ui/badge'
-import {Button  } from '@/components/ui/button'
-import {Input  } from '@/components/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select'
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger  } from '@/components/ui/dialog'
-import {Loader2, RefreshCw, Download, Users, UserCheck, Search, Eye, GraduationCap, User, Mail, Phone, Trash2  } from 'lucide-react'
+import {Loader2, RefreshCw, Download, Users, UserCheck, Eye, GraduationCap, User, Mail, Phone, Trash2  } from 'lucide-react'
+import {
+  dataTableCheckboxClass,
+  dataTableClass,
+  DataTableFilters,
+  DataTablePanel,
+  DataTableToolbar,
+  FilterMenu,
+  RowIconButton,
+  ToolbarButton,
+  adminButtonClass,
+} from '@/components/admin/data-table'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -68,18 +76,10 @@ export default function AdminRegistrationsPage() {
   const [roleFilter, setRoleFilter] = useState('all')
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
-  const [stats, setStats] = useState({
-    total: 0,
-    professionals: 0,
-    students: 0,
-    checkouts: 0,
-    today: 0
-  })
-
   const fetchRegistrations = useCallback(async () => {
     if (!isAuthenticated) {
       setLoading(false)
@@ -127,16 +127,6 @@ export default function AdminRegistrationsPage() {
       }))
 
       setRegistrations(transformedRegistrations)
-
-      // Calculate stats (removed checkout count fetching)
-      const today = new Date().toISOString().split('T')[0]
-      setStats({
-        total: transformedRegistrations.length,
-        professionals: transformedRegistrations.filter(r => r.role === 'Professional' || r.professional_type).length,
-        students: transformedRegistrations.filter(r => r.role === 'Student' || r.role === 'student').length,
-        checkouts: 0,
-        today: transformedRegistrations.filter(r => r.created_at?.startsWith(today)).length
-      })
     } catch (err) {
       clearTimeout(timeoutId)
       // Only show error if it's not an abort error (which happens on component unmount)
@@ -225,7 +215,7 @@ export default function AdminRegistrationsPage() {
   })
 
   const currentPageItems = filteredRegistrations
-    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const allCurrentPageSelected = currentPageItems.length > 0 &&
     currentPageItems.every(item => selectedIds.has(item.id))
@@ -298,107 +288,66 @@ export default function AdminRegistrationsPage() {
     <AdminPageWrapper
       title="Registrations"
       description="View detailed information about all registered users"
-      stats={[
-        { label: 'Total', value: stats.total, color: 'bg-blue-100 text-blue-800' },
-        { label: 'Professionals', value: stats.professionals, color: 'bg-green-100 text-green-800' },
-        { label: 'Students', value: stats.students, color: 'bg-purple-100 text-purple-800' },
-        { label: 'Today', value: stats.today, color: 'bg-orange-100 text-orange-800' }
-      ]}
-      actions={
-        <div className="flex gap-2 flex-wrap items-center">
-          {selectedIds.size > 0 ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete ({selectedIds.size})
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Registrations</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete {selectedIds.size} registration(s)?
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteSelected}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchRegistrations}
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportToCSV}
-            disabled={loading || registrations.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
-      }
     >
-        {/* Main Content Card - Enhanced */}
-        <Card className="shadow-sm border border-gray-100">
-          {/* <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl font-bold">Registration Details</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">
-                  View detailed information about all registered users
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader> */}
-          <CardContent>
-            {/* Search and Filter Controls - Enhanced Mobile */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-5">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search by name, email, phone or ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 text-sm h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10 border-gray-200">
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="Professional">Professional</SelectItem>
-                  <SelectItem value="Student">Student</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <DataTablePanel>
+            <DataTableToolbar
+              searchValue={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search by name, email, phone or ID"
+              actions={
+                <>
+                  {selectedIds.size > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <ToolbarButton variant="danger" disabled={isDeleting}>
+                          {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                          Delete ({selectedIds.size})
+                        </ToolbarButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Registrations</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} registration(s)?
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteSelected}
+                            className={adminButtonClass('danger')}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <ToolbarButton onClick={fetchRegistrations} disabled={loading}>
+                    <RefreshCw className={loading ? 'animate-spin' : ''} />
+                    Refresh
+                  </ToolbarButton>
+                  <ToolbarButton onClick={exportToCSV} disabled={loading || registrations.length === 0}>
+                    <Download />
+                    Export CSV
+                  </ToolbarButton>
+                </>
+              }
+            />
+
+            <DataTableFilters>
+              <FilterMenu
+                label="Role"
+                value={roleFilter}
+                onValueChange={setRoleFilter}
+                options={[
+                  { value: 'all', label: 'All Roles' },
+                  { value: 'Professional', label: 'Professional' },
+                  { value: 'Student', label: 'Student' },
+                ]}
+              />
+            </DataTableFilters>
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -425,7 +374,7 @@ export default function AdminRegistrationsPage() {
               <>
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
-                  <Table>
+                  <Table className={dataTableClass}>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[50px]">
@@ -433,52 +382,41 @@ export default function AdminRegistrationsPage() {
                             checked={allCurrentPageSelected}
                             onCheckedChange={handleSelectAll}
                             aria-label="Select all"
-                            className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                            className={dataTableCheckboxClass}
                           />
                         </TableHead>
-                        <TableHead className="text-base font-bold">Name</TableHead>
-                        <TableHead className="text-base font-bold">Email</TableHead>
-                        <TableHead className="text-base font-bold">Phone</TableHead>
-                        <TableHead className="text-base font-bold">Role</TableHead>
-                        <TableHead className="text-base font-bold">Date</TableHead>
-                        <TableHead className="text-base font-bold">Actions</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredRegistrations
-                        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                        .map((registration) => (
+                      {currentPageItems.map((registration) => (
                         <TableRow key={registration.id}>
                           <TableCell>
                             <Checkbox
                               checked={selectedIds.has(registration.id)}
                               onCheckedChange={(checked) => handleSelectOne(registration.id, checked)}
                               aria-label={`Select ${registration.name}`}
-                              className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                              className={dataTableCheckboxClass}
                             />
                           </TableCell>
-                          <TableCell className="font-medium">{registration.name || '-'}</TableCell>
+                          <TableCell>{registration.name || '-'}</TableCell>
                           <TableCell>{registration.email || '-'}</TableCell>
                           <TableCell>{formatPhone(registration.phone)}</TableCell>
-                          <TableCell>
-                            <Badge variant={registration.role === 'Professional' ? 'default' : registration.role === 'Student' ? 'secondary' : 'outline'}>
-                              {registration.role || '-'}
-                            </Badge>
-                          </TableCell>
+                          <TableCell>{registration.role || '-'}</TableCell>
                           <TableCell>
                             {registration.created_at ? format(new Date(registration.created_at), 'dd MMM yyyy') : '-'}
                           </TableCell>
                           <TableCell>
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  onClick={() => setSelectedRegistration(registration)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
+                                <RowIconButton label="View registration" onClick={() => setSelectedRegistration(registration)}>
+                                  <Eye />
+                                </RowIconButton>
                               </DialogTrigger>
                               <DialogContent className="bg-white max-w-3xl rounded-xl">
                                 <DialogHeader className="border-b pb-3">
@@ -584,13 +522,11 @@ export default function AdminRegistrationsPage() {
                       checked={allCurrentPageSelected}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
-                      className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                      className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                     />
                     <span className="text-sm text-gray-600">Select all on this page</span>
                   </div>
-                  {filteredRegistrations
-                    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .map((registration) => (
+                  {currentPageItems.map((registration) => (
                     <Card key={registration.id} className={`border shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(registration.id) ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200'}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -601,7 +537,7 @@ export default function AdminRegistrationsPage() {
                                 checked={selectedIds.has(registration.id)}
                                 onCheckedChange={(checked) => handleSelectOne(registration.id, checked)}
                                 aria-label={`Select ${registration.name}`}
-                                className="border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white"
+                                className="border-gray-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
                               />
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -647,14 +583,10 @@ export default function AdminRegistrationsPage() {
                           {/* Action Button - Enhanced */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                onClick={() => setSelectedRegistration(registration)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
+                              <ToolbarButton onClick={() => setSelectedRegistration(registration)} className="w-full">
+                                <Eye />
                                 View
-                              </Button>
+                              </ToolbarButton>
                             </DialogTrigger>
                             <DialogContent className="bg-white max-w-[90vw] sm:max-w-md rounded-xl">
                               <DialogHeader className="border-b pb-3">
@@ -755,14 +687,14 @@ export default function AdminRegistrationsPage() {
                 <AdminPagination
                   currentPage={currentPage}
                   totalItems={filteredRegistrations.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
+                  itemsPerPage={itemsPerPage}
                   onPageChange={setCurrentPage}
+                  onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1) }}
                   itemName="registrations"
                 />
               </>
             )}
-          </CardContent>
-        </Card>
+        </DataTablePanel>
 
         {/* Fixed Bottom Action Bar - Shows when items selected AND header is not visible */}
         {selectedIds.size > 0 && !isHeaderVisible && (
@@ -772,29 +704,16 @@ export default function AdminRegistrationsPage() {
                 <span className="text-sm font-medium text-gray-700">
                   {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedIds(new Set())}
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <ToolbarButton onClick={() => setSelectedIds(new Set())} className="h-9 px-4">
                   Clear
-                </Button>
+                </ToolbarButton>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="mr-2 h-4 w-4" />
-                    )}
+                  <ToolbarButton variant="danger" disabled={isDeleting} className="h-9 px-4">
+                    {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
                     Delete ({selectedIds.size})
-                  </Button>
+                  </ToolbarButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white">
                   <AlertDialogHeader>
@@ -805,10 +724,10 @@ export default function AdminRegistrationsPage() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className={adminButtonClass('outline')}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteSelected}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className={adminButtonClass('danger')}
                     >
                       Delete
                     </AlertDialogAction>
