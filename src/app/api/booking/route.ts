@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/logger'
 import { createErrorResponse, ErrorType } from '@/lib/error-handler'
+import { forwardEnquiryToCrm, slotStartIso } from '@/lib/crm'
 
 const SLOT_CAPACITY = 5
 
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert booking into Supabase
-    const { error } = await supabase
+    const { data: booking, error } = await supabase
       .from('bookings')
       .insert([{
         name,
@@ -173,6 +174,8 @@ export async function POST(request: NextRequest) {
         message: message || null,
         type: 'demo',
       }])
+      .select('id')
+      .single()
 
     if (error) {
       logger.error('Failed to create booking', error)
@@ -180,6 +183,22 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Failed to save booking', details: 'database' },
         { status: 500 }
       )
+    }
+
+    // The CRM puts the firm on its Demos board for the booked slot.
+    if (booking?.id) {
+      const scheduledAt = slotStartIso(normalizedDate, String(time))
+      forwardEnquiryToCrm({
+        externalId: `bookings:${booking.id}`,
+        type: 'demo',
+        name,
+        organisation: firmName,
+        email: normalizedEmail,
+        phone,
+        message: [`Booked a demo: ${normalizedDate}, ${time} IST.`, message].filter(Boolean).join(' '),
+        pageUrl: request.headers.get('referer') ?? undefined,
+        demo: scheduledAt ? { scheduledAt } : undefined,
+      })
     }
 
     // Send confirmation email to user + team notification (non-blocking, dynamic import)

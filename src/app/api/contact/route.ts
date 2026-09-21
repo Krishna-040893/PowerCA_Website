@@ -12,6 +12,8 @@ import {
   ErrorType
 } from '@/lib/error-handler'
 import { sanitizeRequired, sanitizeOptional } from '@/lib/sanitize'
+import { forwardEnquiryToCrm } from '@/lib/crm'
+import { randomUUID } from 'node:crypto'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -94,6 +96,18 @@ async function handleContactForm(request: NextRequest) {
         logger.info('Contact saved to database', { contactId: contact?.id })
       }
     }
+
+    // The CRM's call queue gets it whether or not the emails below go out.
+    forwardEnquiryToCrm({
+      externalId: contact?.id ? `contacts:${contact.id}` : `contact-form:${randomUUID()}`,
+      type: 'contact',
+      name,
+      organisation: company || undefined,
+      email,
+      phone: phone || undefined,
+      message,
+      pageUrl: request.headers.get('referer') ?? undefined,
+    })
 
     const contactResult = await sendContactFormEmail({
       name,
