@@ -214,7 +214,7 @@ function PricingContent() {
               <div className="relative z-10 flex flex-col flex-1 justify-center items-center pt-6 px-6 pb-6 md:pt-8 md:px-8 md:pb-8">
                 {/* Special Offer Text */}
                 <p className="text-base md:text-lg font-semibold text-[#001525] mb-5 text-center">
-                  Special <span className="text-[#306bea] font-extrabold bg-blue-100 px-1.5 py-0.5 rounded">2026-2027</span> New Year Offer for <span className="text-[#306bea] font-extrabold bg-blue-100 px-1.5 py-0.5 rounded">CAs</span>
+                  Enjoy Zero Subscription Charges Until March 31st 2027!
                 </p>
 
                 {/* Icon */}
@@ -232,13 +232,38 @@ function PricingContent() {
                 <div className="text-center">
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-2xl text-[#306bea]">₹</span>
-                    <span className="font-bold text-4xl md:text-5xl text-[#001525]">5,000</span>
+                    <span className="font-bold text-4xl md:text-5xl text-[#001525]">10,000</span>
                   </div>
                   <p className="text-sm mt-3 text-gray-400">+ Applicable Taxes</p>
                 </div>
+
+                {/* Unlock Now Button - Hidden for affiliates */}
+                {!isAffiliate && (
+                  <div className="w-full mt-6">
+                    <button
+                      onClick={() => handleOrderClick('server', 10000)}
+                      disabled={loadingPlan === 'server'}
+                      className={`w-full h-12 rounded-full text-base font-medium shadow-[0_1px_2px_rgba(16,24,40,0.06),0_10px_24px_-10px_rgba(16,24,40,0.35)] transition-colors ${
+                        loadingPlan === 'server'
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-[#306bea] text-white hover:bg-[#244b9b] cursor-pointer'
+                      }`}
+                    >
+                      {loadingPlan === 'server' ? 'Please wait...' : 'Unlock Now'}
+                    </button>
+                    {!session && (
+                      <p className="text-sm text-center mt-2 text-gray-500">
+                        *Please signin to order
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             </Reveal>
+
+            {/* Cards 2-4 share one row so they match each other in height; lg:my-10 keeps them 80px shorter than card 1 */}
+            <div className="contents lg:grid lg:col-span-3 lg:grid-cols-3 lg:gap-8 lg:items-stretch lg:my-10">
 
             {/* Card 2 - Annual Subscription */}
             <Reveal delay={0.05} className="h-full">
@@ -251,14 +276,14 @@ function PricingContent() {
               }`}
             >
               {/* Marketing Highlight */}
-              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'annual' ? 'bg-white/15 border-b border-white/20' : 'bg-emerald-100 border-b border-emerald-200'}`}>
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[84px] flex flex-col justify-center ${activeCard === 'annual' ? 'bg-white/15 border-b border-white/20' : 'bg-emerald-100 border-b border-emerald-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'annual' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
                 <p className={`relative font-semibold text-base ${activeCard === 'annual' ? 'text-white' : 'text-emerald-700'}`}>Great Opportunity for Prop. Firms</p>
               </div>
 
-              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+              <div className="relative z-10 flex flex-col flex-1 p-5 md:p-6">
                 {/* Header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>Annual License</h3>
                 </div>
 
@@ -266,16 +291,16 @@ function PricingContent() {
                 <div className="flex flex-col justify-center">
                   <div className="text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className={`line-through text-4xl md:text-[2.75rem] font-bold ${activeCard === 'annual' ? 'text-white/50' : 'text-gray-400'}`}>₹3,000</span>
-                      <span className={`text-[2.1875rem] md:text-[2.5rem] font-bold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>₹1,500</span>
+                      <span className={`line-through text-3xl md:text-[2.25rem] font-bold ${activeCard === 'annual' ? 'text-white/50' : 'text-gray-400'}`}>₹3,000</span>
+                      <span className={`text-[2rem] md:text-[2.25rem] font-bold ${activeCard === 'annual' ? 'text-white' : 'text-[#001525]'}`}>₹1,500</span>
                     </div>
-                    <p className={`text-lg font-semibold mt-3 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>/user/annual</p>
+                    <p className={`text-lg font-semibold mt-3 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`}>/user/per annum</p>
                     <p className={`text-sm mt-1 ${activeCard === 'annual' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
                   </div>
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-6 mt-10">
+                <div className="space-y-3 mb-5 mt-6">
                   {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'annual' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,15 +362,15 @@ function PricingContent() {
               )}
 
               {/* Marketing Highlight */}
-              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'lifetime' ? 'bg-white/15 border-b border-white/20' : 'bg-violet-100 border-b border-violet-200'}`}>
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[84px] flex flex-col justify-center ${activeCard === 'lifetime' ? 'bg-white/15 border-b border-white/20' : 'bg-violet-100 border-b border-violet-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'lifetime' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
                 <p className={`relative font-semibold text-base leading-tight ${activeCard === 'lifetime' ? 'text-white' : 'text-violet-700'}`}>Economical & Inflation Protector</p>
                 <p className={`relative text-sm mt-0.5 ${activeCard === 'lifetime' ? 'text-white/80' : 'text-violet-600'}`}>Assured Support for 2 Years</p>
               </div>
 
-              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+              <div className="relative z-10 flex flex-col flex-1 p-5 md:p-6">
                 {/* Header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>2 Year Plan</h3>
                 </div>
 
@@ -353,8 +378,8 @@ function PricingContent() {
                 <div className="flex flex-col justify-center">
                   <div className="text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className={`line-through text-4xl md:text-[2.75rem] font-bold ${activeCard === 'lifetime' ? 'text-white/50' : 'text-gray-400'}`}>₹6,000</span>
-                      <span className={`text-[2.1875rem] md:text-[2.5rem] font-bold ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>₹3,000</span>
+                      <span className={`line-through text-3xl md:text-[2.25rem] font-bold ${activeCard === 'lifetime' ? 'text-white/50' : 'text-gray-400'}`}>₹6,000</span>
+                      <span className={`text-[2rem] md:text-[2.25rem] font-bold ${activeCard === 'lifetime' ? 'text-white' : 'text-[#001525]'}`}>₹3,000</span>
                     </div>
                     <p className={`text-lg font-semibold mt-3 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`}>/user/2 year</p>
                     <p className={`text-sm mt-1 ${activeCard === 'lifetime' ? 'text-white/70' : 'text-gray-400'}`}>+ Applicable Taxes</p>
@@ -362,7 +387,7 @@ function PricingContent() {
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-6 mt-10">
+                <div className="space-y-3 mb-5 mt-6">
                   {['Minimum 5 users', 'Add users according to the per-user cost', 'Onsite support available via affiliates, subject to their terms'].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'lifetime' ? 'text-white' : 'text-[#306bea]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -414,13 +439,13 @@ function PricingContent() {
               }`}
             >
               {/* Marketing Highlight */}
-              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[100px] flex flex-col justify-center ${activeCard === 'enterprise' ? 'bg-white/15 border-b border-white/20' : 'bg-rose-100 border-b border-rose-200'}`}>
+              <div className={`relative py-3.5 text-center overflow-hidden w-full px-6 md:px-8 h-[84px] flex flex-col justify-center ${activeCard === 'enterprise' ? 'bg-white/15 border-b border-white/20' : 'bg-rose-100 border-b border-rose-200'}`}>
                 <div className={`absolute top-0 bottom-0 w-[30%] animate-shimmer bg-gradient-to-r from-transparent ${activeCard === 'enterprise' ? 'via-white/20' : 'via-white/60'} to-transparent`}></div>
                 <p className={`relative font-semibold text-base ${activeCard === 'enterprise' ? 'text-white' : 'text-rose-700'}`}>Customizable & Scalable</p>
                 <p className={`relative text-sm mt-0.5 ${activeCard === 'enterprise' ? 'text-white/80' : 'text-rose-600'}`}>Your Extended IT Arm</p>
               </div>
 
-              <div className="relative z-10 flex flex-col flex-1 p-6 md:p-8">
+              <div className="relative z-10 flex flex-col flex-1 p-5 md:p-6">
                 {/* Header */}
                 <div className="text-center mb-3">
                   <h3 className={`text-xl md:text-2xl font-semibold ${activeCard === 'enterprise' ? 'text-white' : 'text-[#001525]'}`}>Large Practitioner</h3>
@@ -428,7 +453,7 @@ function PricingContent() {
                 </div>
 
                 {/* Pricing Section */}
-                <div className="h-[130px] flex flex-col justify-center">
+                <div className="h-[110px] flex flex-col justify-center">
                   <div className="text-center">
                     <div className="flex items-baseline justify-center gap-1">
                       <span className={`font-bold text-3xl md:text-3xl ${activeCard === 'enterprise' ? 'text-white' : 'text-[#001525]'}`}>Custom Pricing</span>
@@ -438,7 +463,7 @@ function PricingContent() {
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-6">
+                <div className="space-y-3 mb-5">
                   {['Priority Support 24/7', 'Customization', 'Unlimited Users'].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeCard === 'enterprise' ? 'text-white' : 'text-purple-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -467,6 +492,7 @@ function PricingContent() {
               </div>
             </div>
             </Reveal>
+            </div>
 
           </div>
 
