@@ -1611,10 +1611,10 @@ function AccountPageContent() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-blue-900">
-                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '2 Years Pack' : 'Subscription'}
+                      Selected Plan: {paymentType === 'annual' ? 'Annual License' : paymentType === 'onetime' ? '2 Years Pack' : paymentType === 'server' ? 'Server Installation & Configuration' : 'Subscription'}
                     </p>
                     <p className="text-sm text-blue-700">
-                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/2 years' : ''}
+                      ₹{parseInt(planPrice).toLocaleString()} {paymentType === 'annual' ? '/user/year' : paymentType === 'onetime' ? '/user/2 years' : paymentType === 'server' ? 'one time' : ''}
                     </p>
                   </div>
                   <div className="text-sm text-blue-600">
@@ -1752,6 +1752,19 @@ function AccountPageContent() {
                                             : 'border-gray-200 bg-white hover:border-gray-300'
                                       }`}
                                     >
+                                      {/* Plan heading - the plan bought, or the plan selected on the pricing page */}
+                                      {(() => {
+                                        const headingPlan = hasInitialPayment ? addressPlanType : paymentType
+                                        const headingName =
+                                          headingPlan === 'server' ? 'Server Installation & Configuration'
+                                          : headingPlan === 'annual' ? 'Annual License'
+                                          : headingPlan === 'onetime' ? '2 Years Pack'
+                                          : null
+                                        return headingName ? (
+                                          <p className="text-sm font-semibold text-blue-700 mb-2 pb-2 border-b border-gray-100">{headingName}</p>
+                                        ) : null
+                                      })()}
+
                                       {/* Main Row - All info in single line on desktop */}
                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         {/* Left - Firm Name & Status */}
@@ -1828,12 +1841,14 @@ function AccountPageContent() {
                                                   <span className="font-medium text-gray-900">
                                                     {addressPlanType === 'annual' && 'Annual'}
                                                     {addressPlanType === 'onetime' && '2 Years Pack'}
-                                                    {!['annual', 'onetime'].includes(addressPlanType) && 'Annual'}
+                                                    {addressPlanType === 'server' && 'Server Installation & Configuration'}
+                                                    {!['annual', 'onetime', 'server'].includes(addressPlanType) && 'Annual'}
                                                   </span>
                                                   <span className="text-gray-500 ml-1">
                                                     {addressPlanType === 'annual' && '₹1,500/user/yr'}
                                                     {addressPlanType === 'onetime' && '₹6,000/user/5yrs'}
-                                                    {!['annual', 'onetime'].includes(addressPlanType) && '₹1,500/user/yr'}
+                                                    {addressPlanType === 'server' && '₹10,000 one time'}
+                                                    {!['annual', 'onetime', 'server'].includes(addressPlanType) && '₹1,500/user/yr'}
                                                   </span>
                                                 </span>
                                               </div>
@@ -2203,7 +2218,8 @@ function AccountPageContent() {
                                             <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                                               {order.planType === 'annual' && 'Annual'}
                                               {order.planType === 'onetime' && '2 Years'}
-                                              {!['annual', 'onetime'].includes(order.planType) && 'Annual'}
+                                              {order.planType === 'server' && 'Server Installation'}
+                                              {!['annual', 'onetime', 'server'].includes(order.planType) && 'Annual'}
                                             </span>
                                           </td>
                                           <td className="px-3 py-2 text-center text-gray-600 hidden sm:table-cell w-[8%]">

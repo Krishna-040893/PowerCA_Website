@@ -2,10 +2,27 @@
 
 import { POST } from '../route'
 import { sendContactFormEmail, sendWelcomeEmail } from '@/lib/send-emails'
+import { forwardEnquiryToCrm } from '@/lib/crm'
 
 jest.mock('@/lib/send-emails', () => ({
   sendContactFormEmail: jest.fn(),
   sendWelcomeEmail: jest.fn(),
+}))
+
+jest.mock('@/lib/crm', () => ({
+  forwardEnquiryToCrm: jest.fn(),
+}))
+
+// jest.setup sets Supabase env vars, so the route saves the contact: answer
+// that insert here instead of letting it reach the network.
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: jest.fn(() => ({
+    from: () => ({
+      insert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: { id: 'contact-1' }, error: null }) }),
+      }),
+    }),
+  })),
 }))
 
 // Mock rate limiting to prevent 429 responses in tests
@@ -18,6 +35,7 @@ jest.mock('@/lib/middleware', () => ({
 
 const mockSendContactFormEmail = sendContactFormEmail as unknown as jest.Mock
 const mockSendWelcomeEmail = sendWelcomeEmail as unknown as jest.Mock
+const mockForward = forwardEnquiryToCrm as unknown as jest.Mock
 
 const createRequest = (body: unknown) =>
   new NextRequest('http://localhost:3000/api/contact', {
@@ -121,5 +139,36 @@ describe('Contact API Route', () => {
     expect(response.status).toBe(400)
     expect(mockSendContactFormEmail).not.toHaveBeenCalled()
   })
-})
 
+  it('forwards the enquiry to the CRM with the firm name', async () => {
+    mockSendContactFormEmail.mockResolvedValue({ success: true })
+    mockSendWelcomeEmail.mockResolvedValue({ success: true })
+
+    await POST(
+      createRequest({
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '9876543210',
+        company: 'Doe & Associates',
+        message: 'Need pricing for 8 users',
+      })
+    )
+
+    expect(mockForward).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'contact',
+        name: 'John Doe',
+        organisation: 'Doe & Associates',
+        email: 'john@example.com',
+        phone: '9876543210',
+        message: 'Need pricing for 8 users',
+        externalId: 'contacts:contact-1',
+      })
+    )
+  })
+
+  it('does not forward an invalid submission', async () => {
+    await POST(createRequest({ name: 'John Doe', email: 'not-an-email', message: 'Hello' }))
+    expect(mockForward).not.toHaveBeenCalled()
+  })
+})

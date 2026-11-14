@@ -9,6 +9,7 @@ import {Checkbox  } from '@/components/ui/checkbox'
 import {Loader2, AlertCircle, CheckCircle, MapPin, Trash2, Plus, Tag  } from 'lucide-react'
 import {useSession  } from 'next-auth/react'
 import {featuresConfig  } from '@/config/features'
+import { SERVER_INSTALLATION_CHARGE } from '@/config/pricing'
 import Script from 'next/script'
 import Link from 'next/link'
 import {RazorpayPaymentResponse  } from '@/types/common'
@@ -190,6 +191,8 @@ function CheckoutContent() {
 
   // Check if this plan supports user count (per-user pricing)
   const isPerUserPlan = planType === 'annual' || planType === 'onetime'
+  // Server Installation & Configuration plan (first card on the pricing page)
+  const isServerPlan = planType === 'server'
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -242,7 +245,8 @@ function CheckoutContent() {
   // Server Installation & Configuration charge - only for first purchase of an address
   // Renewals (same address purchased again) don't include this charge
   const isRenewal = selectedAddressId ? purchasedAddressIds.includes(selectedAddressId) : false
-  const implementationCharge = !isRenewal && !isFinalSettlement ? 5000 : 0
+  // The 'server' plan is itself the server installation charge, so don't add it again
+  const implementationCharge = !isRenewal && !isFinalSettlement && planType !== 'server' ? SERVER_INSTALLATION_CHARGE : 0
   const subtotalWithImplementation = subtotal + implementationCharge
   const gstRate = 0.18 // 18% GST
   const gstAmount = Math.ceil(subtotalWithImplementation * gstRate)
@@ -253,6 +257,7 @@ function CheckoutContent() {
     switch (planType) {
       case 'annual': return 'Annual Subscription'
       case 'onetime': return '2 Year Pack'
+      case 'server': return 'Server Installation & Configuration'
       default: return 'Power CA Subscription'
     }
   }
@@ -263,6 +268,7 @@ function CheckoutContent() {
     ? 'Final settlement payment for Power CA service'
     : planType === 'annual' ? 'Annual subscription with ongoing support'
     : planType === 'onetime' ? '2 Year Pack - Per user pricing'
+    : planType === 'server' ? 'One time charge - Zero subscription charges until March 31st 2027'
     : 'Installation and Ongoing Support & Update'
 
 
@@ -1129,8 +1135,8 @@ function CheckoutContent() {
 
             {/* Right Column - Order Summary */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Apply Coupon */}
-              {!isFinalSettlement && (
+              {/* Apply Coupon - not offered for the Server Installation plan */}
+              {!isFinalSettlement && !isServerPlan && (
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                   <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
                     <Tag className="w-5 h-5 text-purple-600" />
@@ -1208,7 +1214,7 @@ function CheckoutContent() {
 
               {/* Purchase Plan */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Subscription Plan</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">{isServerPlan ? 'Server Installation & Configuration' : 'Subscription Plan'}</h3>
 
                 {/* Product Info */}
                 <div className="flex items-center gap-3 sm:gap-4 mb-4">
@@ -1326,7 +1332,7 @@ function CheckoutContent() {
                   {selectedAddressId && savedAddresses.length > 0 && (
                     <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
                       <p className="text-xs text-purple-700 font-medium">
-                        Subscription for: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
+                        {isServerPlan ? 'Server Installation & Configuration' : 'Subscription for'}: {savedAddresses.find(a => a.id === selectedAddressId)?.label || savedAddresses.find(a => a.id === selectedAddressId)?.city || 'Selected Address'}
                       </p>
                     </div>
                   )}
