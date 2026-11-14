@@ -342,6 +342,7 @@ function PaymentSuccessContent() {
                           case 'monthly': return 'Monthly Subscription'
                           case 'annual': return 'Annual Subscription'
                           case 'onetime': return '2 Year Pack'
+                          case 'server': return 'Server Installation & Configuration'
                           default: return 'Power CA Implementation'
                         }
                       }

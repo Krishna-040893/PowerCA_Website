@@ -183,6 +183,10 @@ export async function POST(req: NextRequest) {
           case 'onetime':
             nextDueDate = null // Lifetime, no renewal
             break
+          case 'server':
+            // Zero subscription charges until March 31st 2027 offer
+            nextDueDate = new Date('2027-03-31T23:59:59+05:30')
+            break
           default:
             nextDueDate = new Date(now)
             nextDueDate.setMonth(nextDueDate.getMonth() + 1)

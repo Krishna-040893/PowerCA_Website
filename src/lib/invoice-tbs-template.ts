@@ -1,4 +1,5 @@
 import { InvoiceData } from './invoice-generator'
+import { SERVER_INSTALLATION_CHARGE } from '@/config/pricing'
 
 // TBS Technologies Invoice Template
 export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolean }, headerLogoBase64: string = '', productLogoBase64: string = ''): string {
@@ -26,6 +27,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       case 'monthly': return 'Monthly Subscription'
       case 'annual': return 'Annual Subscription'
       case 'onetime': return '2 Year Pack'
+      case 'server': return 'Server Installation & Configuration'
       case 'final_settlement': return 'Final Settlement'
       default: return 'Power CA Implementation'
     }
@@ -36,6 +38,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
       case 'monthly': return 'Monthly subscription with ongoing support'
       case 'annual': return 'Annual subscription with ongoing support'
       case 'onetime': return '2 Year Pack - Per user pricing'
+      case 'server': return 'One time charge - Zero subscription charges until March 31st 2027'
       case 'final_settlement': return 'Final settlement payment for Power CA service'
       default: return 'Installation and Ongoing Support & Update'
     }
@@ -43,7 +46,8 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
 
   // Server Installation & Configuration charge - only for first-time purchases
   const isFirstPurchase = data.paymentType === 'initial_payment' || !data.paymentType
-  const serverInstallationCharge = isFirstPurchase ? 5000 : 0
+  // The 'server' plan's whole price is the installation charge, so it isn't split out again
+  const serverInstallationCharge = isFirstPurchase && planType !== 'server' ? SERVER_INSTALLATION_CHARGE : 0
 
   // Calculate license amount (subtotal minus server installation if applicable)
   const licenseTotal = data.subtotal - serverInstallationCharge
@@ -302,7 +306,7 @@ export function generateTBSInvoiceHTML(data: InvoiceData & { isTestMode?: boolea
     <!-- Header -->
     <div class="header">
       <div class="company-logo">
-        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="Power CA Logo" style="height: 90px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
+        ${headerLogoBase64 ? `<img src="${headerLogoBase64}" alt="TBS Technologies Logo" style="height: 58px; width: auto;">` : '<div class="logo-placeholder">PC</div>'}
       </div>
       <div class="company-address">
         No. 130, II Floor, Muneer Complex, Palani Road,<br>
